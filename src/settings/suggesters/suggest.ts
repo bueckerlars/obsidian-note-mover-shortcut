@@ -152,6 +152,7 @@ export abstract class TextInputSuggest<T> implements ISuggestOwner<T> {
 
         if (suggestions.length > 0) {
             this.suggest.setSuggestions(suggestions);
+            //@ts-expect-error
             this.open(this.app.dom.appContainerEl, this.inputEl);
         } else {
             this.close();
