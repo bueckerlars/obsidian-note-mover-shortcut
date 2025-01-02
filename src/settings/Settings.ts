@@ -7,7 +7,7 @@ export interface NoteMoverShortcutSettings {
 }
 
 export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
-	destination: '/'
+	destination: ''
 }
 
 export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
