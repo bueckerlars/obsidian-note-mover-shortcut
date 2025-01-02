@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS, NoteMoverShortcutSettings, NoteMoverShortcutSettingsTab } from "src/settings/Settings";
 
 export default class NoteMoverShortcutPlugin extends Plugin {
@@ -15,7 +15,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'move-note-shortcut-command',
+			id: 'trigger-note-movement-command',
 			name: 'Move note to configured folder',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				this.moveFocusedNoteToDestination();

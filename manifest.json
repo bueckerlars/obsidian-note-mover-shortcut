@@ -3,7 +3,7 @@
 	"name": "NoteMover shortcut",
 	"version": "0.1.0",
 	"minAppVersion": "1.5.0",
-	"description": "Moves a file to a configured path by shortcut",
+	"description": "Quickly and easily move the currently open note to a predefined folder. Perfect for organizing your notes.",
 	"author": "bueckerlars",
 	"isDesktopOnly": false
 }
