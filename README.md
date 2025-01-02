@@ -10,11 +10,10 @@ This Obsidian plugin introduces a new command that allows you to move the curren
 
 ## Configuration
 - Target Folder: In the plugin settings, you can specify the target folder where notes should be moved.
-- Hotkey: The default hotkey for moving is Ctrl+Shift+M. You can customize this in the settings.
 
 ## Usage
 1. Open Note: Open the note you want to move.
-2. Execute Command: Press the configured hotkey (Ctrl+Shift+M by default) or invoke the command through the command palette.
+2. Execute Command: Execute the command `Move note to configured folder` from the command palatte or configure a shortcut
 
 ## Contributing:
 This plugin is open-source. Contributions are welcome!
