@@ -7,9 +7,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 	async onload() {
 		await this.load_settings();
 
-		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('book-plus', 'NoteMover', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
 			this.moveFocusedNoteToDestination();
 			new Notice('Note moved to the configured folder!');
 		});
@@ -20,27 +18,14 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				this.moveFocusedNoteToDestination();
 			},
-			hotkeys: [
-				{
-					modifiers: ["Ctrl", "Shift"],
-					key: "M"                    
-				}
-			]
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new NoteMoverShortcutSettingsTab(this.app, this));
 	}
 
 	async moveFocusedNoteToDestination() {
-		const { app } = this; // Access the Obsidian app
+		const { app } = this;
 		const destinationFolder = this.settings.destination; // Target folder from settings
-
-		// Ensure the target folder is defined
-		if (!destinationFolder) {
-			new Notice("Target folder is not defined. Please set it in the plugin settings.", 5000);
-			return;
-		}
 
 		// Get the currently opened file in the focused tab
 		const activeFile = app.workspace.getActiveFile();
@@ -50,9 +35,9 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 		}
 
 		const currentPath = activeFile.path; // Current path of the file
-		
 		const fileName = activeFile.name; // File name
 		const newPath = `${destinationFolder}/${fileName}`; // New path for the file
+		
 		if (newPath == currentPath) {
 			new Notice("Note is already in the target folder.");
 			return;
