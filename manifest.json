@@ -1,0 +1,9 @@
+{
+	"id": "note-mover-shortcut",
+	"name": "NoteMover shortcut",
+	"version": "0.1.0",
+	"minAppVersion": "1.5.0",
+	"description": "Moves a file to a configured path by shortcut",
+	"author": "bueckerlars",
+	"isDesktopOnly": false
+}
