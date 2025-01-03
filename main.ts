@@ -1,4 +1,5 @@
 import { App, Editor, MarkdownView, Notice, Plugin } from 'obsidian';
+import * as path from 'path';
 import { DEFAULT_SETTINGS, NoteMoverShortcutSettings, NoteMoverShortcutSettingsTab } from "src/settings/Settings";
 
 export default class NoteMoverShortcutPlugin extends Plugin {
@@ -12,15 +13,63 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 			new Notice('Note moved to the configured folder!');
 		});
 
+		// Singe note move command
 		this.addCommand({
 			id: 'trigger-note-movement-command',
-			name: 'Move note to configured folder',
+			name: 'Move active note to note folder',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				this.moveFocusedNoteToDestination();
 			},
 		});
 
+		// Bulk movement command
+		this.addCommand({
+			id: 'trigger-note-bulk-move-command',
+			name: 'Move all notes from inbox to notes folder',
+			callback: () => {
+				this.moveNotesFromInboxToNotesFolder();
+			},
+		});
+
 		this.addSettingTab(new NoteMoverShortcutSettingsTab(this.app, this));
+	}
+
+	async moveNotesFromInboxToNotesFolder() {
+		const { app } = this;
+		const inboxFolder = this.settings.inboxLocation;
+		const notesFolder = this.settings.destination;
+	
+		// Check if both folders exist
+		if (!await app.vault.adapter.exists(inboxFolder)) {
+			await app.vault.createFolder(inboxFolder);
+			new Notice("Inbox folder created");
+		}
+	
+		if (!await app.vault.adapter.exists(notesFolder)) {
+			await app.vault.createFolder(notesFolder);
+			new Notice("Notes folder created");
+		}
+	
+		// Get all files in the inbox folder
+		const files = await app.vault.getFiles();
+		const inboxFiles = files.filter(file => file.path.startsWith(inboxFolder));
+	
+		// Iterate over each file and move it
+		for (const file of inboxFiles) {
+			try {
+				// Create the new path in the notes folder
+				const newPath = path.join(notesFolder, file.name);
+	
+				// Move the file
+				await app.vault.rename(file, newPath);
+				console.log(`Moved '${file.path}' to '${newPath}'`);
+			} catch (error) {
+				new Notice(`Error moving file '${file.path}':`, error);
+				console.error(`Error moving file '${file.path}':`, error);
+				return;
+			}
+		}
+		new Notice("Successfully moved all files from inbox to notes folder.");
 	}
 
 	async moveFocusedNoteToDestination() {
