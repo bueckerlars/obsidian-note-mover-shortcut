@@ -15,7 +15,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 
 		// Singe note move command
 		this.addCommand({
-			id: 'trigger-note-movement-command',
+			id: 'trigger-note-movement',
 			name: 'Move active note to note folder',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				this.moveFocusedNoteToDestination();
@@ -24,7 +24,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 
 		// Bulk movement command
 		this.addCommand({
-			id: 'trigger-note-bulk-move-command',
+			id: 'trigger-note-bulk-move',
 			name: 'Move all notes from inbox to notes folder',
 			callback: () => {
 				this.moveNotesFromInboxToNotesFolder();
