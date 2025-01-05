@@ -13,44 +13,46 @@ export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
 }
 
 export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
-	plugin: NoteMoverShortcutPlugin;
-
-	constructor(app: App, plugin: NoteMoverShortcutPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
+	constructor(private plugin: NoteMoverShortcutPlugin) {
+		super(plugin.app, plugin);
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		this.containerEl.empty();
 
-		containerEl.empty();
+		this.add_inbox_folder_setting();
+		this.add_target_folder_setting();
+	}
 
-		new Setting(containerEl)
-		.setName('Inbox Folder')
-		.setDesc('Set your inbox folder')
-		.addSearch((cb) => {
-			new FolderSuggest(this.app, cb.inputEl);
-			cb.setPlaceholder('Example: folder1/folder2')
-				.setValue(this.plugin.settings.inboxLocation)
-				.onChange((new_folder) => {
-					this.plugin.settings.inboxLocation = new_folder;
-					this.plugin.save_settings();
-				});
-		});
+	add_inbox_folder_setting(): void {
+		new Setting(this.containerEl)
+			.setName('Inbox Folder')
+			.setDesc('Set your inbox folder')
+			.addSearch((cb) => {
+				new FolderSuggest(this.app, cb.inputEl);
+				cb.setPlaceholder('Example: folder1/folder2')
+					.setValue(this.plugin.settings.inboxLocation)
+					.onChange((new_folder) => {
+						this.plugin.settings.inboxLocation = new_folder;
+						this.plugin.save_settings();
+					});
+			});
+	}
 
-		new Setting(containerEl)
+	add_target_folder_setting(): void {
+		new Setting(this.containerEl)
 			.setName('Note Folder')
 			.setDesc('Set your main note folder')
 			.addSearch((cb) => {
-                new FolderSuggest(this.app, cb.inputEl);
-                cb.setPlaceholder("Example: folder1/folder2")
-                    .setValue(this.plugin.settings.destination)
-                    .onChange((new_folder) => {
-                        this.plugin.settings.destination = new_folder;
-                        this.plugin.save_settings();
-                    });
-                // @ts-ignore
-                cb.containerEl.addClass("templater_search");
-            });
+				new FolderSuggest(this.app, cb.inputEl);
+				cb.setPlaceholder("Example: folder1/folder2")
+					.setValue(this.plugin.settings.destination)
+					.onChange((new_folder) => {
+						this.plugin.settings.destination = new_folder;
+						this.plugin.save_settings();
+					});
+				// @ts-ignore
+				cb.containerEl.addClass("templater_search");
+			});
 	}
 }

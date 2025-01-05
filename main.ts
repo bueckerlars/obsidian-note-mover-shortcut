@@ -31,7 +31,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 			},
 		});
 
-		this.addSettingTab(new NoteMoverShortcutSettingsTab(this.app, this));
+		this.addSettingTab(new NoteMoverShortcutSettingsTab(this));
 	}
 
 	async moveNotesFromInboxToNotesFolder() {
