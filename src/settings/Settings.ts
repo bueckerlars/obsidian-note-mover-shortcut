@@ -73,8 +73,14 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	}
 
 	add_rules_setting(): void {
+		new Setting(this.containerEl).setName('Rules').setHeading();
+
 		const descUseRules = document.createDocumentFragment();
-		descUseRules.append('When enabled, the NoteMover will move notes to the folder associated with the tag.');
+		descUseRules.append(
+			'When enabled, the NoteMover will move notes to the folder associated with the tag.',
+			document.createElement('br'),
+			'If a note contains more than one tag associated with a rule, the first rule will be applied.',
+		);
 
 		new Setting(this.containerEl)
 			.setName('Enalbe Rules')
