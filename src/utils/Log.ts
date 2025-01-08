@@ -1,3 +1,5 @@
+// Credits go to SilentVoid13 Templater Plugin: https://github.com/SilentVoid13/Templater
+
 import { Notice } from "obsidian";
 import { NoteMoverError } from "./Error";
 
