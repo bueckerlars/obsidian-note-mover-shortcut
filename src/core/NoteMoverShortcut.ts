@@ -31,14 +31,31 @@ export class NoteMoverShortcut {
 		// Iterate over each file and move it
 		for (const file of inboxFiles) {
 			try {
-				// Create the new path in the notes folder
-				const newPath = path.join(notesFolder, file.name);
-	
+				// Get tags from file
+				const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
+				
+				let targetFolder = notesFolder;
+				
+				// Move file to default destination folder if no tags are found
+				if (tags) {
+					// Determine the target folder based on tags and rules
+					for (const tag of tags) {
+						const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
+						if (rule) {
+							targetFolder = rule.path;
+							break;
+						}
+					}
+				}
+
+				// Create the new path in the determined target folder
+				const newPath = path.join(targetFolder, file.name);
+
 				// Move the file
 				await app.vault.rename(file, newPath);
-				console.log(`Moved '${file.path}' to '${newPath}'`);
+				log_info(`Moved '${file.name}' to '${newPath}'`);
 			} catch (error) {
-				log_error(new Error(`Error moving file '${file.path}':`));
+				log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 				return;
 			}
 		}
@@ -47,38 +64,38 @@ export class NoteMoverShortcut {
 
 	async moveFocusedNoteToDestination() {
 		const { app } = this.plugin;
-		const destinationFolder = this.plugin.settings.destination; // Target folder from settings
+		const file = app.workspace.getActiveFile();
 
-		// Get the currently opened file in the focused tab
-		const activeFile = app.workspace.getActiveFile();
-		if (!activeFile) {
-			log_error(new Error("No active file found."));
-			return;
-		}
-
-		const currentPath = activeFile.path; // Current path of the file
-		const fileName = activeFile.name; // File name
-		const newPath = `${destinationFolder}/${fileName}`; // New path for the file
-		
-		if (newPath == currentPath) {
-			log_error(new Error("Note is already in the target folder."));
+		if (!file) {
+			log_error(new Error("No file is open"));
 			return;
 		}
 		
+		// Set default target folder
+		let targetFolder = this.plugin.settings.destination;
+
 		try {
-			// Check if the target folder exists
-			const folderExists = app.vault.getAbstractFileByPath(destinationFolder);
-			if (!folderExists) {
-				await app.vault.createFolder(destinationFolder);
-				log_info("Notes folder created");
+			// Get tags from file
+			const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
+			
+			// Determine the target folder based on tags and rules
+			if (tags) {
+				for (const tag of tags) {
+					const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
+					if (rule) {
+						targetFolder = rule.path;
+						break;
+					}
+				}
 			}
 
-			// Move the file
-			await app.fileManager.renameFile(activeFile, newPath);
+			const newPath = path.join(targetFolder, file.name);
 
-			log_info(`The file was moved from ${currentPath} to ${newPath}.`);
-		} catch (error) {
-			log_error(new Error(`Error moving the file: ${error}`));
+			// Move file
+			await app.vault.rename(file, newPath);
+			log_info(`Moved '${file.name}' to '${newPath}'`);
+		} catch(e) {
+			log_error(e);
 			return;
 		}
 	}
