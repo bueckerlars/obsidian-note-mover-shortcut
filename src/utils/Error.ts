@@ -24,6 +24,7 @@ export async function errorWrapper<T>(
         } else {
             log_error(e);
         }
+        // @ts-ignore
         return null as T;
     }
 }
@@ -33,6 +34,7 @@ export function errorWrapperSync<T>(fn: () => T, msg: string): T {
         return fn();
     } catch (e) {
         log_error(new NoteMoverError(msg, e.message));
+        // @ts-ignore
         return null as T;
     }
 }
