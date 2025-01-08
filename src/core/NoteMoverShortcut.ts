@@ -1,6 +1,6 @@
-import { App, Notice } from "obsidian"; 
 import NoteMoverShortcutPlugin from "main";
 import * as path from "path";
+import { log_error, log_info } from "src/utils/Log";
 
 export class NoteMoverShortcut {
     constructor(private plugin: NoteMoverShortcutPlugin) {}
@@ -16,12 +16,12 @@ export class NoteMoverShortcut {
 		// Check if both folders exist
 		if (!await app.vault.adapter.exists(inboxFolder)) {
 			await app.vault.createFolder(inboxFolder);
-            new Notice("Inbox folder created");
+			log_info("Inbox folder created");
 		}
 	
 		if (!await app.vault.adapter.exists(notesFolder)) {
 			await app.vault.createFolder(notesFolder);
-			new Notice("Notes folder created");
+			log_info("Notes folder created");
 		}
 	
 		// Get all files in the inbox folder
@@ -38,12 +38,11 @@ export class NoteMoverShortcut {
 				await app.vault.rename(file, newPath);
 				console.log(`Moved '${file.path}' to '${newPath}'`);
 			} catch (error) {
-				new Notice(`Error moving file '${file.path}':`, error);
-				console.error(`Error moving file '${file.path}':`, error);
+				log_error(new Error(`Error moving file '${file.path}':`));
 				return;
 			}
 		}
-		new Notice("Successfully moved all files from inbox to notes folder.");
+		log_info("Successfully moved all files from inbox to notes folder.");
 	}
 
 	async moveFocusedNoteToDestination() {
@@ -53,7 +52,7 @@ export class NoteMoverShortcut {
 		// Get the currently opened file in the focused tab
 		const activeFile = app.workspace.getActiveFile();
 		if (!activeFile) {
-			new Notice("No active file found.");
+			log_error(new Error("No active file found."));
 			return;
 		}
 
@@ -62,7 +61,7 @@ export class NoteMoverShortcut {
 		const newPath = `${destinationFolder}/${fileName}`; // New path for the file
 		
 		if (newPath == currentPath) {
-			new Notice("Note is already in the target folder.");
+			log_error(new Error("Note is already in the target folder."));
 			return;
 		}
 		
@@ -71,15 +70,16 @@ export class NoteMoverShortcut {
 			const folderExists = app.vault.getAbstractFileByPath(destinationFolder);
 			if (!folderExists) {
 				await app.vault.createFolder(destinationFolder);
+				log_info("Notes folder created");
 			}
 
 			// Move the file
 			await app.fileManager.renameFile(activeFile, newPath);
 
-			new Notice(`The file was moved from ${currentPath} to ${newPath}.`);
+			log_info(`The file was moved from ${currentPath} to ${newPath}.`);
 		} catch (error) {
-			console.error("Error while moving the file:", error);
-			new Notice("Error while moving the file. Please check the plugin settings.");
+			log_error(new Error(`Error moving the file: ${error}`));
+			return;
 		}
 	}
 }

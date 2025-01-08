@@ -10,6 +10,11 @@ export function log_update(msg: string): void {
     notice.noticeEl.innerHTML = `<b>NoteMover update</b>:<br/>${msg}`;
 }
 
+export function log_info(msg: string): void {
+    const notice = new Notice("", 8000);
+    notice.noticeEl.innerHTML = `<b>NoteMover info</b>:<br/>${msg}`;
+}
+
 export function log_error(e: Error | NoteMoverError): void {
     const notice = new Notice("", 8000);
     if (e instanceof NoteMoverError && e.console_msg) {
