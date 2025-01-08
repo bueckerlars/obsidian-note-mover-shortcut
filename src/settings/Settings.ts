@@ -2,6 +2,8 @@ import NoteMoverShortcutPlugin from "main";
 import { PluginSettingTab, App, Setting } from "obsidian";
 import { FolderSuggest } from "./suggesters/FolderSuggest";
 import { TagSuggest } from "./suggesters/TagSuggest";
+import { NoteMoverError } from "src/utils/Error";
+import { log_error } from "src/utils/Log";
 
 interface Rule {
 	tag: string,
@@ -52,8 +54,6 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 						this.plugin.settings.inboxLocation = new_folder;
 						this.plugin.save_settings();
 					});
-				// @ts-ignore
-				cb.containerEl.addClass("note_mover_search");
 			});
 	}
 
@@ -69,8 +69,6 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 						this.plugin.settings.destination = new_folder;
 						this.plugin.save_settings();
 					});
-				// @ts-ignore
-				cb.containerEl.addClass("note_mover_search");
 			});
 	}
 
@@ -107,6 +105,19 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					cb.setPlaceholder('Tag')
 						.setValue(rule.tag)
 						.onChange(async (value) => {
+							if (value && this.plugin.settings.rules.some(
+								(rule) => rule.tag === value
+							)
+							) {
+								log_error(
+									new NoteMoverError(
+										"This tag already has a folder associated with it"
+									)
+								);
+								return;
+							}
+
+							// Save Setting
 							this.plugin.settings.rules[index].tag = value;
 							await this.plugin.save_settings();
 						});
