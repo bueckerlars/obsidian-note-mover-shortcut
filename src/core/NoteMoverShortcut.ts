@@ -13,20 +13,23 @@ export class NoteMoverShortcut {
 		let targetFolder = defaultFolder;
 
 		try {
-			// Get tags from file
-			const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
-			
-			// Determine the target folder based on tags and rules
-			if (tags) {
-				for (const tag of tags) {
-					const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
-					if (rule) {
-						targetFolder = rule.path;
-						break;
+			// Check if rules are enabled
+			if (this.plugin.settings.enableRules) {
+				// Get tags from file
+				const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
+				
+				// Determine the target folder based on tags and rules
+				if (tags) {
+					for (const tag of tags) {
+						const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
+						if (rule) {
+							targetFolder = rule.path;
+							break;
+						}
 					}
 				}
 			}
-
+			
 			const newPath = path.join(targetFolder, file.name);
 
 			// Move file

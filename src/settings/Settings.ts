@@ -73,8 +73,12 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	}
 
 	add_rules_setting(): void {
+		const descUseRules = document.createDocumentFragment();
+		descUseRules.append('When enabled, the NoteMover will move notes to the folder associated with the tag.');
+
 		new Setting(this.containerEl)
-			.setName('Toggle Rules')
+			.setName('Enalbe Rules')
+			.setDesc(descUseRules)
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.enableRules)
 				.onChange(async (value) => {
