@@ -83,6 +83,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	}
 
 	add_periodic_movement_setting(): void {
+		new Setting(this.containerEl).setName('Periodic Movement').setHeading();
+
 		new Setting(this.containerEl)
 			.setName('Enable Periodic Movement')
 			.setDesc('Enable the periodic movement of notes')
