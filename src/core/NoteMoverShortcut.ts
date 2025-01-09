@@ -89,4 +89,17 @@ export class NoteMoverShortcut {
 			return;
 		}
 	}
+	private intervalId: NodeJS.Timeout | null = null;
+
+	public togglePeriodicMovementInterval(): void {
+		if (this.plugin.settings.enablePeriodicMovement) {
+			const interval = this.plugin.settings.periodicMovementInterval;
+			this.intervalId = setInterval(async () => {
+				this.moveNotesFromInboxToNotesFolder();
+			}, interval * 60 * 1000);
+		} else if (this.intervalId) {
+			clearInterval(this.intervalId);
+			this.intervalId = null;
+		}
+	}
 }

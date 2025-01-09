@@ -87,6 +87,10 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.enablePeriodicMovement = value;
 					await this.plugin.save_settings();
+					// Toggle interval based in the new value
+					this.plugin.noteMover.togglePeriodicMovementInterval();
+					
+					// Force refresh display
 					this.display();
 				})
 			);
