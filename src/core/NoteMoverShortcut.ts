@@ -6,7 +6,12 @@ import { log_error, log_info } from "src/utils/Log";
 export class NoteMoverShortcut {
 	constructor(private plugin: NoteMoverShortcutPlugin) {}
 
-	async setup(): Promise<void> {}
+	async setup(): Promise<void> {
+		// Start periodic movement interval if enabled
+		if (this.plugin.settings.enablePeriodicMovement) {
+			this.togglePeriodicMovementInterval();
+		}
+	}
 
 	private async moveFileBasedOnTags(file: TFile, defaultFolder: string): Promise<void> {
 		const { app } = this.plugin;
@@ -48,7 +53,6 @@ export class NoteMoverShortcut {
 
 			// Move file
 			await app.vault.rename(file, newPath);
-			log_info(`Moved '${file.name}' to '${newPath}'`);
 		} catch (error) {
 			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 			throw error;
