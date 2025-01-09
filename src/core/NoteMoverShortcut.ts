@@ -23,11 +23,16 @@ export class NoteMoverShortcut {
 				// Get tags from file
 				const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
 
+				// skip if no tags and whitelist is enabled
+				const whitelist = this.plugin.settings.isFilteWhitelist;
+				if (whitelist && !tags) {
+					return;
+				}
+
 				// Determine the target folder based on tags and rules
 				if (tags) {
 					for (const tag of tags) {
 						const filter = this.plugin.settings.filter.find(filter => filter === tag);
-						const whitelist = this.plugin.settings.isFilteWhitelist;
 						// If blacklist and tag is in filter, skip
 						if (!whitelist && filter) {
 							return;
@@ -88,7 +93,6 @@ export class NoteMoverShortcut {
 				return;
 			}
 		}
-		log_info("Successfully moved all files from inbox to notes folder.");
 	}
 
 	async moveFocusedNoteToDestination() {
