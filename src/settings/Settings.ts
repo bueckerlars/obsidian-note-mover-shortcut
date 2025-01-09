@@ -15,6 +15,8 @@ export interface NoteMoverShortcutSettings {
 	inboxLocation: string,
 	enablePeriodicMovement: boolean,
 	periodicMovementInterval: number,
+	periodicMovementFilter: string[],
+	periodicMovementFilterWhitelist: boolean,
 	enableRules: boolean,
 	rules: Rule[],
 }
@@ -24,6 +26,8 @@ export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
 	inboxLocation: '',
 	enablePeriodicMovement: false,
 	periodicMovementInterval: 5,
+	periodicMovementFilter: [],
+	periodicMovementFilterWhitelist: false,
 	enableRules: false,
 	rules: [],
 }
@@ -117,7 +121,68 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 						await this.plugin.save_settings();
 					})
 				);
+
+			// Filter settings
+			new Setting(this.containerEl)
+				.setName("Toggle Blacklist/Whitelist")
+				.setDesc("Toggle between a blacklist or a whitelist")
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings.periodicMovementFilterWhitelist)
+					.onChange(async (value) => {
+						this.plugin.settings.periodicMovementFilterWhitelist = value;
+						await this.plugin.save_settings();
+					})
+				);
+			
+			this.add_periodic_movement_filter_array();
+
+			new Setting(this.containerEl)
+				.addButton(btn => btn
+					.setButtonText('Add new Filter')
+					.setCta()
+					.onClick(() => {
+						this.plugin.settings.periodicMovementFilter.push('');
+						this.display();
+					})
+				);
 		}
+	}
+
+	add_periodic_movement_filter_array(): void {
+		this.plugin.settings.periodicMovementFilter.forEach((filter, index) => {
+			const s = new Setting(this.containerEl)
+				.addSearch((cb) => {
+					new TagSuggest(this.app, cb.inputEl);
+					cb.setPlaceholder('Tag')
+						.setValue(filter)
+						.onChange(async (value) => {
+							this.plugin.settings.periodicMovementFilter[index] = value;
+							await this.plugin.save_settings();
+						});
+					// @ts-ignore
+					cb.containerEl.addClass("note_mover_search");
+				})
+				.addExtraButton(btn => btn
+					.setIcon('up-chevron-glyph')
+					.onClick(() => {
+						this.moveFilter(index, -1);
+					})
+				)
+				.addExtraButton(btn => btn
+					.setIcon('down-chevron-glyph')
+					.onClick(() => {
+						this.moveFilter(index, 1);
+					})
+				)
+				.addExtraButton(btn => btn
+					.setIcon('cross')
+					.onClick(() => {
+						this.plugin.settings.periodicMovementFilter.splice(index, 1);
+						this.display();
+					})
+				);
+				s.infoEl.remove();
+		});
 	}
 
 	add_rules_setting(): void {
@@ -221,4 +286,10 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		[this.plugin.settings.rules[index], this.plugin.settings.rules[newIndex]] = [this.plugin.settings.rules[newIndex], this.plugin.settings.rules[index]];
 		this.display();
 	  }
+
+	moveFilter(index: number, direction: number) {
+		const newIndex = Math.max(0, Math.min(this.plugin.settings.periodicMovementFilter.length - 1, index + direction));
+		[this.plugin.settings.periodicMovementFilter[index], this.plugin.settings.periodicMovementFilter[newIndex]] = [this.plugin.settings.periodicMovementFilter[newIndex], this.plugin.settings.periodicMovementFilter[index]];
+		this.display();
+	}
 }
