@@ -17,15 +17,29 @@ export class NoteMoverShortcut {
 			if (this.plugin.settings.enableRules) {
 				// Get tags from file
 				const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
-				
+
 				// Determine the target folder based on tags and rules
 				if (tags) {
 					for (const tag of tags) {
+						const filter = this.plugin.settings.filter.find(filter => filter === tag);
+						const whitelist = this.plugin.settings.isFilteWhitelist;
+						// If blacklist and tag is in filter, skip
+						if (!whitelist && filter) {
+							return;
+						}
+						// If whitelist and tag is not in filter, skip
+						else if(whitelist && !filter) {
+							return;
+						}
+
+						
+						// Apply matching rule
 						const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
 						if (rule) {
 							targetFolder = rule.path;
 							break;
 						}
+
 					}
 				}
 			}
