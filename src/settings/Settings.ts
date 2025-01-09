@@ -13,6 +13,8 @@ interface Rule {
 export interface NoteMoverShortcutSettings {
 	destination: string,
 	inboxLocation: string,
+	enablePeriodicMovement: boolean,
+	periodicMovementInterval: number,
 	enableRules: boolean,
 	rules: Rule[],
 }
@@ -20,6 +22,8 @@ export interface NoteMoverShortcutSettings {
 export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
 	destination: '/',
 	inboxLocation: '',
+	enablePeriodicMovement: false,
+	periodicMovementInterval: 5,
 	enableRules: false,
 	rules: [],
 }
@@ -34,6 +38,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 
 		this.add_inbox_folder_setting();
 		this.add_target_folder_setting();
+
+		this.add_periodic_movement_setting();
 
 		this.add_rules_setting();
 		if (this.plugin.settings.enableRules) {
@@ -70,6 +76,44 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 						this.plugin.save_settings();
 					});
 			});
+	}
+
+	add_periodic_movement_setting(): void {
+		new Setting(this.containerEl)
+			.setName('Enable Periodic Movement')
+			.setDesc('Enable the periodic movement of notes')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enablePeriodicMovement)
+				.onChange(async (value) => {
+					this.plugin.settings.enablePeriodicMovement = value;
+					await this.plugin.save_settings();
+					this.display();
+				})
+			);
+		
+		if (this.plugin.settings.enablePeriodicMovement) {
+			new Setting(this.containerEl)
+				.setName('Periodic Movement Interval')
+				.setDesc('Set the interval for the periodic movement of notes in minutes')
+				.addText(text => text
+					.setPlaceholder('5')
+					.setValue(this.plugin.settings.periodicMovementInterval.toString())
+					.onChange(async (value) => {
+						const interval = parseInt(value);
+						if (isNaN(interval)) {
+							log_error(new NoteMoverError('Interval must be a number'));
+							return;
+						}
+						if (interval < 1) {
+							log_error(new NoteMoverError('Interval must be greater than 0'));
+							return;
+						}
+
+						this.plugin.settings.periodicMovementInterval = interval;
+						await this.plugin.save_settings();
+					})
+				);
+		}
 	}
 
 	add_rules_setting(): void {
