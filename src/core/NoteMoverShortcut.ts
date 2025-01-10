@@ -6,9 +6,14 @@ import { log_error, log_info } from "src/utils/Log";
 export class NoteMoverShortcut {
 	constructor(private plugin: NoteMoverShortcutPlugin) {}
 
-	async setup(): Promise<void> {}
+	async setup(): Promise<void> {
+		// Start periodic movement interval if enabled
+		if (this.plugin.settings.enablePeriodicMovement) {
+			this.togglePeriodicMovementInterval();
+		}
+	}
 
-	private async moveFileBasedOnTags(file: TFile, defaultFolder: string): Promise<void> {
+	private async moveFileBasedOnTags(file: TFile, defaultFolder: string, skipFilter: boolean = false): Promise<void> {
 		const { app } = this.plugin;
 		let targetFolder = defaultFolder;
 
@@ -17,15 +22,30 @@ export class NoteMoverShortcut {
 			if (this.plugin.settings.enableRules) {
 				// Get tags from file
 				const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
+				const whitelist = this.plugin.settings.isFilterWhitelist;
 				
 				// Determine the target folder based on tags and rules
 				if (tags) {
 					for (const tag of tags) {
+						if (!skipFilter) {
+							// check if tag is in filter
+							const filter = this.plugin.settings.filter.find(filter => filter === tag);
+							// if blacklist and tag is in filter, skip
+							if (!whitelist && filter) {
+								return;
+							}
+							// if whitelist and tag is not in filter, skip
+							else if (whitelist && !filter) {
+									return;
+							}
+						}
+						// Apply matching rule
 						const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
 						if (rule) {
 							targetFolder = rule.path;
 							break;
 						}
+
 					}
 				}
 			}
@@ -34,7 +54,6 @@ export class NoteMoverShortcut {
 
 			// Move file
 			await app.vault.rename(file, newPath);
-			log_info(`Moved '${file.name}' to '${newPath}'`);
 		} catch (error) {
 			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 			throw error;
@@ -70,7 +89,6 @@ export class NoteMoverShortcut {
 				return;
 			}
 		}
-		log_info("Successfully moved all files from inbox to notes folder.");
 	}
 
 	async moveFocusedNoteToDestination() {
@@ -83,10 +101,29 @@ export class NoteMoverShortcut {
 		}
 
 		try {
-			await this.moveFileBasedOnTags(file, this.plugin.settings.destination);
+			// Move file to destination without filtering
+			await this.moveFileBasedOnTags(file, this.plugin.settings.destination, true);
 		} catch (error) {
 			log_error(error);
 			return;
+		}
+	}
+
+	private intervalId: NodeJS.Timeout | null = null;
+
+	public togglePeriodicMovementInterval(): void {
+		// Clear interval if it is already running
+		if (this.intervalId) {
+			clearInterval(this.intervalId);
+			this.intervalId = null;
+		}
+
+		// Start new interval if periodic movement is enabled
+		if (this.plugin.settings.enablePeriodicMovement) {
+			const interval = this.plugin.settings.periodicMovementInterval;
+			this.intervalId = setInterval(async () => {
+				await this.moveNotesFromInboxToNotesFolder();
+			}, interval * 60 * 1000);
 		}
 	}
 }

@@ -13,6 +13,11 @@ interface Rule {
 export interface NoteMoverShortcutSettings {
 	destination: string,
 	inboxLocation: string,
+	enablePeriodicMovement: boolean,
+	periodicMovementInterval: number,
+	enableFilter: boolean,
+	filter: string[],
+	isFilterWhitelist: boolean,
 	enableRules: boolean,
 	rules: Rule[],
 }
@@ -20,6 +25,11 @@ export interface NoteMoverShortcutSettings {
 export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
 	destination: '/',
 	inboxLocation: '',
+	enablePeriodicMovement: false,
+	periodicMovementInterval: 5,
+	enableFilter: false,
+	filter: [],
+	isFilterWhitelist: false,
 	enableRules: false,
 	rules: [],
 }
@@ -34,6 +44,10 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 
 		this.add_inbox_folder_setting();
 		this.add_target_folder_setting();
+
+		this.add_periodic_movement_setting();
+
+		this.add_filter_settings();
 
 		this.add_rules_setting();
 		if (this.plugin.settings.enableRules) {
@@ -70,6 +84,130 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 						this.plugin.save_settings();
 					});
 			});
+	}
+
+	add_periodic_movement_setting(): void {
+		new Setting(this.containerEl).setName('Periodic Movement').setHeading();
+
+		new Setting(this.containerEl)
+			.setName('Enable Periodic Movement')
+			.setDesc('Enable the periodic movement of notes')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enablePeriodicMovement)
+				.onChange(async (value) => {
+					this.plugin.settings.enablePeriodicMovement = value;
+					await this.plugin.save_settings();
+					// Toggle interval based in the new value
+					this.plugin.noteMover.togglePeriodicMovementInterval();
+					
+					// Force refresh display
+					this.display();
+				})
+			);
+		
+		if (this.plugin.settings.enablePeriodicMovement) {
+			new Setting(this.containerEl)
+				.setName('Periodic Movement Interval')
+				.setDesc('Set the interval for the periodic movement of notes in minutes')
+				.addText(text => text
+					.setPlaceholder('5')
+					.setValue(this.plugin.settings.periodicMovementInterval.toString())
+					.onChange(async (value) => {
+						const interval = parseInt(value);
+						if (isNaN(interval)) {
+							log_error(new NoteMoverError('Interval must be a number'));
+							return;
+						}
+						if (interval < 1) {
+							log_error(new NoteMoverError('Interval must be greater than 0'));
+							return;
+						}
+
+						this.plugin.settings.periodicMovementInterval = interval;
+						await this.plugin.save_settings();
+					})
+				);
+		}
+	}
+
+	add_filter_settings(): void {
+		// Filter settings
+		new Setting(this.containerEl).setName('Filter').setHeading();
+
+		new Setting(this.containerEl)
+			.setName('Enable Filter')
+			.setDesc('Enable the filter')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableFilter)
+				.onChange(async (value) => {
+					this.plugin.settings.enableFilter = value;
+					await this.plugin.save_settings();
+					this.display();
+				})
+			);
+
+		if (this.plugin.settings.enableFilter) {
+			new Setting(this.containerEl)
+			.setName("Toggle Blacklist/Whitelist")
+			.setDesc("Toggle between a blacklist or a whitelist")
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.isFilterWhitelist)
+				.onChange(async (value) => {
+					this.plugin.settings.isFilterWhitelist = value;
+					await this.plugin.save_settings();
+				})
+			);
+	
+			this.add_periodic_movement_filter_array();
+	
+			new Setting(this.containerEl)
+				.addButton(btn => btn
+					.setButtonText('Add new Filter')
+					.setCta()
+					.onClick(() => {
+						this.plugin.settings.filter.push('');
+						this.display();
+					})
+				);
+		}
+
+	}
+
+	add_periodic_movement_filter_array(): void {
+		this.plugin.settings.filter.forEach((filter, index) => {
+			const s = new Setting(this.containerEl)
+				.addSearch((cb) => {
+					new TagSuggest(this.app, cb.inputEl);
+					cb.setPlaceholder('Tag')
+						.setValue(filter)
+						.onChange(async (value) => {
+							this.plugin.settings.filter[index] = value;
+							await this.plugin.save_settings();
+						});
+					// @ts-ignore
+					cb.containerEl.addClass("note_mover_search");
+				})
+				.addExtraButton(btn => btn
+					.setIcon('up-chevron-glyph')
+					.onClick(() => {
+						this.moveFilter(index, -1);
+					})
+				)
+				.addExtraButton(btn => btn
+					.setIcon('down-chevron-glyph')
+					.onClick(() => {
+						this.moveFilter(index, 1);
+					})
+				)
+				.addExtraButton(btn => btn
+					.setIcon('cross')
+					.onClick(() => {
+						this.plugin.settings.filter.splice(index, 1);
+						this.display();
+					})
+				);
+				s.infoEl.remove();
+		});
 	}
 
 	add_rules_setting(): void {
@@ -173,4 +311,10 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		[this.plugin.settings.rules[index], this.plugin.settings.rules[newIndex]] = [this.plugin.settings.rules[newIndex], this.plugin.settings.rules[index]];
 		this.display();
 	  }
+
+	moveFilter(index: number, direction: number) {
+		const newIndex = Math.max(0, Math.min(this.plugin.settings.filter.length - 1, index + direction));
+		[this.plugin.settings.filter[index], this.plugin.settings.filter[newIndex]] = [this.plugin.settings.filter[newIndex], this.plugin.settings.filter[index]];
+		this.display();
+	}
 }
