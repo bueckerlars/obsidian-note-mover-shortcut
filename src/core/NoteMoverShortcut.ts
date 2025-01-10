@@ -13,7 +13,7 @@ export class NoteMoverShortcut {
 		}
 	}
 
-	private async moveFileBasedOnTags(file: TFile, defaultFolder: string): Promise<void> {
+	private async moveFileBasedOnTags(file: TFile, defaultFolder: string, skipFilter: boolean = false): Promise<void> {
 		const { app } = this.plugin;
 		let targetFolder = defaultFolder;
 
@@ -22,27 +22,23 @@ export class NoteMoverShortcut {
 			if (this.plugin.settings.enableRules) {
 				// Get tags from file
 				const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
-
-				// skip if no tags and whitelist is enabled
 				const whitelist = this.plugin.settings.isFilteWhitelist;
-				if (whitelist && !tags) {
-					return;
-				}
-
+				
 				// Determine the target folder based on tags and rules
 				if (tags) {
 					for (const tag of tags) {
-						const filter = this.plugin.settings.filter.find(filter => filter === tag);
-						// If blacklist and tag is in filter, skip
-						if (!whitelist && filter) {
-							return;
+						if (!skipFilter) {
+							// check if tag is in filter
+							const filter = this.plugin.settings.filter.find(filter => filter === tag);
+							// if blacklist and tag is in filter, skip
+							if (!whitelist && filter) {
+								return;
+							}
+							// if whitelist and tag is not in filter, skip
+							else if (whitelist && !filter) {
+									return;
+							}
 						}
-						// If whitelist and tag is not in filter, skip
-						else if(whitelist && !filter) {
-							return;
-						}
-
-						
 						// Apply matching rule
 						const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
 						if (rule) {
@@ -105,12 +101,14 @@ export class NoteMoverShortcut {
 		}
 
 		try {
-			await this.moveFileBasedOnTags(file, this.plugin.settings.destination);
+			// Move file to destination without filtering
+			await this.moveFileBasedOnTags(file, this.plugin.settings.destination, true);
 		} catch (error) {
 			log_error(error);
 			return;
 		}
 	}
+
 	private intervalId: NodeJS.Timeout | null = null;
 
 	public togglePeriodicMovementInterval(): void {
