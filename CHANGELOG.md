@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.1.5](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.1.4...0.1.5)
+### Features
+- Added periodic movement options to settings 
+- Implemented timer function 
+- Added filter options to settings 
+- Added heading to periodic movement setting 
+- Implemented filter setting
+- Added periodic movement enabled on plugin startup
+
+### Bug Fixes
+- Fixed skip if whitelist and no tags
+- Fixed filter code and added skip option for manuell note movement
+- Fixed typo in settings
+- Fixed interaval reset
+
+## [0.1.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.1.4...0.1.5)
+### Features
+- Added rules section to settings
+- Added TagSuggest
+- Implemented note movement based on rules
+- Updated README with updated description
+- Added custom log classes
+
 ## [0.1.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.1.2...0.1.3) (2025-01-03)
 
 ### Bug Fixes
