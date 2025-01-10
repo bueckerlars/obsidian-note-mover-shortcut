@@ -17,7 +17,7 @@ export interface NoteMoverShortcutSettings {
 	periodicMovementInterval: number,
 	enableFilter: boolean,
 	filter: string[],
-	isFilteWhitelist: boolean,
+	isFilterWhitelist: boolean,
 	enableRules: boolean,
 	rules: Rule[],
 }
@@ -29,7 +29,7 @@ export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
 	periodicMovementInterval: 5,
 	enableFilter: false,
 	filter: [],
-	isFilteWhitelist: false,
+	isFilterWhitelist: false,
 	enableRules: false,
 	rules: [],
 }
@@ -151,9 +151,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 			.setName("Toggle Blacklist/Whitelist")
 			.setDesc("Toggle between a blacklist or a whitelist")
 			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.isFilteWhitelist)
+				.setValue(this.plugin.settings.isFilterWhitelist)
 				.onChange(async (value) => {
-					this.plugin.settings.isFilteWhitelist = value;
+					this.plugin.settings.isFilterWhitelist = value;
 					await this.plugin.save_settings();
 				})
 			);

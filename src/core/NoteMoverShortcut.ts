@@ -22,7 +22,7 @@ export class NoteMoverShortcut {
 			if (this.plugin.settings.enableRules) {
 				// Get tags from file
 				const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
-				const whitelist = this.plugin.settings.isFilteWhitelist;
+				const whitelist = this.plugin.settings.isFilterWhitelist;
 				
 				// Determine the target folder based on tags and rules
 				if (tags) {
