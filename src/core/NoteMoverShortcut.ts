@@ -112,14 +112,18 @@ export class NoteMoverShortcut {
 	private intervalId: NodeJS.Timeout | null = null;
 
 	public togglePeriodicMovementInterval(): void {
+		// Clear interval if it is already running
+		if (this.intervalId) {
+			clearInterval(this.intervalId);
+			this.intervalId = null;
+		}
+
+		// Start new interval if periodic movement is enabled
 		if (this.plugin.settings.enablePeriodicMovement) {
 			const interval = this.plugin.settings.periodicMovementInterval;
 			this.intervalId = setInterval(async () => {
-				this.moveNotesFromInboxToNotesFolder();
+				await this.moveNotesFromInboxToNotesFolder();
 			}, interval * 60 * 1000);
-		} else if (this.intervalId) {
-			clearInterval(this.intervalId);
-			this.intervalId = null;
 		}
 	}
 }
