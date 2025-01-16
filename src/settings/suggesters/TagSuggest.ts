@@ -1,41 +1,37 @@
-import { App, Notice } from "obsidian";
-import { TextInputSuggest } from "./suggest";
+import { App, CachedMetadata, AbstractInputSuggest, getAllTags } from "obsidian";
 
-export class TagSuggest extends TextInputSuggest<string> {
-    constructor(app: App, inputEl: HTMLInputElement | HTMLTextAreaElement) {
+export class TagSuggest extends AbstractInputSuggest<string> {
+    private tags: Set<string>;
+
+    constructor(app: App, private inputEl: HTMLInputElement) {
         super(app, inputEl);
+        this.tags = new Set();
+        this.loadTags();
+    }
+    
+    private loadTags(): void {
+        const files = this.app.vault.getMarkdownFiles();
+
+        files.forEach(file => {
+            const cachedMetadata = this.app.metadataCache.getFileCache(file)!;
+            
+            const fileTags = getAllTags(cachedMetadata) || [];
+            fileTags.forEach(tag => this.tags.add(tag));
+        });
     }
 
     getSuggestions(inputStr: string): string[] {
-        const tags = this.getAllTags();
-        const lowerCaseInputStr = inputStr.toLowerCase();
-
-        return tags.filter(tag => tag.toLowerCase().includes(lowerCaseInputStr));
+        const lowerInput = inputStr.toLowerCase();
+        return Array.from(this.tags).filter(tag => tag.toLowerCase().includes(lowerInput));
     }
 
-    renderSuggestion(tag: string, el: HTMLElement): void {
-        el.setText(tag);
+    renderSuggestion(value: string, el: HTMLElement): void {
+        el.setText(value);
     }
 
-    selectSuggestion(tag: string): void {
-        this.inputEl.value = tag;
+    selectSuggestion(value: string): void {
+        this.inputEl.value = value;
         this.inputEl.trigger("input");
         this.close();
-    }
-
-    private getAllTags(): string[] {
-        const tagsSet = new Set(); // Vermeidung von Duplikaten
-        const files = this.app.vault.getFiles(); // Alle Dateien im Vault abrufen
-
-        files.forEach((file) => {
-            const fileCache = this.app.metadataCache.getFileCache(file); // Metadaten für die Datei abrufen
-            if (fileCache && fileCache.tags) {
-                fileCache.tags.forEach(tagObj => {
-                    tagsSet.add(tagObj.tag); // Tags zum Set hinzufügen
-                });
-            }
-        });
-
-        return Array.from(tagsSet) as string[]; // Set in Array umwandeln und zurückgeben
     }
 }

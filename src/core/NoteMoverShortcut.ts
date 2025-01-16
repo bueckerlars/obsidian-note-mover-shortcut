@@ -1,6 +1,5 @@
 import NoteMoverShortcutPlugin from "main";
-import { TFile } from "obsidian";
-import * as path from "path";
+import { getAllTags, TFile } from "obsidian";
 import { log_error, log_info } from "src/utils/Log";
 
 export class NoteMoverShortcut {
@@ -21,7 +20,7 @@ export class NoteMoverShortcut {
 			// Check if rules are enabled
 			if (this.plugin.settings.enableRules) {
 				// Get tags from file
-				const tags = app.metadataCache.getFileCache(file)?.tags?.map(tag => tag.tag) || [];
+				const tags = getAllTags(app.metadataCache.getFileCache(file)!) || [];
 				const whitelist = this.plugin.settings.isFilterWhitelist;
 				
 				// Determine the target folder based on tags and rules
@@ -50,10 +49,10 @@ export class NoteMoverShortcut {
 				}
 			}
 			
-			const newPath = path.join(targetFolder, file.name);
+			const newPath = targetFolder + "/" + file.name;
 
-			// Move file
-			await app.vault.rename(file, newPath);
+			// Move file to new path
+			await app.fileManager.renameFile(file, newPath);
 		} catch (error) {
 			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 			throw error;
