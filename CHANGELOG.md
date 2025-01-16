@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.1.5...0.1.6)
+### Bug Fixes
+- Removed path import for mobile support
+- Refactored suggestors with AbstractInputSuggest
+- Use getAllTags() method for getting tags to insure tags are used from file and frontmatter
+- Fixed UI texts with sentece case
+- Removed use of innerHTML from log functions
+
 ## [0.1.5](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.1.4...0.1.5)
 ### Features
 - Added periodic movement options to settings 
