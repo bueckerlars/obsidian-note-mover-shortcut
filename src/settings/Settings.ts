@@ -58,7 +58,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 
 	add_inbox_folder_setting(): void {
 		new Setting(this.containerEl)
-			.setName('Inbox Folder')
+			.setName('Inbox folder')
 			.setDesc('Set your inbox folder')
 			.addSearch((cb) => {
 				new FolderSuggest(this.app, cb.inputEl);
@@ -73,7 +73,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 
 	add_target_folder_setting(): void {
 		new Setting(this.containerEl)
-			.setName('Note Folder')
+			.setName('Note folder')
 			.setDesc('Set your main note folder')
 			.addSearch((cb) => {
 				new FolderSuggest(this.app, cb.inputEl);
@@ -90,7 +90,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		new Setting(this.containerEl).setName('Periodic Movement').setHeading();
 
 		new Setting(this.containerEl)
-			.setName('Enable Periodic Movement')
+			.setName('Enable periodic movement')
 			.setDesc('Enable the periodic movement of notes')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.enablePeriodicMovement)
@@ -107,7 +107,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		
 		if (this.plugin.settings.enablePeriodicMovement) {
 			new Setting(this.containerEl)
-				.setName('Periodic Movement Interval')
+				.setName('Periodic movement interval')
 				.setDesc('Set the interval for the periodic movement of notes in minutes')
 				.addText(text => text
 					.setPlaceholder('5')
@@ -135,7 +135,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		new Setting(this.containerEl).setName('Filter').setHeading();
 
 		new Setting(this.containerEl)
-			.setName('Enable Filter')
+			.setName('Enable filter')
 			.setDesc('Enable the filter')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.enableFilter)
@@ -148,7 +148,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 
 		if (this.plugin.settings.enableFilter) {
 			new Setting(this.containerEl)
-			.setName("Toggle Blacklist/Whitelist")
+			.setName("Toggle blacklist/whitelist")
 			.setDesc("Toggle between a blacklist or a whitelist")
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.isFilterWhitelist)
@@ -162,7 +162,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	
 			new Setting(this.containerEl)
 				.addButton(btn => btn
-					.setButtonText('Add new Filter')
+					.setButtonText('Add new filter')
 					.setCta()
 					.onClick(() => {
 						this.plugin.settings.filter.push('');
@@ -221,7 +221,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		);
 
 		new Setting(this.containerEl)
-			.setName('Enalbe Rules')
+			.setName('Enalbe rules')
 			.setDesc(descUseRules)
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.enableRules)
@@ -236,7 +236,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	add_add_rule_button_setting(): void {
 		new Setting(this.containerEl)
 			.addButton(btn => btn
-				.setButtonText('Add new Rule')
+				.setButtonText('Add new rule')
 				.setCta()
 				.onClick(() => {
 					this.plugin.settings.rules.push({ tag: '', path: '' });
