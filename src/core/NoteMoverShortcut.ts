@@ -1,6 +1,5 @@
 import NoteMoverShortcutPlugin from "main";
 import { TFile } from "obsidian";
-import * as path from "path";
 import { log_error, log_info } from "src/utils/Log";
 
 export class NoteMoverShortcut {
@@ -50,10 +49,10 @@ export class NoteMoverShortcut {
 				}
 			}
 			
-			const newPath = path.join(targetFolder, file.name);
+			const newPath = targetFolder + "/" + file.name;
 
-			// Move file
-			await app.vault.rename(file, newPath);
+			// Move file to new path
+			await app.fileManager.renameFile(file, newPath);
 		} catch (error) {
 			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 			throw error;
