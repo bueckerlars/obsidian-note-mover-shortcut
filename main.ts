@@ -1,12 +1,14 @@
 import { Plugin } from 'obsidian';
 import { NoteMoverShortcut } from 'src/core/NoteMoverShortcut';
 import { CommandHandler } from 'src/handlers/CommandHandler';
+import { NoteMoverLog } from 'src/models/NoteMoverLog';
 import { DEFAULT_SETTINGS, NoteMoverShortcutSettings, NoteMoverShortcutSettingsTab } from "src/settings/Settings";
 
 export default class NoteMoverShortcutPlugin extends Plugin {
 	public settings: NoteMoverShortcutSettings;
 	public noteMover: NoteMoverShortcut;
 	public command_handler: CommandHandler;
+	public noteMoverLog: NoteMoverLog;
 
 	async onload() {
 		await this.load_settings();
@@ -19,6 +21,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 			this.noteMover.moveFocusedNoteToDestination();
 		});
 
+		this.noteMoverLog = new NoteMoverLog();
+		
 		this.addSettingTab(new NoteMoverShortcutSettingsTab(this));
 	}
 

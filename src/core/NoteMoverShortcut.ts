@@ -53,6 +53,9 @@ export class NoteMoverShortcut {
 
 			// Move file to new path
 			await app.fileManager.renameFile(file, newPath);
+
+			// Log the move
+			this.plugin.noteMoverLog.addEntry(file.name, file.path, newPath);
 		} catch (error) {
 			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 			throw error;
