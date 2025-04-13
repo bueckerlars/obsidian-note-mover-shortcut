@@ -7,14 +7,10 @@ The "NoteMover Shortcut" plugin streamlines your note organization in Obsidian. 
 - **Batch Move Notes**: Efficiently transfer all notes from a designated "Inbox" folder to appropriate target folders based on tags.
 
 ## Installation
-### Community Plugins:
-1. Access Obsidian's settings.
-2. Navigate to "Community Plugins".
-3. Enable "Safe mode" and install the plugin using "Browse".
-### Manual Installation:
-1. Download the plugin as a ZIP file.
-2. Unzip the ZIP file into your Obsidian vault under .obsidian/plugins/note-mover-shortcut.
-3. Restart Obsidian.
+### BETA (using BRAT)
+1. Install [BRAT](https://github.com/TfTHacker/obsidian42-brat) in your Vault.
+2. Navigate to the BRAT-Plungin settings
+3. Press `Add Beta plugin` and paste the repo link in the Popup.
 
 ## Configuration
 ### Settings:
