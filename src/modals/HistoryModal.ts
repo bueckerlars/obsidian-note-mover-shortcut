@@ -4,8 +4,7 @@ import { HistoryManager } from '../core/HistoryManager';
 export class HistoryModal extends Modal {
     constructor(
         app: App,
-        private historyManager: HistoryManager,
-        private onUndo: (entryId: string) => Promise<void>
+        private historyManager: HistoryManager
     ) {
         super(app);
     }
@@ -26,7 +25,7 @@ export class HistoryModal extends Modal {
         const history = this.historyManager.getHistory();
 
         if (history.length === 0) {
-            contentEl.createEl('p', { text: 'Keine Verlaufseinträge vorhanden.' });
+            contentEl.createEl('p', { text: 'No history entries available.' });
             return;
         }
 
@@ -37,7 +36,7 @@ export class HistoryModal extends Modal {
             
             const contentEl = entryEl.createEl('div', { cls: 'history-entry-content' });
             const date = new Date(entry.timestamp);
-            const formattedDate = date.toLocaleString('de-DE');
+            const formattedDate = date.toLocaleString('en-US');
 
             contentEl.createEl('div', { 
                 cls: 'history-entry-info',
@@ -53,10 +52,12 @@ export class HistoryModal extends Modal {
                 .addButton(button => {
                     button
                         .setIcon('undo')
-                        .setTooltip('Rückgängig')
+                        .setTooltip('Undo')
                         .onClick(async () => {
-                            await this.onUndo(entry.id);
-                            this.onOpen(); // Aktualisiere die Ansicht
+                            const success = await this.historyManager.undoLastMove(entry.fileName);
+                            if (success) {
+                                this.onOpen(); // Aktualisiere die Ansicht
+                            }
                         });
                 });
         });

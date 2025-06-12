@@ -63,4 +63,43 @@ export class HistoryManager {
             return false;
         }
     }
+
+    public getLastEntryForFile(fileName: string): HistoryEntry | undefined {
+        return this.history.find(entry => entry.fileName === fileName);
+    }
+
+    public async undoLastMove(fileName: string): Promise<boolean> {
+        const entry = this.getLastEntryForFile(fileName);
+        if (!entry) {
+            console.log(`No history entry found for file: ${fileName}`);
+            return false;
+        }
+
+        const file = this.plugin.app.vault.getAbstractFileByPath(entry.destinationPath);
+        if (!file) {
+            console.log(`File not found at path: ${entry.destinationPath}`);
+            return false;
+        }
+
+        try {
+            console.log(`Attempting to move file from ${entry.destinationPath} to ${entry.sourcePath}`);
+            await this.plugin.app.fileManager.renameFile(
+                file,
+                entry.sourcePath
+            );
+            
+            // Remove the entry from history
+            const entryIndex = this.history.findIndex(e => e.id === entry.id);
+            if (entryIndex !== -1) {
+                this.history.splice(entryIndex, 1);
+                await this.saveHistory();
+            }
+            
+            console.log('Move successful');
+            return true;
+        } catch (error) {
+            console.error('Error during undo:', error);
+            return false;
+        }
+    }
 } 

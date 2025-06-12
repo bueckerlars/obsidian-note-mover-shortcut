@@ -25,11 +25,9 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'show-history',
-			name: 'Verlauf anzeigen',
+			name: 'Show history',
 			callback: () => {
-				new HistoryModal(this.app, this.historyManager, async (entryId) => {
-					await this.historyManager.undoEntry(entryId);
-				}).open();
+				new HistoryModal(this.app, this.historyManager).open();
 			}
 		});
 
@@ -44,10 +42,11 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     }
 
     async load_settings(): Promise<void> {
+        const savedData = await this.loadData();
         this.settings = Object.assign(
             {},
             DEFAULT_SETTINGS,
-            await this.loadData()
+            savedData || {}
         );
     }
 }

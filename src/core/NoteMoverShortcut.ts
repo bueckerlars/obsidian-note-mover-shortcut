@@ -1,6 +1,7 @@
 import NoteMoverShortcutPlugin from "main";
 import { getAllTags, TFile } from "obsidian";
 import { log_error, log_info } from "src/utils/Log";
+import { Notice } from "obsidian";
 
 export class NoteMoverShortcut {
 	constructor(private plugin: NoteMoverShortcutPlugin) {}
@@ -110,6 +111,44 @@ export class NoteMoverShortcut {
 		try {
 			// Move file to destination without filtering
 			await this.moveFileBasedOnTags(file, this.plugin.settings.destination, true);
+			
+			// Create notice with undo button
+			const notice = new Notice("", 8000);
+			const noticeEl = notice.noticeEl;
+			
+			// Add title
+			const title = document.createElement("b");
+			title.textContent = "NoteMover:";
+			noticeEl.appendChild(title);
+			noticeEl.appendChild(document.createElement("br"));
+			
+			// Add message
+			const message = document.createElement("span");
+			message.textContent = `Note "${file.name}" has been moved`;
+			noticeEl.appendChild(message);
+			
+			// Add undo button
+			const undoButton = document.createElement("button");
+			undoButton.textContent = "Undo";
+			undoButton.className = "mod-warning";
+			undoButton.style.marginLeft = "10px";
+			undoButton.onclick = async () => {
+				try {
+					console.log(`Attempting to undo move for file: ${file.name}`);
+					const success = await this.plugin.historyManager.undoLastMove(file.name);
+					if (success) {
+						notice.hide();
+						new Notice(`Note "${file.name}" has been moved back`, 3000);
+					} else {
+						new Notice(`Could not undo move for "${file.name}"`, 3000);
+					}
+				} catch (error) {
+					console.error('Error in undo button click handler:', error);
+					log_error(new Error(`Error undoing move: ${error.message}`));
+				}
+			};
+			noticeEl.appendChild(undoButton);
+			
 		} catch (error) {
 			log_error(error);
 			return;
