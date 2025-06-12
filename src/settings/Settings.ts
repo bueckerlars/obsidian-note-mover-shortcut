@@ -166,8 +166,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.addButton(btn => btn
 					.setButtonText('Add new filter')
 					.setCta()
-					.onClick(() => {
+					.onClick(async () => {
 						this.plugin.settings.filter.push('');
+						await this.plugin.save_settings();
 						this.display();
 					})
 				);
@@ -203,8 +204,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				)
 				.addExtraButton(btn => btn
 					.setIcon('cross')
-					.onClick(() => {
+					.onClick(async () => {
 						this.plugin.settings.filter.splice(index, 1);
+						await this.plugin.save_settings();
 						this.display();
 					})
 				);
@@ -240,8 +242,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 			.addButton(btn => btn
 				.setButtonText('Add new rule')
 				.setCta()
-				.onClick(() => {
+				.onClick(async () => {
 					this.plugin.settings.rules.push({ tag: '', path: '' });
+					await this.plugin.save_settings();
 					this.display();
 				})
 			);
@@ -299,8 +302,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				)
 				.addExtraButton(btn => btn
 					.setIcon('cross')
-					.onClick(() => {
+					.onClick(async () => {
 						this.plugin.settings.rules.splice(index, 1);
+						await this.plugin.save_settings();
 						this.display();
 					})
 				);
@@ -311,12 +315,14 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	moveRule(index: number, direction: number) {
 		const newIndex = Math.max(0, Math.min(this.plugin.settings.rules.length - 1, index + direction));
 		[this.plugin.settings.rules[index], this.plugin.settings.rules[newIndex]] = [this.plugin.settings.rules[newIndex], this.plugin.settings.rules[index]];
+		this.plugin.save_settings();
 		this.display();
-	  }
+	}
 
 	moveFilter(index: number, direction: number) {
 		const newIndex = Math.max(0, Math.min(this.plugin.settings.filter.length - 1, index + direction));
 		[this.plugin.settings.filter[index], this.plugin.settings.filter[newIndex]] = [this.plugin.settings.filter[newIndex], this.plugin.settings.filter[index]];
+		this.plugin.save_settings();
 		this.display();
 	}
 
