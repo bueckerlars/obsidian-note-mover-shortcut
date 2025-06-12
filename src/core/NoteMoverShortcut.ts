@@ -2,6 +2,7 @@ import NoteMoverShortcutPlugin from "main";
 import { getAllTags, TFile } from "obsidian";
 import { log_error, log_info } from "src/utils/Log";
 import { Notice } from "obsidian";
+import { combinePath } from "src/utils/PathUtils";
 
 export class NoteMoverShortcut {
 	constructor(private plugin: NoteMoverShortcutPlugin) {}
@@ -46,12 +47,11 @@ export class NoteMoverShortcut {
 							targetFolder = rule.path;
 							break;
 						}
-
 					}
 				}
 			}
 			
-			const newPath = targetFolder + "/" + file.name;
+			const newPath = combinePath(targetFolder, file.name);
 
 			// Move file to new path
 			await app.fileManager.renameFile(file, newPath);
