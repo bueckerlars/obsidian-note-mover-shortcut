@@ -15,6 +15,7 @@ export class NoteMoverShortcut {
 	private async moveFileBasedOnTags(file: TFile, defaultFolder: string, skipFilter: boolean = false): Promise<void> {
 		const { app } = this.plugin;
 		let targetFolder = defaultFolder;
+		const originalPath = file.path;
 
 		try {
 			// Check if rules are enabled
@@ -53,6 +54,13 @@ export class NoteMoverShortcut {
 
 			// Move file to new path
 			await app.fileManager.renameFile(file, newPath);
+
+			// Add entry to history
+			this.plugin.historyManager.addEntry({
+				sourcePath: originalPath,
+				destinationPath: newPath,
+				fileName: file.name
+			});
 		} catch (error) {
 			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 			throw error;
