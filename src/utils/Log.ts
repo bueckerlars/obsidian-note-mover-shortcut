@@ -25,22 +25,14 @@ export function log_info(msg: string): void {
     noticeEl.appendChild(message);
 }
 
-export function log_error(e: Error | NoteMoverError): void {
-    const notice = new Notice("", 8000);
+export function log_error(error: Error): void {
+    const notice = new Notice("", 15000);
     const noticeEl = notice.noticeEl;
     const title = document.createElement("b");
-    title.textContent = "NoteMover Error:";
+    title.textContent = "NoteMover error:";
     noticeEl.appendChild(title);
     noticeEl.appendChild(document.createElement("br"));
     const message = document.createElement("span");
-    message.textContent = e.message;
+    message.textContent = error.message;
     noticeEl.appendChild(message);
-
-    if (e instanceof NoteMoverError && e.console_msg) {
-        noticeEl.appendChild(document.createElement("br"));
-        const consoleInfo = document.createElement("span");
-        consoleInfo.textContent = "Check console for more information";
-        noticeEl.appendChild(consoleInfo);
-        console.error(`NoteMover Error:`, e.message, "\n", e.console_msg);
-    }
 }

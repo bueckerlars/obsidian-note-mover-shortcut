@@ -87,7 +87,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	}
 
 	add_periodic_movement_setting(): void {
-		new Setting(this.containerEl).setName('Periodic Movement').setHeading();
+		new Setting(this.containerEl).setName('Periodic movement').setHeading();
 
 		new Setting(this.containerEl)
 			.setName('Enable periodic movement')
@@ -148,8 +148,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 
 		if (this.plugin.settings.enableFilter) {
 			new Setting(this.containerEl)
-			.setName("Toggle blacklist/whitelist")
-			.setDesc("Toggle between a blacklist or a whitelist")
+			.setName('Toggle blacklist/whitelist')
+			.setDesc('Toggle between a blacklist or a whitelist')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.isFilterWhitelist)
 				.onChange(async (value) => {
@@ -221,7 +221,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		);
 
 		new Setting(this.containerEl)
-			.setName('Enalbe rules')
+			.setName('Enable rules')
 			.setDesc(descUseRules)
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.enableRules)
