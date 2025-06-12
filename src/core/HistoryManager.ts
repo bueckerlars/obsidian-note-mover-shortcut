@@ -102,4 +102,9 @@ export class HistoryManager {
             return false;
         }
     }
+
+    public async clearHistory(): Promise<void> {
+        this.history = [];
+        await this.saveHistory();
+    }
 } 

@@ -54,6 +54,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 			this.add_rules_array();
 			this.add_add_rule_button_setting();
 		}
+
+		this.add_history_settings();
 	}
 
 	add_inbox_folder_setting(): void {
@@ -316,5 +318,22 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		const newIndex = Math.max(0, Math.min(this.plugin.settings.filter.length - 1, index + direction));
 		[this.plugin.settings.filter[index], this.plugin.settings.filter[newIndex]] = [this.plugin.settings.filter[newIndex], this.plugin.settings.filter[index]];
 		this.display();
+	}
+
+	add_history_settings(): void {
+		new Setting(this.containerEl).setName('Verlauf').setHeading();
+
+		new Setting(this.containerEl)
+			.setName('Verlauf löschen')
+			.setDesc('Löscht den gesamten Verlauf der verschobenen Notizen')
+			.addButton(btn => btn
+				.setButtonText('Verlauf löschen')
+				.setWarning()
+				.onClick(async () => {
+					if (confirm('Möchten Sie wirklich den gesamten Verlauf löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+						await this.plugin.historyManager.clearHistory();
+					}
+				})
+			);
 	}
 }
