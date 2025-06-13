@@ -1,8 +1,8 @@
 import NoteMoverShortcutPlugin from "main";
 import { getAllTags, TFile } from "obsidian";
-import { log_error, log_info } from "src/utils/Log";
+import { log_error, log_info } from "../utils/Log";
 import { Notice } from "obsidian";
-import { combinePath } from "src/utils/PathUtils";
+import { combinePath } from "../utils/PathUtils";
 
 export class NoteMoverShortcut {
 	constructor(private plugin: NoteMoverShortcutPlugin) {}
