@@ -6,12 +6,6 @@ The "NoteMover Shortcut" plugin streamlines your note organization in Obsidian. 
 - **Move Single Notes**: Swiftly relocate the currently open note to a specified destination folder.
 - **Batch Move Notes**: Efficiently transfer all notes from a designated "Inbox" folder to appropriate target folders based on tags.
 
-## Installation
-### BETA (using BRAT)
-1. Install [BRAT](https://github.com/TfTHacker/obsidian42-brat) in your Vault.
-2. Navigate to the BRAT-Plungin settings
-3. Press `Add Beta plugin` and paste the repo link in the Popup.
-
 ## Configuration
 ### Settings:
 
