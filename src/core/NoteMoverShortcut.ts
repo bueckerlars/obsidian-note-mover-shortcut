@@ -3,6 +3,8 @@ import { getAllTags, TFile } from "obsidian";
 import { log_error, log_info } from "../utils/Log";
 import { Notice } from "obsidian";
 import { combinePath } from "../utils/PathUtils";
+import { Plugin } from 'obsidian';
+import { Rule, TagRule } from 'src/settings/Settings';
 
 export class NoteMoverShortcut {
 	constructor(private plugin: NoteMoverShortcutPlugin) {}
@@ -28,25 +30,9 @@ export class NoteMoverShortcut {
 				
 				// Determine the target folder based on tags and rules
 				if (tags) {
-					for (const tag of tags) {
-						if (!skipFilter) {
-							// check if tag is in filter
-							const filter = this.plugin.settings.filter.find(filter => filter === tag);
-							// if blacklist and tag is in filter, skip
-							if (!whitelist && filter) {
-								return;
-							}
-							// if whitelist and tag is not in filter, skip
-							else if (whitelist && !filter) {
-									return;
-							}
-						}
-						// Apply matching rule
-						const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
-						if (rule) {
-							targetFolder = rule.path;
-							break;
-						}
+					const matchingRule = await this.evaluateRules(this.plugin.settings.rules, tags, file);
+					if (matchingRule) {
+						targetFolder = matchingRule.path;
 					}
 				}
 			}
@@ -66,6 +52,74 @@ export class NoteMoverShortcut {
 			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 			throw error;
 		}
+	}
+
+	private async evaluateRules(rules: Rule[], tags: string[], file: TFile): Promise<TagRule | null> {
+		for (const rule of rules) {
+			if (rule.type === 'rule') {
+				if (tags.includes(rule.tag)) {
+					// Check conditions
+					if (!rule.condition || await this.evaluateConditions(rule, file)) {
+						return rule;
+					}
+				}
+			} else {
+				// Evaluate group rules
+				const childResults = await Promise.all(
+					rule.rules.map((childRule: Rule) => this.evaluateRules([childRule], tags, file))
+				);
+				
+				const matchingRules = childResults.filter((result): result is TagRule => result !== null);
+				
+				if (rule.type === 'and' && matchingRules.length === rule.rules.length) {
+					// For AND groups, return the first matching rule
+					return matchingRules[0];
+				} else if (rule.type === 'or' && matchingRules.length > 0) {
+					// For OR groups, return the first matching rule
+					return matchingRules[0];
+				}
+			}
+		}
+		return null;
+	}
+
+	private async evaluateConditions(rule: TagRule, file: TFile): Promise<boolean> {
+		if (!rule.condition) return true;
+
+		let conditionsMet = true;
+
+		// Check date condition
+		if (rule.condition.dateCondition) {
+			const fileDate = rule.condition.dateCondition.type === 'created'
+				? file.stat.ctime
+				: file.stat.mtime;
+			
+			const now = Date.now();
+			const daysDifference = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
+			
+			switch (rule.condition.dateCondition.operator) {
+				case 'olderThan':
+					if (daysDifference < rule.condition.dateCondition.days) conditionsMet = false;
+					break;
+				case 'newerThan':
+					if (daysDifference > rule.condition.dateCondition.days) conditionsMet = false;
+					break;
+			}
+		}
+
+		// Check content condition
+		if (rule.condition.contentCondition && conditionsMet) {
+			const fileContent = await this.plugin.app.vault.read(file);
+			const containsText = fileContent.includes(rule.condition.contentCondition.text);
+			
+			if (rule.condition.contentCondition.operator === 'contains' && !containsText) {
+				conditionsMet = false;
+			} else if (rule.condition.contentCondition.operator === 'notContains' && containsText) {
+				conditionsMet = false;
+			}
+		}
+
+		return conditionsMet;
 	}
 
 	async moveNotesFromInboxToNotesFolder() {

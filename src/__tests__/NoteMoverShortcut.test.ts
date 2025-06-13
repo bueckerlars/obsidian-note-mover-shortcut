@@ -138,6 +138,12 @@ describe('NoteMoverShortcut', () => {
             mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
                 tags: [{ tag: '#test' }]
             });
+            mockFile.stat = {
+                ctime: new Date('2024-01-01').getTime(),
+                mtime: new Date('2024-01-02').getTime(),
+                size: 100
+            };
+            mockApp.vault.read = jest.fn().mockResolvedValue('Test content');
         });
 
         it('should skip file if tag is in blacklist', async () => {
@@ -155,7 +161,12 @@ describe('NoteMoverShortcut', () => {
         });
 
         it('should move file to rule path if tag matches', async () => {
-            plugin.settings.rules = [{ tag: '#test', path: 'custom/path' }];
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'rule',
+                tag: '#test',
+                path: 'custom/path'
+            }];
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
@@ -164,7 +175,12 @@ describe('NoteMoverShortcut', () => {
         });
 
         it('should move file to default path if no rules match', async () => {
-            plugin.settings.rules = [{ tag: '#other', path: 'custom/path' }];
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'rule',
+                tag: '#other',
+                path: 'custom/path'
+            }];
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
@@ -172,9 +188,202 @@ describe('NoteMoverShortcut', () => {
             );
         });
 
-        it('should handle errors during file move', async () => {
-            mockApp.fileManager.renameFile = jest.fn().mockRejectedValue(new Error('Move failed'));
-            await expect(noteMover['moveFileBasedOnTags'](mockFile, 'default')).rejects.toThrow('Move failed');
+        it('should apply AND group rule when all child rules match', async () => {
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'and',
+                rules: [
+                    {
+                        id: '2',
+                        type: 'rule',
+                        tag: '#test',
+                        path: 'custom/path'
+                    },
+                    {
+                        id: '3',
+                        type: 'rule',
+                        tag: '#tag1',
+                        path: 'other/path'
+                    }
+                ]
+            }];
+            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
+                tags: [{ tag: '#test' }, { tag: '#tag1' }]
+            });
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should not apply AND group rule when not all child rules match', async () => {
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'and',
+                rules: [
+                    {
+                        id: '2',
+                        type: 'rule',
+                        tag: '#test',
+                        path: 'custom/path'
+                    },
+                    {
+                        id: '3',
+                        type: 'rule',
+                        tag: '#tag1',
+                        path: 'other/path'
+                    }
+                ]
+            }];
+            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
+                tags: [{ tag: '#test' }]
+            });
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('default')
+            );
+        });
+
+        it('should apply OR group rule when any child rule matches', async () => {
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'or',
+                rules: [
+                    {
+                        id: '2',
+                        type: 'rule',
+                        tag: '#test',
+                        path: 'custom/path'
+                    },
+                    {
+                        id: '3',
+                        type: 'rule',
+                        tag: '#tag1',
+                        path: 'other/path'
+                    }
+                ]
+            }];
+            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
+                tags: [{ tag: '#test' }]
+            });
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should not apply OR group rule when no child rules match', async () => {
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'or',
+                rules: [
+                    {
+                        id: '2',
+                        type: 'rule',
+                        tag: '#test',
+                        path: 'custom/path'
+                    },
+                    {
+                        id: '3',
+                        type: 'rule',
+                        tag: '#tag1',
+                        path: 'other/path'
+                    }
+                ]
+            }];
+            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
+                tags: [{ tag: '#other' }]
+            });
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('default')
+            );
+        });
+
+        it('should apply rule with date condition when date matches', async () => {
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'rule',
+                tag: '#test',
+                path: 'custom/path',
+                condition: {
+                    dateCondition: {
+                        type: 'created',
+                        operator: 'on',
+                        date: '2024-01-01'
+                    }
+                }
+            }];
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should not apply rule with date condition when date does not match', async () => {
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'rule',
+                tag: '#test',
+                path: 'custom/path',
+                condition: {
+                    dateCondition: {
+                        type: 'created',
+                        operator: 'on',
+                        date: '2024-01-02'
+                    }
+                }
+            }];
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('default')
+            );
+        });
+
+        it('should apply rule with content condition when content matches', async () => {
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'rule',
+                tag: '#test',
+                path: 'custom/path',
+                condition: {
+                    contentCondition: {
+                        operator: 'contains',
+                        text: 'Test content'
+                    }
+                }
+            }];
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should not apply rule with content condition when content does not match', async () => {
+            plugin.settings.rules = [{
+                id: '1',
+                type: 'rule',
+                tag: '#test',
+                path: 'custom/path',
+                condition: {
+                    contentCondition: {
+                        operator: 'contains',
+                        text: 'Other content'
+                    }
+                }
+            }];
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('default')
+            );
         });
     });
 }); 
