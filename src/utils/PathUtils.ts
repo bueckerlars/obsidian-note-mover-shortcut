@@ -3,6 +3,9 @@
  * and ensuring the path starts with a slash
  */
 export function formatPath(path: string): string {
+    // Remove double slashes first
+    path = path.replace(/\/+/g, '/');
+
     // Remove trailing slash if it's not the root path
     if (path !== '/' && path.endsWith('/')) {
         path = path.slice(0, -1);
@@ -13,8 +16,7 @@ export function formatPath(path: string): string {
         path = '/' + path;
     }
 
-    // Remove double slashes
-    return path.replace(/\/+/g, '/');
+    return path;
 }
 
 /**
