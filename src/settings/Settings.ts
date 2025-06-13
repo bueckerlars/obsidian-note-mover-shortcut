@@ -54,6 +54,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 			this.add_rules_array();
 			this.add_add_rule_button_setting();
 		}
+
+		this.add_history_settings();
 	}
 
 	add_inbox_folder_setting(): void {
@@ -164,8 +166,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.addButton(btn => btn
 					.setButtonText('Add new filter')
 					.setCta()
-					.onClick(() => {
+					.onClick(async () => {
 						this.plugin.settings.filter.push('');
+						await this.plugin.save_settings();
 						this.display();
 					})
 				);
@@ -201,8 +204,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				)
 				.addExtraButton(btn => btn
 					.setIcon('cross')
-					.onClick(() => {
+					.onClick(async () => {
 						this.plugin.settings.filter.splice(index, 1);
+						await this.plugin.save_settings();
 						this.display();
 					})
 				);
@@ -238,8 +242,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 			.addButton(btn => btn
 				.setButtonText('Add new rule')
 				.setCta()
-				.onClick(() => {
+				.onClick(async () => {
 					this.plugin.settings.rules.push({ tag: '', path: '' });
+					await this.plugin.save_settings();
 					this.display();
 				})
 			);
@@ -297,8 +302,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				)
 				.addExtraButton(btn => btn
 					.setIcon('cross')
-					.onClick(() => {
+					.onClick(async () => {
 						this.plugin.settings.rules.splice(index, 1);
+						await this.plugin.save_settings();
 						this.display();
 					})
 				);
@@ -309,12 +315,31 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	moveRule(index: number, direction: number) {
 		const newIndex = Math.max(0, Math.min(this.plugin.settings.rules.length - 1, index + direction));
 		[this.plugin.settings.rules[index], this.plugin.settings.rules[newIndex]] = [this.plugin.settings.rules[newIndex], this.plugin.settings.rules[index]];
+		this.plugin.save_settings();
 		this.display();
-	  }
+	}
 
 	moveFilter(index: number, direction: number) {
 		const newIndex = Math.max(0, Math.min(this.plugin.settings.filter.length - 1, index + direction));
 		[this.plugin.settings.filter[index], this.plugin.settings.filter[newIndex]] = [this.plugin.settings.filter[newIndex], this.plugin.settings.filter[index]];
+		this.plugin.save_settings();
 		this.display();
+	}
+
+	add_history_settings(): void {
+		new Setting(this.containerEl).setName('History').setHeading();
+
+		new Setting(this.containerEl)
+			.setName('Clear history')
+			.setDesc('Clears the history of moved notes')
+			.addButton(btn => btn
+				.setButtonText('Clear history')
+				.setWarning()
+				.onClick(async () => {
+					if (confirm('Are you sure you want to clear the history? This action cannot be undone.')) {
+						await this.plugin.historyManager.clearHistory();
+					}
+				})
+			);
 	}
 }
