@@ -1,6 +1,6 @@
 import NoteMoverShortcutPlugin from "main";
 import { Editor, MarkdownView } from "obsidian";
-import { HistoryModal } from "src/modals/HistoryModal";
+import { HistoryModal } from "../modals/HistoryModal";
 
 
 export class CommandHandler {
