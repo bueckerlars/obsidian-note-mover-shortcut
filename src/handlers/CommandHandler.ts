@@ -1,5 +1,6 @@
 import NoteMoverShortcutPlugin from "main";
 import { Editor, MarkdownView } from "obsidian";
+import { HistoryModal } from "src/modals/HistoryModal";
 
 
 export class CommandHandler {
@@ -23,6 +24,15 @@ export class CommandHandler {
             callback: () => {
                 this.plugin.noteMover.moveNotesFromInboxToNotesFolder();
             },
+        });
+
+        // History command
+        this.plugin.addCommand({
+            id: 'show-history',
+            name: 'Show history',
+            callback: () => {
+                new HistoryModal(this.plugin.app, this.plugin.historyManager).open();
+            }
         });
     }
 }

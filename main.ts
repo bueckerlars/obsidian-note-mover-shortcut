@@ -3,7 +3,6 @@ import { NoteMoverShortcut } from 'src/core/NoteMoverShortcut';
 import { CommandHandler } from 'src/handlers/CommandHandler';
 import { DEFAULT_SETTINGS, NoteMoverShortcutSettings, NoteMoverShortcutSettingsTab } from "src/settings/Settings";
 import { HistoryManager } from 'src/core/HistoryManager';
-import { HistoryModal } from 'src/modals/HistoryModal';
 
 export default class NoteMoverShortcutPlugin extends Plugin {
 	public settings: NoteMoverShortcutSettings;
@@ -21,14 +20,6 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 
 		const ribbonIconEl = this.addRibbonIcon('book-plus', 'NoteMover', (evt: MouseEvent) => {
 			this.noteMover.moveFocusedNoteToDestination();
-		});
-
-		this.addCommand({
-			id: 'show-history',
-			name: 'Show history',
-			callback: () => {
-				new HistoryModal(this.app, this.historyManager).open();
-			}
 		});
 
 		this.addSettingTab(new NoteMoverShortcutSettingsTab(this));

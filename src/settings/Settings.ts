@@ -327,16 +327,16 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	}
 
 	add_history_settings(): void {
-		new Setting(this.containerEl).setName('Verlauf').setHeading();
+		new Setting(this.containerEl).setName('History').setHeading();
 
 		new Setting(this.containerEl)
-			.setName('Verlauf löschen')
-			.setDesc('Löscht den gesamten Verlauf der verschobenen Notizen')
+			.setName('Clear history')
+			.setDesc('Clears the history of moved notes')
 			.addButton(btn => btn
-				.setButtonText('Verlauf löschen')
+				.setButtonText('Clear history')
 				.setWarning()
 				.onClick(async () => {
-					if (confirm('Möchten Sie wirklich den gesamten Verlauf löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+					if (confirm('Are you sure you want to clear the history? This action cannot be undone.')) {
 						await this.plugin.historyManager.clearHistory();
 					}
 				})
