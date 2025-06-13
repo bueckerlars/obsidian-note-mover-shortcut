@@ -33,7 +33,7 @@ describe('CommandHandler', () => {
         handler = new CommandHandler(pluginMock);
     });
 
-    it('registriert alle Kommandos korrekt', () => {
+    it('registers all commands correctly', () => {
         handler.setup();
         expect(addCommand).toHaveBeenCalledTimes(3);
         const calls = addCommand.mock.calls;
@@ -42,7 +42,7 @@ describe('CommandHandler', () => {
         expect(calls[2][0].id).toBe('show-history');
     });
 
-    it('ruft moveFocusedNoteToDestination beim Editor-Callback auf', () => {
+    it('calls moveFocusedNoteToDestination in editor callback', () => {
         handler.setup();
         // Editor-Callback aus dem ersten Kommando extrahieren und ausführen
         const editorCallback = addCommand.mock.calls[0][0].editorCallback;
@@ -50,14 +50,14 @@ describe('CommandHandler', () => {
         expect(moveFocusedNoteToDestination).toHaveBeenCalled();
     });
 
-    it('ruft moveNotesFromInboxToNotesFolder beim Bulk-Callback auf', () => {
+    it('calls moveNotesFromInboxToNotesFolder in bulk callback', () => {
         handler.setup();
         const callback = addCommand.mock.calls[1][0].callback;
         callback();
         expect(moveNotesFromInboxToNotesFolder).toHaveBeenCalled();
     });
 
-    it('öffnet das HistoryModal beim History-Callback', () => {
+    it('opens HistoryModal in history callback', () => {
         handler.setup();
         const callback = addCommand.mock.calls[2][0].callback;
         callback();

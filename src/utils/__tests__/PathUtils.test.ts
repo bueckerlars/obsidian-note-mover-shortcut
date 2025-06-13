@@ -2,34 +2,34 @@ import { formatPath, combinePath } from '../PathUtils';
 
 describe('PathUtils', () => {
     describe('formatPath', () => {
-        it('sollte doppelte Slashes entfernen', () => {
+        it('should remove double slashes', () => {
             expect(formatPath('//test///path//')).toBe('/test/path');
         });
 
-        it('sollte einen Slash am Anfang hinzufügen, wenn keiner vorhanden ist', () => {
+        it('should add a slash at the beginning if none exists', () => {
             expect(formatPath('test/path')).toBe('/test/path');
         });
 
-        it('sollte einen Slash am Ende entfernen', () => {
+        it('should remove trailing slash', () => {
             expect(formatPath('/test/path/')).toBe('/test/path');
         });
 
-        it('sollte den Root-Pfad korrekt behandeln', () => {
+        it('should handle root path correctly', () => {
             expect(formatPath('/')).toBe('/');
             expect(formatPath('')).toBe('/');
         });
     });
 
     describe('combinePath', () => {
-        it('sollte Ordnerpfad und Dateinamen korrekt kombinieren', () => {
+        it('should correctly combine folder path and filename', () => {
             expect(combinePath('/test/folder', 'file.md')).toBe('/test/folder/file.md');
         });
 
-        it('sollte mit dem Root-Pfad korrekt umgehen', () => {
+        it('should handle root path correctly', () => {
             expect(combinePath('/', 'file.md')).toBe('file.md');
         });
 
-        it('sollte doppelte Slashes vermeiden', () => {
+        it('should avoid double slashes', () => {
             expect(combinePath('/test//folder/', 'file.md')).toBe('/test/folder/file.md');
         });
     });

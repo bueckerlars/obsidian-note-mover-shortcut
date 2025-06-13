@@ -12,25 +12,25 @@ describe('Error', () => {
     });
 
     describe('NoteMoverError', () => {
-        it('sollte eine NoteMoverError mit Nachricht erstellen', () => {
+        it('should create a NoteMoverError with message', () => {
             const error = new NoteMoverError('Test Error');
             expect(error.message).toBe('Test Error');
             expect(error.name).toBe('NoteMoverError');
         });
 
-        it('sollte eine NoteMoverError mit Nachricht und Console-Message erstellen', () => {
+        it('should create a NoteMoverError with message and console message', () => {
             const error = new NoteMoverError('Test Error', 'Console Message');
             expect(error.message).toBe('Test Error');
             expect(error.console_msg).toBe('Console Message');
         });
 
-        it('sollte eine NoteMoverError mit leerer Nachricht erstellen', () => {
+        it('should create a NoteMoverError with empty message', () => {
             const error = new NoteMoverError('');
             expect(error.message).toBe('');
             expect(error.name).toBe('NoteMoverError');
         });
 
-        it('sollte eine NoteMoverError mit undefined Console-Message erstellen', () => {
+        it('should create a NoteMoverError with undefined console message', () => {
             const error = new NoteMoverError('Test Error', undefined);
             expect(error.message).toBe('Test Error');
             expect(error.console_msg).toBeUndefined();
@@ -38,7 +38,7 @@ describe('Error', () => {
     });
 
     describe('errorWrapper', () => {
-        it('sollte erfolgreiche Funktionen ausführen', async () => {
+        it('should execute successful functions', async () => {
             const fn = jest.fn().mockResolvedValue('success');
             const result = await errorWrapper(fn, 'Error Message');
             expect(result).toBe('success');
@@ -46,7 +46,7 @@ describe('Error', () => {
             expect(log_error).not.toHaveBeenCalled();
         });
 
-        it('sollte NoteMoverError korrekt behandeln', async () => {
+        it('should handle NoteMoverError correctly', async () => {
             const error = new NoteMoverError('Test Error');
             const fn = jest.fn().mockRejectedValue(error);
             const result = await errorWrapper(fn, 'Error Message');
@@ -54,7 +54,7 @@ describe('Error', () => {
             expect(log_error).toHaveBeenCalledWith(error);
         });
 
-        it('sollte andere Fehler in NoteMoverError umwandeln', async () => {
+        it('should convert other errors to NoteMoverError', async () => {
             const error = new Error('Original Error');
             const fn = jest.fn().mockRejectedValue(error);
             const result = await errorWrapper(fn, 'Error Message');
@@ -65,7 +65,7 @@ describe('Error', () => {
             expect(loggedError.console_msg).toBe('Original Error');
         });
 
-        it('sollte mit undefined Fehlermeldung umgehen', async () => {
+        it('should handle undefined error message', async () => {
             const error = new Error();
             const fn = jest.fn().mockRejectedValue(error);
             const result = await errorWrapper(fn, 'Error Message');
@@ -76,7 +76,7 @@ describe('Error', () => {
             expect(loggedError.console_msg).toBe("");
         });
 
-        it('sollte mit nicht-Error Objekten umgehen', async () => {
+        it('should handle non-Error objects', async () => {
             const error = { custom: 'error' };
             const fn = jest.fn().mockRejectedValue(error);
             const result = await errorWrapper(fn, 'Error Message');
@@ -89,7 +89,7 @@ describe('Error', () => {
     });
 
     describe('errorWrapperSync', () => {
-        it('sollte erfolgreiche synchrone Funktionen ausführen', () => {
+        it('should execute successful synchronous functions', () => {
             const fn = jest.fn().mockReturnValue('success');
             const result = errorWrapperSync(fn, 'Error Message');
             expect(result).toBe('success');
@@ -97,7 +97,7 @@ describe('Error', () => {
             expect(log_error).not.toHaveBeenCalled();
         });
 
-        it('sollte Fehler in synchrone Funktionen abfangen', () => {
+        it('should catch errors in synchronous functions', () => {
             const error = new Error('Original Error');
             const fn = jest.fn().mockImplementation(() => {
                 throw error;
@@ -110,7 +110,7 @@ describe('Error', () => {
             expect(loggedError.console_msg).toBe('Original Error');
         });
 
-        it('sollte mit undefined Fehlermeldung umgehen', () => {
+        it('should handle undefined error message', () => {
             const error = new Error();
             const fn = jest.fn().mockImplementation(() => {
                 throw error;
@@ -123,7 +123,7 @@ describe('Error', () => {
             expect(loggedError.console_msg).toBe("");
         });
 
-        it('sollte mit nicht-Error Objekten umgehen', () => {
+        it('should handle non-Error objects', () => {
             const error = { custom: 'error' };
             const fn = jest.fn().mockImplementation(() => {
                 throw error;

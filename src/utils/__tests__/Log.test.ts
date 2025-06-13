@@ -16,7 +16,7 @@ describe('Log', () => {
     });
 
     describe('log_update', () => {
-        it('sollte eine Update-Benachrichtigung erstellen', () => {
+        it('should create an update notification', () => {
             const message = 'Test Update Message';
             log_update(message);
             
@@ -28,7 +28,7 @@ describe('Log', () => {
     });
 
     describe('log_info', () => {
-        it('sollte eine Info-Benachrichtigung erstellen', () => {
+        it('should create an info notification', () => {
             const message = 'Test Info Message';
             log_info(message);
             
@@ -40,7 +40,7 @@ describe('Log', () => {
     });
 
     describe('log_error', () => {
-        it('sollte eine Fehler-Benachrichtigung erstellen', () => {
+        it('should create an error notification', () => {
             const error = new Error('Test Error Message');
             log_error(error);
             
