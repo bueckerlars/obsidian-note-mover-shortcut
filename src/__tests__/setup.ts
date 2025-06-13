@@ -25,3 +25,6 @@ document.createRange = () => {
     };
     return range as any;
 }; 
+
+// Leerer Export, um die Datei zu einem Modul zu machen
+export {}; 
