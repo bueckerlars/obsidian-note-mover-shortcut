@@ -14,7 +14,10 @@ export class HistoryModal extends Modal {
         contentEl.empty();
         contentEl.addClass('note-mover-history-modal');
 
-        // Modal-Container direkt ansprechen und Breite setzen
+        // Title
+        const titleEl = contentEl.createEl('h2', { text: 'NoteMover History', cls: 'note-mover-history-title' });
+
+        // Modal-Container
         const modalContainer = contentEl.parentElement;
         if (modalContainer) {
             modalContainer.style.minWidth = '700px';
@@ -56,7 +59,7 @@ export class HistoryModal extends Modal {
                         .onClick(async () => {
                             const success = await this.historyManager.undoLastMove(entry.fileName);
                             if (success) {
-                                this.onOpen(); // Aktualisiere die Ansicht
+                                this.onOpen();
                             }
                         });
                 });
