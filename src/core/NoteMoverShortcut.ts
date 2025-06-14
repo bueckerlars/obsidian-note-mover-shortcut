@@ -5,9 +5,14 @@ import { Notice } from "obsidian";
 import { combinePath } from "../utils/PathUtils";
 import { Plugin } from 'obsidian';
 import { Rule, TagRule } from 'src/settings/Settings';
+import { RulesManager } from "./RulesManager";
 
 export class NoteMoverShortcut {
-	constructor(private plugin: NoteMoverShortcutPlugin) {}
+	private rulesManager: RulesManager;
+
+	constructor(private plugin: NoteMoverShortcutPlugin) {
+		this.rulesManager = new RulesManager(plugin.app);
+	}
 
 	async setup(): Promise<void> {
 		// Start periodic movement interval if enabled
@@ -25,12 +30,11 @@ export class NoteMoverShortcut {
 			// Check if rules are enabled
 			if (this.plugin.settings.enableRules) {
 				// Get tags from file
-				const tags = getAllTags(app.metadataCache.getFileCache(file)!) || [];
-				const whitelist = this.plugin.settings.isFilterWhitelist;
+				const tags = this.rulesManager.getTagsFromFile(file);
 				
 				// Determine the target folder based on tags and rules
 				if (tags) {
-					const matchingRule = await this.evaluateRules(this.plugin.settings.rules, tags, file);
+					const matchingRule = await this.rulesManager.evaluateRules(this.plugin.settings.rules, tags, file);
 					if (matchingRule) {
 						targetFolder = matchingRule.path;
 					}
