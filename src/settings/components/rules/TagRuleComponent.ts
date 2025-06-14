@@ -10,103 +10,105 @@ export class TagRuleComponent {
 
     constructor(
         private app: App,
-        private onSave: () => Promise<void>
+        private onSave: () => Promise<void>,
+        private onMove?: (index: number, direction: number, parentId?: string) => Promise<void>,
+        private onDelete?: (index: number, parentId?: string) => Promise<void>
     ) {
         this.conditionsComponent = new ConditionsComponent(app, onSave);
     }
 
-    renderTagRule(
-        rule: TagRule,
-        index: number,
-        container: HTMLElement,
-        parentId?: string
-    ): void {
-        container.style.cssText = RULE_STYLES.CONTAINER_STYLES;
+    renderTagRule(rule: TagRule, index: number, container: HTMLElement, parentId?: string): void {
+        container.style.display = 'flex';
+        container.style.alignItems = 'start';
+        container.style.marginBottom = '4px';
+        container.style.padding = '0 24px 0 12px';
+        container.style.width = '100%';
+        container.style.boxSizing = 'border-box';
 
-        // Main row with tag, path and buttons
-        const mainRow = document.createElement('div');
-        mainRow.style.cssText = RULE_STYLES.MAIN_ROW_STYLES;
-
-        // Tag Input
+        // Tag
         const tagInput = document.createElement('input');
         tagInput.type = 'text';
         tagInput.placeholder = 'Tag';
         tagInput.value = rule.tag;
-        tagInput.style.cssText = `
-            width: ${RULE_STYLES.INPUT_WIDTH};
-            min-width: 100px;
-            flex: 0 0 auto;
-        `;
+        tagInput.style.width = '120px';
+        tagInput.style.marginRight = '8px';
         tagInput.onchange = async (e) => {
             rule.tag = (e.target as HTMLInputElement).value;
             await this.onSave();
         };
-        new TagSuggest(this.app, tagInput);
-        mainRow.appendChild(tagInput);
+        container.appendChild(tagInput);
 
-        // Path Input
+        // Path
         const pathInput = document.createElement('input');
         pathInput.type = 'text';
         pathInput.placeholder = 'Path';
         pathInput.value = rule.path;
-        pathInput.style.cssText = `
-            width: ${RULE_STYLES.INPUT_WIDTH};
-            min-width: 100px;
-            flex: 0 0 auto;
-        `;
+        pathInput.style.width = '120px';
+        pathInput.style.marginRight = '8px';
         pathInput.onchange = async (e) => {
             rule.path = (e.target as HTMLInputElement).value;
             await this.onSave();
         };
-        new FolderSuggest(this.app, pathInput);
-        mainRow.appendChild(pathInput);
+        container.appendChild(pathInput);
 
-        // Add Condition Button
-        const addConditionBtn = document.createElement('button');
-        addConditionBtn.textContent = 'Add Condition';
-        addConditionBtn.className = 'mod-cta';
-        addConditionBtn.style.cssText = 'flex: 0 0 auto;';
-        addConditionBtn.onclick = async () => {
-            if (!rule.conditions) {
-                rule.conditions = {
-                    dateConditions: [],
-                    contentConditions: []
-                };
-            }
-            if (!rule.conditions.dateConditions) {
-                rule.conditions.dateConditions = [];
-            }
-            if (!rule.conditions.contentConditions) {
-                rule.conditions.contentConditions = [];
-            }
-            rule.conditions.dateConditions.push({
-                type: 'created',
-                operator: 'olderThan',
-                days: 1,
-                isNew: true
-            });
-            await this.onSave();
-            container.empty();
-            this.renderTagRule(rule, index, container, parentId);
-        };
-        mainRow.appendChild(addConditionBtn);
+        // Date Condition Badge
+        if (rule.condition?.dateCondition) {
+            const badge = document.createElement('span');
+            badge.className = 'note-mover-badge';
+            badge.textContent = `🗓 ${rule.condition.dateCondition.operator === 'olderThan' ? '>' : '<'} ${rule.condition.dateCondition.days}d`;
+            badge.title = `${rule.condition.dateCondition.operator === 'olderThan' ? 'Älter als' : 'Jünger als'} ${rule.condition.dateCondition.days} Tage (${rule.condition.dateCondition.type === 'created' ? 'Erstellt' : 'Geändert'})`;
+            badge.style.background = '#444';
+            badge.style.color = '#fff';
+            badge.style.borderRadius = '8px';
+            badge.style.padding = '2px 8px';
+            badge.style.marginRight = '8px';
+            container.appendChild(badge);
+        }
 
-        // Buttons Container
+        // Content Condition Badge
+        if (rule.condition?.contentCondition) {
+            const badge = document.createElement('span');
+            badge.className = 'note-mover-badge';
+            badge.textContent = `🔍 ${rule.condition.contentCondition.operator === 'contains' ? 'enthält' : 'enthält nicht'}: ${rule.condition.contentCondition.text}`;
+            badge.title = `Inhalt ${rule.condition.contentCondition.operator === 'contains' ? 'enthält' : 'enthält nicht'}: ${rule.condition.contentCondition.text}`;
+            badge.style.background = '#444';
+            badge.style.color = '#fff';
+            badge.style.borderRadius = '8px';
+            badge.style.padding = '2px 8px';
+            badge.style.marginRight = '8px';
+            container.appendChild(badge);
+        }
+
+        // Spacer, damit die Buttons immer ganz rechts sind
+        const spacer = document.createElement('div');
+        spacer.style.flex = '1 1 auto';
+        container.appendChild(spacer);
+
+        // Buttons
         const btnContainer = document.createElement('div');
-        btnContainer.style.cssText = RULE_STYLES.BUTTON_CONTAINER_STYLES;
+        btnContainer.style.display = 'flex';
+        btnContainer.style.gap = '4px';
 
         const upBtn = document.createElement('button');
         upBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 4l4 6H4z" fill="currentColor"/></svg>';
         upBtn.title = 'Regel nach oben';
         upBtn.className = 'clickable-icon';
-        upBtn.onclick = () => this.moveRule(index, -1, parentId);
+        upBtn.onclick = async () => {
+            if (this.onMove) {
+                await this.onMove(index, -1, parentId);
+            }
+        };
         btnContainer.appendChild(upBtn);
 
         const downBtn = document.createElement('button');
         downBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 12l-4-6h8z" fill="currentColor"/></svg>';
         downBtn.title = 'Regel nach unten';
         downBtn.className = 'clickable-icon';
-        downBtn.onclick = () => this.moveRule(index, 1, parentId);
+        downBtn.onclick = async () => {
+            if (this.onMove) {
+                await this.onMove(index, 1, parentId);
+            }
+        };
         btnContainer.appendChild(downBtn);
 
         const delBtn = document.createElement('button');
@@ -114,29 +116,13 @@ export class TagRuleComponent {
         delBtn.title = 'Regel löschen';
         delBtn.className = 'clickable-icon';
         delBtn.onclick = async () => {
-            if (parentId) {
-                const parentRule = this.findRuleById(parentId);
-                if (parentRule && 'rules' in parentRule) {
-                    parentRule.rules.splice(index, 1);
-                }
-            } else {
-                // This will be handled by the parent component
+            if (this.onDelete) {
+                await this.onDelete(index, parentId);
             }
-            await this.onSave();
         };
         btnContainer.appendChild(delBtn);
 
-        mainRow.appendChild(btnContainer);
-        container.appendChild(mainRow);
-
-        // Conditions
-        if (rule.conditions) {
-            this.conditionsComponent.renderConditions(
-                container,
-                rule.conditions,
-                () => this.renderTagRule(rule, index, container, parentId)
-            );
-        }
+        container.appendChild(btnContainer);
     }
 
     private findRuleById(id: string): any {

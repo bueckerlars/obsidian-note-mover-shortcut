@@ -21,9 +21,16 @@ export interface TagRule extends BaseRule {
     type: 'rule';
     tag: string;
     path: string;
-    conditions?: {
-        dateConditions?: DateCondition[];
-        contentConditions?: ContentCondition[];
+    condition?: {
+        dateCondition?: {
+            type: 'created' | 'modified';
+            operator: 'olderThan' | 'newerThan';
+            days: number;
+        };
+        contentCondition?: {
+            operator: 'contains' | 'notContains';
+            text: string;
+        };
     };
 }
 
@@ -62,27 +69,27 @@ export const generateId = (): string => {
     return uuidv4();
 }
 
-export const createNewRule = (type: 'rule' | 'and' | 'or'): Rule => {
+export function createNewRule(type: 'rule' | 'and' | 'or'): Rule {
     if (type === 'rule') {
         return {
-            id: generateId(),
+            id: uuidv4(),
             type: 'rule',
             tag: '',
             path: ''
         };
     } else {
         return {
-            id: generateId(),
+            id: uuidv4(),
             type,
             rules: [
                 {
-                    id: generateId(),
+                    id: uuidv4(),
                     type: 'rule',
                     tag: '',
                     path: ''
                 },
                 {
-                    id: generateId(),
+                    id: uuidv4(),
                     type: 'rule',
                     tag: '',
                     path: ''

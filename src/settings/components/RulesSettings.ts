@@ -7,26 +7,33 @@ import { GroupRuleComponent } from "./rules/GroupRuleComponent";
 export class RulesSettings {
     private tagRuleComponent: TagRuleComponent;
     private groupRuleComponent: GroupRuleComponent;
+    private rulesContainer: HTMLElement;
 
     constructor(
         private containerEl: HTMLElement,
         private app: App,
         private plugin: NoteMoverShortcutPlugin
     ) {
-        this.tagRuleComponent = new TagRuleComponent(app, () => this.plugin.save_settings());
+        this.tagRuleComponent = new TagRuleComponent(
+            app,
+            async () => await this.plugin.save_settings(),
+            async (index: number, direction: number, parentId?: string) => await this.moveRule(index, direction, parentId),
+            async (index: number, parentId?: string) => await this.deleteRule(index, parentId)
+        );
         this.groupRuleComponent = new GroupRuleComponent(
             app,
-            () => this.plugin.save_settings(),
-            this.tagRuleComponent
+            async () => await this.plugin.save_settings(),
+            this.tagRuleComponent,
+            async (index: number, direction: number, parentId?: string) => await this.moveRule(index, direction, parentId),
+            async (index: number, parentId?: string) => await this.deleteRule(index, parentId)
         );
+        this.rulesContainer = this.containerEl.createDiv('note-mover-rules-container');
     }
 
     display(): void {
-        // Clear the container before rendering
-        this.containerEl.empty();
+        // Clear only the rules container
+        this.rulesContainer.empty();
         
-        new Setting(this.containerEl).setName('Rules').setHeading();
-
         const descUseRules = document.createDocumentFragment();
         descUseRules.append(
             'When enabled, the NoteMover will move notes to the folder associated with the tag.',
@@ -34,7 +41,7 @@ export class RulesSettings {
             'If a note contains more than one tag associated with a rule, the first rule will be applied.',
         );
 
-        new Setting(this.containerEl)
+        new Setting(this.rulesContainer)
             .setName('Enable rules')
             .setDesc(descUseRules)
             .addToggle(toggle => toggle
@@ -53,13 +60,14 @@ export class RulesSettings {
     }
 
     private add_rules_array(): void {
+        const rulesContainer = this.rulesContainer.createDiv('note-mover-rules-list');
         this.plugin.settings.rules.forEach((rule, index) => {
-            this.renderRule(rule, index);
+            this.renderRule(rule, index, undefined, 0, rulesContainer);
         });
     }
 
     private add_add_rule_button_setting(): void {
-        const container = this.containerEl.createDiv('note-mover-add-rule-buttons');
+        const container = this.rulesContainer.createDiv('note-mover-add-rule-buttons');
         
         new Setting(container)
             .addButton(btn => btn
@@ -90,7 +98,7 @@ export class RulesSettings {
     }
 
     private renderRule(rule: Rule, index: number, parentId?: string, indentLevel: number = 0, targetContainer?: HTMLElement): void {
-        const container = (targetContainer ?? this.containerEl).createDiv('note-mover-rule-container');
+        const container = (targetContainer ?? this.rulesContainer).createDiv('note-mover-rule-container');
 
         if (rule.type === 'rule') {
             this.tagRuleComponent.renderTagRule(rule, index, container, parentId);
@@ -113,14 +121,24 @@ export class RulesSettings {
         return findInRules(this.plugin.settings.rules);
     }
 
-    private moveRule(index: number, direction: number, parentId?: string): void {
+    private async moveRule(index: number, direction: number, parentId?: string): Promise<void> {
         const rules = parentId 
             ? (this.findRuleById(parentId) as any).rules 
             : this.plugin.settings.rules;
         
         const newIndex = Math.max(0, Math.min(rules.length - 1, index + direction));
         [rules[index], rules[newIndex]] = [rules[newIndex], rules[index]];
-        this.plugin.save_settings();
+        await this.plugin.save_settings();
+        this.display();
+    }
+
+    private async deleteRule(index: number, parentId?: string): Promise<void> {
+        const rules = parentId 
+            ? (this.findRuleById(parentId) as any).rules 
+            : this.plugin.settings.rules;
+        
+        rules.splice(index, 1);
+        await this.plugin.save_settings();
         this.display();
     }
 } 

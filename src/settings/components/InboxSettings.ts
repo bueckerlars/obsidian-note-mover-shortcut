@@ -10,6 +10,7 @@ export class InboxSettings {
     ) {}
 
     display(): void {
+        new Setting(this.containerEl).setName('Basic Settings').setHeading();
         this.add_inbox_folder_setting();
         this.add_target_folder_setting();
     }

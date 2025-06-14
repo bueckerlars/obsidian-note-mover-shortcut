@@ -91,8 +91,7 @@ export class FilterSettings {
 
     private moveFilter(index: number, direction: number) {
         const newIndex = Math.max(0, Math.min(this.plugin.settings.filter.length - 1, index + direction));
-        [this.plugin.settings.filter[index], this.plugin.settings.filter[newIndex]] = 
-        [this.plugin.settings.filter[newIndex], this.plugin.settings.filter[index]];
+        [this.plugin.settings.filter[index], this.plugin.settings.filter[newIndex]] = [this.plugin.settings.filter[newIndex], this.plugin.settings.filter[index]];
         this.plugin.save_settings();
         this.display();
     }

@@ -1,5 +1,5 @@
 import { App } from "obsidian";
-import { GroupRule, Rule, createNewRule } from "../../types";
+import { GroupRule, Rule, TagRule, createNewRule } from "../../types";
 import { RULE_STYLES } from "./styles";
 import { TagRuleComponent } from "./TagRuleComponent";
 
@@ -7,7 +7,9 @@ export class GroupRuleComponent {
     constructor(
         private app: App,
         private onSave: () => Promise<void>,
-        private tagRuleComponent: TagRuleComponent
+        private tagRuleComponent: TagRuleComponent,
+        private onMove?: (index: number, direction: number, parentId?: string) => Promise<void>,
+        private onDelete?: (index: number, parentId?: string) => Promise<void>
     ) {}
 
     renderGroupRule(
@@ -17,34 +19,29 @@ export class GroupRuleComponent {
         parentId?: string,
         indentLevel: number = 0
     ): void {
-        container.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            background: var(--background-secondary);
-            border: 1px solid var(--background-modifier-border);
-            border-radius: 8px;
-            padding: ${RULE_STYLES.GROUP_PADDING}px;
-            margin-bottom: ${RULE_STYLES.RULE_SPACING}px;
-            width: 100%;
-            box-sizing: border-box;
-        `;
+        // Gruppen-Container
+        container.style.background = 'var(--background-secondary)';
+        container.style.border = '1px solid var(--background-modifier-border)';
+        container.style.borderRadius = '8px';
+        container.style.padding = '12px 12px 8px 12px';
+        container.style.marginBottom = '12px';
+        container.style.marginLeft = `${indentLevel * 24}px`;
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.width = '100%';
+        container.style.boxSizing = 'border-box';
 
-        // Header Row
+        // Header-Zeile (Typ + Add-Buttons + Move/Delete)
         const headerRow = document.createElement('div');
-        headerRow.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: ${RULE_STYLES.RULE_SPACING}px;
-            flex-wrap: wrap;
-        `;
+        headerRow.style.display = 'flex';
+        headerRow.style.alignItems = 'center';
+        headerRow.style.marginBottom = '4px';
+        headerRow.style.width = '100%';
 
         const groupLabel = document.createElement('span');
         groupLabel.textContent = rule.type.toUpperCase();
-        groupLabel.style.cssText = `
-            font-weight: bold;
-            flex: 0 0 auto;
-        `;
+        groupLabel.style.fontWeight = 'bold';
+        groupLabel.style.marginRight = '16px';
         headerRow.appendChild(groupLabel);
 
         const addRuleBtn = document.createElement('button');
@@ -55,7 +52,6 @@ export class GroupRuleComponent {
         addRuleBtn.onclick = async () => {
             rule.rules.push(createNewRule('rule'));
             await this.onSave();
-            this.renderGroupRule(rule, index, container, parentId, indentLevel);
         };
         headerRow.appendChild(addRuleBtn);
 
@@ -72,16 +68,13 @@ export class GroupRuleComponent {
         addGroupBtn.onclick = async () => {
             rule.rules.push(createNewRule(rule.type === 'and' ? 'or' : 'and'));
             await this.onSave();
-            this.renderGroupRule(rule, index, container, parentId, indentLevel);
         };
         headerRow.appendChild(addGroupBtn);
 
-        // Spacer
+        // Spacer, damit die Action-Buttons immer ganz rechts sind
         const spacer = document.createElement('div');
-        spacer.style.cssText = `
-            flex: 1 1 auto;
-            margin-left: auto;
-        `;
+        spacer.style.flex = '1 1 auto';
+        spacer.style.marginLeft = 'auto';
         headerRow.appendChild(spacer);
 
         const upBtn = document.createElement('button');
@@ -90,7 +83,11 @@ export class GroupRuleComponent {
         upBtn.className = 'clickable-icon';
         upBtn.style.marginRight = '2px';
         upBtn.style.minWidth = '32px';
-        upBtn.onclick = () => this.moveRule(index, -1, parentId);
+        upBtn.onclick = async () => {
+            if (this.onMove) {
+                await this.onMove(index, -1, parentId);
+            }
+        };
         headerRow.appendChild(upBtn);
 
         const downBtn = document.createElement('button');
@@ -99,7 +96,11 @@ export class GroupRuleComponent {
         downBtn.className = 'clickable-icon';
         downBtn.style.marginRight = '2px';
         downBtn.style.minWidth = '32px';
-        downBtn.onclick = () => this.moveRule(index, 1, parentId);
+        downBtn.onclick = async () => {
+            if (this.onMove) {
+                await this.onMove(index, 1, parentId);
+            }
+        };
         headerRow.appendChild(downBtn);
 
         const delBtn = document.createElement('button');
@@ -108,59 +109,39 @@ export class GroupRuleComponent {
         delBtn.className = 'clickable-icon';
         delBtn.style.minWidth = '32px';
         delBtn.onclick = async () => {
-            if (parentId) {
-                const parentRule = this.findRuleById(parentId);
-                if (parentRule && 'rules' in parentRule) {
-                    parentRule.rules.splice(index, 1);
-                }
-            } else {
-                // This will be handled by the parent component
+            if (this.onDelete) {
+                await this.onDelete(index, parentId);
             }
-            await this.onSave();
         };
         headerRow.appendChild(delBtn);
 
         container.appendChild(headerRow);
 
-        // Separator
+        // Separator unter dem Header
         const separator = document.createElement('div');
-        separator.style.cssText = `
-            width: 100%;
-            height: 1px;
-            background: var(--background-modifier-border);
-            margin-bottom: ${RULE_STYLES.RULE_SPACING}px;
-        `;
+        separator.style.width = '100%';
+        separator.style.height = '1px';
+        separator.style.background = 'var(--background-modifier-border)';
+        separator.style.margin = '0 0 8px 0';
         container.appendChild(separator);
 
-        // Children Container
+        // Child rules (alle unter dem Header, untereinander)
         const childrenContainer = document.createElement('div');
-        childrenContainer.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            gap: ${RULE_STYLES.RULE_SPACING}px;
-            width: 100%;
-        `;
-
+        childrenContainer.style.width = '100%';
+        childrenContainer.style.display = 'flex';
+        childrenContainer.style.flexDirection = 'column';
+        childrenContainer.style.gap = '4px';
         for (let i = 0; i < rule.rules.length; i++) {
             const childRuleContainer = document.createElement('div');
             childrenContainer.appendChild(childRuleContainer);
-            this.renderRule(rule.rules[i], i, rule.id, indentLevel + 1, childRuleContainer);
+            const childRule = rule.rules[i];
+            if (childRule.type === 'rule') {
+                this.tagRuleComponent.renderTagRule(childRule as TagRule, i, childRuleContainer, rule.id);
+            } else {
+                this.renderGroupRule(childRule as GroupRule, i, childRuleContainer, rule.id, indentLevel + 1);
+            }
         }
         container.appendChild(childrenContainer);
-    }
-
-    private renderRule(
-        rule: Rule,
-        index: number,
-        parentId: string,
-        indentLevel: number,
-        container: HTMLElement
-    ): void {
-        if (rule.type === 'rule') {
-            this.tagRuleComponent.renderTagRule(rule, index, container, parentId);
-        } else {
-            this.renderGroupRule(rule, index, container, parentId, indentLevel);
-        }
     }
 
     private findRuleById(id: string): any {
