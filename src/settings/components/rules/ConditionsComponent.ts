@@ -149,12 +149,11 @@ export class ConditionsComponent {
         };
 
         const cancelBtn = document.createElement('button');
-        cancelBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
+        cancelBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
         cancelBtn.className = 'clickable-icon';
         cancelBtn.style.cssText = 'margin-left: auto;';
         cancelBtn.onclick = () => {
             // Nur die UI zurücksetzen, ohne bestehende Bedingungen zu löschen
-            typeSelect.value = 'date';
             onUpdate();
         };
 
