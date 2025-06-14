@@ -152,10 +152,9 @@ export class ConditionsComponent {
         cancelBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
         cancelBtn.className = 'clickable-icon';
         cancelBtn.style.cssText = 'margin-left: auto;';
-        cancelBtn.onclick = async () => {
-            delete conditions.dateCondition;
-            delete conditions.contentCondition;
-            await this.onSave();
+        cancelBtn.onclick = () => {
+            // Nur die UI zurücksetzen, ohne bestehende Bedingungen zu löschen
+            typeSelect.value = 'date';
             onUpdate();
         };
 
@@ -251,7 +250,7 @@ export class ConditionsComponent {
         ['contains', 'notContains'].forEach(op => {
             const option = document.createElement('option');
             option.value = op;
-            option.textContent = op === 'contains' ? 'Contains' : 'Does Not Contain';
+            option.textContent = op === 'contains' ? 'Contains' : 'Not Contains';
             option.selected = op === condition.operator;
             operatorSelect.appendChild(option);
         });
@@ -263,9 +262,9 @@ export class ConditionsComponent {
 
         const textInput = document.createElement('input');
         textInput.type = 'text';
-        textInput.placeholder = 'Text to search for';
+        textInput.placeholder = 'Text';
         textInput.value = condition.text;
-        textInput.style.cssText = `background: var(--background-secondary); color: var(--text-normal); border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 2px 6px; min-width: 120px;`;
+        textInput.style.cssText = `background: var(--background-secondary); color: var(--text-normal); border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 2px 6px; width: 200px;`;
         textInput.onchange = async () => {
             condition.text = textInput.value;
             await this.onSave();
@@ -274,6 +273,7 @@ export class ConditionsComponent {
 
         row.appendChild(inputContainer);
 
+        // Remove-Button
         const deleteBtn = document.createElement('button');
         deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
         deleteBtn.className = 'clickable-icon';
@@ -284,4 +284,4 @@ export class ConditionsComponent {
         };
         row.appendChild(deleteBtn);
     }
-} 
+}

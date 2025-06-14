@@ -25,6 +25,18 @@ export class NoteMoverShortcut {
 		const originalPath = file.path;
 
 		try {
+			// Check if filter is enabled and not skipped
+			if (this.plugin.settings.enableFilter && !skipFilter) {
+				const tags = this.rulesManager.getTagsFromFile(file);
+				const hasMatchingTag = tags.some(tag => this.plugin.settings.filter.includes(tag));
+				
+				// If whitelist mode and no matching tag, or blacklist mode and matching tag, skip the file
+				if ((this.plugin.settings.isFilterWhitelist && !hasMatchingTag) || 
+					(!this.plugin.settings.isFilterWhitelist && hasMatchingTag)) {
+					return;
+				}
+			}
+
 			// Check if rules are enabled
 			if (this.plugin.settings.enableRules) {
 				// Get tags from file
@@ -38,8 +50,8 @@ export class NoteMoverShortcut {
 							targetFolder = matchingRule.path;
 						}
 					} catch (err) {
-						// Fehler beim Lesen des Dateiinhalts: fallback auf default
-						log_error(new Error(`Fehler beim Lesen des Dateiinhalts: ${err?.message || err}`));
+						// Error reading file content: fallback to default
+						log_error(new Error(`Error reading file content: ${err?.message || err}`));
 						targetFolder = defaultFolder;
 					}
 				}

@@ -5,6 +5,7 @@ import { TagRuleComponent } from "./TagRuleComponent";
 import { FolderSuggest } from "../../suggesters/FolderSuggest";
 import { TagSuggest } from "../../suggesters/TagSuggest";
 import { ConditionsComponent } from "./ConditionsComponent";
+import { v4 as uuidv4 } from 'uuid';
 
 export class GroupRuleComponent {
     private conditionsComponent: ConditionsComponent;
@@ -250,7 +251,7 @@ export class GroupRuleComponent {
                 rule.subgroups = [];
             }
             rule.subgroups.push({
-                id: crypto.randomUUID(),
+                id: uuidv4(),
                 type: 'group',
                 groupType: 'and',
                 destination: '',
