@@ -25,7 +25,8 @@ export class RulesSettings {
             async () => await this.plugin.save_settings(),
             this.tagRuleComponent,
             async (index: number, direction: number, parentId?: string) => await this.moveRule(index, direction, parentId),
-            async (index: number, parentId?: string) => await this.deleteRule(index, parentId)
+            async (index: number, parentId?: string) => await this.deleteRule(index, parentId),
+            () => this.display()
         );
         this.rulesContainer = this.containerEl.createDiv('note-mover-rules-container');
     }

@@ -9,7 +9,8 @@ export class GroupRuleComponent {
         private onSave: () => Promise<void>,
         private tagRuleComponent: TagRuleComponent,
         private onMove?: (index: number, direction: number, parentId?: string) => Promise<void>,
-        private onDelete?: (index: number, parentId?: string) => Promise<void>
+        private onDelete?: (index: number, parentId?: string) => Promise<void>,
+        private onUpdate?: () => void
     ) {}
 
     renderGroupRule(
@@ -52,6 +53,9 @@ export class GroupRuleComponent {
         addRuleBtn.onclick = async () => {
             rule.rules.push(createNewRule('rule'));
             await this.onSave();
+            if (this.onUpdate) {
+                this.onUpdate();
+            }
         };
         headerRow.appendChild(addRuleBtn);
 
@@ -66,8 +70,13 @@ export class GroupRuleComponent {
         addGroupBtn.className = 'mod-cta';
         addGroupBtn.style.marginRight = '16px';
         addGroupBtn.onclick = async () => {
-            rule.rules.push(createNewRule(rule.type === 'and' ? 'or' : 'and'));
+            const newGroupType = rule.type === 'and' ? 'or' : 'and';
+            const newGroup = createNewRule(newGroupType);
+            rule.rules.push(newGroup);
             await this.onSave();
+            if (this.onUpdate) {
+                this.onUpdate();
+            }
         };
         headerRow.appendChild(addGroupBtn);
 
