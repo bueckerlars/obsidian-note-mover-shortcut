@@ -101,35 +101,7 @@ export class ConditionsComponent {
         container.appendChild(conditionsContainer);
     }
 
-    private renderDateConditions(
-        container: HTMLElement,
-        conditions: Conditions,
-        onUpdate: () => void
-    ): void {
-        if (!conditions.dateCondition) return;
-
-        const dateRow = document.createElement('div');
-        dateRow.style.cssText = RULE_STYLES.MAIN_ROW_STYLES;
-
-        this.renderExistingDateCondition(dateRow, conditions, onUpdate);
-
-        container.appendChild(dateRow);
-    }
-
-    private renderContentConditions(
-        container: HTMLElement,
-        conditions: Conditions,
-        onUpdate: () => void
-    ): void {
-        if (!conditions.contentCondition) return;
-
-        const contentRow = document.createElement('div');
-        contentRow.style.cssText = RULE_STYLES.MAIN_ROW_STYLES;
-
-        this.renderExistingContentCondition(contentRow, conditions, onUpdate);
-        container.appendChild(contentRow);
-    }
-
+[empty]
     private renderNewConditionRow(
         container: HTMLElement,
         conditions: Conditions,
