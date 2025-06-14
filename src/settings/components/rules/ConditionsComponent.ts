@@ -38,7 +38,7 @@ export class ConditionsComponent {
             width: 100%;
         `;
 
-        // Wrapper für jede einzelne Condition-Zeile
+        // Wrapper for each individual condition row
         const wrapRow = (row: HTMLElement) => {
             row.style.display = 'flex';
             row.style.justifyContent = 'space-between';
@@ -95,7 +95,7 @@ export class ConditionsComponent {
             if (left.lastChild) right.appendChild(left.lastChild);
             conditionsContainer.appendChild(wrapRow(contentRow));
         }
-        // Neue Condition hinzufügen
+        // Add new condition
         this.renderNewConditionRow(conditionsContainer, conditions, onUpdate);
 
         container.appendChild(conditionsContainer);
@@ -153,7 +153,7 @@ export class ConditionsComponent {
         cancelBtn.className = 'clickable-icon';
         cancelBtn.style.cssText = 'margin-left: auto;';
         cancelBtn.onclick = () => {
-            // Nur die UI zurücksetzen, ohne bestehende Bedingungen zu löschen
+            // Only reset UI without deleting existing conditions
             onUpdate();
         };
 
@@ -170,7 +170,7 @@ export class ConditionsComponent {
     ): void {
         const condition = conditions.dateCondition!;
 
-        // Container für Inputs/Labels
+        // Container for inputs/labels
         const inputContainer = document.createElement('div');
         inputContainer.style.display = 'flex';
         inputContainer.style.gap = '4px';

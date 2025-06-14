@@ -59,7 +59,7 @@ export class HistoryManager {
             await this.saveHistory();
             return true;
         } catch (error) {
-            console.error('Fehler beim Rückgängigmachen:', error);
+            console.error('Error while undoing:', error);
             return false;
         }
     }

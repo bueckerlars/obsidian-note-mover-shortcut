@@ -30,11 +30,20 @@ The "NoteMover Shortcut" plugin streamlines your note organization in Obsidian. 
 
 #### Rules
 ![Rules Configuration](images/noteMover-settings-rules.png)
-- **Enable rules**: When enabled, you can define custom rules for moving notes based on their tags.
+- **Enable rules**: When enabled, you can define custom rules for moving notes based on their tags and conditions.
 - **Rule configuration**: For each rule, specify:
   - **Tag**: The tag that triggers the rule
   - **Path**: The destination folder for notes with this tag
-  - Note: If a note has multiple tags that match rules, the first matching rule will be applied.
+  - **Conditions**: Optional conditions that must be met for the rule to apply:
+    - **Date Conditions**: Move notes based on their creation or modification date
+    - **Content Conditions**: Move notes based on their content matching specific text
+    - **Multiple Conditions**: Combine different conditions with AND/OR logic
+  - **Group Rules**: Create rule groups to organize related rules:
+    - **AND Groups**: All rules in the group must match
+    - **OR Groups**: Any rule in the group can match
+    - **Nested Groups**: Create complex rule hierarchies
+  - **Priority**: Rules are evaluated in order, with the first matching rule being applied
+  - **Note**: If a note has multiple tags that match rules, the first matching rule will be applied.
 
 ### Hotkeys:
 - Set Hotkeys to the NoteMover Commands

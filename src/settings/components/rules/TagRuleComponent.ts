@@ -18,7 +18,7 @@ export class TagRuleComponent {
     }
 
     renderTagRule(rule: TagRule, index: number, container: HTMLElement, parentId?: string): void {
-        // Hauptcontainer für die Regel
+        // Main container for the rule
         const ruleContainer = document.createElement('div');
         ruleContainer.style.display = 'flex';
         ruleContainer.style.flexDirection = 'column';
@@ -26,7 +26,7 @@ export class TagRuleComponent {
         ruleContainer.style.width = '100%';
         ruleContainer.style.boxSizing = 'border-box';
 
-        // Zeile für Tag, Path und Buttons
+        // Row for tag, path and buttons
         const mainRow = document.createElement('div');
         mainRow.style.display = 'flex';
         mainRow.style.alignItems = 'start';
@@ -74,7 +74,7 @@ export class TagRuleComponent {
 
         const addConditionBtn = document.createElement('button');
         addConditionBtn.textContent = 'Add Condition';
-        addConditionBtn.title = 'Bedingung hinzufügen';
+        addConditionBtn.title = 'Add condition';
         addConditionBtn.className = 'mod-cta';
         addConditionBtn.style.marginRight = '8px';
         addConditionBtn.onclick = () => {
@@ -168,7 +168,7 @@ export class TagRuleComponent {
 
         const delBtn = document.createElement('button');
         delBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
-        delBtn.title = 'Regel löschen';
+        delBtn.title = 'Delete rule';
         delBtn.className = 'clickable-icon';
         delBtn.onclick = async () => {
             if (this.onDelete) {
@@ -180,7 +180,7 @@ export class TagRuleComponent {
         mainRow.appendChild(btnContainer);
         ruleContainer.appendChild(mainRow);
 
-        // Container für Conditions
+        // Container for conditions
         this.renderConditions(ruleContainer, rule);
 
         container.appendChild(ruleContainer);
@@ -258,14 +258,14 @@ export class TagRuleComponent {
             };
             dateRow.appendChild(daysInput);
 
-            // Spacer für den Löschen-Button
+            // Spacer for delete button
             const spacer = document.createElement('div');
             spacer.style.flex = '1 1 auto';
             dateRow.appendChild(spacer);
 
             const deleteBtn = document.createElement('button');
             deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
-            deleteBtn.title = 'Bedingung löschen';
+            deleteBtn.title = 'Delete condition';
             deleteBtn.className = 'clickable-icon';
             deleteBtn.style.minWidth = '32px';
             deleteBtn.onclick = async () => {
@@ -317,14 +317,14 @@ export class TagRuleComponent {
             };
             contentRow.appendChild(textInput);
 
-            // Spacer für den Löschen-Button
+            // Spacer for delete button
             const spacer = document.createElement('div');
             spacer.style.flex = '1 1 auto';
             contentRow.appendChild(spacer);
 
             const deleteBtn = document.createElement('button');
             deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
-            deleteBtn.title = 'Bedingung löschen';
+            deleteBtn.title = 'Delete condition';
             deleteBtn.className = 'clickable-icon';
             deleteBtn.style.minWidth = '32px';
             deleteBtn.onclick = async () => {
