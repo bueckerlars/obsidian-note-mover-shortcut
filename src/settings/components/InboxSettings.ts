@@ -23,9 +23,9 @@ export class InboxSettings {
                 new FolderSuggest(this.app, cb.inputEl);
                 cb.setPlaceholder('Example: folder1/folder2')
                     .setValue(this.plugin.settings.inboxLocation)
-                    .onChange((new_folder) => {
+                    .onChange(async (new_folder) => {
                         this.plugin.settings.inboxLocation = new_folder;
-                        this.plugin.save_settings();
+                        await this.plugin.save_settings();
                     });
             });
     }
@@ -38,9 +38,9 @@ export class InboxSettings {
                 new FolderSuggest(this.app, cb.inputEl);
                 cb.setPlaceholder("Example: folder1/folder2")
                     .setValue(this.plugin.settings.destination)
-                    .onChange((new_folder) => {
+                    .onChange(async (new_folder) => {
                         this.plugin.settings.destination = new_folder;
-                        this.plugin.save_settings();
+                        await this.plugin.save_settings();
                     });
             });
     }

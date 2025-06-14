@@ -220,38 +220,4 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		this.plugin.save_settings();
 		this.display();
 	}
-
-	private generateId(): string {
-		return uuidv4();
-	}
-
-	private createNewRule(type: 'rule' | 'and' | 'or'): Rule {
-		if (type === 'rule') {
-			return {
-				id: this.generateId(),
-				type: 'rule',
-				tag: '',
-				path: ''
-			};
-		} else {
-			return {
-				id: this.generateId(),
-				type,
-				rules: [
-					{
-						id: this.generateId(),
-						type: 'rule',
-						tag: '',
-						path: ''
-					},
-					{
-						id: this.generateId(),
-						type: 'rule',
-						tag: '',
-						path: ''
-					}
-				]
-			};
-		}
-	}
 }
