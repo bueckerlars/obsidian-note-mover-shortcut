@@ -176,5 +176,131 @@ describe('NoteMoverShortcut', () => {
             mockApp.fileManager.renameFile = jest.fn().mockRejectedValue(new Error('Move failed'));
             await expect(noteMover['moveFileBasedOnTags'](mockFile, 'default')).rejects.toThrow('Move failed');
         });
+
+        // Neue Tests für Rules-Funktionalität
+        it('should apply rule with date condition when date matches', async () => {
+            plugin.settings.rules = [{
+                tag: '#test',
+                path: 'custom/path'
+            }];
+            mockApp.vault.adapter.stat = jest.fn().mockResolvedValue({
+                ctime: new Date('2024-01-01').getTime(),
+                mtime: new Date('2024-01-02').getTime(),
+                size: 100
+            });
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should not apply rule with date condition when date does not match', async () => {
+            plugin.settings.rules = [{
+                tag: '#test',
+                path: 'custom/path'
+            }];
+            mockApp.vault.adapter.stat = jest.fn().mockResolvedValue({
+                ctime: new Date('2024-01-01').getTime(),
+                mtime: new Date('2024-01-02').getTime(),
+                size: 100
+            });
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should apply rule with content condition when content matches', async () => {
+            plugin.settings.rules = [{
+                tag: '#test',
+                path: 'custom/path'
+            }];
+            mockApp.vault.read = jest.fn().mockResolvedValue('Test content');
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should not apply rule with content condition when content does not match', async () => {
+            plugin.settings.rules = [{
+                tag: '#test',
+                path: 'custom/path'
+            }];
+            mockApp.vault.read = jest.fn().mockResolvedValue('Test content');
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should apply group rule with multiple conditions', async () => {
+            plugin.settings.rules = [{
+                tag: '#test',
+                path: 'custom/path'
+            }];
+            mockApp.vault.read = jest.fn().mockResolvedValue('Test content');
+            mockApp.vault.adapter.stat = jest.fn().mockResolvedValue({
+                ctime: new Date('2024-01-01').getTime(),
+                mtime: new Date('2024-01-02').getTime(),
+                size: 100
+            });
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should handle missing file stats gracefully', async () => {
+            plugin.settings.rules = [{
+                tag: '#test',
+                path: 'custom/path'
+            }];
+            mockApp.vault.adapter.stat = jest.fn().mockResolvedValue(null);
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should handle file read errors gracefully', async () => {
+            plugin.settings.rules = [{
+                tag: '#test',
+                path: 'custom/path'
+            }];
+            mockApp.vault.read = jest.fn().mockRejectedValue(new Error('Read failed'));
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
+
+        it('should apply nested group rule with complex conditions', async () => {
+            plugin.settings.rules = [{
+                tag: '#test',
+                path: 'custom/path'
+            }];
+            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
+                tags: [{ tag: '#test' }, { tag: '#nested' }]
+            });
+            mockApp.vault.read = jest.fn().mockResolvedValue('Test content\nNested content');
+            mockApp.vault.adapter.stat = jest.fn().mockResolvedValue({
+                ctime: new Date('2024-01-01').getTime(),
+                mtime: new Date('2024-01-02').getTime(),
+                size: 100
+            });
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path')
+            );
+        });
     });
 }); 
