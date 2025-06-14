@@ -58,39 +58,6 @@ export class NoteMoverShortcut {
 		}
 	}
 
-	private async evaluateRules(rules: Rule[], tags: string[], file: TFile): Promise<TagRule | null> {
-		for (const rule of rules) {
-			if (rule.type === 'rule') {
-				if (tags.includes(rule.tag)) {
-					// Check conditions
-					if (!rule.condition || await this.evaluateConditions(rule, file)) {
-						return rule;
-					}
-				}
-			} else {
-				// Evaluate group rules
-				const matchingTrigger = await this.evaluateGroupTriggers(rule.triggers, tags, file);
-				if (matchingTrigger) {
-					return {
-						id: rule.id,
-						type: 'rule',
-						tag: matchingTrigger.tag,
-						path: rule.destination,
-						condition: matchingTrigger.conditions
-					};
-				}
-
-				// Evaluate subgroups
-				if (rule.subgroups) {
-					const subgroupResult = await this.evaluateRules(rule.subgroups, tags, file);
-					if (subgroupResult) {
-						return subgroupResult;
-					}
-				}
-			}
-		}
-		return null;
-	}
 
 	private async evaluateGroupTriggers(triggers: Trigger[], tags: string[], file: TFile): Promise<Trigger | null> {
 		for (const trigger of triggers) {
