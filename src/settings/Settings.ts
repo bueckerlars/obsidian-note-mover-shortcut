@@ -10,35 +10,7 @@ import { PeriodicMovementSettings } from "./components/PeriodicMovementSettings"
 import { FilterSettings } from "./components/FilterSettings";
 import { RulesSettings } from "./components/RulesSettings";
 import { HistorySettings } from "./components/HistorySettings";
-
-export interface BaseRule {
-	id: string;
-	type: 'rule' | 'and' | 'or';
-}
-
-export interface TagRule extends BaseRule {
-	type: 'rule';
-	tag: string;
-	path: string;
-	condition?: {
-		dateCondition?: {
-			type: 'created' | 'modified';
-			operator: 'olderThan' | 'newerThan';
-			days: number;
-		};
-		contentCondition?: {
-			operator: 'contains' | 'notContains';
-			text: string;
-		};
-	};
-}
-
-export interface GroupRule extends BaseRule {
-	type: 'and' | 'or';
-	rules: Rule[];
-}
-
-export type Rule = TagRule | GroupRule;
+import { Rule, GroupRule, TagRule, Trigger } from "./types";
 
 export interface NoteMoverShortcutSettings {
 	destination: string,

@@ -81,17 +81,9 @@ export class RulesSettings {
                 })
             )
             .addButton(btn => btn
-                .setButtonText('Add AND Group')
+                .setButtonText('Add Group')
                 .onClick(async () => {
-                    this.plugin.settings.rules.push(createNewRule('and'));
-                    await this.plugin.save_settings();
-                    this.display();
-                })
-            )
-            .addButton(btn => btn
-                .setButtonText('Add OR Group')
-                .onClick(async () => {
-                    this.plugin.settings.rules.push(createNewRule('or'));
+                    this.plugin.settings.rules.push(createNewRule('group'));
                     await this.plugin.save_settings();
                     this.display();
                 })
@@ -112,8 +104,8 @@ export class RulesSettings {
         const findInRules = (rules: Rule[]): Rule | undefined => {
             for (const rule of rules) {
                 if (rule.id === id) return rule;
-                if (rule.type === 'and' || rule.type === 'or') {
-                    const found = findInRules(rule.rules);
+                if (rule.type === 'group' && rule.subgroups) {
+                    const found = findInRules(rule.subgroups);
                     if (found) return found;
                 }
             }
@@ -124,7 +116,7 @@ export class RulesSettings {
 
     private async moveRule(index: number, direction: number, parentId?: string): Promise<void> {
         const rules = parentId 
-            ? (this.findRuleById(parentId) as any).rules 
+            ? (this.findRuleById(parentId) as any).subgroups 
             : this.plugin.settings.rules;
         
         const newIndex = Math.max(0, Math.min(rules.length - 1, index + direction));
@@ -135,7 +127,7 @@ export class RulesSettings {
 
     private async deleteRule(index: number, parentId?: string): Promise<void> {
         const rules = parentId 
-            ? (this.findRuleById(parentId) as any).rules 
+            ? (this.findRuleById(parentId) as any).subgroups 
             : this.plugin.settings.rules;
         
         rules.splice(index, 1);

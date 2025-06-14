@@ -1,5 +1,5 @@
 import { App, TFile } from "obsidian";
-import { Rule, TagRule } from "../settings/types";
+import { Rule, TagRule, GroupRule, Trigger } from "../settings/types";
 import { getAllTags } from "../utils/tags";
 
 export class RulesManager {
@@ -19,22 +19,77 @@ export class RulesManager {
                 }
             } else {
                 // Evaluate group rules
-                const childResults = await Promise.all(
-                    rule.rules.map((childRule: Rule) => this.evaluateRules([childRule], tags, file))
-                );
-                
-                const matchingRules = childResults.filter((result): result is TagRule => result !== null);
-                
-                if (rule.type === 'and' && matchingRules.length === rule.rules.length) {
-                    // For AND groups, return the first matching rule
-                    return matchingRules[0];
-                } else if (rule.type === 'or' && matchingRules.length > 0) {
-                    // For OR groups, return the first matching rule
-                    return matchingRules[0];
+                const matchingTrigger = await this.evaluateGroupTriggers(rule.triggers, tags, file);
+                if (matchingTrigger) {
+                    return {
+                        id: rule.id,
+                        type: 'rule',
+                        tag: matchingTrigger.tag,
+                        path: rule.destination,
+                        condition: matchingTrigger.conditions
+                    };
+                }
+
+                // Evaluate subgroups
+                if (rule.subgroups) {
+                    const subgroupResult = await this.evaluateRules(rule.subgroups, tags, file);
+                    if (subgroupResult) {
+                        return subgroupResult;
+                    }
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Evaluates triggers in a group
+     */
+    private async evaluateGroupTriggers(triggers: Trigger[], tags: string[], file: TFile): Promise<Trigger | null> {
+        for (const trigger of triggers) {
+            if (tags.includes(trigger.tag)) {
+                // Check conditions
+                if (!trigger.conditions || await this.evaluateTriggerConditions(trigger, file)) {
+                    return trigger;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Evaluates conditions for a trigger
+     */
+    private async evaluateTriggerConditions(trigger: Trigger, file: TFile): Promise<boolean> {
+        if (!trigger.conditions) return true;
+
+        // Get file content
+        const content = await this.app.vault.read(file);
+        
+        // Evaluate content condition
+        if (trigger.conditions.contentCondition) {
+            const { operator, text } = trigger.conditions.contentCondition;
+            const contains = content.includes(text);
+            if (operator === 'contains' && !contains) return false;
+            if (operator === 'notContains' && contains) return false;
+        }
+
+        // Evaluate date condition
+        if (trigger.conditions.dateCondition) {
+            const { type, operator, days } = trigger.conditions.dateCondition;
+            const fileStats = await this.app.vault.adapter.stat(file.path);
+            
+            if (!fileStats) return false;
+
+            const fileDate = type === 'created' ? fileStats.ctime : fileStats.mtime;
+            const now = new Date();
+            const diffDays = Math.floor((now.getTime() - new Date(fileDate).getTime()) / (1000 * 60 * 60 * 24));
+
+            if (operator === 'olderThan' && diffDays < days) return false;
+            if (operator === 'newerThan' && diffDays > days) return false;
+        }
+        
+        return true;
     }
 
     /**

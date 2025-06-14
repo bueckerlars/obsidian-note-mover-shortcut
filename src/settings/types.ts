@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export interface BaseRule {
     id: string;
-    type: 'rule' | 'and' | 'or';
+    type: 'rule' | 'group';
 }
 
 export interface DateCondition {
@@ -17,26 +17,31 @@ export interface ContentCondition {
     text: string;
 }
 
+export interface Trigger {
+    id: string;
+    tag: string;
+    conditions?: {
+        dateCondition?: DateCondition;
+        contentCondition?: ContentCondition;
+    };
+}
+
+export interface GroupRule extends BaseRule {
+    type: 'group';
+    groupType: 'and' | 'or';
+    destination: string;
+    triggers: Trigger[];
+    subgroups?: GroupRule[];
+}
+
 export interface TagRule extends BaseRule {
     type: 'rule';
     tag: string;
     path: string;
     condition?: {
-        dateCondition?: {
-            type: 'created' | 'modified';
-            operator: 'olderThan' | 'newerThan';
-            days: number;
-        };
-        contentCondition?: {
-            operator: 'contains' | 'notContains';
-            text: string;
-        };
+        dateCondition?: DateCondition;
+        contentCondition?: ContentCondition;
     };
-}
-
-export interface GroupRule extends BaseRule {
-    type: 'and' | 'or';
-    rules: Rule[];
 }
 
 export type Rule = TagRule | GroupRule;
@@ -69,7 +74,7 @@ export const generateId = (): string => {
     return uuidv4();
 }
 
-export function createNewRule(type: 'rule' | 'and' | 'or'): Rule {
+export function createNewRule(type: 'rule' | 'group'): Rule {
     if (type === 'rule') {
         return {
             id: uuidv4(),
@@ -80,8 +85,18 @@ export function createNewRule(type: 'rule' | 'and' | 'or'): Rule {
     } else {
         return {
             id: uuidv4(),
-            type,
-            rules: []
+            type: 'group',
+            groupType: 'and',
+            destination: '',
+            triggers: [],
+            subgroups: []
         };
     }
+}
+
+export function createNewTrigger(): Trigger {
+    return {
+        id: uuidv4(),
+        tag: ''
+    };
 } 
