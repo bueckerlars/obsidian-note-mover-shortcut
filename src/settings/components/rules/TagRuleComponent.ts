@@ -36,6 +36,7 @@ export class TagRuleComponent {
             rule.tag = (e.target as HTMLInputElement).value;
             await this.onSave();
         };
+        new TagSuggest(this.app, tagInput);
         container.appendChild(tagInput);
 
         // Path
@@ -49,6 +50,7 @@ export class TagRuleComponent {
             rule.path = (e.target as HTMLInputElement).value;
             await this.onSave();
         };
+        new FolderSuggest(this.app, pathInput);
         container.appendChild(pathInput);
 
         // Date Condition Badge
