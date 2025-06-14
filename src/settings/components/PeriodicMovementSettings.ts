@@ -1,6 +1,6 @@
 import { Setting } from "obsidian";
 import NoteMoverShortcutPlugin from "main";
-import { NoteMoverError } from "src/utils/Error";
+import { NoteMoverError } from "../../utils/Error";
 import { log_error } from "src/utils/Log";
 
 export class PeriodicMovementSettings {
