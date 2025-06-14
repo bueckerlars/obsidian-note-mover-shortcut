@@ -1,10 +1,8 @@
 import NoteMoverShortcutPlugin from "main";
-import { getAllTags, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { log_error, log_info } from "../utils/Log";
 import { Notice } from "obsidian";
-import { combinePath } from "../utils/PathUtils";
-import { Plugin } from 'obsidian';
-import { Rule, TagRule, GroupRule, Trigger } from 'src/settings/types';
+import { combinePath } from "../utils/PathUtils"; 
 import { RulesManager } from "./RulesManager";
 
 export class NoteMoverShortcut {
@@ -34,9 +32,15 @@ export class NoteMoverShortcut {
 				
 				// Determine the target folder based on tags and rules
 				if (tags) {
-					const matchingRule = await this.rulesManager.evaluateRules(this.plugin.settings.rules, tags, file);
-					if (matchingRule) {
-						targetFolder = matchingRule.path;
+					try {
+						const matchingRule = await this.rulesManager.evaluateRules(this.plugin.settings.rules, tags, file);
+						if (matchingRule) {
+							targetFolder = matchingRule.path;
+						}
+					} catch (err) {
+						// Fehler beim Lesen des Dateiinhalts: fallback auf default
+						log_error(new Error(`Fehler beim Lesen des Dateiinhalts: ${err?.message || err}`));
+						targetFolder = defaultFolder;
 					}
 				}
 			}
@@ -56,97 +60,6 @@ export class NoteMoverShortcut {
 			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 			throw error;
 		}
-	}
-
-
-	private async evaluateGroupTriggers(triggers: Trigger[], tags: string[], file: TFile): Promise<Trigger | null> {
-		for (const trigger of triggers) {
-			if (tags.includes(trigger.tag)) {
-				// Check conditions
-				if (!trigger.conditions || await this.evaluateTriggerConditions(trigger, file)) {
-					return trigger;
-				}
-			}
-		}
-		return null;
-	}
-
-	private async evaluateTriggerConditions(trigger: Trigger, file: TFile): Promise<boolean> {
-		if (!trigger.conditions) return true;
-
-		let conditionsMet = true;
-
-		// Check date condition
-		if (trigger.conditions.dateCondition) {
-			const fileDate = trigger.conditions.dateCondition.type === 'created'
-				? file.stat.ctime
-				: file.stat.mtime;
-			
-			const now = Date.now();
-			const daysDifference = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
-			
-			switch (trigger.conditions.dateCondition.operator) {
-				case 'olderThan':
-					if (daysDifference < trigger.conditions.dateCondition.days) conditionsMet = false;
-					break;
-				case 'newerThan':
-					if (daysDifference > trigger.conditions.dateCondition.days) conditionsMet = false;
-					break;
-			}
-		}
-
-		// Check content condition
-		if (trigger.conditions.contentCondition && conditionsMet) {
-			const fileContent = await this.plugin.app.vault.read(file);
-			const containsText = fileContent.includes(trigger.conditions.contentCondition.text);
-			
-			if (trigger.conditions.contentCondition.operator === 'contains' && !containsText) {
-				conditionsMet = false;
-			} else if (trigger.conditions.contentCondition.operator === 'notContains' && containsText) {
-				conditionsMet = false;
-			}
-		}
-
-		return conditionsMet;
-	}
-
-	private async evaluateConditions(rule: TagRule, file: TFile): Promise<boolean> {
-		if (!rule.condition) return true;
-
-		let conditionsMet = true;
-
-		// Check date condition
-		if (rule.condition.dateCondition) {
-			const fileDate = rule.condition.dateCondition.type === 'created'
-				? file.stat.ctime
-				: file.stat.mtime;
-			
-			const now = Date.now();
-			const daysDifference = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
-			
-			switch (rule.condition.dateCondition.operator) {
-				case 'olderThan':
-					if (daysDifference < rule.condition.dateCondition.days) conditionsMet = false;
-					break;
-				case 'newerThan':
-					if (daysDifference > rule.condition.dateCondition.days) conditionsMet = false;
-					break;
-			}
-		}
-
-		// Check content condition
-		if (rule.condition.contentCondition && conditionsMet) {
-			const fileContent = await this.plugin.app.vault.read(file);
-			const containsText = fileContent.includes(rule.condition.contentCondition.text);
-			
-			if (rule.condition.contentCondition.operator === 'contains' && !containsText) {
-				conditionsMet = false;
-			} else if (rule.condition.contentCondition.operator === 'notContains' && containsText) {
-				conditionsMet = false;
-			}
-		}
-
-		return conditionsMet;
 	}
 
 	async moveNotesFromInboxToNotesFolder() {

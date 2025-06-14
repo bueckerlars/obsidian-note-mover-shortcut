@@ -17,9 +17,16 @@ export class RulesManager {
                         return rule;
                     }
                 }
-            } else {
-                // Evaluate group rules
-                const matchingTrigger = await this.evaluateGroupTriggers(rule.triggers, tags, file);
+            } else if (rule.type === 'group') {
+                // Zuerst Subgruppen prüfen
+                if (rule.subgroups && rule.subgroups.length > 0) {
+                    const subgroupResult = await this.evaluateRules(rule.subgroups, tags, file);
+                    if (subgroupResult) {
+                        return subgroupResult;
+                    }
+                }
+                // Dann Trigger der aktuellen Gruppe prüfen
+                const matchingTrigger = await this.evaluateGroupTriggers(rule.triggers || [], tags, file, rule.groupType);
                 if (matchingTrigger) {
                     return {
                         id: rule.id,
@@ -29,14 +36,6 @@ export class RulesManager {
                         condition: matchingTrigger.conditions
                     };
                 }
-
-                // Evaluate subgroups
-                if (rule.subgroups) {
-                    const subgroupResult = await this.evaluateRules(rule.subgroups, tags, file);
-                    if (subgroupResult) {
-                        return subgroupResult;
-                    }
-                }
             }
         }
         return null;
@@ -45,16 +44,29 @@ export class RulesManager {
     /**
      * Evaluates triggers in a group
      */
-    private async evaluateGroupTriggers(triggers: Trigger[], tags: string[], file: TFile): Promise<Trigger | null> {
-        for (const trigger of triggers) {
-            if (tags.includes(trigger.tag)) {
-                // Check conditions
-                if (!trigger.conditions || await this.evaluateTriggerConditions(trigger, file)) {
+    private async evaluateGroupTriggers(triggers: Trigger[], tags: string[], file: TFile, groupType: 'and' | 'or'): Promise<Trigger | null> {
+        if (!triggers || triggers.length === 0) {
+            return null;
+        }
+
+        if (groupType === 'and') {
+            // For AND groups, all triggers must match
+            for (const trigger of triggers) {
+                if (!tags.includes(trigger.tag) || !await this.evaluateTriggerConditions(trigger, file)) {
+                    return null;
+                }
+            }
+            // If we get here, all triggers matched
+            return triggers[0]; // Return the first trigger as they all matched
+        } else {
+            // For OR groups, any trigger can match
+            for (const trigger of triggers) {
+                if (tags.includes(trigger.tag) && await this.evaluateTriggerConditions(trigger, file)) {
                     return trigger;
                 }
             }
+            return null;
         }
-        return null;
     }
 
     /**
@@ -82,8 +94,8 @@ export class RulesManager {
             if (!fileStats) return false;
 
             const fileDate = type === 'created' ? fileStats.ctime : fileStats.mtime;
-            const now = new Date();
-            const diffDays = Math.floor((now.getTime() - new Date(fileDate).getTime()) / (1000 * 60 * 60 * 24));
+            const now = Date.now();
+            const diffDays = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
 
             if (operator === 'olderThan' && diffDays < days) return false;
             if (operator === 'newerThan' && diffDays > days) return false;
@@ -117,8 +129,8 @@ export class RulesManager {
             if (!fileStats) return false;
 
             const fileDate = type === 'created' ? fileStats.ctime : fileStats.mtime;
-            const now = new Date();
-            const diffDays = Math.floor((now.getTime() - new Date(fileDate).getTime()) / (1000 * 60 * 60 * 24));
+            const now = Date.now();
+            const diffDays = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
 
             if (operator === 'olderThan' && diffDays < days) return false;
             if (operator === 'newerThan' && diffDays > days) return false;
