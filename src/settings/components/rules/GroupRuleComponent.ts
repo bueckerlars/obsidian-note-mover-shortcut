@@ -6,9 +6,11 @@ import { FolderSuggest } from "../../suggesters/FolderSuggest";
 import { TagSuggest } from "../../suggesters/TagSuggest";
 import { ConditionsComponent } from "./ConditionsComponent";
 import { v4 as uuidv4 } from 'uuid';
+import { TriggerUIStateManager } from "./TriggerUIState";
 
 export class GroupRuleComponent {
     private conditionsComponent: ConditionsComponent;
+    private triggerUIState: TriggerUIStateManager;
 
     constructor(
         private app: App,
@@ -19,6 +21,7 @@ export class GroupRuleComponent {
         private onUpdate?: () => void
     ) {
         this.conditionsComponent = new ConditionsComponent(app, onSave);
+        this.triggerUIState = new TriggerUIStateManager();
     }
 
     renderGroupRule(
@@ -42,7 +45,7 @@ export class GroupRuleComponent {
         container.style.maxWidth = '100%';
         container.style.overflow = 'hidden';
 
-        // Header-Zeile (Typ + Move/Delete)
+        // Header row (Type + Move/Delete)
         const headerRow = document.createElement('div');
         headerRow.style.display = 'flex';
         headerRow.style.alignItems = 'center';
@@ -55,17 +58,17 @@ export class GroupRuleComponent {
         groupLabel.style.marginRight = '16px';
         headerRow.appendChild(groupLabel);
 
-        // --- NEU: Dropdown für Gruppentyp ---
+        // Group type dropdown
         const typeSelect = document.createElement('select');
         typeSelect.style.marginRight = '16px';
         typeSelect.title = '';
-        // Option AND
+        // AND option
         const andOption = document.createElement('option');
         andOption.value = 'and';
         andOption.textContent = 'AND';
         andOption.title = 'All triggers must match for the group to apply.';
         typeSelect.appendChild(andOption);
-        // Option OR
+        // OR option
         const orOption = document.createElement('option');
         orOption.value = 'or';
         orOption.textContent = 'OR';
@@ -76,7 +79,7 @@ export class GroupRuleComponent {
             rule.groupType = (e.target as HTMLSelectElement).value as 'and' | 'or';
             await this.onSave();
         };
-        // Tooltip beim Hovern über das Dropdown anzeigen
+        // Show tooltip on hover
         typeSelect.onmouseover = (e) => {
             const val = (e.target as HTMLSelectElement).value;
             if (val === 'and') {
@@ -87,9 +90,8 @@ export class GroupRuleComponent {
         };
         typeSelect.onfocus = typeSelect.onmouseover;
         headerRow.appendChild(typeSelect);
-        // --- ENDE NEU ---
 
-        // Spacer, damit die Action-Buttons immer ganz rechts sind
+        // Spacer to keep action buttons aligned to the right
         const spacer = document.createElement('div');
         spacer.style.flex = '1 1 auto';
         spacer.style.marginLeft = 'auto';
@@ -135,16 +137,15 @@ export class GroupRuleComponent {
 
         container.appendChild(headerRow);
 
-        // --- NEU: Separator und mehr Abstand zwischen Header und Content ---
+        // Separator between header and content
         const separator = document.createElement('div');
         separator.style.width = '100%';
         separator.style.height = '1px';
         separator.style.background = 'var(--background-modifier-border)';
         separator.style.margin = '8px 0 12px 0';
         container.appendChild(separator);
-        // --- ENDE NEU ---
 
-        // Destination Setting (nur bei Main-Group, also ohne parentId)
+        // Destination Setting (only for main group, i.e., without parentId)
         if (!parentId) {
             const destinationSetting = document.createElement('div');
             destinationSetting.style.display = 'flex';
@@ -200,7 +201,7 @@ export class GroupRuleComponent {
         }
         container.appendChild(triggersContainer);
 
-        // Subgroups (jetzt direkt nach den Triggern, vor den Buttons)
+        // Subgroups (now directly after triggers, before buttons)
         if (rule.subgroups && rule.subgroups.length > 0) {
             const subgroupsContainer = document.createElement('div');
             subgroupsContainer.style.width = '100%';
@@ -208,9 +209,9 @@ export class GroupRuleComponent {
             subgroupsContainer.style.flexDirection = 'column';
             subgroupsContainer.style.gap = '4px';
             subgroupsContainer.style.marginTop = '8px';
-            subgroupsContainer.style.marginLeft = '12px'; // Einrückung für Subgroups
-            subgroupsContainer.style.marginRight = '8px'; // Abstand zum rechten Rand der Parent Group
-            subgroupsContainer.style.paddingRight = '8px'; // Zusätzliches Padding rechts
+            subgroupsContainer.style.marginLeft = '12px'; // Indentation for subgroups
+            subgroupsContainer.style.marginRight = '8px'; // Spacing from parent group's right edge
+            subgroupsContainer.style.paddingRight = '8px'; // Additional right padding
 
             for (let i = 0; i < rule.subgroups.length; i++) {
                 const subgroupContainer = document.createElement('div');
@@ -221,7 +222,7 @@ export class GroupRuleComponent {
             container.appendChild(subgroupsContainer);
         }
 
-        // Button-Container für Add Trigger/Subgroup (jetzt immer ganz unten)
+        // Button container for Add Trigger/Subgroup (now always at the bottom)
         const buttonRow = document.createElement('div');
         buttonRow.style.display = 'flex';
         buttonRow.style.justifyContent = 'flex-end';
@@ -269,7 +270,7 @@ export class GroupRuleComponent {
     }
 
     private renderTrigger(
-        trigger: Trigger & { _showAddConditionRow?: boolean; _addConditionType?: 'date' | 'content' },
+        trigger: Trigger,
         index: number,
         container: HTMLElement,
         parentRule: GroupRule
@@ -283,7 +284,7 @@ export class GroupRuleComponent {
         container.style.borderRadius = '4px';
         container.style.flexDirection = 'column';
 
-        // Zeile für Tag und Buttons
+        // Row for tag and buttons
         const row = document.createElement('div');
         row.style.display = 'flex';
         row.style.alignItems = 'center';
@@ -303,7 +304,7 @@ export class GroupRuleComponent {
         row.appendChild(tagInput);
         new TagSuggest(this.app, tagInput);
 
-        // Condition-Typen prüfen
+        // Check condition types
         const hasDate = !!(trigger.conditions && trigger.conditions.dateCondition);
         const hasContent = !!(trigger.conditions && trigger.conditions.contentCondition);
         const allTypes = [
@@ -312,14 +313,18 @@ export class GroupRuleComponent {
         ];
         const availableTypes = allTypes.filter(t => !t.has);
 
-        // Add Condition Button (immer anzeigen, solange nicht beide Typen existieren und die Leiste nicht offen ist)
-        if (availableTypes.length > 0 && !trigger._showAddConditionRow) {
+        const uiState = this.triggerUIState.getState(trigger.id);
+
+        // Add Condition Button (always show if not all types exist and the row is not open)
+        if (availableTypes.length > 0 && !uiState.showAddConditionRow) {
             const addConditionBtn = document.createElement('button');
             addConditionBtn.textContent = 'Add Condition';
             addConditionBtn.className = 'mod-cta';
             addConditionBtn.onclick = () => {
-                trigger._showAddConditionRow = true;
-                trigger._addConditionType = availableTypes[0].value as 'date' | 'content';
+                this.triggerUIState.setState(trigger.id, {
+                    showAddConditionRow: true,
+                    addConditionType: availableTypes[0].value as 'date' | 'content'
+                });
                 this.renderTrigger(trigger, index, container, parentRule);
             };
             row.appendChild(addConditionBtn);
@@ -366,6 +371,7 @@ export class GroupRuleComponent {
         delBtn.className = 'clickable-icon';
         delBtn.onclick = async () => {
             parentRule.triggers.splice(index, 1);
+            this.triggerUIState.clearState(trigger.id);
             await this.onSave();
             if (this.onUpdate) {
                 this.onUpdate();
@@ -375,7 +381,7 @@ export class GroupRuleComponent {
 
         container.appendChild(row);
 
-        // Conditions anzeigen und bearbeiten (falls vorhanden)
+        // Show and edit conditions (if present)
         if (trigger.conditions && (hasDate || hasContent)) {
             this.conditionsComponent.renderConditions(container, trigger.conditions, async () => {
                 await this.onSave();
@@ -384,8 +390,8 @@ export class GroupRuleComponent {
             });
         }
 
-        // Condition hinzufügen-Leiste (falls _showAddConditionRow gesetzt ist)
-        if (trigger._showAddConditionRow && availableTypes.length > 0) {
+        // Add condition row (if showAddConditionRow is set)
+        if (uiState.showAddConditionRow && availableTypes.length > 0) {
             const addRow = document.createElement('div');
             addRow.className = 'note-mover-conditions';
             addRow.style.display = 'flex';
@@ -403,11 +409,13 @@ export class GroupRuleComponent {
                 const option = document.createElement('option');
                 option.value = opt.value;
                 option.textContent = opt.label;
-                if (trigger._addConditionType === opt.value) option.selected = true;
+                if (uiState.addConditionType === opt.value) option.selected = true;
                 typeSelect.appendChild(option);
             });
             typeSelect.onchange = () => {
-                trigger._addConditionType = typeSelect.value as 'date' | 'content';
+                this.triggerUIState.setState(trigger.id, {
+                    addConditionType: typeSelect.value as 'date' | 'content'
+                });
             };
             addRow.appendChild(typeSelect);
 
@@ -416,33 +424,31 @@ export class GroupRuleComponent {
             addBtn.className = 'mod-cta';
             addBtn.onclick = async () => {
                 if (!trigger.conditions) trigger.conditions = {};
-                if (trigger._addConditionType === 'date') {
+                if (uiState.addConditionType === 'date') {
                     trigger.conditions.dateCondition = {
                         type: 'created',
                         operator: 'olderThan',
                         days: 1
                     };
-                } else if (trigger._addConditionType === 'content') {
+                } else if (uiState.addConditionType === 'content') {
                     trigger.conditions.contentCondition = {
                         operator: 'contains',
                         text: ''
                     };
                 }
-                delete trigger._showAddConditionRow;
-                delete trigger._addConditionType;
+                this.triggerUIState.clearState(trigger.id);
                 await this.onSave();
                 this.renderTrigger(trigger, index, container, parentRule);
                 if (this.onUpdate) this.onUpdate();
             };
             addRow.appendChild(addBtn);
 
-            // X-Button zum Abbrechen
+            // Cancel button
             const cancelBtn = document.createElement('button');
             cancelBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
             cancelBtn.className = 'clickable-icon';
             cancelBtn.onclick = async () => {
-                delete trigger._showAddConditionRow;
-                delete trigger._addConditionType;
+                this.triggerUIState.clearState(trigger.id);
                 this.renderTrigger(trigger, index, container, parentRule);
             };
             addRow.appendChild(cancelBtn);
