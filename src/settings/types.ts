@@ -5,20 +5,25 @@ export interface BaseRule {
     type: 'rule' | 'and' | 'or';
 }
 
+export interface DateCondition {
+    type: 'created' | 'modified';
+    operator: 'olderThan' | 'newerThan';
+    days: number;
+    isNew?: boolean;
+}
+
+export interface ContentCondition {
+    operator: 'contains' | 'notContains';
+    text: string;
+}
+
 export interface TagRule extends BaseRule {
     type: 'rule';
     tag: string;
     path: string;
-    condition?: {
-        dateCondition?: {
-            type: 'created' | 'modified';
-            operator: 'olderThan' | 'newerThan';
-            days: number;
-        };
-        contentCondition?: {
-            operator: 'contains' | 'notContains';
-            text: string;
-        };
+    conditions?: {
+        dateConditions?: DateCondition[];
+        contentConditions?: ContentCondition[];
     };
 }
 

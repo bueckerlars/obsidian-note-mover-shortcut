@@ -1,6 +1,6 @@
 import { App, Setting } from "obsidian";
 import NoteMoverShortcutPlugin from "main";
-import { Rule, GroupRule, TagRule, createNewRule } from "../types";
+import { Rule, GroupRule, TagRule, createNewRule, DateCondition, ContentCondition } from "../types";
 import { TagSuggest } from "../suggesters/TagSuggest";
 import { FolderSuggest } from "../suggesters/FolderSuggest";
 
@@ -164,7 +164,25 @@ export class RulesSettings {
             flex: 0 0 auto;
         `;
         addConditionBtn.onclick = async () => {
-            if (!rule.condition) rule.condition = {};
+            if (!rule.conditions) {
+                rule.conditions = {
+                    dateConditions: [],
+                    contentConditions: []
+                };
+            }
+            if (!rule.conditions.dateConditions) {
+                rule.conditions.dateConditions = [];
+            }
+            if (!rule.conditions.contentConditions) {
+                rule.conditions.contentConditions = [];
+            }
+            // Add a temporary condition to show the input row
+            rule.conditions.dateConditions.push({
+                type: 'created',
+                operator: 'olderThan',
+                days: 1,
+                isNew: true
+            });
             await this.plugin.save_settings();
             // Update only this rule's container
             container.empty();
@@ -215,7 +233,7 @@ export class RulesSettings {
         container.appendChild(mainRow);
 
         // Conditions Container
-        if (rule.condition) {
+        if (rule.conditions) {
             const conditionsContainer = document.createElement('div');
             conditionsContainer.style.cssText = `
                 display: flex;
@@ -227,142 +245,219 @@ export class RulesSettings {
                 border-radius: 4px;
             `;
 
-            // Date Condition
-            if (rule.condition.dateCondition) {
-                const dateRow = document.createElement('div');
-                dateRow.style.cssText = `
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                `;
+            // Date Conditions
+            if (rule.conditions.dateConditions?.length) {
+                rule.conditions.dateConditions.forEach((condition, conditionIndex) => {
+                    const dateRow = document.createElement('div');
+                    dateRow.style.cssText = `
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    `;
 
-                const typeSelect = document.createElement('select');
-                typeSelect.style.cssText = `
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    border: 1px solid var(--background-modifier-border);
-                    background: var(--background-primary);
-                    color: var(--text-normal);
-                    width: 120px;
-                `;
-                ['created', 'modified'].forEach(type => {
-                    const option = document.createElement('option');
-                    option.value = type;
-                    option.textContent = type === 'created' ? 'Created Date' : 'Modified Date';
-                    option.selected = type === rule.condition!.dateCondition!.type;
-                    typeSelect.appendChild(option);
-                });
-                typeSelect.onchange = async () => {
-                    rule.condition!.dateCondition!.type = typeSelect.value as 'created' | 'modified';
-                    await this.plugin.save_settings();
-                };
-                dateRow.appendChild(typeSelect);
+                    if (condition.isNew) {
+                        // Show input row for new condition
+                        const typeSelect = document.createElement('select');
+                        typeSelect.style.cssText = `
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            border: 1px solid var(--background-modifier-border);
+                            background: var(--background-primary);
+                            color: var(--text-normal);
+                            width: 120px;
+                        `;
+                        [
+                            { value: 'date', label: 'Date Condition' },
+                            { value: 'content', label: 'Content Condition' }
+                        ].forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt.value;
+                            option.textContent = opt.label;
+                            typeSelect.appendChild(option);
+                        });
 
-                const operatorSelect = document.createElement('select');
-                operatorSelect.style.cssText = typeSelect.style.cssText;
-                ['olderThan', 'newerThan'].forEach(op => {
-                    const option = document.createElement('option');
-                    option.value = op;
-                    option.textContent = op === 'olderThan' ? 'Older Than' : 'Newer Than';
-                    option.selected = op === rule.condition!.dateCondition!.operator;
-                    operatorSelect.appendChild(option);
-                });
-                operatorSelect.onchange = async () => {
-                    rule.condition!.dateCondition!.operator = operatorSelect.value as 'olderThan' | 'newerThan';
-                    await this.plugin.save_settings();
-                };
-                dateRow.appendChild(operatorSelect);
+                        const addBtn = document.createElement('button');
+                        addBtn.textContent = 'Add';
+                        addBtn.className = 'mod-cta';
+                        addBtn.onclick = async () => {
+                            if (typeSelect.value === 'date') {
+                                delete condition.isNew;
+                            } else {
+                                // Remove the temporary date condition
+                                rule.conditions!.dateConditions!.splice(conditionIndex, 1);
+                                // Add a new content condition
+                                if (!rule.conditions!.contentConditions) {
+                                    rule.conditions!.contentConditions = [];
+                                }
+                                rule.conditions!.contentConditions.push({
+                                    operator: 'contains',
+                                    text: ''
+                                });
+                            }
+                            await this.plugin.save_settings();
+                            container.empty();
+                            this.renderTagRule(rule, index, container, parentId);
+                        };
 
-                const daysInput = document.createElement('input');
-                daysInput.type = 'number';
-                daysInput.placeholder = 'Days';
-                daysInput.min = '1';
-                daysInput.value = rule.condition!.dateCondition!.days.toString();
-                daysInput.style.cssText = typeSelect.style.cssText;
-                daysInput.onchange = async () => {
-                    rule.condition!.dateCondition!.days = parseInt(daysInput.value);
-                    await this.plugin.save_settings();
-                };
-                dateRow.appendChild(daysInput);
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
+                        cancelBtn.className = 'clickable-icon';
+                        cancelBtn.style.cssText = `
+                            margin-left: auto;
+                        `;
+                        cancelBtn.onclick = async () => {
+                            rule.conditions!.dateConditions!.splice(conditionIndex, 1);
+                            if (rule.conditions!.dateConditions!.length === 0 && 
+                                (!rule.conditions!.contentConditions || rule.conditions!.contentConditions.length === 0)) {
+                                delete rule.conditions;
+                            }
+                            await this.plugin.save_settings();
+                            container.empty();
+                            this.renderTagRule(rule, index, container, parentId);
+                        };
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
-                deleteBtn.className = 'clickable-icon';
-                deleteBtn.onclick = async () => {
-                    delete rule.condition!.dateCondition;
-                    if (!rule.condition!.contentCondition) {
-                        delete rule.condition;
+                        dateRow.appendChild(typeSelect);
+                        dateRow.appendChild(addBtn);
+                        dateRow.appendChild(cancelBtn);
+                    } else {
+                        // Show existing condition
+                        const typeSelect = document.createElement('select');
+                        typeSelect.style.cssText = `
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            border: 1px solid var(--background-modifier-border);
+                            background: var(--background-primary);
+                            color: var(--text-normal);
+                            width: 120px;
+                        `;
+                        ['created', 'modified'].forEach(type => {
+                            const option = document.createElement('option');
+                            option.value = type;
+                            option.textContent = type === 'created' ? 'Created Date' : 'Modified Date';
+                            option.selected = type === condition.type;
+                            typeSelect.appendChild(option);
+                        });
+                        typeSelect.onchange = async () => {
+                            condition.type = typeSelect.value as 'created' | 'modified';
+                            await this.plugin.save_settings();
+                        };
+                        dateRow.appendChild(typeSelect);
+
+                        const operatorSelect = document.createElement('select');
+                        operatorSelect.style.cssText = typeSelect.style.cssText;
+                        ['olderThan', 'newerThan'].forEach(op => {
+                            const option = document.createElement('option');
+                            option.value = op;
+                            option.textContent = op === 'olderThan' ? 'Older Than' : 'Newer Than';
+                            option.selected = op === condition.operator;
+                            operatorSelect.appendChild(option);
+                        });
+                        operatorSelect.onchange = async () => {
+                            condition.operator = operatorSelect.value as 'olderThan' | 'newerThan';
+                            await this.plugin.save_settings();
+                        };
+                        dateRow.appendChild(operatorSelect);
+
+                        const daysInput = document.createElement('input');
+                        daysInput.type = 'number';
+                        daysInput.placeholder = 'Days';
+                        daysInput.min = '1';
+                        daysInput.value = condition.days.toString();
+                        daysInput.style.cssText = typeSelect.style.cssText;
+                        daysInput.onchange = async () => {
+                            condition.days = parseInt(daysInput.value);
+                            await this.plugin.save_settings();
+                        };
+                        dateRow.appendChild(daysInput);
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
+                        deleteBtn.className = 'clickable-icon';
+                        deleteBtn.onclick = async () => {
+                            rule.conditions!.dateConditions!.splice(conditionIndex, 1);
+                            if (rule.conditions!.dateConditions!.length === 0) {
+                                delete rule.conditions!.dateConditions;
+                            }
+                            if (!rule.conditions!.dateConditions && !rule.conditions!.contentConditions) {
+                                delete rule.conditions;
+                            }
+                            await this.plugin.save_settings();
+                            container.empty();
+                            this.renderTagRule(rule, index, container, parentId);
+                        };
+                        dateRow.appendChild(deleteBtn);
                     }
-                    await this.plugin.save_settings();
-                    container.empty();
-                    this.renderTagRule(rule, index, container, parentId);
-                };
-                dateRow.appendChild(deleteBtn);
 
-                conditionsContainer.appendChild(dateRow);
+                    conditionsContainer.appendChild(dateRow);
+                });
             }
 
-            // Content Condition
-            if (rule.condition.contentCondition) {
-                const contentRow = document.createElement('div');
-                contentRow.style.cssText = `
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                `;
+            // Content Conditions
+            if (rule.conditions.contentConditions?.length) {
+                rule.conditions.contentConditions.forEach((condition, conditionIndex) => {
+                    const contentRow = document.createElement('div');
+                    contentRow.style.cssText = `
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    `;
 
-                const operatorSelect = document.createElement('select');
-                operatorSelect.style.cssText = `
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    border: 1px solid var(--background-modifier-border);
-                    background: var(--background-primary);
-                    color: var(--text-normal);
-                    width: 120px;
-                `;
-                ['contains', 'notContains'].forEach(op => {
-                    const option = document.createElement('option');
-                    option.value = op;
-                    option.textContent = op === 'contains' ? 'Contains' : 'Does Not Contain';
-                    option.selected = op === rule.condition!.contentCondition!.operator;
-                    operatorSelect.appendChild(option);
+                    const operatorSelect = document.createElement('select');
+                    operatorSelect.style.cssText = `
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        border: 1px solid var(--background-modifier-border);
+                        background: var(--background-primary);
+                        color: var(--text-normal);
+                        width: 120px;
+                    `;
+                    ['contains', 'notContains'].forEach(op => {
+                        const option = document.createElement('option');
+                        option.value = op;
+                        option.textContent = op === 'contains' ? 'Contains' : 'Does Not Contain';
+                        option.selected = op === condition.operator;
+                        operatorSelect.appendChild(option);
+                    });
+                    operatorSelect.onchange = async () => {
+                        condition.operator = operatorSelect.value as 'contains' | 'notContains';
+                        await this.plugin.save_settings();
+                    };
+                    contentRow.appendChild(operatorSelect);
+
+                    const textInput = document.createElement('input');
+                    textInput.type = 'text';
+                    textInput.placeholder = 'Text to search for';
+                    textInput.value = condition.text;
+                    textInput.style.cssText = operatorSelect.style.cssText;
+                    textInput.onchange = async () => {
+                        condition.text = textInput.value;
+                        await this.plugin.save_settings();
+                    };
+                    contentRow.appendChild(textInput);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
+                    deleteBtn.className = 'clickable-icon';
+                    deleteBtn.onclick = async () => {
+                        rule.conditions!.contentConditions!.splice(conditionIndex, 1);
+                        if (rule.conditions!.contentConditions!.length === 0) {
+                            delete rule.conditions!.contentConditions;
+                        }
+                        if (!rule.conditions!.dateConditions && !rule.conditions!.contentConditions) {
+                            delete rule.conditions;
+                        }
+                        await this.plugin.save_settings();
+                        container.empty();
+                        this.renderTagRule(rule, index, container, parentId);
+                    };
+                    contentRow.appendChild(deleteBtn);
+
+                    conditionsContainer.appendChild(contentRow);
                 });
-                operatorSelect.onchange = async () => {
-                    rule.condition!.contentCondition!.operator = operatorSelect.value as 'contains' | 'notContains';
-                    await this.plugin.save_settings();
-                };
-                contentRow.appendChild(operatorSelect);
-
-                const textInput = document.createElement('input');
-                textInput.type = 'text';
-                textInput.placeholder = 'Text to search for';
-                textInput.value = rule.condition!.contentCondition!.text;
-                textInput.style.cssText = operatorSelect.style.cssText;
-                textInput.onchange = async () => {
-                    rule.condition!.contentCondition!.text = textInput.value;
-                    await this.plugin.save_settings();
-                };
-                contentRow.appendChild(textInput);
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
-                deleteBtn.className = 'clickable-icon';
-                deleteBtn.onclick = async () => {
-                    delete rule.condition!.contentCondition;
-                    if (!rule.condition!.dateCondition) {
-                        delete rule.condition;
-                    }
-                    await this.plugin.save_settings();
-                    container.empty();
-                    this.renderTagRule(rule, index, container, parentId);
-                };
-                contentRow.appendChild(deleteBtn);
-
-                conditionsContainer.appendChild(contentRow);
             }
 
-            // Add new condition row if no conditions exist
-            if (!rule.condition.dateCondition && !rule.condition.contentCondition) {
+            // Add new condition row if no conditions exist or if we're in the process of adding a new one
+            if (!rule.conditions.dateConditions?.length && !rule.conditions.contentConditions?.length) {
                 const newConditionRow = document.createElement('div');
                 newConditionRow.style.cssText = `
                     display: flex;
@@ -397,16 +492,22 @@ export class RulesSettings {
                 addBtn.className = 'mod-cta';
                 addBtn.onclick = async () => {
                     if (typeSelect.value === 'date') {
-                        rule.condition!.dateCondition = {
+                        if (!rule.conditions!.dateConditions) {
+                            rule.conditions!.dateConditions = [];
+                        }
+                        rule.conditions!.dateConditions.push({
                             type: 'created',
                             operator: 'olderThan',
                             days: 1
-                        };
+                        });
                     } else {
-                        rule.condition!.contentCondition = {
+                        if (!rule.conditions!.contentConditions) {
+                            rule.conditions!.contentConditions = [];
+                        }
+                        rule.conditions!.contentConditions.push({
                             operator: 'contains',
                             text: ''
-                        };
+                        });
                     }
                     await this.plugin.save_settings();
                     container.empty();
@@ -420,7 +521,7 @@ export class RulesSettings {
                     margin-left: auto;
                 `;
                 cancelBtn.onclick = async () => {
-                    delete rule.condition;
+                    delete rule.conditions;
                     await this.plugin.save_settings();
                     container.empty();
                     this.renderTagRule(rule, index, container, parentId);
