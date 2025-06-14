@@ -5,6 +5,11 @@ import { TagSuggest } from "./suggesters/TagSuggest";
 import { NoteMoverError } from "src/utils/Error";
 import { log_error } from "src/utils/Log";
 import { v4 as uuidv4 } from 'uuid';
+import { InboxSettings } from "./components/InboxSettings";
+import { PeriodicMovementSettings } from "./components/PeriodicMovementSettings";
+import { FilterSettings } from "./components/FilterSettings";
+import { RulesSettings } from "./components/RulesSettings";
+import { HistorySettings } from "./components/HistorySettings";
 
 export interface BaseRule {
 	id: string;
@@ -60,27 +65,30 @@ export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
 }
 
 export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
+	private inboxSettings: InboxSettings;
+	private periodicMovementSettings: PeriodicMovementSettings;
+	private filterSettings: FilterSettings;
+	private rulesSettings: RulesSettings;
+	private historySettings: HistorySettings;
+
 	constructor(private plugin: NoteMoverShortcutPlugin) {
 		super(plugin.app, plugin);
+		
+		this.inboxSettings = new InboxSettings(this.containerEl, this.app, this.plugin);
+		this.periodicMovementSettings = new PeriodicMovementSettings(this.containerEl, this.plugin);
+		this.filterSettings = new FilterSettings(this.containerEl, this.app, this.plugin);
+		this.rulesSettings = new RulesSettings(this.containerEl, this.app, this.plugin);
+		this.historySettings = new HistorySettings(this.containerEl, this.plugin);
 	}
 
 	display(): void {
 		this.containerEl.empty();
 
-		this.add_inbox_folder_setting();
-		this.add_target_folder_setting();
-
-		this.add_periodic_movement_setting();
-
-		this.add_filter_settings();
-
-		this.add_rules_setting();
-		if (this.plugin.settings.enableRules) {
-			this.add_rules_array();
-			this.add_add_rule_button_setting();
-		}
-
-		this.add_history_settings();
+		this.inboxSettings.display();
+		this.periodicMovementSettings.display();
+		this.filterSettings.display();
+		this.rulesSettings.display();
+		this.historySettings.display();
 	}
 
 	add_inbox_folder_setting(): void {
@@ -569,23 +577,6 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		[this.plugin.settings.filter[index], this.plugin.settings.filter[newIndex]] = [this.plugin.settings.filter[newIndex], this.plugin.settings.filter[index]];
 		this.plugin.save_settings();
 		this.display();
-	}
-
-	add_history_settings(): void {
-		new Setting(this.containerEl).setName('History').setHeading();
-
-		new Setting(this.containerEl)
-			.setName('Clear history')
-			.setDesc('Clears the history of moved notes')
-			.addButton(btn => btn
-				.setButtonText('Clear history')
-				.setWarning()
-				.onClick(async () => {
-					if (confirm('Are you sure you want to clear the history? This action cannot be undone.')) {
-						await this.plugin.historyManager.clearHistory();
-					}
-				})
-			);
 	}
 
 	private generateId(): string {
