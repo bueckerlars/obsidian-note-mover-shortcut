@@ -115,9 +115,17 @@ export class RulesSettings {
     }
 
     private async moveRule(index: number, direction: number, parentId?: string): Promise<void> {
-        const rules = parentId 
-            ? (this.findRuleById(parentId) as any).subgroups 
-            : this.plugin.settings.rules;
+        let rules: Rule[];
+        if (parentId) {
+            const parentRule = this.findRuleById(parentId);
+            if (!parentRule || parentRule.type !== 'group' || !parentRule.subgroups) {
+                console.error(`Parent rule not found or invalid for ID: ${parentId}`);
+                return;
+            }
+            rules = parentRule.subgroups;
+        } else {
+            rules = this.plugin.settings.rules;
+        }
         
         const newIndex = Math.max(0, Math.min(rules.length - 1, index + direction));
         [rules[index], rules[newIndex]] = [rules[newIndex], rules[index]];
@@ -126,9 +134,17 @@ export class RulesSettings {
     }
 
     private async deleteRule(index: number, parentId?: string): Promise<void> {
-        const rules = parentId 
-            ? (this.findRuleById(parentId) as any).subgroups 
-            : this.plugin.settings.rules;
+        let rules: Rule[];
+        if (parentId) {
+            const parentRule = this.findRuleById(parentId);
+            if (!parentRule || parentRule.type !== 'group' || !parentRule.subgroups) {
+                console.error(`Parent rule not found or invalid for ID: ${parentId}`);
+                return;
+            }
+            rules = parentRule.subgroups;
+        } else {
+            rules = this.plugin.settings.rules;
+        }
         
         rules.splice(index, 1);
         await this.plugin.save_settings();

@@ -101,14 +101,11 @@ export class ConditionsComponent {
         container.appendChild(conditionsContainer);
     }
 
-[empty]
     private renderNewConditionRow(
         container: HTMLElement,
         conditions: Conditions,
         onUpdate: () => void
     ): void {
-        if (conditions.dateCondition || conditions.contentCondition) return;
-
         const newConditionRow = document.createElement('div');
         newConditionRow.style.cssText = `
             display: flex;

@@ -75,33 +75,50 @@ export class RulesManager {
     private async evaluateTriggerConditions(trigger: Trigger, file: TFile): Promise<boolean> {
         if (!trigger.conditions) return true;
 
-        // Get file content
-        const content = await this.app.vault.read(file);
-        
-        // Evaluate content condition
-        if (trigger.conditions.contentCondition) {
-            const { operator, text } = trigger.conditions.contentCondition;
-            const contains = content.includes(text);
-            if (operator === 'contains' && !contains) return false;
-            if (operator === 'notContains' && contains) return false;
-        }
-
-        // Evaluate date condition
-        if (trigger.conditions.dateCondition) {
-            const { type, operator, days } = trigger.conditions.dateCondition;
-            const fileStats = await this.app.vault.adapter.stat(file.path);
+        try {
+            // Get file content
+            let content: string;
+            try {
+                content = await this.app.vault.read(file);
+            } catch (error) {
+                console.error(`Error reading file ${file.path}:`, error);
+                return false;
+            }
             
-            if (!fileStats) return false;
+            // Evaluate content condition
+            if (trigger.conditions.contentCondition) {
+                const { operator, text } = trigger.conditions.contentCondition;
+                const contains = content.includes(text);
+                if (operator === 'contains' && !contains) return false;
+                if (operator === 'notContains' && contains) return false;
+            }
 
-            const fileDate = type === 'created' ? fileStats.ctime : fileStats.mtime;
-            const now = Date.now();
-            const diffDays = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
+            // Evaluate date condition
+            if (trigger.conditions.dateCondition) {
+                const { type, operator, days } = trigger.conditions.dateCondition;
+                let fileStats;
+                try {
+                    fileStats = await this.app.vault.adapter.stat(file.path);
+                } catch (error) {
+                    console.error(`Error getting file stats for ${file.path}:`, error);
+                    return false;
+                }
+                
+                if (!fileStats) return false;
 
-            if (operator === 'olderThan' && diffDays < days) return false;
-            if (operator === 'newerThan' && diffDays > days) return false;
+                const fileDate = type === 'created' ? fileStats.ctime : fileStats.mtime;
+                const now = Date.now();
+                const diffDays = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
+
+                if (operator === 'olderThan' && diffDays < days) return false;
+                if (operator === 'newerThan' && diffDays > days) return false;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error(`Error evaluating trigger conditions for file ${file.path}:`, error);
+            return false;
         }
-        
-        return true;
     }
 
     /**
@@ -110,39 +127,58 @@ export class RulesManager {
     private async evaluateConditions(rule: TagRule, file: TFile): Promise<boolean> {
         if (!rule.condition) return true;
 
-        // Get file content
-        const content = await this.app.vault.read(file);
-        
-        // Evaluate content condition
-        if (rule.condition.contentCondition) {
-            const { operator, text } = rule.condition.contentCondition;
-            const contains = content.includes(text);
-            if (operator === 'contains' && !contains) return false;
-            if (operator === 'notContains' && contains) return false;
-        }
-
-        // Evaluate date condition
-        if (rule.condition.dateCondition) {
-            const { type, operator, days } = rule.condition.dateCondition;
-            const fileStats = await this.app.vault.adapter.stat(file.path);
+        try {
+            // Get file content
+            let content: string;
+            try {
+                content = await this.app.vault.read(file);
+            } catch (error) {
+                console.error(`Error reading file ${file.path}:`, error);
+                return false;
+            }
             
-            if (!fileStats) return false;
+            // Evaluate content condition
+            if (rule.condition.contentCondition) {
+                const { operator, text } = rule.condition.contentCondition;
+                const contains = content.includes(text);
+                if (operator === 'contains' && !contains) return false;
+                if (operator === 'notContains' && contains) return false;
+            }
 
-            const fileDate = type === 'created' ? fileStats.ctime : fileStats.mtime;
-            const now = Date.now();
-            const diffDays = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
+            // Evaluate date condition
+            if (rule.condition.dateCondition) {
+                const { type, operator, days } = rule.condition.dateCondition;
+                let fileStats;
+                try {
+                    fileStats = await this.app.vault.adapter.stat(file.path);
+                } catch (error) {
+                    console.error(`Error getting file stats for ${file.path}:`, error);
+                    return false;
+                }
+                
+                if (!fileStats) return false;
 
-            if (operator === 'olderThan' && diffDays < days) return false;
-            if (operator === 'newerThan' && diffDays > days) return false;
+                const fileDate = type === 'created' ? fileStats.ctime : fileStats.mtime;
+                const now = Date.now();
+                const diffDays = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
+
+                if (operator === 'olderThan' && diffDays < days) return false;
+                if (operator === 'newerThan' && diffDays > days) return false;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error(`Error evaluating conditions for file ${file.path}:`, error);
+            return false;
         }
-        
-        return true;
     }
 
     /**
      * Gets all tags from a file
      */
     getTagsFromFile(file: TFile): string[] {
-        return getAllTags(this.app.metadataCache.getFileCache(file)!) || [];
+        const fileCache = this.app.metadataCache.getFileCache(file);
+        if (!fileCache) return [];
+        return getAllTags(fileCache) || [];
     }
 } 
