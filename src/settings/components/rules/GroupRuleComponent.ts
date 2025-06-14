@@ -315,122 +315,215 @@ export class GroupRuleComponent {
 
         const uiState = this.triggerUIState.getState(trigger.id);
 
-        // Add Condition Button (always show if not all types exist and the row is not open)
-        if (availableTypes.length > 0 && !uiState.showAddConditionRow) {
-            const addConditionBtn = document.createElement('button');
-            addConditionBtn.textContent = 'Add Condition';
-            addConditionBtn.className = 'mod-cta';
-            addConditionBtn.onclick = () => {
-                this.triggerUIState.setState(trigger.id, {
-                    showAddConditionRow: true,
-                    addConditionType: availableTypes[0].value as 'date' | 'content'
-                });
-                this.renderTrigger(trigger, index, container, parentRule);
-            };
-            row.appendChild(addConditionBtn);
-        }
-
-        // Move Up Button
-        const upBtn = document.createElement('button');
-        upBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 4l4 6H4z" fill="currentColor"/></svg>';
-        upBtn.title = 'Move trigger up';
-        upBtn.className = 'clickable-icon';
-        upBtn.onclick = async () => {
-            if (index > 0) {
-                [parentRule.triggers[index], parentRule.triggers[index - 1]] = 
-                [parentRule.triggers[index - 1], parentRule.triggers[index]];
-                await this.onSave();
-                if (this.onUpdate) {
-                    this.onUpdate();
-                }
-            }
+        // Add condition button
+        const addConditionBtn = document.createElement('button');
+        addConditionBtn.textContent = 'Add Condition';
+        addConditionBtn.className = 'mod-cta';
+        addConditionBtn.onclick = () => {
+            this.triggerUIState.setState(trigger.id, { showAddConditionRow: true });
+            this.renderTrigger(trigger, index, container, parentRule);
         };
-        row.appendChild(upBtn);
+        row.appendChild(addConditionBtn);
 
-        // Move Down Button
-        const downBtn = document.createElement('button');
-        downBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 12l-4-6h8z" fill="currentColor"/></svg>';
-        downBtn.title = 'Move trigger down';
-        downBtn.className = 'clickable-icon';
-        downBtn.onclick = async () => {
-            if (index < parentRule.triggers.length - 1) {
-                [parentRule.triggers[index], parentRule.triggers[index + 1]] = 
-                [parentRule.triggers[index + 1], parentRule.triggers[index]];
-                await this.onSave();
-                if (this.onUpdate) {
-                    this.onUpdate();
-                }
-            }
-        };
-        row.appendChild(downBtn);
-
-        // Delete Button
-        const delBtn = document.createElement('button');
-        delBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
-        delBtn.title = 'Delete trigger';
-        delBtn.className = 'clickable-icon';
-        delBtn.onclick = async () => {
+        // Delete trigger button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
+        deleteBtn.title = 'Delete trigger';
+        deleteBtn.className = 'clickable-icon';
+        deleteBtn.onclick = async () => {
             parentRule.triggers.splice(index, 1);
-            this.triggerUIState.clearState(trigger.id);
             await this.onSave();
-            if (this.onUpdate) {
-                this.onUpdate();
-            }
+            if (this.onUpdate) this.onUpdate();
         };
-        row.appendChild(delBtn);
+        row.appendChild(deleteBtn);
 
         container.appendChild(row);
 
-        // Show and edit conditions (if present)
-        if (trigger.conditions && (hasDate || hasContent)) {
-            this.conditionsComponent.renderConditions(container, trigger.conditions, async () => {
-                await this.onSave();
-                this.renderTrigger(trigger, index, container, parentRule);
-                if (this.onUpdate) this.onUpdate();
-            });
+        // Render existing conditions
+        if (trigger.conditions) {
+            if (trigger.conditions.dateCondition) {
+                const dateRow = document.createElement('div');
+                dateRow.style.display = 'flex';
+                dateRow.style.alignItems = 'center';
+                dateRow.style.gap = '8px';
+                dateRow.style.padding = '8px 22px 8px 36px';
+                dateRow.style.background = 'var(--background-secondary)';
+                dateRow.style.borderRadius = '4px';
+                dateRow.style.marginTop = '4px';
+                dateRow.style.width = '100%';
+                dateRow.style.boxSizing = 'border-box';
+
+                const typeSelect = document.createElement('select');
+                typeSelect.style.cssText = RULE_STYLES.SELECT_STYLES;
+                ['created', 'modified'].forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type === 'created' ? 'Created Date' : 'Modified Date';
+                    option.selected = type === trigger.conditions!.dateCondition!.type;
+                    typeSelect.appendChild(option);
+                });
+                typeSelect.onchange = async () => {
+                    trigger.conditions!.dateCondition!.type = typeSelect.value as 'created' | 'modified';
+                    await this.onSave();
+                };
+                dateRow.appendChild(typeSelect);
+
+                const operatorSelect = document.createElement('select');
+                operatorSelect.style.cssText = RULE_STYLES.SELECT_STYLES;
+                ['olderThan', 'newerThan'].forEach(op => {
+                    const option = document.createElement('option');
+                    option.value = op;
+                    option.textContent = op === 'olderThan' ? 'Older Than' : 'Newer Than';
+                    option.selected = op === trigger.conditions!.dateCondition!.operator;
+                    operatorSelect.appendChild(option);
+                });
+                operatorSelect.onchange = async () => {
+                    trigger.conditions!.dateCondition!.operator = operatorSelect.value as 'olderThan' | 'newerThan';
+                    await this.onSave();
+                };
+                dateRow.appendChild(operatorSelect);
+
+                const daysInput = document.createElement('input');
+                daysInput.type = 'number';
+                daysInput.placeholder = 'Days';
+                daysInput.min = '1';
+                daysInput.value = trigger.conditions!.dateCondition!.days.toString();
+                daysInput.style.cssText = RULE_STYLES.SELECT_STYLES;
+                daysInput.onchange = async () => {
+                    const value = parseInt(daysInput.value);
+                    if (isNaN(value) || value < 1) {
+                        daysInput.value = trigger.conditions!.dateCondition!.days.toString();
+                        return;
+                    }
+                    trigger.conditions!.dateCondition!.days = value;
+                    await this.onSave();
+                };
+                dateRow.appendChild(daysInput);
+
+                // Spacer for delete button
+                const spacer = document.createElement('div');
+                spacer.style.flex = '1 1 auto';
+                dateRow.appendChild(spacer);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
+                deleteBtn.title = 'Delete condition';
+                deleteBtn.className = 'clickable-icon';
+                deleteBtn.onclick = async () => {
+                    delete trigger.conditions!.dateCondition;
+                    if (!trigger.conditions!.contentCondition) {
+                        delete trigger.conditions;
+                    }
+                    await this.onSave();
+                    this.renderTrigger(trigger, index, container, parentRule);
+                };
+                dateRow.appendChild(deleteBtn);
+
+                container.appendChild(dateRow);
+            }
+
+            if (trigger.conditions.contentCondition) {
+                const contentRow = document.createElement('div');
+                contentRow.style.display = 'flex';
+                contentRow.style.alignItems = 'center';
+                contentRow.style.gap = '8px';
+                contentRow.style.padding = '8px 22px 8px 36px';
+                contentRow.style.background = 'var(--background-secondary)';
+                contentRow.style.borderRadius = '4px';
+                contentRow.style.marginTop = '4px';
+                contentRow.style.width = '100%';
+                contentRow.style.boxSizing = 'border-box';
+
+                const operatorSelect = document.createElement('select');
+                operatorSelect.style.cssText = RULE_STYLES.SELECT_STYLES;
+                ['contains', 'notContains'].forEach(op => {
+                    const option = document.createElement('option');
+                    option.value = op;
+                    option.textContent = op === 'contains' ? 'Contains' : 'Does Not Contain';
+                    option.selected = op === trigger.conditions!.contentCondition!.operator;
+                    operatorSelect.appendChild(option);
+                });
+                operatorSelect.onchange = async () => {
+                    trigger.conditions!.contentCondition!.operator = operatorSelect.value as 'contains' | 'notContains';
+                    await this.onSave();
+                };
+                contentRow.appendChild(operatorSelect);
+
+                const textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.placeholder = 'Text to search for';
+                textInput.value = trigger.conditions!.contentCondition!.text;
+                textInput.style.cssText = RULE_STYLES.SELECT_STYLES;
+                textInput.onchange = async () => {
+                    trigger.conditions!.contentCondition!.text = textInput.value;
+                    await this.onSave();
+                };
+                contentRow.appendChild(textInput);
+
+                // Spacer for delete button
+                const spacer = document.createElement('div');
+                spacer.style.flex = '1 1 auto';
+                contentRow.appendChild(spacer);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
+                deleteBtn.title = 'Delete condition';
+                deleteBtn.className = 'clickable-icon';
+                deleteBtn.onclick = async () => {
+                    delete trigger.conditions!.contentCondition;
+                    if (!trigger.conditions!.dateCondition) {
+                        delete trigger.conditions;
+                    }
+                    await this.onSave();
+                    this.renderTrigger(trigger, index, container, parentRule);
+                };
+                contentRow.appendChild(deleteBtn);
+
+                container.appendChild(contentRow);
+            }
         }
 
-        // Add condition row (if showAddConditionRow is set)
-        if (uiState.showAddConditionRow && availableTypes.length > 0) {
+        // Add condition row (only show if showAddConditionRow is true)
+        if (uiState?.showAddConditionRow) {
             const addRow = document.createElement('div');
-            addRow.className = 'note-mover-conditions';
             addRow.style.display = 'flex';
             addRow.style.alignItems = 'center';
             addRow.style.gap = '8px';
-            addRow.style.width = '100%';
-            addRow.style.padding = '8px';
+            addRow.style.padding = '8px 22px 8px 36px';
             addRow.style.background = 'var(--background-secondary)';
             addRow.style.borderRadius = '4px';
-            addRow.style.marginTop = '8px';
+            addRow.style.marginTop = '4px';
+            addRow.style.width = '100%';
+            addRow.style.boxSizing = 'border-box';
 
             const typeSelect = document.createElement('select');
-            typeSelect.style.flex = '0 0 200px';
-            availableTypes.forEach(opt => {
+            typeSelect.style.cssText = RULE_STYLES.SELECT_STYLES;
+            availableTypes.forEach(type => {
                 const option = document.createElement('option');
-                option.value = opt.value;
-                option.textContent = opt.label;
-                if (uiState.addConditionType === opt.value) option.selected = true;
+                option.value = type.value;
+                option.textContent = type.label;
                 typeSelect.appendChild(option);
             });
-            typeSelect.onchange = () => {
-                this.triggerUIState.setState(trigger.id, {
-                    addConditionType: typeSelect.value as 'date' | 'content'
-                });
-            };
+
             addRow.appendChild(typeSelect);
+
+            // Spacer für die Buttons
+            const spacer = document.createElement('div');
+            spacer.style.flex = '1 1 auto';
+            addRow.appendChild(spacer);
 
             const addBtn = document.createElement('button');
             addBtn.textContent = 'Add';
             addBtn.className = 'mod-cta';
             addBtn.onclick = async () => {
                 if (!trigger.conditions) trigger.conditions = {};
-                if (uiState.addConditionType === 'date') {
+                if (typeSelect.value === 'date') {
                     trigger.conditions.dateCondition = {
                         type: 'created',
                         operator: 'olderThan',
                         days: 1
                     };
-                } else if (uiState.addConditionType === 'content') {
+                } else if (typeSelect.value === 'content') {
                     trigger.conditions.contentCondition = {
                         operator: 'contains',
                         text: ''
@@ -443,11 +536,10 @@ export class GroupRuleComponent {
             };
             addRow.appendChild(addBtn);
 
-            // Cancel button
             const cancelBtn = document.createElement('button');
             cancelBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
             cancelBtn.className = 'clickable-icon';
-            cancelBtn.onclick = async () => {
+            cancelBtn.onclick = () => {
                 this.triggerUIState.clearState(trigger.id);
                 this.renderTrigger(trigger, index, container, parentRule);
             };
