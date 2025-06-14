@@ -44,7 +44,7 @@ describe('CommandHandler', () => {
 
     it('calls moveFocusedNoteToDestination in editor callback', () => {
         handler.setup();
-        // Editor-Callback aus dem ersten Kommando extrahieren und ausführen
+        // Extract and execute editor callback from first command
         const editorCallback = addCommand.mock.calls[0][0].editorCallback;
         editorCallback({}, {});
         expect(moveFocusedNoteToDestination).toHaveBeenCalled();

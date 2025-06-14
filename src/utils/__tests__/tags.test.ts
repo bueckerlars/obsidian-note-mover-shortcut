@@ -1,12 +1,12 @@
 import { getAllTags } from '../tags';
 
 describe('getAllTags', () => {
-    it('gibt ein leeres Array zurück, wenn keine Tags vorhanden sind', () => {
+    it('returns an empty array when no tags are present', () => {
         const cache = {};
         expect(getAllTags(cache as any)).toEqual([]);
     });
 
-    it('gibt alle Tags als Array von Strings zurück', () => {
+    it('returns all tags as an array of strings', () => {
         const cache = {
             tags: [
                 { tag: '#test1' },

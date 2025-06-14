@@ -18,14 +18,14 @@ export class RulesManager {
                     }
                 }
             } else if (rule.type === 'group') {
-                // Zuerst Subgruppen prüfen
+                // First check subgroups
                 if (rule.subgroups && rule.subgroups.length > 0) {
                     const subgroupResult = await this.evaluateRules(rule.subgroups, tags, file);
                     if (subgroupResult) {
                         return subgroupResult;
                     }
                 }
-                // Dann Trigger der aktuellen Gruppe prüfen
+                // Then check triggers of current group
                 const matchingTrigger = await this.evaluateGroupTriggers(rule.triggers || [], tags, file, rule.groupType);
                 if (matchingTrigger) {
                     return {
