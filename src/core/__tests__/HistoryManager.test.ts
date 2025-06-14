@@ -73,6 +73,32 @@ describe('HistoryManager', () => {
             const result = await historyManager.undoEntry('non-existent-id');
             expect(result).toBe(false);
         });
+
+        it('should return false if file is not found', async () => {
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: '/source/path',
+                destinationPath: '/destination/path',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            (mockPlugin.app.vault.getAbstractFileByPath as jest.Mock).mockReturnValueOnce(null);
+            const history = historyManager.getHistory();
+            const result = await historyManager.undoEntry(history[0].id);
+            expect(result).toBe(false);
+        });
+
+        it('should return false if renameFile throws', async () => {
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: '/source/path',
+                destinationPath: '/destination/path',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            (mockPlugin.app.fileManager.renameFile as jest.Mock).mockRejectedValueOnce(new Error('fail'));
+            const history = historyManager.getHistory();
+            const result = await historyManager.undoEntry(history[0].id);
+            expect(result).toBe(false);
+        });
     });
 
     describe('getLastEntryForFile', () => {
@@ -109,6 +135,30 @@ describe('HistoryManager', () => {
 
         it('should return false if no entry is found', async () => {
             const result = await historyManager.undoLastMove('non-existent-file.md');
+            expect(result).toBe(false);
+        });
+
+        it('should return false if file is not found (undoLastMove)', async () => {
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: '/source/path',
+                destinationPath: '/destination/path',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            (mockPlugin.app.vault.getAbstractFileByPath as jest.Mock).mockReturnValueOnce(null);
+            const result = await historyManager.undoLastMove('note.md');
+            expect(result).toBe(false);
+        });
+
+        it('should return false if renameFile throws (undoLastMove)', async () => {
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: '/source/path',
+                destinationPath: '/destination/path',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            (mockPlugin.app.fileManager.renameFile as jest.Mock).mockRejectedValueOnce(new Error('fail'));
+            const result = await historyManager.undoLastMove('note.md');
             expect(result).toBe(false);
         });
     });

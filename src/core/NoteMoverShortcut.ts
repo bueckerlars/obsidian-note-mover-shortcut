@@ -1,11 +1,16 @@
 import NoteMoverShortcutPlugin from "main";
-import { getAllTags, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import { log_error, log_info } from "../utils/Log";
 import { Notice } from "obsidian";
-import { combinePath } from "../utils/PathUtils";
+import { combinePath } from "../utils/PathUtils"; 
+import { RulesManager } from "./RulesManager";
 
 export class NoteMoverShortcut {
-	constructor(private plugin: NoteMoverShortcutPlugin) {}
+	private rulesManager: RulesManager;
+
+	constructor(private plugin: NoteMoverShortcutPlugin) {
+		this.rulesManager = new RulesManager(plugin.app);
+	}
 
 	async setup(): Promise<void> {
 		// Start periodic movement interval if enabled
@@ -20,33 +25,34 @@ export class NoteMoverShortcut {
 		const originalPath = file.path;
 
 		try {
+			// Check if filter is enabled and not skipped
+			if (this.plugin.settings.enableFilter && !skipFilter) {
+				const tags = this.rulesManager.getTagsFromFile(file);
+				const hasMatchingTag = tags.some(tag => this.plugin.settings.filter.includes(tag));
+				
+				// If whitelist mode and no matching tag, or blacklist mode and matching tag, skip the file
+				if ((this.plugin.settings.isFilterWhitelist && !hasMatchingTag) || 
+					(!this.plugin.settings.isFilterWhitelist && hasMatchingTag)) {
+					return;
+				}
+			}
+
 			// Check if rules are enabled
 			if (this.plugin.settings.enableRules) {
 				// Get tags from file
-				const tags = getAllTags(app.metadataCache.getFileCache(file)!) || [];
-				const whitelist = this.plugin.settings.isFilterWhitelist;
+				const tags = this.rulesManager.getTagsFromFile(file);
 				
 				// Determine the target folder based on tags and rules
 				if (tags) {
-					for (const tag of tags) {
-						if (!skipFilter) {
-							// check if tag is in filter
-							const filter = this.plugin.settings.filter.find(filter => filter === tag);
-							// if blacklist and tag is in filter, skip
-							if (!whitelist && filter) {
-								return;
-							}
-							// if whitelist and tag is not in filter, skip
-							else if (whitelist && !filter) {
-									return;
-							}
+					try {
+						const matchingRule = await this.rulesManager.evaluateRules(this.plugin.settings.rules, tags, file);
+						if (matchingRule) {
+							targetFolder = matchingRule.path;
 						}
-						// Apply matching rule
-						const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
-						if (rule) {
-							targetFolder = rule.path;
-							break;
-						}
+					} catch (err) {
+						// Error reading file content: fallback to default
+						log_error(new Error(`Error reading file content: ${err?.message || err}`));
+						targetFolder = defaultFolder;
 					}
 				}
 			}

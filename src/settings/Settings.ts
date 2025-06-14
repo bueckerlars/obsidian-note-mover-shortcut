@@ -4,11 +4,13 @@ import { FolderSuggest } from "./suggesters/FolderSuggest";
 import { TagSuggest } from "./suggesters/TagSuggest";
 import { NoteMoverError } from "src/utils/Error";
 import { log_error } from "src/utils/Log";
-
-interface Rule {
-	tag: string,
-	path: string,
-}
+import { v4 as uuidv4 } from 'uuid';
+import { InboxSettings } from "./components/InboxSettings";
+import { PeriodicMovementSettings } from "./components/PeriodicMovementSettings";
+import { FilterSettings } from "./components/FilterSettings";
+import { RulesSettings } from "./components/RulesSettings";
+import { HistorySettings } from "./components/HistorySettings";
+import { Rule, GroupRule, TagRule, Trigger } from "./types";
 
 export interface NoteMoverShortcutSettings {
 	destination: string,
@@ -40,58 +42,44 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		this.containerEl.empty();
+		const { containerEl } = this;
+		containerEl.empty();
 
-		this.add_inbox_folder_setting();
-		this.add_target_folder_setting();
-
-		this.add_periodic_movement_setting();
-
-		this.add_filter_settings();
-
-		this.add_rules_setting();
-		if (this.plugin.settings.enableRules) {
-			this.add_rules_array();
-			this.add_add_rule_button_setting();
-		}
-
-		this.add_history_settings();
-	}
-
-	add_inbox_folder_setting(): void {
-		new Setting(this.containerEl)
+		// Basic Settings
+		new Setting(containerEl).setName('Basic Settings').setHeading();
+		
+		// Inbox folder
+		new Setting(containerEl)
 			.setName('Inbox folder')
 			.setDesc('Set your inbox folder')
 			.addSearch((cb) => {
 				new FolderSuggest(this.app, cb.inputEl);
 				cb.setPlaceholder('Example: folder1/folder2')
 					.setValue(this.plugin.settings.inboxLocation)
-					.onChange((new_folder) => {
+					.onChange(async (new_folder) => {
 						this.plugin.settings.inboxLocation = new_folder;
-						this.plugin.save_settings();
+						await this.plugin.save_settings();
 					});
 			});
-	}
 
-	add_target_folder_setting(): void {
-		new Setting(this.containerEl)
+		// Note folder
+		new Setting(containerEl)
 			.setName('Note folder')
 			.setDesc('Set your main note folder')
 			.addSearch((cb) => {
 				new FolderSuggest(this.app, cb.inputEl);
 				cb.setPlaceholder("Example: folder1/folder2")
 					.setValue(this.plugin.settings.destination)
-					.onChange((new_folder) => {
+					.onChange(async (new_folder) => {
 						this.plugin.settings.destination = new_folder;
-						this.plugin.save_settings();
+						await this.plugin.save_settings();
 					});
 			});
-	}
 
-	add_periodic_movement_setting(): void {
-		new Setting(this.containerEl).setName('Periodic movement').setHeading();
+		// Periodic Movement Settings
+		new Setting(containerEl).setName('Periodic Movement').setHeading();
 
-		new Setting(this.containerEl)
+		new Setting(containerEl)
 			.setName('Enable periodic movement')
 			.setDesc('Enable the periodic movement of notes')
 			.addToggle(toggle => toggle
@@ -99,16 +87,13 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.enablePeriodicMovement = value;
 					await this.plugin.save_settings();
-					// Toggle interval based in the new value
 					this.plugin.noteMover.togglePeriodicMovementInterval();
-					
-					// Force refresh display
 					this.display();
 				})
 			);
 		
 		if (this.plugin.settings.enablePeriodicMovement) {
-			new Setting(this.containerEl)
+			new Setting(containerEl)
 				.setName('Periodic movement interval')
 				.setDesc('Set the interval for the periodic movement of notes in minutes')
 				.addText(text => text
@@ -130,13 +115,11 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					})
 				);
 		}
-	}
 
-	add_filter_settings(): void {
-		// Filter settings
-		new Setting(this.containerEl).setName('Filter').setHeading();
+		// Filter Settings
+		new Setting(containerEl).setName('Filter').setHeading();
 
-		new Setting(this.containerEl)
+		new Setting(containerEl)
 			.setName('Enable filter')
 			.setDesc('Enable the filter')
 			.addToggle(toggle => toggle
@@ -149,20 +132,55 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 			);
 
 		if (this.plugin.settings.enableFilter) {
-			new Setting(this.containerEl)
-			.setName('Toggle blacklist/whitelist')
-			.setDesc('Toggle between a blacklist or a whitelist')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.isFilterWhitelist)
-				.onChange(async (value) => {
-					this.plugin.settings.isFilterWhitelist = value;
-					await this.plugin.save_settings();
-				})
-			);
+			new Setting(containerEl)
+				.setName('Toggle blacklist/whitelist')
+				.setDesc('Toggle between a blacklist or a whitelist')
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings.isFilterWhitelist)
+					.onChange(async (value) => {
+						this.plugin.settings.isFilterWhitelist = value;
+						await this.plugin.save_settings();
+					})
+				);
 	
-			this.add_periodic_movement_filter_array();
-	
-			new Setting(this.containerEl)
+			// Filter tags
+			this.plugin.settings.filter.forEach((filter, index) => {
+				const s = new Setting(containerEl)
+					.addSearch((cb) => {
+						new TagSuggest(this.app, cb.inputEl);
+						cb.setPlaceholder('Tag')
+							.setValue(filter)
+							.onChange(async (value) => {
+								this.plugin.settings.filter[index] = value;
+								await this.plugin.save_settings();
+							});
+						// @ts-ignore
+						cb.containerEl.addClass("note_mover_search");
+					})
+					.addExtraButton(btn => btn
+						.setIcon('up-chevron-glyph')
+						.onClick(() => {
+							this.moveFilter(index, -1);
+						})
+					)
+					.addExtraButton(btn => btn
+						.setIcon('down-chevron-glyph')
+						.onClick(() => {
+							this.moveFilter(index, 1);
+						})
+					)
+					.addExtraButton(btn => btn
+						.setIcon('cross')
+						.onClick(async () => {
+							this.plugin.settings.filter.splice(index, 1);
+							await this.plugin.save_settings();
+							this.display();
+						})
+					);
+				s.infoEl.remove();
+			});
+    
+			new Setting(containerEl)
 				.addButton(btn => btn
 					.setButtonText('Add new filter')
 					.setCta()
@@ -174,162 +192,15 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				);
 		}
 
-	}
+		// Rules Settings
+		new Setting(containerEl).setName('Rules').setHeading();
+		const rulesSettings = new RulesSettings(containerEl, this.app, this.plugin);
+		rulesSettings.display();
 
-	add_periodic_movement_filter_array(): void {
-		this.plugin.settings.filter.forEach((filter, index) => {
-			const s = new Setting(this.containerEl)
-				.addSearch((cb) => {
-					new TagSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Tag')
-						.setValue(filter)
-						.onChange(async (value) => {
-							this.plugin.settings.filter[index] = value;
-							await this.plugin.save_settings();
-						});
-					// @ts-ignore
-					cb.containerEl.addClass("note_mover_search");
-				})
-				.addExtraButton(btn => btn
-					.setIcon('up-chevron-glyph')
-					.onClick(() => {
-						this.moveFilter(index, -1);
-					})
-				)
-				.addExtraButton(btn => btn
-					.setIcon('down-chevron-glyph')
-					.onClick(() => {
-						this.moveFilter(index, 1);
-					})
-				)
-				.addExtraButton(btn => btn
-					.setIcon('cross')
-					.onClick(async () => {
-						this.plugin.settings.filter.splice(index, 1);
-						await this.plugin.save_settings();
-						this.display();
-					})
-				);
-				s.infoEl.remove();
-		});
-	}
+		// History Settings
+		new Setting(containerEl).setName('History').setHeading();
 
-	add_rules_setting(): void {
-		new Setting(this.containerEl).setName('Rules').setHeading();
-
-		const descUseRules = document.createDocumentFragment();
-		descUseRules.append(
-			'When enabled, the NoteMover will move notes to the folder associated with the tag.',
-			document.createElement('br'),
-			'If a note contains more than one tag associated with a rule, the first rule will be applied.',
-		);
-
-		new Setting(this.containerEl)
-			.setName('Enable rules')
-			.setDesc(descUseRules)
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.enableRules)
-				.onChange(async (value) => {
-					this.plugin.settings.enableRules = value;
-					await this.plugin.save_settings();
-					this.display();
-				})
-			);
-	}
-
-	add_add_rule_button_setting(): void {
-		new Setting(this.containerEl)
-			.addButton(btn => btn
-				.setButtonText('Add new rule')
-				.setCta()
-				.onClick(async () => {
-					this.plugin.settings.rules.push({ tag: '', path: '' });
-					await this.plugin.save_settings();
-					this.display();
-				})
-			);
-	}
-
-	add_rules_array(): void {
-		this.plugin.settings.rules.forEach((rule, index) => {
-			const s = new Setting(this.containerEl)
-				.addSearch((cb) => {
-					new TagSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Tag')
-						.setValue(rule.tag)
-						.onChange(async (value) => {
-							if (value && this.plugin.settings.rules.some(
-								(rule) => rule.tag === value
-							)
-							) {
-								log_error(
-									new NoteMoverError(
-										"This tag already has a folder associated with it"
-									)
-								);
-								return;
-							}
-
-							// Save Setting
-							this.plugin.settings.rules[index].tag = value;
-							await this.plugin.save_settings();
-						});
-					// @ts-ignore
-					cb.containerEl.addClass("note_mover_search");
-				})
-				.addSearch((cb) => {
-					new FolderSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Path')
-						.setValue(rule.path)
-						.onChange(async (value) => {
-							this.plugin.settings.rules[index].path = value;
-							await this.plugin.save_settings();
-						});
-					// @ts-ignore
-					cb.containerEl.addClass("note_mover_search");
-				})
-				.addExtraButton(btn => btn
-					.setIcon('up-chevron-glyph')
-					.onClick(() => {
-						this.moveRule(index, -1);
-					})
-				)
-				.addExtraButton(btn => btn
-					.setIcon('down-chevron-glyph')
-					.onClick(() => {
-						this.moveRule(index, 1);
-					})
-				)
-				.addExtraButton(btn => btn
-					.setIcon('cross')
-					.onClick(async () => {
-						this.plugin.settings.rules.splice(index, 1);
-						await this.plugin.save_settings();
-						this.display();
-					})
-				);
-				s.infoEl.remove();
-			});
-	}
-
-	moveRule(index: number, direction: number) {
-		const newIndex = Math.max(0, Math.min(this.plugin.settings.rules.length - 1, index + direction));
-		[this.plugin.settings.rules[index], this.plugin.settings.rules[newIndex]] = [this.plugin.settings.rules[newIndex], this.plugin.settings.rules[index]];
-		this.plugin.save_settings();
-		this.display();
-	}
-
-	moveFilter(index: number, direction: number) {
-		const newIndex = Math.max(0, Math.min(this.plugin.settings.filter.length - 1, index + direction));
-		[this.plugin.settings.filter[index], this.plugin.settings.filter[newIndex]] = [this.plugin.settings.filter[newIndex], this.plugin.settings.filter[index]];
-		this.plugin.save_settings();
-		this.display();
-	}
-
-	add_history_settings(): void {
-		new Setting(this.containerEl).setName('History').setHeading();
-
-		new Setting(this.containerEl)
+		new Setting(containerEl)
 			.setName('Clear history')
 			.setDesc('Clears the history of moved notes')
 			.addButton(btn => btn
@@ -341,5 +212,12 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					}
 				})
 			);
+	}
+
+	private async moveFilter(index: number, direction: number) {
+		const newIndex = Math.max(0, Math.min(this.plugin.settings.filter.length - 1, index + direction));
+		[this.plugin.settings.filter[index], this.plugin.settings.filter[newIndex]] = [this.plugin.settings.filter[newIndex], this.plugin.settings.filter[index]];
+		await this.plugin.save_settings();
+		this.display();
 	}
 }

@@ -1,5 +1,6 @@
-# vscode
+# ide
 .vscode 
+.cursor
 
 # Intellij
 *.iml
@@ -23,3 +24,4 @@ data.json
 
 # Exclude coverage
 coverage
+
