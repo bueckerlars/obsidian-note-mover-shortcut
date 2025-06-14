@@ -3,8 +3,15 @@ import { DateCondition, ContentCondition } from "../../types";
 import { RULE_STYLES } from "./styles";
 
 interface Conditions {
-    dateConditions?: DateCondition[];
-    contentConditions?: ContentCondition[];
+    dateCondition?: {
+        type: 'created' | 'modified';
+        operator: 'olderThan' | 'newerThan';
+        days: number;
+    };
+    contentCondition?: {
+        operator: 'contains' | 'notContains';
+        text: string;
+    };
 }
 
 export class ConditionsComponent {
@@ -41,20 +48,14 @@ export class ConditionsComponent {
         conditions: Conditions,
         onUpdate: () => void
     ): void {
-        if (!conditions.dateConditions?.length) return;
+        if (!conditions.dateCondition) return;
 
-        conditions.dateConditions.forEach((condition, index) => {
-            const dateRow = document.createElement('div');
-            dateRow.style.cssText = RULE_STYLES.MAIN_ROW_STYLES;
+        const dateRow = document.createElement('div');
+        dateRow.style.cssText = RULE_STYLES.MAIN_ROW_STYLES;
 
-            if (condition.isNew) {
-                this.renderNewDateConditionInput(dateRow, conditions, index, onUpdate);
-            } else {
-                this.renderExistingDateCondition(dateRow, conditions, index, onUpdate);
-            }
+        this.renderExistingDateCondition(dateRow, conditions, onUpdate);
 
-            container.appendChild(dateRow);
-        });
+        container.appendChild(dateRow);
     }
 
     private renderContentConditions(
@@ -62,15 +63,13 @@ export class ConditionsComponent {
         conditions: Conditions,
         onUpdate: () => void
     ): void {
-        if (!conditions.contentConditions?.length) return;
+        if (!conditions.contentCondition) return;
 
-        conditions.contentConditions.forEach((condition, index) => {
-            const contentRow = document.createElement('div');
-            contentRow.style.cssText = RULE_STYLES.MAIN_ROW_STYLES;
+        const contentRow = document.createElement('div');
+        contentRow.style.cssText = RULE_STYLES.MAIN_ROW_STYLES;
 
-            this.renderExistingContentCondition(contentRow, conditions, index, onUpdate);
-            container.appendChild(contentRow);
-        });
+        this.renderExistingContentCondition(contentRow, conditions, onUpdate);
+        container.appendChild(contentRow);
     }
 
     private renderNewConditionRow(
@@ -78,7 +77,7 @@ export class ConditionsComponent {
         conditions: Conditions,
         onUpdate: () => void
     ): void {
-        if (conditions.dateConditions?.length || conditions.contentConditions?.length) return;
+        if (conditions.dateCondition || conditions.contentCondition) return;
 
         const newConditionRow = document.createElement('div');
         newConditionRow.style.cssText = `
@@ -107,22 +106,16 @@ export class ConditionsComponent {
         addBtn.className = 'mod-cta';
         addBtn.onclick = async () => {
             if (typeSelect.value === 'date') {
-                if (!conditions.dateConditions) {
-                    conditions.dateConditions = [];
-                }
-                conditions.dateConditions.push({
+                conditions.dateCondition = {
                     type: 'created',
                     operator: 'olderThan',
                     days: 1
-                });
+                };
             } else {
-                if (!conditions.contentConditions) {
-                    conditions.contentConditions = [];
-                }
-                conditions.contentConditions.push({
+                conditions.contentCondition = {
                     operator: 'contains',
                     text: ''
-                });
+                };
             }
             await this.onSave();
             onUpdate();
@@ -133,8 +126,8 @@ export class ConditionsComponent {
         cancelBtn.className = 'clickable-icon';
         cancelBtn.style.cssText = 'margin-left: auto;';
         cancelBtn.onclick = async () => {
-            delete conditions.dateConditions;
-            delete conditions.contentConditions;
+            delete conditions.dateCondition;
+            delete conditions.contentCondition;
             await this.onSave();
             onUpdate();
         };
@@ -145,69 +138,12 @@ export class ConditionsComponent {
         container.appendChild(newConditionRow);
     }
 
-    private renderNewDateConditionInput(
-        row: HTMLElement,
-        conditions: Conditions,
-        index: number,
-        onUpdate: () => void
-    ): void {
-        const typeSelect = document.createElement('select');
-        typeSelect.style.cssText = RULE_STYLES.SELECT_STYLES;
-        [
-            { value: 'date', label: 'Date Condition' },
-            { value: 'content', label: 'Content Condition' }
-        ].forEach(opt => {
-            const option = document.createElement('option');
-            option.value = opt.value;
-            option.textContent = opt.label;
-            typeSelect.appendChild(option);
-        });
-
-        const addBtn = document.createElement('button');
-        addBtn.textContent = 'Add';
-        addBtn.className = 'mod-cta';
-        addBtn.onclick = async () => {
-            if (typeSelect.value === 'date') {
-                delete conditions.dateConditions![index].isNew;
-            } else {
-                conditions.dateConditions!.splice(index, 1);
-                if (!conditions.contentConditions) {
-                    conditions.contentConditions = [];
-                }
-                conditions.contentConditions.push({
-                    operator: 'contains',
-                    text: ''
-                });
-            }
-            await this.onSave();
-            onUpdate();
-        };
-
-        const cancelBtn = document.createElement('button');
-        cancelBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
-        cancelBtn.className = 'clickable-icon';
-        cancelBtn.style.cssText = 'margin-left: auto;';
-        cancelBtn.onclick = async () => {
-            conditions.dateConditions!.splice(index, 1);
-            if (conditions.dateConditions!.length === 0) {
-                delete conditions.dateConditions;
-            }
-            await this.onSave();
-            onUpdate();
-        };
-
-        row.appendChild(typeSelect);
-        row.appendChild(addBtn);
-        row.appendChild(cancelBtn);
-    }
-
     private renderExistingDateCondition(
         row: HTMLElement,
         conditions: Conditions,
-        index: number,
         onUpdate: () => void
     ): void {
-        const condition = conditions.dateConditions![index];
+        const condition = conditions.dateCondition!;
 
         const typeSelect = document.createElement('select');
         typeSelect.style.cssText = RULE_STYLES.SELECT_STYLES;
@@ -255,10 +191,7 @@ export class ConditionsComponent {
         deleteBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
         deleteBtn.className = 'clickable-icon';
         deleteBtn.onclick = async () => {
-            conditions.dateConditions!.splice(index, 1);
-            if (conditions.dateConditions!.length === 0) {
-                delete conditions.dateConditions;
-            }
+            delete conditions.dateCondition;
             await this.onSave();
             onUpdate();
         };
@@ -268,10 +201,9 @@ export class ConditionsComponent {
     private renderExistingContentCondition(
         row: HTMLElement,
         conditions: Conditions,
-        index: number,
         onUpdate: () => void
     ): void {
-        const condition = conditions.contentConditions![index];
+        const condition = conditions.contentCondition!;
 
         const operatorSelect = document.createElement('select');
         operatorSelect.style.cssText = RULE_STYLES.SELECT_STYLES;
@@ -303,10 +235,7 @@ export class ConditionsComponent {
         deleteBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2"/></svg>';
         deleteBtn.className = 'clickable-icon';
         deleteBtn.onclick = async () => {
-            conditions.contentConditions!.splice(index, 1);
-            if (conditions.contentConditions!.length === 0) {
-                delete conditions.contentConditions;
-            }
+            delete conditions.contentCondition;
             await this.onSave();
             onUpdate();
         };
