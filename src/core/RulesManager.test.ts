@@ -229,7 +229,7 @@ describe("RulesManager", () => {
                 type: "rule",
                 tag: "#test1",
                 path: "/subtest",
-                condition: undefined
+                condition: null
             });
         });
 

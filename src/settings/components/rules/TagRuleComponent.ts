@@ -248,7 +248,12 @@ export class TagRuleComponent {
             daysInput.value = rule.condition!.dateCondition!.days.toString();
             daysInput.style.cssText = RULE_STYLES.SELECT_STYLES;
             daysInput.onchange = async () => {
-                rule.condition!.dateCondition!.days = parseInt(daysInput.value);
+                const value = parseInt(daysInput.value);
+                if (isNaN(value) || value < 1) {
+                    daysInput.value = rule.condition!.dateCondition!.days.toString();
+                    return;
+                }
+                rule.condition!.dateCondition!.days = value;
                 await this.onSave();
             };
             dateRow.appendChild(daysInput);

@@ -33,7 +33,7 @@ export class RulesManager {
                         type: 'rule',
                         tag: matchingTrigger.tag,
                         path: rule.destination,
-                        condition: matchingTrigger.conditions
+                        condition: matchingTrigger.conditions || null
                     };
                 }
             }

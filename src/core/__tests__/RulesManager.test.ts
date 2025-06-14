@@ -34,6 +34,39 @@ describe("RulesManager", () => {
     });
 
     describe("evaluateRules", () => {
+        it("should return null when no rules match", async () => {
+            const rules: Rule[] = [];
+            const tags = ["#test"];
+            const result = await rulesManager.evaluateRules(rules, tags, mockFile);
+            expect(result).toBeNull();
+        });
+
+        it("should match a simple tag rule", async () => {
+            const rule: TagRule = {
+                id: "1",
+                type: "rule",
+                tag: "#test",
+                path: "/test"
+            };
+            const rules: Rule[] = [rule];
+            const tags = ["#test"];
+            const result = await rulesManager.evaluateRules(rules, tags, mockFile);
+            expect(result).toEqual(rule);
+        });
+
+        it("should not match when tag is not present", async () => {
+            const rule: TagRule = {
+                id: "1",
+                type: "rule",
+                tag: "#test",
+                path: "/test"
+            };
+            const rules: Rule[] = [rule];
+            const tags = ["#other"];
+            const result = await rulesManager.evaluateRules(rules, tags, mockFile);
+            expect(result).toBeNull();
+        });
+
         it("should handle file read errors", async () => {
             const rules: Rule[] = [{
                 type: "rule",
@@ -76,6 +109,90 @@ describe("RulesManager", () => {
             expect(result).toBeNull();
         });
 
+        it("should evaluate content condition", async () => {
+            const rule: TagRule = {
+                id: "1",
+                type: "rule",
+                tag: "#test",
+                path: "/test",
+                condition: {
+                    contentCondition: {
+                        operator: "contains",
+                        text: "test content"
+                    }
+                }
+            };
+            const rules: Rule[] = [rule];
+            const tags = ["#test"];
+            (app.vault.read as jest.Mock).mockResolvedValue("This is test content");
+            const result = await rulesManager.evaluateRules(rules, tags, mockFile);
+            expect(result).toEqual(rule);
+        });
+
+        it("should not match when content condition fails", async () => {
+            const rule: TagRule = {
+                id: "1",
+                type: "rule",
+                tag: "#test",
+                path: "/test",
+                condition: {
+                    contentCondition: {
+                        operator: "contains",
+                        text: "test content"
+                    }
+                }
+            };
+            const rules: Rule[] = [rule];
+            const tags = ["#test"];
+            (app.vault.read as jest.Mock).mockResolvedValue("Different content");
+            const result = await rulesManager.evaluateRules(rules, tags, mockFile);
+            expect(result).toBeNull();
+        });
+
+        it("should evaluate date condition", async () => {
+            const rule: TagRule = {
+                id: "1",
+                type: "rule",
+                tag: "#test",
+                path: "/test",
+                condition: {
+                    dateCondition: {
+                        type: "modified",
+                        operator: "olderThan",
+                        days: 7
+                    }
+                }
+            };
+            const rules: Rule[] = [rule];
+            const tags = ["#test"];
+            const oldDate = Date.now() - (8 * 24 * 60 * 60 * 1000); // 8 days ago
+            (app.vault.adapter.stat as jest.Mock).mockResolvedValue({ mtime: oldDate });
+            const result = await rulesManager.evaluateRules(rules, tags, mockFile);
+            expect(result).toEqual(rule);
+        });
+
+        it("should not match when date condition fails", async () => {
+            const rule: TagRule = {
+                id: "1",
+                type: "rule",
+                tag: "#test",
+                path: "/test",
+                condition: {
+                    dateCondition: {
+                        type: "modified",
+                        operator: "olderThan",
+                        days: 7
+                    }
+                }
+            };
+            const rules: Rule[] = [rule];
+            const tags = ["#test"];
+            const recentDate = Date.now() - (6 * 24 * 60 * 60 * 1000); // 6 days ago
+            (app.vault.adapter.stat as jest.Mock).mockResolvedValue({ mtime: recentDate });
+            const result = await rulesManager.evaluateRules(rules, tags, mockFile);
+            expect(result).toBeNull();
+        });
+
         it("should evaluate group rules with AND condition", async () => {
             const rules: GroupRule[] = [{
                 type: "group",
@@ -112,6 +229,12 @@ describe("RulesManager", () => {
             const result = await rulesManager.evaluateRules(rules, ["test1", "test2"], mockFile);
             expect(result).not.toBeNull();
             expect(result?.tag).toBe("test1");
+            expect(result?.condition).toEqual({
+                contentCondition: {
+                    operator: "contains",
+                    text: "test"
+                }
+            });
         });
 
         it("should evaluate group rules with OR condition", async () => {
@@ -150,6 +273,65 @@ describe("RulesManager", () => {
             const result = await rulesManager.evaluateRules(rules, ["test1"], mockFile);
             expect(result).not.toBeNull();
             expect(result?.tag).toBe("test1");
+            expect(result?.condition).toEqual({
+                contentCondition: {
+                    operator: "contains",
+                    text: "test"
+                }
+            });
+        });
+
+        it("should handle nested group rules", async () => {
+            const nestedGroup: GroupRule = {
+                id: "2",
+                type: "group",
+                groupType: "or",
+                destination: "/nested",
+                triggers: [
+                    { id: "nested-trigger", tag: "#nested", conditions: undefined }
+                ]
+            };
+            const parentGroup: GroupRule = {
+                id: "1",
+                type: "group",
+                groupType: "and",
+                destination: "/test",
+                triggers: [
+                    { id: "parent-trigger", tag: "#test1", conditions: undefined }
+                ],
+                subgroups: [nestedGroup]
+            };
+            const rules: Rule[] = [parentGroup];
+            const tags = ["#nested"];
+            const result = await rulesManager.evaluateRules(rules, tags, mockFile);
+            expect(result).toEqual({
+                id: "2",
+                type: "rule",
+                tag: "#nested",
+                path: "/nested",
+                condition: null
+            });
+        });
+
+        it("should handle missing file stats", async () => {
+            const rule: TagRule = {
+                id: "1",
+                type: "rule",
+                tag: "#test",
+                path: "/test",
+                condition: {
+                    dateCondition: {
+                        type: "modified",
+                        operator: "olderThan",
+                        days: 7
+                    }
+                }
+            };
+            const rules: Rule[] = [rule];
+            const tags = ["#test"];
+            (app.vault.adapter.stat as jest.Mock).mockResolvedValue(null);
+            const result = await rulesManager.evaluateRules(rules, tags, mockFile);
+            expect(result).toBeNull();
         });
     });
 

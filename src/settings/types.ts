@@ -40,7 +40,7 @@ export interface TagRule extends BaseRule {
     condition?: {
         dateCondition?: DateCondition;
         contentCondition?: ContentCondition;
-    };
+    } | null;
 }
 
 export type Rule = TagRule | GroupRule;

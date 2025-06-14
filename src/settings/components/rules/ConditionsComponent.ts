@@ -214,7 +214,12 @@ export class ConditionsComponent {
         daysInput.value = condition.days.toString();
         daysInput.style.cssText = `background: var(--background-secondary); color: var(--text-normal); border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 2px 6px; width: 60px;`;
         daysInput.onchange = async () => {
-            condition.days = parseInt(daysInput.value);
+            const value = parseInt(daysInput.value);
+            if (isNaN(value) || value < 1) {
+                daysInput.value = condition.days.toString();
+                return;
+            }
+            condition.days = value;
             await this.onSave();
         };
         inputContainer.appendChild(daysInput);
