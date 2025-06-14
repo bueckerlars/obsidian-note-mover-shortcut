@@ -9,7 +9,6 @@ export interface DateCondition {
     type: 'created' | 'modified';
     operator: 'olderThan' | 'newerThan';
     days: number;
-    isNew?: boolean;
 }
 
 export interface ContentCondition {
