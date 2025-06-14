@@ -140,14 +140,28 @@ export class GroupRuleComponent {
         childrenContainer.style.display = 'flex';
         childrenContainer.style.flexDirection = 'column';
         childrenContainer.style.gap = '4px';
-        for (let i = 0; i < rule.rules.length; i++) {
-            const childRuleContainer = document.createElement('div');
-            childrenContainer.appendChild(childRuleContainer);
-            const childRule = rule.rules[i];
-            if (childRule.type === 'rule') {
-                this.tagRuleComponent.renderTagRule(childRule as TagRule, i, childRuleContainer, rule.id);
-            } else {
-                this.renderGroupRule(childRule as GroupRule, i, childRuleContainer, rule.id, indentLevel + 1);
+
+        if (rule.rules.length === 0) {
+            const placeholder = document.createElement('div');
+            placeholder.style.padding = '8px';
+            placeholder.style.textAlign = 'center';
+            placeholder.style.color = 'var(--text-muted)';
+            placeholder.style.fontStyle = 'italic';
+            placeholder.style.border = '1px dashed var(--background-modifier-border)';
+            placeholder.style.borderRadius = '4px';
+            placeholder.style.margin = '4px 0';
+            placeholder.textContent = 'No rules or subgroups present. Click "Add Rule" or "Add AND/OR Group" to add some.';
+            childrenContainer.appendChild(placeholder);
+        } else {
+            for (let i = 0; i < rule.rules.length; i++) {
+                const childRuleContainer = document.createElement('div');
+                const childRule = rule.rules[i];
+                if (childRule.type === 'rule') {
+                    this.tagRuleComponent.renderTagRule(childRule as TagRule, i, childRuleContainer, rule.id);
+                } else {
+                    this.renderGroupRule(childRule as GroupRule, i, childRuleContainer, rule.id, indentLevel + 1);
+                }
+                childrenContainer.appendChild(childRuleContainer);
             }
         }
         container.appendChild(childrenContainer);

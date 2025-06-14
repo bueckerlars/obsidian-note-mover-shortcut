@@ -81,20 +81,7 @@ export function createNewRule(type: 'rule' | 'and' | 'or'): Rule {
         return {
             id: uuidv4(),
             type,
-            rules: [
-                {
-                    id: uuidv4(),
-                    type: 'rule',
-                    tag: '',
-                    path: ''
-                },
-                {
-                    id: uuidv4(),
-                    type: 'rule',
-                    tag: '',
-                    path: ''
-                }
-            ]
+            rules: []
         };
     }
 } 
