@@ -3,9 +3,25 @@ import { getAllTags, TFile } from "obsidian";
 import { log_error, log_info } from "../utils/Log";
 import { Notice } from "obsidian";
 import { combinePath } from "../utils/PathUtils";
+import { RuleManager } from "./RuleManager";
 
 export class NoteMoverShortcut {
-	constructor(private plugin: NoteMoverShortcutPlugin) {}
+	private ruleManager: RuleManager;
+
+	constructor(private plugin: NoteMoverShortcutPlugin) {
+		this.ruleManager = new RuleManager(plugin.app, plugin.settings.destination);
+		this.updateRuleManager();
+	}
+
+	public updateRuleManager(): void {
+		if (this.plugin.settings.enableRules) {
+			this.ruleManager.setRules(this.plugin.settings.rules);
+			this.ruleManager.setFilter(
+				this.plugin.settings.filter,
+				this.plugin.settings.isFilterWhitelist
+			);
+		}
+	}
 
 	async setup(): Promise<void> {
 		// Start periodic movement interval if enabled
@@ -16,39 +32,18 @@ export class NoteMoverShortcut {
 
 	private async moveFileBasedOnTags(file: TFile, defaultFolder: string, skipFilter: boolean = false): Promise<void> {
 		const { app } = this.plugin;
-		let targetFolder = defaultFolder;
 		const originalPath = file.path;
 
 		try {
+			let targetFolder = defaultFolder;
+
 			// Check if rules are enabled
 			if (this.plugin.settings.enableRules) {
-				// Get tags from file
-				const tags = getAllTags(app.metadataCache.getFileCache(file)!) || [];
-				const whitelist = this.plugin.settings.isFilterWhitelist;
-				
-				// Determine the target folder based on tags and rules
-				if (tags) {
-					for (const tag of tags) {
-						if (!skipFilter) {
-							// check if tag is in filter
-							const filter = this.plugin.settings.filter.find(filter => filter === tag);
-							// if blacklist and tag is in filter, skip
-							if (!whitelist && filter) {
-								return;
-							}
-							// if whitelist and tag is not in filter, skip
-							else if (whitelist && !filter) {
-									return;
-							}
-						}
-						// Apply matching rule
-						const rule = this.plugin.settings.rules.find(rule => rule.tag === tag);
-						if (rule) {
-							targetFolder = rule.path;
-							break;
-						}
-					}
+				const result = await this.ruleManager.moveFileBasedOnTags(file, skipFilter);
+				if (result === null) {
+					return; // File should be skipped based on filter
 				}
+				targetFolder = result;
 			}
 			
 			const newPath = combinePath(targetFolder, file.name);

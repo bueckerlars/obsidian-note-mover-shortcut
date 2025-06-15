@@ -159,6 +159,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.isFilterWhitelist = value;
 					await this.plugin.save_settings();
+					// Update RuleManager
+					this.plugin.noteMover.updateRuleManager();
 				})
 			);
 	
@@ -171,6 +173,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					.onClick(async () => {
 						this.plugin.settings.filter.push('');
 						await this.plugin.save_settings();
+						// Update RuleManager
+						this.plugin.noteMover.updateRuleManager();
 						this.display();
 					})
 				);
@@ -188,6 +192,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 						.onChange(async (value) => {
 							this.plugin.settings.filter[index] = value;
 							await this.plugin.save_settings();
+							// Update RuleManager
+							this.plugin.noteMover.updateRuleManager();
 						});
 					// @ts-ignore
 					cb.containerEl.addClass("note_mover_search");
@@ -209,6 +215,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					.onClick(async () => {
 						this.plugin.settings.filter.splice(index, 1);
 						await this.plugin.save_settings();
+						// Update RuleManager
+						this.plugin.noteMover.updateRuleManager();
 						this.display();
 					})
 				);
@@ -234,6 +242,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.enableRules = value;
 					await this.plugin.save_settings();
+					// Update RuleManager
+					this.plugin.noteMover.updateRuleManager();
 					this.display();
 				})
 			);
@@ -247,6 +257,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.onClick(async () => {
 					this.plugin.settings.rules.push({ tag: '', path: '' });
 					await this.plugin.save_settings();
+					// Update RuleManager
+					this.plugin.noteMover.updateRuleManager();
 					this.display();
 				})
 			);
@@ -307,6 +319,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					.onClick(async () => {
 						this.plugin.settings.rules.splice(index, 1);
 						await this.plugin.save_settings();
+						// Update RuleManager
+						this.plugin.noteMover.updateRuleManager();
 						this.display();
 					})
 				);
