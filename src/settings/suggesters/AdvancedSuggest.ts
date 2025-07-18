@@ -90,14 +90,11 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
         } else {
             // Immer sicherstellen, dass das Feld im Format 'typ: value' bleibt
             const currentType = this.selectedType ? SUGGEST_TYPES.find(t => t.value === this.selectedType) : null;
-            let finalValue = value;
             if (currentType && !value.startsWith(currentType.label)) {
-                finalValue = `${currentType.label}${value}`;
+                this.inputEl.value = `${currentType.label}${value}`;
+            } else {
+                this.inputEl.value = value;
             }
-            this.inputEl.value = finalValue;
-            // Debug: Logge den Wert, der gespeichert wird
-            console.log('AdvancedSuggest speichert:', finalValue);
-            this.inputEl.trigger("input");
             this.close();
         }
     }

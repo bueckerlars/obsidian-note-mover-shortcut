@@ -142,33 +142,41 @@ describe('NoteMoverShortcut', () => {
 
         it('should skip file if tag is in blacklist', async () => {
             plugin.settings.isFilterWhitelist = false;
-            plugin.settings.filter = ['#test'];
+            plugin.settings.filter = ['tag: #test'];
+            plugin.settings.destination = 'notes';
+            noteMover.updateRuleManager();
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
             expect(mockApp.fileManager.renameFile).not.toHaveBeenCalled();
         });
 
         it('should skip file if tag is not in whitelist', async () => {
             plugin.settings.isFilterWhitelist = true;
-            plugin.settings.filter = ['#other'];
+            plugin.settings.filter = ['tag: #other'];
+            plugin.settings.destination = 'notes';
+            noteMover.updateRuleManager();
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
             expect(mockApp.fileManager.renameFile).not.toHaveBeenCalled();
         });
 
         it('should move file to rule path if tag matches', async () => {
             plugin.settings.rules = [{ tag: '#test', path: 'custom/path' }];
+            plugin.settings.destination = 'notes';
+            noteMover.updateRuleManager();
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
-                expect.stringContaining('custom/path')
+                expect.stringContaining('custom/path/file.md')
             );
         });
 
         it('should move file to default path if no rules match', async () => {
             plugin.settings.rules = [{ tag: '#other', path: 'custom/path' }];
+            plugin.settings.destination = 'notes';
+            noteMover.updateRuleManager();
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
-                expect.stringContaining('default')
+                '/notes/file.md'
             );
         });
 
