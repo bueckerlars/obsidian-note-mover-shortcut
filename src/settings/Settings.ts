@@ -186,11 +186,17 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		this.plugin.settings.filter.forEach((filter, index) => {
 			const s = new Setting(this.containerEl)
 				.addSearch((cb) => {
-					new TagSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Tag')
-						.setValue(filter)
+					// AdvancedSuggest statt TagSuggest
+					new (require("./suggesters/AdvancedSuggest")).AdvancedSuggest(this.app, cb.inputEl);
+					cb.setPlaceholder('Filter (z.B. tag:, fileName:, path:, ...)')
+						.setValue(filter || "")
 						.onChange(async (value) => {
-							this.plugin.settings.filter[index] = value;
+							// Leere Filter nicht speichern
+							if (!value || value.trim() === "") {
+								this.plugin.settings.filter[index] = "";
+							} else {
+								this.plugin.settings.filter[index] = value;
+							}
 							await this.plugin.save_settings();
 							// Update RuleManager
 							this.plugin.noteMover.updateRuleManager();
