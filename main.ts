@@ -14,6 +14,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 		await this.load_settings();
 
 		this.historyManager = new HistoryManager(this);
+		this.historyManager.loadHistoryFromSettings();
 		this.noteMover = new NoteMoverShortcut(this);
 		this.command_handler = new CommandHandler(this);
 		this.command_handler.setup();
@@ -29,15 +30,16 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 	}
 
 	async save_settings(): Promise<void> {
-        await this.saveData(this.settings);
-    }
+		(this.settings as any).history = this.historyManager ? this.historyManager.getHistory() : [];
+		await this.saveData(this.settings);
+	}
 
-    async load_settings(): Promise<void> {
-        const savedData = await this.loadData();
-        this.settings = Object.assign(
-            {},
-            DEFAULT_SETTINGS,
-            savedData || {}
-        );
-    }
+	async load_settings(): Promise<void> {
+		const savedData = await this.loadData();
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			savedData || {}
+		);
+	}
 }

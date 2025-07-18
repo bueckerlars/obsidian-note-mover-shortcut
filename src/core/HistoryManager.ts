@@ -1,23 +1,22 @@
 import { HistoryEntry } from '../types/HistoryEntry';
-import { Plugin } from 'obsidian';
+import NoteMoverShortcutPlugin from 'main';
 
 export class HistoryManager {
     private history: HistoryEntry[] = [];
     private readonly MAX_HISTORY_ENTRIES = 50;
 
-    constructor(private plugin: Plugin) {
-        this.loadHistory();
-    }
+    constructor(private plugin: NoteMoverShortcutPlugin) { }
 
-    private async loadHistory(): Promise<void> {
-        const savedHistory = await this.plugin.loadData();
-        if (savedHistory?.history) {
-            this.history = savedHistory.history;
+    public loadHistoryFromSettings(): void {
+        if (Array.isArray(this.plugin.settings.history)) {
+            this.history = this.plugin.settings.history;
+        } else {
+            this.history = [];
         }
     }
 
-    private async saveHistory(): Promise<void> {
-        await this.plugin.saveData({ history: this.history });
+    private async saveHistory(): Promise<void> {    
+        await (this.plugin as any).save_settings();
     }
 
     public addEntry(entry: Omit<HistoryEntry, 'id' | 'timestamp'>): void {

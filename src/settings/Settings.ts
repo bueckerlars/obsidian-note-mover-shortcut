@@ -4,6 +4,7 @@ import { FolderSuggest } from "./suggesters/FolderSuggest";
 import { TagSuggest } from "./suggesters/TagSuggest";
 import { NoteMoverError } from "src/utils/Error";
 import { log_error } from "src/utils/Log";
+import { HistoryEntry } from '../types/HistoryEntry';
 
 interface Rule {
 	tag: string,
@@ -20,6 +21,7 @@ export interface NoteMoverShortcutSettings {
 	isFilterWhitelist: boolean,
 	enableRules: boolean,
 	rules: Rule[],
+	history?: HistoryEntry[],
 }
 
 export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
