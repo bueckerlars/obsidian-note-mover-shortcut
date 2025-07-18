@@ -1,19 +1,21 @@
 import { HistoryManager } from '../HistoryManager';
-import { Plugin } from 'obsidian';
+import NoteMoverShortcutPlugin from 'main';
 import { HistoryEntry } from '../../types/HistoryEntry';
 
 let mockHistory: HistoryEntry[] = [];
-let mockPlugin: Plugin;
+let mockSettings: any;
+let mockPlugin: any;
 
 describe('HistoryManager', () => {
     let historyManager: HistoryManager;
 
     beforeEach(() => {
         mockHistory = [];
+        mockSettings = { history: mockHistory };
         mockPlugin = {
-            loadData: jest.fn().mockImplementation(() => Promise.resolve({ history: mockHistory })),
-            saveData: jest.fn().mockImplementation((data) => {
-                mockHistory = data.history;
+            settings: mockSettings,
+            save_settings: jest.fn().mockImplementation(() => {
+                mockSettings.history = mockHistory;
                 return Promise.resolve();
             }),
             app: {
@@ -24,8 +26,9 @@ describe('HistoryManager', () => {
                     renameFile: jest.fn().mockResolvedValue(undefined),
                 },
             },
-        } as unknown as Plugin;
+        } as unknown as NoteMoverShortcutPlugin;
         historyManager = new HistoryManager(mockPlugin);
+        historyManager.loadHistoryFromSettings();
     });
 
     describe('addEntry', () => {
