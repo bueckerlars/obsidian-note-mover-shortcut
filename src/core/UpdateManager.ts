@@ -119,6 +119,19 @@ export class UpdateManager {
         // einbetten wir den Inhalt direkt hier
         return `# Changelog
 
+## [0.3.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.2.1...0.3.0)
+### Features
+- Implemented update modal that shows changelog information for new versions
+- Added advanced filter system with intelligent suggestors for folders and tags
+- Implemented advanced suggest system for rule settings
+- Added automatic history event listener for tracking manual file operations
+- Command to manually show update modal for viewing changelog
+
+### Improvements
+- Refactored rule code to make iterations and maintenance easier
+- Improved test coverage and updated test implementation for new filter settings
+- Enhanced user experience with better autocomplete suggestions
+
 ## [0.2.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.2.0...0.2.1)
 ### Bug Fixes
 - Fixed config gets overwrited on history changes #17
@@ -254,7 +267,7 @@ export class UpdateManager {
         // Wenn keine fromVersion (erstes Start), zeige die letzten wichtigen Versionen
         if (!fromVersion) {
             // Definiere wichtige Versionen, die beim ersten Start gezeigt werden sollen
-            const importantVersionsToShow = ['0.2.0', '0.1.7', '0.1.6', '0.1.5'];
+            const importantVersionsToShow = ['0.3.0', '0.2.1', '0.2.0', '0.1.7', '0.1.6'];
             return importantVersionsToShow.includes(version);
         }
 
