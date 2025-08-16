@@ -78,13 +78,31 @@ describe('RuleManager', () => {
     });
 
     it('should return rule path if tag matches', async () => {
-        ruleManager.setRules([{ tag: '#tag1', path: 'special' }]);
+        ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'special' }]);
+        const result = await ruleManager.moveFileBasedOnTags(mockFile);
+        expect(result).toBe('special');
+    });
+
+    it('should return rule path if fileName matches', async () => {
+        ruleManager.setRules([{ criteria: 'fileName: file.md', path: 'special' }]);
+        const result = await ruleManager.moveFileBasedOnTags(mockFile);
+        expect(result).toBe('special');
+    });
+
+    it('should return rule path if path matches', async () => {
+        ruleManager.setRules([{ criteria: 'path: folder/file.md', path: 'special' }]);
+        const result = await ruleManager.moveFileBasedOnTags(mockFile);
+        expect(result).toBe('special');
+    });
+
+    it('should return rule path if content matches', async () => {
+        ruleManager.setRules([{ criteria: 'content: file content', path: 'special' }]);
         const result = await ruleManager.moveFileBasedOnTags(mockFile);
         expect(result).toBe('special');
     });
 
     it('should return defaultFolder if no rules match', async () => {
-        ruleManager.setRules([{ tag: '#other', path: 'special' }]);
+        ruleManager.setRules([{ criteria: 'tag: #other', path: 'special' }]);
         const result = await ruleManager.moveFileBasedOnTags(mockFile);
         expect(result).toBe('default');
     });

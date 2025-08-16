@@ -74,10 +74,38 @@ export class RuleManager {
                 }
             }
 
-            // Find matching rule (weiterhin nur für Tags)
-            for (const tag of tags) {
-                const rule = this.rules.find(rule => rule.tag === tag);
-                if (rule) {
+            // Find matching rule (jetzt für alle Kriterien-Typen)
+            for (const rule of this.rules) {
+                // Rule-String parsen: typ: value
+                const match = rule.criteria.match(/^([a-zA-Z_]+):\s*(.*)$/);
+                if (!match) continue;
+                
+                const type = match[1];
+                const value = match[2];
+                let ruleMatch = false;
+                
+                switch (type) {
+                    case "tag":
+                        ruleMatch = tags.some(tag => tag === value);
+                        break;
+                    case "fileName":
+                        ruleMatch = fileName === value;
+                        break;
+                    case "path":
+                        ruleMatch = filePath === value;
+                        break;
+                    case "content":
+                        ruleMatch = fileContent.includes(value);
+                        break;
+                    case "created_at":
+                        if (createdAt) ruleMatch = createdAt.toISOString().startsWith(value);
+                        break;
+                    case "updated_at":
+                        if (updatedAt) ruleMatch = updatedAt.toISOString().startsWith(value);
+                        break;
+                }
+                
+                if (ruleMatch) {
                     return rule.path;
                 }
             }

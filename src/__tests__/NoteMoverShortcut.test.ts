@@ -159,7 +159,7 @@ describe('NoteMoverShortcut', () => {
         });
 
         it('should move file to rule path if tag matches', async () => {
-            plugin.settings.rules = [{ tag: '#test', path: 'custom/path' }];
+            plugin.settings.rules = [{ criteria: 'tag: #test', path: 'custom/path' }];
             plugin.settings.destination = 'notes';
             noteMover.updateRuleManager();
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
@@ -170,7 +170,7 @@ describe('NoteMoverShortcut', () => {
         });
 
         it('should move file to default path if no rules match', async () => {
-            plugin.settings.rules = [{ tag: '#other', path: 'custom/path' }];
+            plugin.settings.rules = [{ criteria: 'tag: #other', path: 'custom/path' }];
             plugin.settings.destination = 'notes';
             noteMover.updateRuleManager();
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
