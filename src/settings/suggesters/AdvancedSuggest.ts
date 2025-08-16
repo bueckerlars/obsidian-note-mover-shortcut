@@ -95,6 +95,8 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
             } else {
                 this.inputEl.value = value;
             }
+            // Wichtig: input Event triggern, damit onChange in Settings aufgerufen wird
+            this.inputEl.trigger("input");
             this.close();
         }
     }
