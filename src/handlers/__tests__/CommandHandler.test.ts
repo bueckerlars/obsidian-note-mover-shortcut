@@ -4,6 +4,7 @@ const addCommand = jest.fn();
 const moveFocusedNoteToDestination = jest.fn();
 const moveNotesFromInboxToNotesFolder = jest.fn();
 const open = jest.fn();
+const showUpdateModal = jest.fn();
 
 jest.mock('../../modals/HistoryModal', () => {
     return {
@@ -20,6 +21,7 @@ describe('CommandHandler', () => {
         moveFocusedNoteToDestination.mockClear();
         moveNotesFromInboxToNotesFolder.mockClear();
         open.mockClear();
+        showUpdateModal.mockClear();
 
         pluginMock = {
             addCommand,
@@ -29,17 +31,21 @@ describe('CommandHandler', () => {
             },
             app: {},
             historyManager: {},
+            updateManager: {
+                showUpdateModal,
+            },
         };
         handler = new CommandHandler(pluginMock);
     });
 
     it('registers all commands correctly', () => {
         handler.setup();
-        expect(addCommand).toHaveBeenCalledTimes(3);
+        expect(addCommand).toHaveBeenCalledTimes(4);
         const calls = addCommand.mock.calls;
         expect(calls[0][0].id).toBe('trigger-note-movement');
         expect(calls[1][0].id).toBe('trigger-note-bulk-move');
         expect(calls[2][0].id).toBe('show-history');
+        expect(calls[3][0].id).toBe('show-update-modal');
     });
 
     it('calls moveFocusedNoteToDestination in editor callback', () => {
@@ -62,5 +68,12 @@ describe('CommandHandler', () => {
         const callback = addCommand.mock.calls[2][0].callback;
         callback();
         expect(open).toHaveBeenCalled();
+    });
+
+    it('calls showUpdateModal in update modal callback', () => {
+        handler.setup();
+        const callback = addCommand.mock.calls[3][0].callback;
+        callback();
+        expect(showUpdateModal).toHaveBeenCalledWith(true);
     });
 }); 
