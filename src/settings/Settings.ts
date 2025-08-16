@@ -7,7 +7,7 @@ import { log_error } from "src/utils/Log";
 import { HistoryEntry } from '../types/HistoryEntry';
 
 interface Rule {
-	tag: string,
+	criteria: string, // Format: "type: value" (z.B. "tag: #project", "fileName: notes.md")
 	path: string,
 }
 
@@ -22,6 +22,7 @@ export interface NoteMoverShortcutSettings {
 	enableRules: boolean,
 	rules: Rule[],
 	history?: HistoryEntry[],
+	lastSeenVersion?: string,
 }
 
 export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
@@ -159,6 +160,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.isFilterWhitelist = value;
 					await this.plugin.save_settings();
+					// Update RuleManager
+					this.plugin.noteMover.updateRuleManager();
 				})
 			);
 	
@@ -171,6 +174,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					.onClick(async () => {
 						this.plugin.settings.filter.push('');
 						await this.plugin.save_settings();
+						// Update RuleManager
+						this.plugin.noteMover.updateRuleManager();
 						this.display();
 					})
 				);
@@ -182,12 +187,20 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		this.plugin.settings.filter.forEach((filter, index) => {
 			const s = new Setting(this.containerEl)
 				.addSearch((cb) => {
-					new TagSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Tag')
-						.setValue(filter)
+					// AdvancedSuggest statt TagSuggest
+					new (require("./suggesters/AdvancedSuggest")).AdvancedSuggest(this.app, cb.inputEl);
+					cb.setPlaceholder('Filter (z.B. tag:, fileName:, path:, ...)')
+						.setValue(filter || "")
 						.onChange(async (value) => {
-							this.plugin.settings.filter[index] = value;
+							// Leere Filter nicht speichern
+							if (!value || value.trim() === "") {
+								this.plugin.settings.filter[index] = "";
+							} else {
+								this.plugin.settings.filter[index] = value;
+							}
 							await this.plugin.save_settings();
+							// Update RuleManager
+							this.plugin.noteMover.updateRuleManager();
 						});
 					// @ts-ignore
 					cb.containerEl.addClass("note_mover_search");
@@ -209,6 +222,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					.onClick(async () => {
 						this.plugin.settings.filter.splice(index, 1);
 						await this.plugin.save_settings();
+						// Update RuleManager
+						this.plugin.noteMover.updateRuleManager();
 						this.display();
 					})
 				);
@@ -221,9 +236,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 
 		const descUseRules = document.createDocumentFragment();
 		descUseRules.append(
-			'When enabled, the NoteMover will move notes to the folder associated with the tag.',
+			'When enabled, the NoteMover will move notes to the folder associated with the specified criteria.',
 			document.createElement('br'),
-			'If a note contains more than one tag associated with a rule, the first rule will be applied.',
+			'Criteria can be tags, filenames, paths, content, or dates. If multiple rules match, the first one will be applied.',
 		);
 
 		new Setting(this.containerEl)
@@ -234,6 +249,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.enableRules = value;
 					await this.plugin.save_settings();
+					// Update RuleManager
+					this.plugin.noteMover.updateRuleManager();
 					this.display();
 				})
 			);
@@ -245,8 +262,10 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.setButtonText('Add new rule')
 				.setCta()
 				.onClick(async () => {
-					this.plugin.settings.rules.push({ tag: '', path: '' });
+					this.plugin.settings.rules.push({ criteria: '', path: '' });
 					await this.plugin.save_settings();
+					// Update RuleManager
+					this.plugin.noteMover.updateRuleManager();
 					this.display();
 				})
 			);
@@ -256,25 +275,28 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		this.plugin.settings.rules.forEach((rule, index) => {
 			const s = new Setting(this.containerEl)
 				.addSearch((cb) => {
-					new TagSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Tag')
-						.setValue(rule.tag)
+					// AdvancedSuggest statt TagSuggest
+					new (require("./suggesters/AdvancedSuggest")).AdvancedSuggest(this.app, cb.inputEl);
+					cb.setPlaceholder('Criteria (z.B. tag:, fileName:, path:, ...)')
+						.setValue(rule.criteria)
 						.onChange(async (value) => {
 							if (value && this.plugin.settings.rules.some(
-								(rule) => rule.tag === value
+								(rule) => rule.criteria === value
 							)
 							) {
 								log_error(
 									new NoteMoverError(
-										"This tag already has a folder associated with it"
+										"This criteria already has a folder associated with it"
 									)
 								);
 								return;
 							}
 
 							// Save Setting
-							this.plugin.settings.rules[index].tag = value;
+							this.plugin.settings.rules[index].criteria = value;
 							await this.plugin.save_settings();
+							// Update RuleManager
+							this.plugin.noteMover.updateRuleManager();
 						});
 					// @ts-ignore
 					cb.containerEl.addClass("note_mover_search");
@@ -307,6 +329,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					.onClick(async () => {
 						this.plugin.settings.rules.splice(index, 1);
 						await this.plugin.save_settings();
+						// Update RuleManager
+						this.plugin.noteMover.updateRuleManager();
 						this.display();
 					})
 				);

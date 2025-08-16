@@ -1,6 +1,7 @@
 import NoteMoverShortcutPlugin from "main";
 import { Editor, MarkdownView } from "obsidian";
 import { HistoryModal } from "../modals/HistoryModal";
+import { UpdateModal } from "../modals/UpdateModal";
 
 
 export class CommandHandler {
@@ -32,6 +33,15 @@ export class CommandHandler {
             name: 'Show history',
             callback: () => {
                 new HistoryModal(this.plugin.app, this.plugin.historyManager).open();
+            }
+        });
+
+        // Update modal command (for testing/manual trigger)
+        this.plugin.addCommand({
+            id: 'show-update-modal',
+            name: 'Show update modal',
+            callback: () => {
+                this.plugin.updateManager.showUpdateModal(true);
             }
         });
     }

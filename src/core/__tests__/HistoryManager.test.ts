@@ -128,4 +128,75 @@ describe('HistoryManager', () => {
             expect(historyManager.getHistory()).toHaveLength(0);
         });
     });
+
+    describe('Plugin Move Tracking', () => {
+        describe('markPluginMoveStart/End', () => {
+            it('should mark and unmark plugin moves correctly', () => {
+                historyManager.markPluginMoveStart();
+                // Note: isPluginMove is private, so we test indirectly via addEntryFromVaultEvent
+                historyManager.addEntryFromVaultEvent('/old/path', '/new/path', 'test.md');
+                expect(historyManager.getHistory()).toHaveLength(0); // Should not add entry during plugin move
+                
+                historyManager.markPluginMoveEnd();
+                historyManager.addEntryFromVaultEvent('/old/path2', '/new/path2', 'test2.md');
+                expect(historyManager.getHistory()).toHaveLength(1); // Should add entry when not plugin move
+            });
+        });
+
+        describe('addEntryFromVaultEvent', () => {
+            it('should add entry for genuine file moves', () => {
+                historyManager.addEntryFromVaultEvent(
+                    '/folder1/test.md',
+                    '/folder2/test.md',
+                    'test.md'
+                );
+                expect(historyManager.getHistory()).toHaveLength(1);
+                expect(historyManager.getHistory()[0].sourcePath).toBe('/folder1/test.md');
+                expect(historyManager.getHistory()[0].destinationPath).toBe('/folder2/test.md');
+            });
+
+            it('should ignore file renames in same folder', () => {
+                historyManager.addEntryFromVaultEvent(
+                    '/folder/oldname.md',
+                    '/folder/newname.md',
+                    'newname.md'
+                );
+                expect(historyManager.getHistory()).toHaveLength(0); // Should not add for rename
+            });
+
+            it('should ignore duplicate entries within time window', () => {
+                const now = Date.now();
+                jest.spyOn(Date, 'now').mockReturnValue(now);
+                
+                // Add first entry
+                historyManager.addEntryFromVaultEvent(
+                    '/folder1/test.md',
+                    '/folder2/test.md',
+                    'test.md'
+                );
+                
+                // Try to add same entry within time window
+                jest.spyOn(Date, 'now').mockReturnValue(now + 500); // 500ms later
+                historyManager.addEntryFromVaultEvent(
+                    '/folder1/test.md',
+                    '/folder2/test.md',
+                    'test.md'
+                );
+                
+                expect(historyManager.getHistory()).toHaveLength(1); // Should not add duplicate
+                
+                jest.restoreAllMocks();
+            });
+
+            it('should not add entry during plugin move', () => {
+                historyManager.markPluginMoveStart();
+                historyManager.addEntryFromVaultEvent(
+                    '/folder1/test.md',
+                    '/folder2/test.md',
+                    'test.md'
+                );
+                expect(historyManager.getHistory()).toHaveLength(0);
+            });
+        });
+    });
 }); 
