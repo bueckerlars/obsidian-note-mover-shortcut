@@ -1,4 +1,4 @@
-import { Plugin } from 'obsidian';
+import { Plugin, TFile } from 'obsidian';
 import { NoteMoverShortcut } from 'src/core/NoteMoverShortcut';
 import { CommandHandler } from 'src/handlers/CommandHandler';
 import { DEFAULT_SETTINGS, NoteMoverShortcutSettings, NoteMoverShortcutSettingsTab } from "src/settings/Settings";
@@ -24,9 +24,30 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 		});
 
 		this.addSettingTab(new NoteMoverShortcutSettingsTab(this));
+		
+		// Event-Listener für automatische History-Erstellung bei manuellen Dateioperationen
+		this.setupVaultEventListeners();
 	}
 
 	onunload() {
+		// Event-Listener werden automatisch beim Plugin unload entfernt
+	}
+
+	/**
+	 * Einrichtung der Event-Listener für automatische History-Erstellung
+	 */
+	private setupVaultEventListeners(): void {
+		// Überwache Dateiumbenennung/verschiebung
+		this.registerEvent(this.app.vault.on('rename', (file, oldPath) => {
+			// Nur bei Markdown-Dateien
+			if (file instanceof TFile && file.extension === 'md') {
+				this.historyManager.addEntryFromVaultEvent(
+					oldPath,
+					file.path,
+					file.name
+				);
+			}
+		}));
 	}
 
 	async save_settings(): Promise<void> {

@@ -64,7 +64,9 @@ describe('NoteMoverShortcut', () => {
             },
             historyManager: {
                 addEntry: jest.fn(),
-                undoLastMove: jest.fn().mockResolvedValue(true)
+                undoLastMove: jest.fn().mockResolvedValue(true),
+                markPluginMoveStart: jest.fn(),
+                markPluginMoveEnd: jest.fn()
             }
         } as unknown as NoteMoverShortcutPlugin;
 

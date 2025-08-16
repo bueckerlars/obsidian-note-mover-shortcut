@@ -4,6 +4,7 @@ import NoteMoverShortcutPlugin from 'main';
 export class HistoryManager {
     private history: HistoryEntry[] = [];
     private readonly MAX_HISTORY_ENTRIES = 50;
+    private isPluginMove = false; // Flag um Plugin-interne Verschiebungen zu erkennen
 
     constructor(private plugin: NoteMoverShortcutPlugin) { }
 
@@ -33,6 +34,57 @@ export class HistoryManager {
         }
 
         this.saveHistory();
+    }
+
+    /**
+     * Markiert den Start einer Plugin-internen Verschiebung
+     */
+    public markPluginMoveStart(): void {
+        this.isPluginMove = true;
+    }
+
+    /**
+     * Markiert das Ende einer Plugin-internen Verschiebung
+     */
+    public markPluginMoveEnd(): void {
+        this.isPluginMove = false;
+    }
+
+    /**
+     * Fügt einen History-Eintrag hinzu, aber nur wenn es sich nicht um eine Plugin-interne Verschiebung handelt
+     */
+    public addEntryFromVaultEvent(sourcePath: string, destinationPath: string, fileName: string): void {
+        if (this.isPluginMove) {
+            // Plugin-interne Verschiebung, überspringen
+            return;
+        }
+
+        // Prüfen ob es sich um eine echte Verschiebung handelt (verschiedene Ordner)
+        const sourceFolder = sourcePath.substring(0, sourcePath.lastIndexOf('/'));
+        const destFolder = destinationPath.substring(0, destinationPath.lastIndexOf('/'));
+        
+        if (sourceFolder === destFolder) {
+            // Nur Umbenennung, keine Verschiebung
+            return;
+        }
+
+        // Prüfen ob bereits ein Eintrag für diese Datei mit demselben Ziel existiert
+        const existingEntry = this.history.find(entry => 
+            entry.fileName === fileName && 
+            entry.destinationPath === destinationPath &&
+            Math.abs(Date.now() - entry.timestamp) < 1000 // innerhalb einer Sekunde
+        );
+
+        if (existingEntry) {
+            // Doppelter Eintrag, überspringen
+            return;
+        }
+
+        this.addEntry({
+            sourcePath,
+            destinationPath,
+            fileName
+        });
     }
 
     public getHistory(): HistoryEntry[] {

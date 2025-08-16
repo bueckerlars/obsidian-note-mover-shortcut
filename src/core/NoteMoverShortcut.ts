@@ -48,15 +48,23 @@ export class NoteMoverShortcut {
 			
 			const newPath = combinePath(targetFolder, file.name);
 
-			// Move file to new path
-			await app.fileManager.renameFile(file, newPath);
+			// Markiere Plugin-interne Verschiebung
+			this.plugin.historyManager.markPluginMoveStart();
 
-			// Add entry to history
-			this.plugin.historyManager.addEntry({
-				sourcePath: originalPath,
-				destinationPath: newPath,
-				fileName: file.name
-			});
+			try {
+				// Move file to new path
+				await app.fileManager.renameFile(file, newPath);
+
+				// Add entry to history
+				this.plugin.historyManager.addEntry({
+					sourcePath: originalPath,
+					destinationPath: newPath,
+					fileName: file.name
+				});
+			} finally {
+				// Beende Plugin-interne Verschiebung (auch bei Fehlern)
+				this.plugin.historyManager.markPluginMoveEnd();
+			}
 		} catch (error) {
 			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
 			throw error;
