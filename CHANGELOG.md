@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.2.0...0.2.1)
+### Bug Fixes
+- Fixed config gets overwrited on history changes #17
+
+## [0.2.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.1.7...0.2.0)
+### Features
+- Implemented movement history
+- Added modal to show the history and revert movements
+- Added Notice for single move command with undo option
+
+## [0.1.7](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.1.6...0.1.7)
+### Bug Fixes
+- Fixed issues mentioned in PR obsidianmd/obsidian-releases#6028
+
 ## [0.1.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.1.5...0.1.6)
 ### Bug Fixes
 - Removed path import for mobile support

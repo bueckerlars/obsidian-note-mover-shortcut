@@ -189,9 +189,11 @@ export class UpdateManager {
             return true;
         }
 
-        // Wenn keine fromVersion, nur aktuelle Version
+        // Wenn keine fromVersion (erstes Start), zeige die letzten wichtigen Versionen
         if (!fromVersion) {
-            return false;
+            // Definiere wichtige Versionen, die beim ersten Start gezeigt werden sollen
+            const importantVersionsToShow = ['0.2.0', '0.1.7', '0.1.6', '0.1.5'];
+            return importantVersionsToShow.includes(version);
         }
 
         // Version muss zwischen fromVersion (exklusiv) und toVersion (inklusiv) liegen
