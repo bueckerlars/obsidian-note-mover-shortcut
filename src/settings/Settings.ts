@@ -22,6 +22,7 @@ export interface NoteMoverShortcutSettings {
 	enableRules: boolean,
 	rules: Rule[],
 	history?: HistoryEntry[],
+	lastSeenVersion?: string,
 }
 
 export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {

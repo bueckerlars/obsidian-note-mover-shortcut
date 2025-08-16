@@ -83,3 +83,140 @@
     text-align: left;
     color: var(--text-normal);
 }
+
+/* Update Modal Styles */
+.note-mover-update-modal {
+    padding: 32px 0 20px 0;
+    box-sizing: border-box;
+}
+
+.update-modal-title-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.update-modal-icon {
+    font-size: 2em;
+    line-height: 1;
+}
+
+.update-modal-title {
+    margin: 0;
+    font-size: 1.6em;
+    font-weight: bold;
+    color: var(--text-normal);
+}
+
+.update-modal-subtitle {
+    margin: 0 0 24px 0;
+    color: var(--text-muted);
+    font-size: 1.1em;
+}
+
+.changelog-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 24px;
+    background: var(--background-secondary);
+}
+
+.changelog-version {
+    margin-bottom: 24px;
+}
+
+.changelog-version:last-child {
+    margin-bottom: 0;
+}
+
+.changelog-version-title {
+    margin: 0 0 12px 0;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: var(--text-accent);
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 6px;
+}
+
+.changelog-section {
+    margin-bottom: 16px;
+}
+
+.changelog-section:last-child {
+    margin-bottom: 0;
+}
+
+.changelog-section-title {
+    margin: 0 0 8px 0;
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--text-normal);
+}
+
+.changelog-list {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text-normal);
+}
+
+.changelog-list li {
+    margin-bottom: 4px;
+}
+
+.changelog-list li:last-child {
+    margin-bottom: 0;
+}
+
+.update-modal-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    border-top: 1px solid var(--background-modifier-border);
+    padding-top: 16px;
+}
+
+.update-modal-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.update-modal-button-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.update-modal-button-container .setting-item {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.update-modal-button-container .setting-item-control {
+    margin: 0 !important;
+}
+
+.update-modal-github-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.2s ease;
+}
+
+.update-modal-github-link:hover {
+    color: var(--text-accent);
+    text-decoration: underline;
+}
+
+.no-changelog-text {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    margin: 24px 0;
+}
