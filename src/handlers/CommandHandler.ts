@@ -41,7 +41,7 @@ export class CommandHandler {
             id: 'show-update-modal',
             name: 'Show update modal',
             callback: () => {
-                this.plugin.updateManager.showUpdateModal();
+                this.plugin.updateManager.showUpdateModal(true);
             }
         });
     }
