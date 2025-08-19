@@ -11,9 +11,6 @@ The "NoteMover Shortcut" plugin streamlines your note organization in Obsidian. 
 ## Difference to obsidian-auto-note-mover
 This plugin focuses on manual control with optional lightweight automation. Unlike obsidian-auto-note-mover, which automatically moves notes on every save, obsidian-note-mover-shortcut allows you to move notes via keyboard shortcut or through periodic scheduled moves.
 
-## Difference to obsidian-auto-note-mover
-While both plugins aim to help you organize your notes, this plugin focuses on manual control with optional light automation, and offers features not found in Auto Note Mover.
-
 ### Key differences:
 - History support – recently moved notes are tracked and can be restored with one click
 - One-click inbox sorting – move all notes from a folder (e.g. your inbox) at once via a command or shortcut
