@@ -22,6 +22,27 @@ export class RuleManager {
         this.isFilterWhitelist = isWhitelist;
     }
 
+    /**
+     * Matches tags hierarchically:
+     * - Exact match has highest priority
+     * - Parent tag matches all subtags (e.g., #food matches #food/recipes)
+     */
+    private matchTag(fileTags: string[], ruleTag: string): boolean {
+        // First check for exact match
+        if (fileTags.includes(ruleTag)) {
+            return true;
+        }
+
+        // Then check if any file tag is a subtag of the rule tag
+        // Rule: #food should match #food/recipes, #food/breakfast, etc.
+        return fileTags.some(fileTag => {
+            if (fileTag.startsWith(ruleTag + '/')) {
+                return true;
+            }
+            return false;
+        });
+    }
+
     public async moveFileBasedOnTags(file: TFile, skipFilter: boolean = false): Promise<string | null> {
         try {
             // Metadaten extrahieren
@@ -47,7 +68,7 @@ export class RuleManager {
                     let filterMatch = false;
                     switch (type) {
                         case "tag":
-                            filterMatch = tags.some(tag => tag === value);
+                            filterMatch = this.matchTag(tags, value);
                             break;
                         case "fileName":
                             filterMatch = fileName === value;
@@ -74,8 +95,22 @@ export class RuleManager {
                 }
             }
 
+            // Sort rules by tag specificity (most specific first)
+            const sortedRules = this.rules.slice().sort((a, b) => {
+                const aMatch = a.criteria.match(/^tag:\s*(.*)$/);
+                const bMatch = b.criteria.match(/^tag:\s*(.*)$/);
+                
+                if (aMatch && bMatch) {
+                    // Count the number of subtag levels (slashes)
+                    const aLevels = (aMatch[1].match(/\//g) || []).length;
+                    const bLevels = (bMatch[1].match(/\//g) || []).length;
+                    return bLevels - aLevels; // More specific (more slashes) first
+                }
+                return 0; // Keep original order for non-tag rules
+            });
+
             // Find matching rule (jetzt für alle Kriterien-Typen)
-            for (const rule of this.rules) {
+            for (const rule of sortedRules) {
                 // Rule-String parsen: typ: value
                 const match = rule.criteria.match(/^([a-zA-Z_]+):\s*(.*)$/);
                 if (!match) continue;
@@ -86,7 +121,7 @@ export class RuleManager {
                 
                 switch (type) {
                     case "tag":
-                        ruleMatch = tags.some(tag => tag === value);
+                        ruleMatch = this.matchTag(tags, value);
                         break;
                     case "fileName":
                         ruleMatch = fileName === value;

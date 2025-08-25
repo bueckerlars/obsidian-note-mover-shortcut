@@ -138,4 +138,69 @@ describe('RuleManager', () => {
         const result = await ruleManager.moveFileBasedOnTags(mockFile);
         expect(result).toBeNull(); // Da catch-Block return null
     });
+
+    // Tests für hierarchisches Tag-Matching (Subtag-Feature)
+    describe('Hierarchical Tag Matching', () => {
+        beforeEach(() => {
+            // Reset mock to avoid interference from other tests
+            (getAllTags as jest.Mock).mockClear();
+        });
+
+        it('should match parent tag when file has subtag', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes']);
+            ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('food-folder');
+        });
+
+        it('should prioritize more specific tag rules over general ones', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes']);
+            ruleManager.setRules([
+                { criteria: 'tag: #food', path: 'food-folder' },
+                { criteria: 'tag: #food/recipes', path: 'recipes-folder' }
+            ]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('recipes-folder');
+        });
+
+        it('should match exact tag over subtag pattern', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#food']);
+            ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('food-folder');
+        });
+
+        it('should handle multiple subtag levels', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes/italian']);
+            ruleManager.setRules([
+                { criteria: 'tag: #food', path: 'food-folder' },
+                { criteria: 'tag: #food/recipes', path: 'recipes-folder' },
+                { criteria: 'tag: #food/recipes/italian', path: 'italian-folder' }
+            ]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('italian-folder');
+        });
+
+        it('should not match unrelated tags', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#foods']);
+            ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should handle hierarchical filtering in blacklist', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes']);
+            ruleManager.setFilter(['tag: #food'], false); // blacklist
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBeNull(); // Should be filtered out
+        });
+
+        it('should handle hierarchical filtering in whitelist', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes']);
+            ruleManager.setFilter(['tag: #food'], true); // whitelist
+            ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('food-folder'); // Should pass whitelist and match rule
+        });
+    });
 }); 
