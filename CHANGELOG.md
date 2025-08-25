@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.0...0.3.1)
+### Features
+- Implemented support for subtags in rules #19
+- Implemented creation of destination folders that do not exist when moving notes
+
 ## [0.3.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.2.1...0.3.0)
 ### Features
 - Implemented update modal that shows changelog information for new versions

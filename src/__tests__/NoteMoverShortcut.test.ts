@@ -186,5 +186,52 @@ describe('NoteMoverShortcut', () => {
             mockApp.fileManager.renameFile = jest.fn().mockRejectedValue(new Error('Move failed'));
             await expect(noteMover['moveFileBasedOnTags'](mockFile, 'default')).rejects.toThrow('Move failed');
         });
+
+        it('should create target folder if it does not exist', async () => {
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(false);
+            plugin.settings.rules = [{ criteria: 'tag: #test', path: 'new/folder/path' }];
+            plugin.settings.destination = 'notes';
+            noteMover.updateRuleManager();
+            
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            
+            expect(mockApp.vault.adapter.exists).toHaveBeenCalledWith('new/folder/path');
+            expect(mockApp.vault.createFolder).toHaveBeenCalledWith('new/folder/path');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('new/folder/path/file.md')
+            );
+        });
+
+        it('should not create target folder if it already exists', async () => {
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
+            plugin.settings.rules = [{ criteria: 'tag: #test', path: 'existing/folder' }];
+            plugin.settings.destination = 'notes';
+            noteMover.updateRuleManager();
+            
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            
+            expect(mockApp.vault.adapter.exists).toHaveBeenCalledWith('existing/folder');
+            expect(mockApp.vault.createFolder).not.toHaveBeenCalled();
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('existing/folder/file.md')
+            );
+        });
+
+        it('should not try to create root folder', async () => {
+            plugin.settings.rules = [{ criteria: 'tag: #test', path: '/' }];
+            plugin.settings.destination = 'notes';
+            noteMover.updateRuleManager();
+            
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            
+            expect(mockApp.vault.adapter.exists).not.toHaveBeenCalled();
+            expect(mockApp.vault.createFolder).not.toHaveBeenCalled();
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                'file.md'
+            );
+        });
     });
 }); 
