@@ -48,6 +48,14 @@ export class NoteMoverShortcut {
 			
 			const newPath = combinePath(targetFolder, file.name);
 
+			// Ensure target folder exists before moving the file
+			if (targetFolder !== '/' && targetFolder !== '') {
+				if (!await app.vault.adapter.exists(targetFolder)) {
+					await app.vault.createFolder(targetFolder);
+					log_info(`Target folder created: ${targetFolder}`);
+				}
+			}
+
 			// Markiere Plugin-interne Verschiebung
 			this.plugin.historyManager.markPluginMoveStart();
 
