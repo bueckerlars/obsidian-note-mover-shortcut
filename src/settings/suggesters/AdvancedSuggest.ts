@@ -18,13 +18,14 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     private folders: TFolder[] = [];
     private fileNames: string[] = [];
     private propertyKeys: Set<string> = new Set();
+    private propertyValues: Map<string, Set<string>> = new Map();
     
     constructor(app: App, private inputEl: HTMLInputElement) {
         super(app, inputEl);
         this.loadTags();
         this.loadFolders();
         this.loadFileNames();
-        this.loadPropertyKeys();
+        this.loadPropertyKeysAndValues();
     }
 
     private loadTags(): void {
@@ -46,15 +47,26 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
         this.fileNames = files.map(f => f.name);
     }
 
-    private loadPropertyKeys(): void {
+    private loadPropertyKeysAndValues(): void {
         const files = this.app.vault.getMarkdownFiles();
         files.forEach(file => {
             const cachedMetadata = this.app.metadataCache.getFileCache(file);
             if (cachedMetadata?.frontmatter) {
-                Object.keys(cachedMetadata.frontmatter).forEach(key => {
+                Object.entries(cachedMetadata.frontmatter).forEach(([key, value]) => {
                     // Skip Obsidian internal properties
                     if (!key.startsWith('position') && key !== 'tags') {
                         this.propertyKeys.add(key);
+                        
+                        // Collect values for this property
+                        if (!this.propertyValues.has(key)) {
+                            this.propertyValues.set(key, new Set());
+                        }
+                        
+                        // Convert value to string and add to the set
+                        if (value !== null && value !== undefined) {
+                            const valueStr = String(value);
+                            this.propertyValues.get(key)!.add(valueStr);
+                        }
                     }
                 });
             }
@@ -72,6 +84,12 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
                 .map(t => t.label);
         } else {
             this.selectedType = typeMatch.value;
+            
+            // Special handling for property type with potential key:value structure
+            if (this.selectedType === "property") {
+                return this.getPropertySuggestions(query, typeMatch.label);
+            }
+            
             // Typ wurde gewählt, jetzt spezifische Vorschläge
             const q = query.replace(/^[^:]+:\s*/, "").toLowerCase();
             switch (this.selectedType) {
@@ -88,11 +106,37 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
                 case "updated_at":
                     // Platzhalter: Hier könnte man Datumswerte vorschlagen
                     return [];
-                case "property":
-                    return Array.from(this.propertyKeys).filter(key => key.toLowerCase().includes(q)).map(key => `${typeMatch.label}${key}`);
                 default:
                     return [];
             }
+        }
+    }
+
+    private getPropertySuggestions(query: string, typeLabel: string): string[] {
+        // Remove "property: " prefix
+        const afterType = query.substring(typeLabel.length);
+        
+        // Check if we already have a property key with colon (property:key:)
+        const colonIndex = afterType.indexOf(':');
+        
+        if (colonIndex === -1) {
+            // No colon yet, suggest property keys
+            const q = afterType.toLowerCase();
+            return Array.from(this.propertyKeys)
+                .filter(key => key.toLowerCase().includes(q))
+                .map(key => `${typeLabel}${key}`);
+        } else {
+            // We have property:key:, now suggest values for this key
+            const propertyKey = afterType.substring(0, colonIndex);
+            const valueQuery = afterType.substring(colonIndex + 1).toLowerCase();
+            
+            const valuesForKey = this.propertyValues.get(propertyKey);
+            if (valuesForKey) {
+                return Array.from(valuesForKey)
+                    .filter(value => value.toLowerCase().includes(valueQuery))
+                    .map(value => `${typeLabel}${propertyKey}:${value}`);
+            }
+            return [];
         }
     }
 
@@ -107,17 +151,37 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
             this.selectedType = typeMatch.value;
             this.inputEl.value = value;
             this.inputEl.trigger("input");
-        } else {
-            // Immer sicherstellen, dass das Feld im Format 'typ: value' bleibt
-            const currentType = this.selectedType ? SUGGEST_TYPES.find(t => t.value === this.selectedType) : null;
-            if (currentType && !value.startsWith(currentType.label)) {
-                this.inputEl.value = `${currentType.label}${value}`;
-            } else {
-                this.inputEl.value = value;
-            }
-            // Wichtig: input Event triggern, damit onChange in Settings aufgerufen wird
-            this.inputEl.trigger("input");
-            this.close();
+            return;
         }
+
+        // Special handling for property suggestions
+        if (this.selectedType === "property" && value.startsWith("property: ")) {
+            const afterType = value.substring("property: ".length);
+            const colonCount = (afterType.match(/:/g) || []).length;
+            
+            if (colonCount === 0) {
+                // This is a property key, allow further input for values
+                this.inputEl.value = value + ":";
+                this.inputEl.trigger("input");
+                return;
+            } else {
+                // This is a complete property:key:value, finalize selection
+                this.inputEl.value = value;
+                this.inputEl.trigger("input");
+                this.close();
+                return;
+            }
+        }
+
+        // Default handling for other types
+        const currentType = this.selectedType ? SUGGEST_TYPES.find(t => t.value === this.selectedType) : null;
+        if (currentType && !value.startsWith(currentType.label)) {
+            this.inputEl.value = `${currentType.label}${value}`;
+        } else {
+            this.inputEl.value = value;
+        }
+        // Wichtig: input Event triggern, damit onChange in Settings aufgerufen wird
+        this.inputEl.trigger("input");
+        this.close();
     }
 }  
