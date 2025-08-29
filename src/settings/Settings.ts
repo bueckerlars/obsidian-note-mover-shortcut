@@ -189,7 +189,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.addSearch((cb) => {
 					// AdvancedSuggest statt TagSuggest
 					new (require("./suggesters/AdvancedSuggest")).AdvancedSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Filter (z.B. tag:, fileName:, path:, ...)')
+					cb.setPlaceholder('Filter (z.B. tag:, fileName:, path:, property:, ...)')
 						.setValue(filter || "")
 						.onChange(async (value) => {
 							// Leere Filter nicht speichern
@@ -238,7 +238,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		descUseRules.append(
 			'When enabled, the NoteMover will move notes to the folder associated with the specified criteria.',
 			document.createElement('br'),
-			'Criteria can be tags, filenames, paths, content, or dates. If multiple rules match, the first one will be applied.',
+			'Criteria can be tags, filenames, paths, content, properties, or dates. If multiple rules match, the first one will be applied.',
 		);
 
 		new Setting(this.containerEl)
@@ -277,7 +277,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.addSearch((cb) => {
 					// AdvancedSuggest statt TagSuggest
 					new (require("./suggesters/AdvancedSuggest")).AdvancedSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Criteria (z.B. tag:, fileName:, path:, ...)')
+					cb.setPlaceholder('Criteria (z.B. tag:, fileName:, path:, property:, ...)')
 						.setValue(rule.criteria)
 						.onChange(async (value) => {
 							if (value && this.plugin.settings.rules.some(

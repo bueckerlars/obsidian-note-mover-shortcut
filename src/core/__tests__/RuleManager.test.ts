@@ -19,7 +19,10 @@ describe('RuleManager', () => {
     beforeEach(() => {
         mockApp = {
             metadataCache: {
-                getFileCache: jest.fn().mockReturnValue({ tags: [{ tag: '#tag1' }] })
+                getFileCache: jest.fn().mockReturnValue({ 
+                    tags: [{ tag: '#tag1' }],
+                    frontmatter: { status: 'completed', priority: 'high', project: 'work' }
+                })
             },
             vault: {
                 read: jest.fn().mockResolvedValue('file content'),
@@ -201,6 +204,74 @@ describe('RuleManager', () => {
             ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
             expect(result).toBe('food-folder'); // Should pass whitelist and match rule
+        });
+    });
+
+    // Property-based tests
+    describe('Property matching', () => {
+        it('should skip file if property filter matches exact value (blacklist)', async () => {
+            ruleManager.setFilter(['property: status:completed'], false);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBeNull();
+        });
+
+        it('should skip file if property exists filter matches (blacklist)', async () => {
+            ruleManager.setFilter(['property: status'], false);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBeNull();
+        });
+
+        it('should move file if property filter matches (whitelist)', async () => {
+            ruleManager.setFilter(['property: status:completed'], true);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should move file based on property rule', async () => {
+            ruleManager.setRules([{ criteria: 'property: status:completed', path: 'archive' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('archive');
+        });
+
+        it('should move file based on property existence rule', async () => {
+            ruleManager.setRules([{ criteria: 'property: priority', path: 'priority-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('priority-folder');
+        });
+
+        it('should return default if property does not exist', async () => {
+            ruleManager.setRules([{ criteria: 'property: nonexistent:value', path: 'nonexistent-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should return default if property value does not match', async () => {
+            ruleManager.setRules([{ criteria: 'property: status:pending', path: 'pending-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should handle missing frontmatter gracefully', async () => {
+            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({ tags: [{ tag: '#tag1' }] });
+            ruleManager.setRules([{ criteria: 'property: status:completed', path: 'archive' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should handle case insensitive property values', async () => {
+            ruleManager.setRules([{ criteria: 'property: status:COMPLETED', path: 'archive' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('archive');
+        });
+
+        it('should handle numeric property values', async () => {
+            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
+                tags: [{ tag: '#tag1' }],
+                frontmatter: { priority: 1, status: 'completed' }
+            });
+            ruleManager.setRules([{ criteria: 'property: priority:1', path: 'priority-1' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('priority-1');
         });
     });
 }); 

@@ -43,14 +43,53 @@ export class RuleManager {
         });
     }
 
+    /**
+     * Matches properties from frontmatter:
+     * - Format: "key:value" for exact value match
+     * - Format: "key" for existence check (any value)
+     */
+    private matchProperty(properties: Record<string, any>, criteria: string): boolean {
+        // Check if criteria contains a colon to separate key and value
+        const colonIndex = criteria.indexOf(':');
+        
+        if (colonIndex === -1) {
+            // Format: "key" - check if property exists
+            const key = criteria.trim();
+            return properties.hasOwnProperty(key) && properties[key] !== undefined && properties[key] !== null;
+        } else {
+            // Format: "key:value" - check for exact value match
+            const key = criteria.substring(0, colonIndex).trim();
+            const expectedValue = criteria.substring(colonIndex + 1).trim();
+            
+            if (!properties.hasOwnProperty(key)) {
+                return false;
+            }
+            
+            const actualValue = properties[key];
+            
+            // Handle different value types
+            if (actualValue === null || actualValue === undefined) {
+                return false;
+            }
+            
+            // Convert both to strings for comparison to handle different types
+            const actualValueStr = String(actualValue).toLowerCase();
+            const expectedValueStr = expectedValue.toLowerCase();
+            
+            return actualValueStr === expectedValueStr;
+        }
+    }
+
     public async moveFileBasedOnTags(file: TFile, skipFilter: boolean = false): Promise<string | null> {
         try {
             // Metadaten extrahieren
-            const tags = getAllTags(this.app.metadataCache.getFileCache(file)!) || [];
+            const fileCache = this.app.metadataCache.getFileCache(file)!;
+            const tags = getAllTags(fileCache) || [];
             const fileName = file.name;
             const filePath = file.path;
             const createdAt = (file.stat && file.stat.ctime) ? new Date(file.stat.ctime) : null;
             const updatedAt = (file.stat && file.stat.mtime) ? new Date(file.stat.mtime) : null;
+            const properties = fileCache.frontmatter || {};
             // Inhalt könnte optional geladen werden
             let fileContent = "";
             try {
@@ -84,6 +123,9 @@ export class RuleManager {
                             break;
                         case "updated_at":
                             if (updatedAt) filterMatch = updatedAt.toISOString().startsWith(value);
+                            break;
+                        case "property":
+                            filterMatch = this.matchProperty(properties, value);
                             break;
                     }
                     if (!this.isFilterWhitelist && filterMatch) {
@@ -137,6 +179,9 @@ export class RuleManager {
                         break;
                     case "updated_at":
                         if (updatedAt) ruleMatch = updatedAt.toISOString().startsWith(value);
+                        break;
+                    case "property":
+                        ruleMatch = this.matchProperty(properties, value);
                         break;
                 }
                 

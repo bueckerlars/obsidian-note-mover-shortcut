@@ -1,6 +1,6 @@
 import { App, AbstractInputSuggest, TFolder, TAbstractFile, getAllTags } from "obsidian";
 
-export type SuggestType = "tag" | "content" | "fileName" | "created_at" | "path" | "updated_at";
+export type SuggestType = "tag" | "content" | "fileName" | "created_at" | "path" | "updated_at" | "property";
 
 const SUGGEST_TYPES: { label: string, value: SuggestType }[] = [
     { label: "tag: ", value: "tag" },
@@ -9,6 +9,7 @@ const SUGGEST_TYPES: { label: string, value: SuggestType }[] = [
     { label: "created_at: ", value: "created_at" },
     { label: "path: ", value: "path" },
     { label: "updated_at: ", value: "updated_at" },
+    { label: "property: ", value: "property" },
 ];
 
 export class AdvancedSuggest extends AbstractInputSuggest<string> {
@@ -16,12 +17,14 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     private tags: Set<string> = new Set();
     private folders: TFolder[] = [];
     private fileNames: string[] = [];
+    private propertyKeys: Set<string> = new Set();
     
     constructor(app: App, private inputEl: HTMLInputElement) {
         super(app, inputEl);
         this.loadTags();
         this.loadFolders();
         this.loadFileNames();
+        this.loadPropertyKeys();
     }
 
     private loadTags(): void {
@@ -41,6 +44,21 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     private loadFileNames(): void {
         const files = this.app.vault.getMarkdownFiles();
         this.fileNames = files.map(f => f.name);
+    }
+
+    private loadPropertyKeys(): void {
+        const files = this.app.vault.getMarkdownFiles();
+        files.forEach(file => {
+            const cachedMetadata = this.app.metadataCache.getFileCache(file);
+            if (cachedMetadata?.frontmatter) {
+                Object.keys(cachedMetadata.frontmatter).forEach(key => {
+                    // Skip Obsidian internal properties
+                    if (!key.startsWith('position') && key !== 'tags') {
+                        this.propertyKeys.add(key);
+                    }
+                });
+            }
+        });
     }
 
     getSuggestions(query: string): string[] {
@@ -70,6 +88,8 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
                 case "updated_at":
                     // Platzhalter: Hier könnte man Datumswerte vorschlagen
                     return [];
+                case "property":
+                    return Array.from(this.propertyKeys).filter(key => key.toLowerCase().includes(q)).map(key => `${typeMatch.label}${key}`);
                 default:
                     return [];
             }
