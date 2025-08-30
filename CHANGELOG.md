@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.1...0.3.2)
+### Features
+- Added support for Properties (Frontmatter) in Rules and Filters #20
+  - New `property:` criteria type for filtering and moving notes based on frontmatter metadata
+  - Support for exact value matching (`property:key:value`) and existence checking (`property:key`)
+  - Case-insensitive property value comparison with support for different data types
+- Enhanced property suggestions with three-level autocomplete
+  - Intelligent suggestion hierarchy: type → property key → property value
+  - Auto-completion of property keys and values from vault analysis
+  - Seamless UX with automatic colon insertion after property key selection
+
+### Improvements
+- Extended AdvancedSuggest with comprehensive property value tracking
+- Updated UI placeholders and descriptions to include property examples
+- Added comprehensive test coverage for property-based functionality
+
 ## [0.3.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.0...0.3.1)
 ### Features
 - Implemented support for subtags in rules #19
