@@ -118,6 +118,18 @@ export class UpdateManager {
         // Da die CHANGELOG.md im Plugin-Verzeichnis liegt, nicht im Vault,
         // einbetten wir den Inhalt direkt hier
         return `# Changelog
+## [0.3.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.2...0.3.3)
+### Features
+- Implemented file move preview functionality to show which files will be moved before execution
+- Added bulk undo functionality to history for reverting multiple movements at once
+- Added custom confirmation modal
+
+### Bug Fixes
+- Fixed bug where undo was failing with notes that are moved to subfolders by rules
+- Small styling fixes for preview modal
+
+### Improvements
+- Enhanced test coverage and improved mock data in tests
 
 ## [0.3.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.1...0.3.2)
 ### Features
