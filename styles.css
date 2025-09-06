@@ -84,6 +84,67 @@
     color: var(--text-normal);
 }
 
+/* Bulk Operation Styles */
+.history-entry.bulk-operation {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding: 16px 24px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.history-entry.single-operation {
+    border-left: 3px solid var(--interactive-accent);
+}
+
+.bulk-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.bulk-operation-info {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: var(--text-normal);
+}
+
+.bulk-details {
+    margin-top: 8px;
+}
+
+.bulk-details summary {
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.9em;
+    margin-bottom: 8px;
+    user-select: none;
+}
+
+.bulk-details summary:hover {
+    color: var(--text-normal);
+}
+
+.bulk-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-left: 0;
+    padding-top: 0;
+}
+
+/* Bulk file entries use the same styling as regular history entries */
+.history-entry.bulk-file-entry {
+    background: var(--background-primary);
+    border-left: 2px solid var(--background-modifier-border);
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
 /* Update Modal Styles */
 .note-mover-update-modal {
     padding: 32px 0 20px 0;

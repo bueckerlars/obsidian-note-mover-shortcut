@@ -1,10 +1,14 @@
-import { HistoryEntry } from '../types/HistoryEntry';
+import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import NoteMoverShortcutPlugin from 'main';
 
 export class HistoryManager {
     private history: HistoryEntry[] = [];
+    private bulkOperations: BulkOperation[] = [];
     private readonly MAX_HISTORY_ENTRIES = 50;
+    private readonly MAX_BULK_OPERATIONS = 20;
     private isPluginMove = false; // Flag um Plugin-interne Verschiebungen zu erkennen
+    private currentBulkOperationId: string | null = null;
+    private currentBulkOperationType: 'bulk' | 'periodic' | null = null;
 
     constructor(private plugin: NoteMoverShortcutPlugin) { }
 
@@ -14,20 +18,42 @@ export class HistoryManager {
         } else {
             this.history = [];
         }
+        
+        // Load bulk operations from settings if available
+        if (Array.isArray(this.plugin.settings.bulkOperations)) {
+            this.bulkOperations = this.plugin.settings.bulkOperations;
+        } else {
+            this.bulkOperations = [];
+        }
     }
 
-    private async saveHistory(): Promise<void> {    
+    private async saveHistory(): Promise<void> {
+        // Update plugin settings with current history and bulk operations
+        (this.plugin.settings as any).history = this.history;
+        (this.plugin.settings as any).bulkOperations = this.bulkOperations;
         await (this.plugin as any).save_settings();
     }
 
     public addEntry(entry: Omit<HistoryEntry, 'id' | 'timestamp'>): void {
+        const timestamp = Date.now();
         const newEntry: HistoryEntry = {
             ...entry,
             id: crypto.randomUUID(),
-            timestamp: Date.now()
+            timestamp,
+            bulkOperationId: this.currentBulkOperationId || undefined,
+            operationType: this.currentBulkOperationType || 'single'
         };
 
         this.history.unshift(newEntry);
+        
+        // Add to current bulk operation if active
+        if (this.currentBulkOperationId) {
+            const bulkOp = this.bulkOperations.find(op => op.id === this.currentBulkOperationId);
+            if (bulkOp) {
+                bulkOp.entries.push(newEntry);
+                bulkOp.totalFiles = bulkOp.entries.length;
+            }
+        }
         
         if (this.history.length > this.MAX_HISTORY_ENTRIES) {
             this.history.pop();
@@ -98,20 +124,57 @@ export class HistoryManager {
         const entry = this.history[entryIndex];
         const file = this.plugin.app.vault.getAbstractFileByPath(entry.destinationPath);
         
-        if (!file) return false;
+        if (!file) {
+            console.error(`File not found at path: ${entry.destinationPath}`);
+            return false;
+        }
+
+        // Check if source folder exists, create if necessary
+        const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
+        if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
+            try {
+                console.log(`Creating source folder for individual undo: ${sourceFolderPath}`);
+                await this.plugin.app.vault.createFolder(sourceFolderPath);
+            } catch (error) {
+                console.error(`Failed to create source folder ${sourceFolderPath}:`, error);
+                return false;
+            }
+        }
 
         try {
+            this.markPluginMoveStart();
             await this.plugin.app.fileManager.renameFile(
                 file,
                 entry.sourcePath
             );
             
+            // Remove from individual history
             this.history.splice(entryIndex, 1);
+            
+            // If this entry belongs to a bulk operation, remove it from there too
+            if (entry.bulkOperationId) {
+                const bulkOp = this.bulkOperations.find(op => op.id === entry.bulkOperationId);
+                if (bulkOp) {
+                    bulkOp.entries = bulkOp.entries.filter(e => e.id !== entryId);
+                    bulkOp.totalFiles = bulkOp.entries.length;
+                    
+                    // If bulk operation is now empty, remove it entirely
+                    if (bulkOp.entries.length === 0) {
+                        const bulkOpIndex = this.bulkOperations.findIndex(op => op.id === entry.bulkOperationId);
+                        if (bulkOpIndex !== -1) {
+                            this.bulkOperations.splice(bulkOpIndex, 1);
+                        }
+                    }
+                }
+            }
+            
             await this.saveHistory();
             return true;
         } catch (error) {
             console.error('Fehler beim Rückgängigmachen:', error);
             return false;
+        } finally {
+            this.markPluginMoveEnd();
         }
     }
 
@@ -132,8 +195,21 @@ export class HistoryManager {
             return false;
         }
 
+        // Check if source folder exists, create if necessary
+        const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
+        if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
+            try {
+                console.log(`Creating source folder for undo: ${sourceFolderPath}`);
+                await this.plugin.app.vault.createFolder(sourceFolderPath);
+            } catch (error) {
+                console.error(`Failed to create source folder ${sourceFolderPath}:`, error);
+                return false;
+            }
+        }
+
         try {
             console.log(`Attempting to move file from ${entry.destinationPath} to ${entry.sourcePath}`);
+            this.markPluginMoveStart();
             await this.plugin.app.fileManager.renameFile(
                 file,
                 entry.sourcePath
@@ -151,11 +227,160 @@ export class HistoryManager {
         } catch (error) {
             console.error('Error during undo:', error);
             return false;
+        } finally {
+            this.markPluginMoveEnd();
         }
     }
 
     public async clearHistory(): Promise<void> {
         this.history = [];
+        this.bulkOperations = [];
         await this.saveHistory();
+    }
+
+    /**
+     * Starts a new bulk operation
+     */
+    public startBulkOperation(operationType: 'bulk' | 'periodic'): string {
+        const bulkOperationId = crypto.randomUUID();
+        this.currentBulkOperationId = bulkOperationId;
+        this.currentBulkOperationType = operationType;
+        
+        const bulkOp: BulkOperation = {
+            id: bulkOperationId,
+            operationType,
+            timestamp: Date.now(),
+            entries: [],
+            totalFiles: 0
+        };
+        
+        this.bulkOperations.unshift(bulkOp);
+        
+        // Limit bulk operations history
+        if (this.bulkOperations.length > this.MAX_BULK_OPERATIONS) {
+            this.bulkOperations.pop();
+        }
+        
+        return bulkOperationId;
+    }
+
+    /**
+     * Ends the current bulk operation
+     */
+    public endBulkOperation(): void {
+        if (this.currentBulkOperationId) {
+            const bulkOp = this.bulkOperations.find(op => op.id === this.currentBulkOperationId);
+            if (bulkOp && bulkOp.entries.length === 0) {
+                // Remove empty bulk operations
+                const index = this.bulkOperations.indexOf(bulkOp);
+                this.bulkOperations.splice(index, 1);
+            }
+        }
+        
+        this.currentBulkOperationId = null;
+        this.currentBulkOperationType = null;
+        this.saveHistory();
+    }
+
+    /**
+     * Gets all bulk operations
+     */
+    public getBulkOperations(): BulkOperation[] {
+        return [...this.bulkOperations];
+    }
+
+    /**
+     * Undoes an entire bulk operation
+     */
+    public async undoBulkOperation(bulkOperationId: string): Promise<boolean> {
+        const bulkOp = this.bulkOperations.find(op => op.id === bulkOperationId);
+        if (!bulkOp) {
+            console.error(`Bulk operation with ID ${bulkOperationId} not found`);
+            return false;
+        }
+
+        console.log(`Starting bulk undo for operation: ${bulkOp.id}, ${bulkOp.entries.length} entries`);
+        
+        const results: boolean[] = [];
+        
+        // Undo entries in reverse order (last moved files first)
+        const sortedEntries = [...bulkOp.entries].sort((a, b) => b.timestamp - a.timestamp);
+        
+        for (const entry of sortedEntries) {
+            console.log(`Attempting to undo: ${entry.fileName} from ${entry.destinationPath} to ${entry.sourcePath}`);
+            
+            const file = this.plugin.app.vault.getAbstractFileByPath(entry.destinationPath);
+            if (!file) {
+                console.error(`File not found at destination path: ${entry.destinationPath}`);
+                results.push(false);
+                continue;
+            }
+
+            // Check if source folder exists, create if necessary
+            const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
+            if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
+                try {
+                    console.log(`Creating source folder: ${sourceFolderPath}`);
+                    await this.plugin.app.vault.createFolder(sourceFolderPath);
+                } catch (error) {
+                    console.error(`Failed to create source folder ${sourceFolderPath}:`, error);
+                    results.push(false);
+                    continue;
+                }
+            }
+
+            try {
+                this.markPluginMoveStart();
+                await this.plugin.app.fileManager.renameFile(file, entry.sourcePath);
+                console.log(`Successfully moved ${entry.fileName} back to ${entry.sourcePath}`);
+                
+                // Remove from individual history
+                const historyIndex = this.history.findIndex(h => h.id === entry.id);
+                if (historyIndex !== -1) {
+                    this.history.splice(historyIndex, 1);
+                }
+                
+                results.push(true);
+            } catch (error) {
+                console.error(`Error undoing move for ${entry.fileName}:`, error);
+                results.push(false);
+            } finally {
+                this.markPluginMoveEnd();
+            }
+        }
+
+        // Only remove the bulk operation if at least some operations were successful
+        const successCount = results.filter(r => r).length;
+        console.log(`Bulk undo completed: ${successCount}/${results.length} successful`);
+        
+        if (successCount > 0) {
+            // Create a map of successfully undone entries by ID
+            const successfulUndoIds = new Set<string>();
+            sortedEntries.forEach((entry, index) => {
+                if (results[index]) {
+                    successfulUndoIds.add(entry.id);
+                }
+            });
+            
+            // Remove successfully undone entries from the bulk operation
+            const remainingEntries = bulkOp.entries.filter(entry => !successfulUndoIds.has(entry.id));
+            
+            if (remainingEntries.length === 0) {
+                // All entries were undone, remove the entire bulk operation
+                const bulkOpIndex = this.bulkOperations.findIndex(op => op.id === bulkOperationId);
+                if (bulkOpIndex !== -1) {
+                    this.bulkOperations.splice(bulkOpIndex, 1);
+                }
+            } else {
+                // Update bulk operation with remaining entries
+                bulkOp.entries = remainingEntries;
+                bulkOp.totalFiles = remainingEntries.length;
+            }
+        }
+
+        await this.saveHistory();
+        
+        // Return true if all operations were successful
+        return results.every(r => r);
     }
 } 

@@ -100,14 +100,120 @@ export class NoteMoverShortcut {
 		const files = await app.vault.getFiles();
 		const inboxFiles = files.filter(file => file.path.startsWith(inboxFolder));
 
-		// Iterate over each file and move it
-		for (const file of inboxFiles) {
-			try {
-				await this.moveFileBasedOnTags(file, notesFolder);
-			} catch (error) {
-				log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
-				return;
+		if (inboxFiles.length === 0) {
+			log_info("No files found in inbox folder");
+			return;
+		}
+
+		// Start bulk operation
+		const bulkOperationId = this.plugin.historyManager.startBulkOperation('bulk');
+		let successCount = 0;
+		let errorCount = 0;
+
+		try {
+			// Iterate over each file and move it
+			for (const file of inboxFiles) {
+				try {
+					await this.moveFileBasedOnTags(file, notesFolder);
+					successCount++;
+				} catch (error) {
+					errorCount++;
+					log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
+				}
 			}
+
+			// Show completion notice
+			if (successCount > 0) {
+				const totalFiles = successCount + errorCount;
+				const successMessage = errorCount > 0 
+					? `Moved ${successCount}/${totalFiles} files. ${errorCount} files had errors.`
+					: `Successfully moved ${successCount} files`;
+				
+				const notice = new Notice("", 8000);
+				const noticeEl = notice.noticeEl;
+				
+				// Add title
+				const title = document.createElement("b");
+				title.textContent = "NoteMover Bulk Operation:";
+				noticeEl.appendChild(title);
+				noticeEl.appendChild(document.createElement("br"));
+				
+				// Add message
+				const message = document.createElement("span");
+				message.textContent = successMessage;
+				noticeEl.appendChild(message);
+				
+				// Add undo button
+				const undoButton = document.createElement("button");
+				undoButton.textContent = "Undo All";
+				undoButton.className = "mod-warning";
+				undoButton.style.marginLeft = "10px";
+				undoButton.onclick = async () => {
+					const success = await this.plugin.historyManager.undoBulkOperation(bulkOperationId);
+					if (success) {
+						notice.hide();
+						new Notice(`Bulk operation undone: ${successCount} files moved back`, 3000);
+					} else {
+						new Notice(`Could not undo all moves. Check individual files in history.`, 5000);
+					}
+				};
+				noticeEl.appendChild(undoButton);
+			}
+
+		} finally {
+			// End bulk operation
+			this.plugin.historyManager.endBulkOperation();
+		}
+	}
+
+	/**
+	 * Periodic version of bulk move - same logic but marked as periodic operation
+	 */
+	async moveNotesFromInboxToNotesFolderPeriodic() {
+		const { app } = this.plugin;
+		const inboxFolder = this.plugin.settings.inboxLocation;
+		const notesFolder = this.plugin.settings.destination;
+
+		// Check if both folders exist
+		if (!await app.vault.adapter.exists(inboxFolder)) {
+			return; // Don't create folders during periodic operations
+		}
+
+		if (!await app.vault.adapter.exists(notesFolder)) {
+			await app.vault.createFolder(notesFolder);
+			log_info("Notes folder created");
+		}
+
+		// Get all files in the inbox folder
+		const files = await app.vault.getFiles();
+		const inboxFiles = files.filter(file => file.path.startsWith(inboxFolder));
+
+		if (inboxFiles.length === 0) {
+			return; // No logging needed for periodic operations
+		}
+
+		// Start periodic bulk operation
+		const bulkOperationId = this.plugin.historyManager.startBulkOperation('periodic');
+		let successCount = 0;
+
+		try {
+			// Iterate over each file and move it
+			for (const file of inboxFiles) {
+				try {
+					await this.moveFileBasedOnTags(file, notesFolder);
+					successCount++;
+				} catch (error) {
+					log_error(new Error(`Error moving file '${file.path}' during periodic movement: ${error.message}`));
+				}
+			}
+
+			if (successCount > 0) {
+				log_info(`Periodic movement: Successfully moved ${successCount} files`);
+			}
+
+		} finally {
+			// End bulk operation
+			this.plugin.historyManager.endBulkOperation();
 		}
 	}
 
@@ -226,7 +332,7 @@ export class NoteMoverShortcut {
 		if (this.plugin.settings.enablePeriodicMovement) {
 			const interval = this.plugin.settings.periodicMovementInterval;
 			this.intervalId = window.setInterval(async () => {
-				await this.moveNotesFromInboxToNotesFolder();
+				await this.moveNotesFromInboxToNotesFolderPeriodic();
 			}, interval * 60 * 1000);
 		}
 	}

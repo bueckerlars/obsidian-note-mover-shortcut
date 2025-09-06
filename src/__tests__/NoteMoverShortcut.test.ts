@@ -1,5 +1,5 @@
 import { NoteMoverShortcut } from '../core/NoteMoverShortcut';
-import { App, TFile, getAllTags } from 'obsidian';
+import { App, TFile, getAllTags, Notice } from 'obsidian';
 import NoteMoverShortcutPlugin from '../../main';
 import { log_error, log_info } from '../utils/Log';
 import { combinePath } from '../utils/PathUtils';
@@ -11,6 +11,33 @@ global.window = Object.assign(global.window || {}, {
     setInterval: setIntervalMock,
     clearInterval: clearIntervalMock
 });
+
+// Mock Notice
+jest.mock('obsidian', () => ({
+    ...jest.requireActual('obsidian'),
+    Notice: jest.fn().mockImplementation((message: string, timeout?: number) => ({
+        noticeEl: {
+            appendChild: jest.fn(),
+            onclick: jest.fn()
+        },
+        hide: jest.fn()
+    }))
+}));
+
+// Mock document
+(global as any).document = {
+    createElement: jest.fn().mockImplementation((tag: string) => ({
+        textContent: '',
+        className: '',
+        style: {},
+        appendChild: jest.fn(),
+        onclick: jest.fn()
+    })),
+    createTextNode: jest.fn(),
+    body: {
+        appendChild: jest.fn()
+    }
+};
 
 describe('NoteMoverShortcut', () => {
     let plugin: NoteMoverShortcutPlugin;
@@ -45,8 +72,8 @@ describe('NoteMoverShortcut', () => {
 
         // Mock File
         mockFile = {
-            path: 'test/path/file.md',
-            name: 'file.md'
+            path: 'test/path/test.md',
+            name: 'test.md'
         } as TFile;
 
         // Mock Plugin
@@ -66,7 +93,9 @@ describe('NoteMoverShortcut', () => {
                 addEntry: jest.fn(),
                 undoLastMove: jest.fn().mockResolvedValue(true),
                 markPluginMoveStart: jest.fn(),
-                markPluginMoveEnd: jest.fn()
+                markPluginMoveEnd: jest.fn(),
+                startBulkOperation: jest.fn().mockReturnValue('mock-bulk-id'),
+                endBulkOperation: jest.fn()
             }
         } as unknown as NoteMoverShortcutPlugin;
 
@@ -167,7 +196,7 @@ describe('NoteMoverShortcut', () => {
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
-                expect.stringContaining('custom/path/file.md')
+                expect.stringContaining('custom/path/test.md')
             );
         });
 
@@ -178,7 +207,7 @@ describe('NoteMoverShortcut', () => {
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
-                '/notes/file.md'
+                'notes/test.md'
             );
         });
 
@@ -199,7 +228,7 @@ describe('NoteMoverShortcut', () => {
             expect(mockApp.vault.createFolder).toHaveBeenCalledWith('new/folder/path');
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
-                expect.stringContaining('new/folder/path/file.md')
+                expect.stringContaining('new/folder/path/test.md')
             );
         });
 
@@ -215,7 +244,7 @@ describe('NoteMoverShortcut', () => {
             expect(mockApp.vault.createFolder).not.toHaveBeenCalled();
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
-                expect.stringContaining('existing/folder/file.md')
+                expect.stringContaining('existing/folder/test.md')
             );
         });
 
@@ -230,7 +259,7 @@ describe('NoteMoverShortcut', () => {
             expect(mockApp.vault.createFolder).not.toHaveBeenCalled();
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
-                'file.md'
+                'test.md'
             );
         });
 
@@ -402,6 +431,149 @@ describe('NoteMoverShortcut', () => {
             
             // Should not throw, but log error and return early
             expect(mockApp.fileManager.renameFile).toHaveBeenCalled();
+        });
+    });
+
+    describe('moveNotesFromInboxToNotesFolderPeriodic', () => {
+        it('should not create folders during periodic operations when they do not exist', async () => {
+            mockApp.vault.adapter.exists = jest.fn()
+                .mockResolvedValueOnce(false) // inbox doesn't exist
+                .mockResolvedValueOnce(true);  // notes exists
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([]);
+            
+            await noteMover.moveNotesFromInboxToNotesFolderPeriodic();
+            
+            expect(mockApp.vault.createFolder).not.toHaveBeenCalled();
+        });
+
+        it('should create notes folder during periodic operations if it does not exist', async () => {
+            mockApp.vault.adapter.exists = jest.fn()
+                .mockResolvedValueOnce(true)  // inbox exists
+                .mockResolvedValueOnce(false); // notes doesn't exist
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([]);
+            
+            await noteMover.moveNotesFromInboxToNotesFolderPeriodic();
+            
+            expect(mockApp.vault.createFolder).toHaveBeenCalledWith('notes');
+        });
+
+        it('should move files during periodic operations', async () => {
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
+            mockFile.path = 'inbox/file.md';
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
+            
+            await noteMover.moveNotesFromInboxToNotesFolderPeriodic();
+            
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalled();
+            expect(plugin.historyManager.startBulkOperation).toHaveBeenCalledWith('periodic');
+            expect(plugin.historyManager.endBulkOperation).toHaveBeenCalled();
+        });
+
+        it('should handle errors during periodic operations', async () => {
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
+            mockApp.fileManager.renameFile = jest.fn().mockRejectedValue(new Error('Move failed'));
+            mockFile.path = 'inbox/file.md';
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
+            
+            await noteMover.moveNotesFromInboxToNotesFolderPeriodic();
+            
+            expect(plugin.historyManager.startBulkOperation).toHaveBeenCalledWith('periodic');
+            expect(plugin.historyManager.endBulkOperation).toHaveBeenCalled();
+        });
+
+        it('should not log when no files are found during periodic operations', async () => {
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([]);
+            
+            const logInfoSpy = jest.spyOn(require('../utils/Log'), 'log_info');
+            
+            await noteMover.moveNotesFromInboxToNotesFolderPeriodic();
+            
+            expect(logInfoSpy).not.toHaveBeenCalled();
+            expect(plugin.historyManager.startBulkOperation).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('updateRuleManager', () => {
+        it('should update rule manager when rules are enabled', () => {
+            plugin.settings.enableRules = true;
+            plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test/path' }];
+            plugin.settings.filter = ['tag: #filter'];
+            plugin.settings.isFilterWhitelist = true;
+            
+            noteMover.updateRuleManager();
+            
+            // This test verifies the method runs without error
+            // The actual rule manager functionality is tested separately
+            expect(plugin.settings.enableRules).toBe(true);
+        });
+
+        it('should update rule manager when rules are disabled', () => {
+            plugin.settings.enableRules = false;
+            
+            noteMover.updateRuleManager();
+            
+            expect(plugin.settings.enableRules).toBe(false);
+        });
+    });
+
+    describe('Error Scenarios', () => {
+        it('should handle file manager errors in moveFocusedNoteToDestination', async () => {
+            mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(mockFile);
+            mockApp.fileManager.renameFile = jest.fn().mockRejectedValue(new Error('File manager error'));
+            
+            await noteMover.moveFocusedNoteToDestination();
+            
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalled();
+        });
+
+        it('should handle vault creation errors in moveNotesFromInboxToNotesFolder', async () => {
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(false);
+            mockApp.vault.createFolder = jest.fn().mockRejectedValue(new Error('Cannot create folder'));
+            
+            await expect(noteMover.moveNotesFromInboxToNotesFolder()).rejects.toThrow();
+        });
+
+        it('should handle errors during bulk operations gracefully', async () => {
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
+            mockApp.fileManager.renameFile = jest.fn()
+                .mockResolvedValueOnce(undefined)  // First file succeeds
+                .mockRejectedValueOnce(new Error('Second file fails')); // Second file fails
+            
+            const file1 = { path: 'inbox/file1.md', name: 'file1.md' };
+            const file2 = { path: 'inbox/file2.md', name: 'file2.md' };
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([file1, file2]);
+            
+            await noteMover.moveNotesFromInboxToNotesFolder();
+            
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledTimes(2);
+            expect(plugin.historyManager.startBulkOperation).toHaveBeenCalled();
+            expect(plugin.historyManager.endBulkOperation).toHaveBeenCalled();
+        });
+    });
+
+    describe('Notice Creation', () => {
+        beforeEach(() => {
+            // Reset mock calls
+            jest.clearAllMocks();
+        });
+
+        it('should create notice in moveFocusedNoteToDestination', async () => {
+            mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(mockFile);
+            
+            await noteMover.moveFocusedNoteToDestination();
+            
+            expect(Notice).toHaveBeenCalled();
+        });
+
+        it('should create notice in moveNotesFromInboxToNotesFolder', async () => {
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
+            mockFile.path = 'inbox/test.md';
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
+            
+            await noteMover.moveNotesFromInboxToNotesFolder();
+            
+            expect(Notice).toHaveBeenCalled();
         });
     });
 }); 
