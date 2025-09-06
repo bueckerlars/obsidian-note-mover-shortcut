@@ -104,11 +104,31 @@ describe('RuleManager', () => {
         expect(result).toBe('special');
     });
 
-    it('should return defaultFolder if no rules match', async () => {
-        ruleManager.setRules([{ criteria: 'tag: #other', path: 'special' }]);
-        const result = await ruleManager.moveFileBasedOnTags(mockFile);
-        expect(result).toBe('default');
-    });
+        it('should return defaultFolder if no rules match', async () => {
+            ruleManager.setRules([{ criteria: 'tag: #other', path: 'special' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should handle invalid rule criteria format', async () => {
+            ruleManager.setRules([{ criteria: 'invalid-format', path: 'special' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should handle created_at rule with null createdAt', async () => {
+            mockFile.stat = { ctime: null, mtime: Date.now() } as any;
+            ruleManager.setRules([{ criteria: 'created_at: 2023-01-01', path: 'date-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should handle updated_at rule with null updatedAt', async () => {
+            mockFile.stat = { ctime: Date.now(), mtime: null } as any;
+            ruleManager.setRules([{ criteria: 'updated_at: 2023-01-01', path: 'date-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
 
     it('should handle missing tags gracefully', async () => {
         mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({});
@@ -272,6 +292,183 @@ describe('RuleManager', () => {
             ruleManager.setRules([{ criteria: 'property: priority:1', path: 'priority-1' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
             expect(result).toBe('priority-1');
+        });
+
+        it('should handle null property values', async () => {
+            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
+                tags: [{ tag: '#tag1' }],
+                frontmatter: { status: null, priority: undefined }
+            });
+            ruleManager.setRules([{ criteria: 'property: status:null', path: 'null-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should handle undefined property values', async () => {
+            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
+                tags: [{ tag: '#tag1' }],
+                frontmatter: { status: undefined }
+            });
+            ruleManager.setRules([{ criteria: 'property: status:undefined', path: 'undefined-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+    });
+
+    // Tests für generatePreviewForFile
+    describe('generatePreviewForFile', () => {
+        it('should generate preview for file with matching rule', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'special' }]);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(true);
+            expect(preview.targetPath).toBe('special');
+            expect(preview.matchedRule).toBe('tag: #tag1');
+        });
+
+        it('should generate preview for file blocked by blacklist filter', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            ruleManager.setFilter(['tag: #tag1'], false);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.targetPath).toBeNull();
+            expect(preview.blockReason).toBe('Blocked by blacklist filter');
+        });
+
+        it('should generate preview for file not in whitelist', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            ruleManager.setFilter(['tag: #other'], true);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.targetPath).toBeNull();
+            expect(preview.blockReason).toBe('Not in whitelist');
+        });
+
+        it('should generate preview for file with no matching rules (default folder)', async () => {
+            ruleManager.setRules([{ criteria: 'tag: #other', path: 'special' }]);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(true);
+            expect(preview.targetPath).toBe('default');
+            expect(preview.matchedRule).toBe('Default destination');
+        });
+
+        it('should handle error in generatePreviewForFile', async () => {
+            mockApp.metadataCache.getFileCache = jest.fn(() => { throw new Error('fail'); });
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.targetPath).toBeNull();
+            expect(preview.blockReason).toBe('Error: fail');
+        });
+
+        it('should skip filter when skipFilter=true', async () => {
+            ruleManager.setFilter(['tag: #tag1'], false);
+            const preview = await ruleManager.generatePreviewForFile(mockFile, true);
+            expect(preview.willBeMoved).toBe(true);
+            expect(preview.targetPath).toBe('default');
+        });
+
+        it('should handle property-based filtering in preview', async () => {
+            ruleManager.setFilter(['property: status:completed'], false);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.blockReason).toBe('Blocked by blacklist filter');
+        });
+
+        it('should handle fileName-based filtering in preview', async () => {
+            ruleManager.setFilter(['fileName: file.md'], false);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.blockReason).toBe('Blocked by blacklist filter');
+        });
+
+        it('should handle path-based filtering in preview', async () => {
+            ruleManager.setFilter(['path: folder/file.md'], false);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.blockReason).toBe('Blocked by blacklist filter');
+        });
+
+        it('should handle content-based filtering in preview', async () => {
+            ruleManager.setFilter(['content: file content'], false);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.blockReason).toBe('Blocked by blacklist filter');
+        });
+
+        it('should handle created_at filtering in preview', async () => {
+            const date = new Date(mockFile.stat.ctime).toISOString().slice(0, 10);
+            ruleManager.setFilter([`created_at: ${date}`], false);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.blockReason).toBe('Blocked by blacklist filter');
+        });
+
+        it('should handle updated_at filtering in preview', async () => {
+            const date = new Date(mockFile.stat.mtime).toISOString().slice(0, 10);
+            ruleManager.setFilter([`updated_at: ${date}`], false);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.blockReason).toBe('Blocked by blacklist filter');
+        });
+
+        it('should handle invalid rule criteria in preview', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            ruleManager.setRules([{ criteria: 'invalid-format', path: 'special' }]);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(true);
+            expect(preview.targetPath).toBe('default');
+        });
+
+        it('should handle created_at rule with null createdAt in preview', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            mockFile.stat = { ctime: null, mtime: Date.now() } as any;
+            ruleManager.setRules([{ criteria: 'created_at: 2023-01-01', path: 'date-folder' }]);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(true);
+            expect(preview.targetPath).toBe('default');
+        });
+
+        it('should handle updated_at rule with null updatedAt in preview', async () => {
+            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            mockFile.stat = { ctime: Date.now(), mtime: null } as any;
+            ruleManager.setRules([{ criteria: 'updated_at: 2023-01-01', path: 'date-folder' }]);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(true);
+            expect(preview.targetPath).toBe('default');
+        });
+    });
+
+    // Tests für generateMovePreview
+    describe('generateMovePreview', () => {
+        it('should generate preview for multiple files', async () => {
+            const files = [mockFile, { ...mockFile, name: 'file2.md', path: 'folder/file2.md' }];
+            ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'special' }]);
+            const preview = await ruleManager.generateMovePreview(files, true, false, false);
+            expect(preview.successfulMoves).toHaveLength(2);
+            expect(preview.blockedMoves).toHaveLength(0);
+            expect(preview.totalFiles).toBe(2);
+            expect(preview.settings.enableRules).toBe(true);
+            expect(preview.settings.enableFilter).toBe(false);
+            expect(preview.settings.isFilterWhitelist).toBe(false);
+            expect(preview.settings.defaultDestination).toBe('default');
+        });
+
+        it('should separate successful and blocked moves', async () => {
+            const files = [mockFile, { ...mockFile, name: 'file2.md', path: 'folder/file2.md' }];
+            ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'special' }]);
+            ruleManager.setFilter(['fileName: file2.md'], false);
+            const preview = await ruleManager.generateMovePreview(files, true, true, false);
+            expect(preview.successfulMoves).toHaveLength(1);
+            expect(preview.blockedMoves).toHaveLength(1);
+            expect(preview.successfulMoves[0].fileName).toBe('file.md');
+            expect(preview.blockedMoves[0].fileName).toBe('file2.md');
+        });
+
+        it('should handle empty file list', async () => {
+            const preview = await ruleManager.generateMovePreview([], true, false, false);
+            expect(preview.successfulMoves).toHaveLength(0);
+            expect(preview.blockedMoves).toHaveLength(0);
+            expect(preview.totalFiles).toBe(0);
         });
     });
 }); 

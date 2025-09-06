@@ -90,4 +90,29 @@ describe('CommandHandler', () => {
         callback();
         expect(showUpdateModal).toHaveBeenCalledWith(true);
     });
+
+    it('handles preview bulk movement callback with success', async () => {
+        const mockPreview = { successfulMoves: [], blockedMoves: [] };
+        generateInboxMovePreview.mockResolvedValue(mockPreview);
+        
+        handler.setup();
+        const callback = addCommand.mock.calls[4][0].callback;
+        await callback();
+        
+        expect(generateInboxMovePreview).toHaveBeenCalled();
+        expect(open).toHaveBeenCalled();
+    });
+
+    it('handles preview note movement callback with success', async () => {
+        const mockPreview = { successfulMoves: [], blockedMoves: [] };
+        generateActiveNotePreview.mockResolvedValue(mockPreview);
+        
+        handler.setup();
+        const editorCallback = addCommand.mock.calls[5][0].editorCallback;
+        await editorCallback({}, {});
+        
+        expect(generateActiveNotePreview).toHaveBeenCalled();
+        expect(open).toHaveBeenCalled();
+    });
+
 }); 

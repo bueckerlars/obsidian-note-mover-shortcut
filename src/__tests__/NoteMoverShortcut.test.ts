@@ -233,5 +233,175 @@ describe('NoteMoverShortcut', () => {
                 'file.md'
             );
         });
+
+        it('should not try to create empty folder', async () => {
+            plugin.settings.rules = [{ criteria: 'tag: #test', path: '' }];
+            plugin.settings.destination = 'notes';
+            noteMover.updateRuleManager();
+            
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            
+            expect(mockApp.vault.adapter.exists).not.toHaveBeenCalled();
+            expect(mockApp.vault.createFolder).not.toHaveBeenCalled();
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                '/file.md'
+            );
+        });
+    });
+
+    describe('generateInboxMovePreview', () => {
+        it('should generate preview for inbox files', async () => {
+            const mockPreview = { successfulMoves: [], blockedMoves: [], totalFiles: 0 };
+            const mockRuleManager = {
+                generateMovePreview: jest.fn().mockResolvedValue(mockPreview)
+            };
+            noteMover['ruleManager'] = mockRuleManager as any;
+            
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
+            
+            const result = await noteMover.generateInboxMovePreview();
+            
+            expect(mockApp.vault.adapter.exists).toHaveBeenCalledWith('inbox');
+            expect(mockApp.vault.getFiles).toHaveBeenCalled();
+            expect(mockRuleManager.generateMovePreview).toHaveBeenCalledWith(
+                [],
+                false,
+                undefined,
+                false
+            );
+            expect(result).toBe(mockPreview);
+        });
+
+        it('should create inbox folder if it does not exist', async () => {
+            const mockPreview = { successfulMoves: [], blockedMoves: [], totalFiles: 0 };
+            const mockRuleManager = {
+                generateMovePreview: jest.fn().mockResolvedValue(mockPreview)
+            };
+            noteMover['ruleManager'] = mockRuleManager as any;
+            
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(false);
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([]);
+            
+            await noteMover.generateInboxMovePreview();
+            
+            expect(mockApp.vault.createFolder).toHaveBeenCalledWith('inbox');
+        });
+
+        it('should filter files to only include inbox files', async () => {
+            const mockPreview = { successfulMoves: [], blockedMoves: [], totalFiles: 0 };
+            const mockRuleManager = {
+                generateMovePreview: jest.fn().mockResolvedValue(mockPreview)
+            };
+            noteMover['ruleManager'] = mockRuleManager as any;
+            
+            const inboxFile = { ...mockFile, path: 'inbox/file1.md' };
+            const otherFile = { ...mockFile, path: 'other/file2.md' };
+            
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([inboxFile, otherFile]);
+            
+            await noteMover.generateInboxMovePreview();
+            
+            expect(mockRuleManager.generateMovePreview).toHaveBeenCalledWith(
+                [inboxFile],
+                false,
+                undefined,
+                false
+            );
+        });
+    });
+
+    describe('generateActiveNotePreview', () => {
+        it('should generate preview for active note', async () => {
+            const mockPreview = { successfulMoves: [], blockedMoves: [], totalFiles: 0 };
+            const mockRuleManager = {
+                generateMovePreview: jest.fn().mockResolvedValue(mockPreview)
+            };
+            noteMover['ruleManager'] = mockRuleManager as any;
+            
+            mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(mockFile);
+            
+            const result = await noteMover.generateActiveNotePreview();
+            
+            expect(mockApp.workspace.getActiveFile).toHaveBeenCalled();
+            expect(mockRuleManager.generateMovePreview).toHaveBeenCalledWith(
+                [mockFile],
+                false,
+                undefined,
+                false
+            );
+            expect(result).toBe(mockPreview);
+        });
+
+        it('should return null if no active file', async () => {
+            mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(null);
+            
+            const result = await noteMover.generateActiveNotePreview();
+            
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('updateRuleManager', () => {
+        it('should update rule manager when rules are enabled', () => {
+            plugin.settings.enableRules = true;
+            plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test' }];
+            plugin.settings.filter = ['tag: #block'];
+            plugin.settings.isFilterWhitelist = true;
+            
+            const mockRuleManager = {
+                setRules: jest.fn(),
+                setFilter: jest.fn()
+            };
+            noteMover['ruleManager'] = mockRuleManager as any;
+            
+            noteMover.updateRuleManager();
+            
+            expect(mockRuleManager.setRules).toHaveBeenCalledWith([{ criteria: 'tag: #test', path: 'test' }]);
+            expect(mockRuleManager.setFilter).toHaveBeenCalledWith(['tag: #block'], true);
+        });
+
+        it('should not update rule manager when rules are disabled', () => {
+            plugin.settings.enableRules = false;
+            
+            const mockRuleManager = {
+                setRules: jest.fn(),
+                setFilter: jest.fn()
+            };
+            noteMover['ruleManager'] = mockRuleManager as any;
+            
+            noteMover.updateRuleManager();
+            
+            expect(mockRuleManager.setRules).not.toHaveBeenCalled();
+            expect(mockRuleManager.setFilter).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('moveFocusedNoteToDestination error handling', () => {
+        it('should handle error in moveFocusedNoteToDestination', async () => {
+            mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(mockFile);
+            mockApp.fileManager.renameFile = jest.fn().mockRejectedValue(new Error('Move failed'));
+            
+            await noteMover.moveFocusedNoteToDestination();
+            
+            // Should not throw, but log error
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalled();
+        });
+    });
+
+    describe('moveNotesFromInboxToNotesFolder error handling', () => {
+        it('should handle error when moving individual file', async () => {
+            mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
+            mockFile.path = 'inbox/file.md';
+            mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
+            mockApp.fileManager.renameFile = jest.fn().mockRejectedValue(new Error('Move failed'));
+            
+            await noteMover.moveNotesFromInboxToNotesFolder();
+            
+            // Should not throw, but log error and return early
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalled();
+        });
     });
 }); 
