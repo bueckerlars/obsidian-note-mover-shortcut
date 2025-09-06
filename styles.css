@@ -511,3 +511,49 @@
 .preview-modal-button-container .setting-item-control {
     margin: 0 !important;
 }
+
+/* Confirm Modal Styles */
+.confirm-modal {
+    padding: 24px 0 16px 0;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.confirm-modal-title {
+    margin: 0 0 16px 0;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: var(--text-normal);
+    text-align: center;
+}
+
+.confirm-modal-message {
+    margin: 0 0 24px 0;
+    color: var(--text-muted);
+    font-size: 1em;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.confirm-modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    align-items: center;
+    border-top: 1px solid var(--background-modifier-border);
+    padding-top: 16px;
+}
+
+.confirm-modal-buttons .setting-item {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.confirm-modal-buttons .setting-item-control {
+    margin: 0 !important;
+}
+
+.confirm-modal-buttons button {
+    min-width: 80px;
+}

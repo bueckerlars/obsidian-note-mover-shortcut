@@ -5,6 +5,7 @@ import { TagSuggest } from "./suggesters/TagSuggest";
 import { NoteMoverError } from "src/utils/Error";
 import { log_error } from "src/utils/Log";
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
+import { ConfirmModal } from "../modals/ConfirmModal";
 
 interface Rule {
 	criteria: string, // Format: "type: value" (z.B. "tag: #project", "fileName: notes.md")
@@ -363,7 +364,15 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.setButtonText('Clear history')
 				.setWarning()
 				.onClick(async () => {
-					if (confirm('Are you sure you want to clear the history? This action cannot be undone.')) {
+					const confirmed = await ConfirmModal.show(this.app, {
+						title: 'Clear History',
+						message: 'Are you sure you want to clear the history?<br/><br/>This action cannot be undone.',
+						confirmText: 'Clear History',
+						cancelText: 'Cancel',
+						danger: true
+					});
+					
+					if (confirmed) {
 						await this.plugin.historyManager.clearHistory();
 					}
 				})
