@@ -21,6 +21,10 @@ describe('HistoryManager', () => {
             app: {
                 vault: {
                     getAbstractFileByPath: jest.fn().mockReturnValue({}),
+                    adapter: {
+                        exists: jest.fn().mockResolvedValue(true)
+                    },
+                    createFolder: jest.fn().mockResolvedValue(undefined)
                 },
                 fileManager: {
                     renameFile: jest.fn().mockResolvedValue(undefined),

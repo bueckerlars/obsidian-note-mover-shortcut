@@ -66,7 +66,9 @@ describe('NoteMoverShortcut', () => {
                 addEntry: jest.fn(),
                 undoLastMove: jest.fn().mockResolvedValue(true),
                 markPluginMoveStart: jest.fn(),
-                markPluginMoveEnd: jest.fn()
+                markPluginMoveEnd: jest.fn(),
+                startBulkOperation: jest.fn().mockReturnValue('mock-bulk-id'),
+                endBulkOperation: jest.fn()
             }
         } as unknown as NoteMoverShortcutPlugin;
 
