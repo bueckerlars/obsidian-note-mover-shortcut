@@ -180,7 +180,7 @@ describe('NoteMoverShortcut', () => {
             await noteMover['moveFileBasedOnTags'](mockFile, 'default');
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
-                '/notes/file.md'
+                'notes/file.md'
             );
         });
 

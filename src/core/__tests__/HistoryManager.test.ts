@@ -33,6 +33,9 @@ describe('HistoryManager', () => {
         } as unknown as NoteMoverShortcutPlugin;
         historyManager = new HistoryManager(mockPlugin);
         historyManager.loadHistoryFromSettings();
+        
+        // Reset all mocks to default behavior before each test
+        jest.clearAllMocks();
     });
 
     describe('addEntry', () => {
@@ -117,6 +120,62 @@ describe('HistoryManager', () => {
         it('should return false if no entry is found', async () => {
             const result = await historyManager.undoLastMove('non-existent-file.md');
             expect(result).toBe(false);
+        });
+
+        it('should create source folder when undoing move from subfolder', async () => {
+            // Mock that source folder doesn't exist initially
+            mockPlugin.app.vault.adapter.exists.mockResolvedValueOnce(false);
+            
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: 'subfolder/nested/note.md',
+                destinationPath: 'notes/note.md',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            
+            const result = await historyManager.undoLastMove('note.md');
+            
+            expect(result).toBe(true);
+            expect(mockPlugin.app.vault.createFolder).toHaveBeenCalledWith('subfolder/nested');
+            expect(mockPlugin.app.fileManager.renameFile).toHaveBeenCalled();
+            expect(historyManager.getHistory()).toHaveLength(0);
+        });
+
+        it('should handle folder creation errors gracefully', async () => {
+            // Mock that source folder doesn't exist and creation fails
+            mockPlugin.app.vault.adapter.exists.mockResolvedValueOnce(false);
+            mockPlugin.app.vault.createFolder.mockRejectedValueOnce(new Error('Folder creation failed'));
+            
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: 'subfolder/nested/note.md',
+                destinationPath: 'notes/note.md',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            
+            const result = await historyManager.undoLastMove('note.md');
+            
+            expect(result).toBe(false);
+            expect(mockPlugin.app.vault.createFolder).toHaveBeenCalledWith('subfolder/nested');
+            expect(mockPlugin.app.fileManager.renameFile).not.toHaveBeenCalled();
+            // Entry should still exist since undo failed
+            expect(historyManager.getHistory()).toHaveLength(1);
+        });
+
+        it('should not try to create folder if source is in root', async () => {
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: 'note.md',
+                destinationPath: 'notes/note.md',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            
+            const result = await historyManager.undoLastMove('note.md');
+            
+            expect(result).toBe(true);
+            expect(mockPlugin.app.vault.createFolder).not.toHaveBeenCalled();
+            expect(mockPlugin.app.fileManager.renameFile).toHaveBeenCalled();
+            expect(historyManager.getHistory()).toHaveLength(0);
         });
     });
 

@@ -195,8 +195,21 @@ export class HistoryManager {
             return false;
         }
 
+        // Check if source folder exists, create if necessary
+        const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
+        if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
+            try {
+                console.log(`Creating source folder for undo: ${sourceFolderPath}`);
+                await this.plugin.app.vault.createFolder(sourceFolderPath);
+            } catch (error) {
+                console.error(`Failed to create source folder ${sourceFolderPath}:`, error);
+                return false;
+            }
+        }
+
         try {
             console.log(`Attempting to move file from ${entry.destinationPath} to ${entry.sourcePath}`);
+            this.markPluginMoveStart();
             await this.plugin.app.fileManager.renameFile(
                 file,
                 entry.sourcePath
@@ -214,6 +227,8 @@ export class HistoryManager {
         } catch (error) {
             console.error('Error during undo:', error);
             return false;
+        } finally {
+            this.markPluginMoveEnd();
         }
     }
 
