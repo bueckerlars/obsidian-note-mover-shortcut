@@ -274,7 +274,7 @@ describe('NoteMoverShortcut', () => {
             expect(mockApp.vault.createFolder).not.toHaveBeenCalled();
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
-                '/file.md'
+                'test.md'
             );
         });
     });
