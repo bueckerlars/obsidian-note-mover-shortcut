@@ -3,12 +3,20 @@ import { CommandHandler } from '../CommandHandler';
 const addCommand = jest.fn();
 const moveFocusedNoteToDestination = jest.fn();
 const moveNotesFromInboxToNotesFolder = jest.fn();
+const generateInboxMovePreview = jest.fn();
+const generateActiveNotePreview = jest.fn();
 const open = jest.fn();
 const showUpdateModal = jest.fn();
 
 jest.mock('../../modals/HistoryModal', () => {
     return {
         HistoryModal: jest.fn().mockImplementation(() => ({ open })),
+    };
+});
+
+jest.mock('../../modals/PreviewModal', () => {
+    return {
+        PreviewModal: jest.fn().mockImplementation(() => ({ open })),
     };
 });
 
@@ -20,6 +28,8 @@ describe('CommandHandler', () => {
         addCommand.mockClear();
         moveFocusedNoteToDestination.mockClear();
         moveNotesFromInboxToNotesFolder.mockClear();
+        generateInboxMovePreview.mockClear();
+        generateActiveNotePreview.mockClear();
         open.mockClear();
         showUpdateModal.mockClear();
 
@@ -28,6 +38,8 @@ describe('CommandHandler', () => {
             noteMover: {
                 moveFocusedNoteToDestination,
                 moveNotesFromInboxToNotesFolder,
+                generateInboxMovePreview,
+                generateActiveNotePreview,
             },
             app: {},
             historyManager: {},
@@ -40,12 +52,14 @@ describe('CommandHandler', () => {
 
     it('registers all commands correctly', () => {
         handler.setup();
-        expect(addCommand).toHaveBeenCalledTimes(4);
+        expect(addCommand).toHaveBeenCalledTimes(6);
         const calls = addCommand.mock.calls;
         expect(calls[0][0].id).toBe('trigger-note-movement');
         expect(calls[1][0].id).toBe('trigger-note-bulk-move');
         expect(calls[2][0].id).toBe('show-history');
         expect(calls[3][0].id).toBe('show-update-modal');
+        expect(calls[4][0].id).toBe('preview-bulk-movement');
+        expect(calls[5][0].id).toBe('preview-note-movement');
     });
 
     it('calls moveFocusedNoteToDestination in editor callback', () => {

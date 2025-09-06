@@ -4,6 +4,7 @@ import { log_error, log_info } from "../utils/Log";
 import { Notice } from "obsidian";
 import { combinePath } from "../utils/PathUtils";
 import { RuleManager } from "./RuleManager";
+import { MovePreview } from "../types/MovePreview";
 
 export class NoteMoverShortcut {
 	private ruleManager: RuleManager;
@@ -30,7 +31,7 @@ export class NoteMoverShortcut {
 		}
 	}
 
-	private async moveFileBasedOnTags(file: TFile, defaultFolder: string, skipFilter: boolean = false): Promise<void> {
+	public async moveFileBasedOnTags(file: TFile, defaultFolder: string, skipFilter: boolean = false): Promise<void> {
 		const { app } = this.plugin;
 		const originalPath = file.path;
 
@@ -164,6 +165,52 @@ export class NoteMoverShortcut {
 			log_error(error);
 			return;
 		}
+	}
+
+	/**
+	 * Generates a preview of moves for files in the inbox folder
+	 */
+	async generateInboxMovePreview(): Promise<MovePreview> {
+		const { app } = this.plugin;
+		const inboxFolder = this.plugin.settings.inboxLocation;
+
+		// Check if inbox folder exists, create if not
+		if (!await app.vault.adapter.exists(inboxFolder)) {
+			await app.vault.createFolder(inboxFolder);
+			log_info("Inbox folder created");
+		}
+
+		// Get all files in the inbox folder
+		const files = await app.vault.getFiles();
+		const inboxFiles = files.filter(file => file.path.startsWith(inboxFolder));
+
+		// Generate preview using RuleManager
+		return await this.ruleManager.generateMovePreview(
+			inboxFiles,
+			this.plugin.settings.enableRules,
+			this.plugin.settings.enableFilter,
+			this.plugin.settings.isFilterWhitelist
+		);
+	}
+
+	/**
+	 * Generates a preview for the currently active note
+	 */
+	async generateActiveNotePreview(): Promise<MovePreview | null> {
+		const { app } = this.plugin;
+		const activeFile = app.workspace.getActiveFile();
+
+		if (!activeFile) {
+			return null;
+		}
+
+		// Generate preview for single file
+		return await this.ruleManager.generateMovePreview(
+			[activeFile],
+			this.plugin.settings.enableRules,
+			this.plugin.settings.enableFilter,
+			this.plugin.settings.isFilterWhitelist
+		);
 	}
 
 	private intervalId: number | null = null;

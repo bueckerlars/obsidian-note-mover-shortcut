@@ -220,3 +220,233 @@
     text-align: center;
     margin: 24px 0;
 }
+
+/* Preview Modal Styles */
+.note-mover-preview-modal {
+    padding: 32px 0 20px 0;
+    box-sizing: border-box;
+}
+
+.preview-modal-title-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.preview-modal-icon {
+    font-size: 2em;
+    line-height: 1;
+}
+
+.preview-modal-title {
+    margin: 0;
+    font-size: 1.6em;
+    font-weight: bold;
+    color: var(--text-normal);
+}
+
+.preview-modal-subtitle {
+    margin: 0 0 16px 0;
+    color: var(--text-muted);
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.preview-modal-settings-info {
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.settings-row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+
+.settings-row span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.settings-row code {
+    background: var(--background-primary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+.preview-section {
+    margin-bottom: 24px;
+}
+
+.preview-section:last-child {
+    margin-bottom: 16px;
+}
+
+.preview-section-header {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.preview-section-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-section-success .preview-section-header h3 {
+    color: var(--text-success);
+}
+
+.preview-section-blocked .preview-section-header h3 {
+    color: var(--text-error);
+}
+
+.preview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.preview-item {
+    padding: 16px;
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-primary);
+}
+
+.preview-item-success {
+    border-left: 3px solid var(--text-success);
+    background: var(--background-primary-alt);
+}
+
+.preview-item-blocked {
+    border-left: 3px solid var(--text-error);
+    background: var(--background-primary-alt);
+}
+
+.preview-item-main {
+    margin-bottom: 8px;
+}
+
+.preview-item-filename {
+    font-weight: 600;
+    font-size: 1em;
+    color: var(--text-normal);
+    margin-bottom: 4px;
+}
+
+.preview-item-paths {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-monospace);
+    font-size: 0.85em;
+}
+
+.current-path {
+    color: var(--text-muted);
+}
+
+.arrow {
+    color: var(--text-accent);
+    font-weight: bold;
+}
+
+.target-path {
+    color: var(--text-success);
+    font-weight: 500;
+}
+
+.preview-item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9em;
+}
+
+.preview-item-rule,
+.preview-item-block-reason,
+.preview-item-blocking-filter,
+.preview-item-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rule-label,
+.block-reason-label,
+.filter-label,
+.tags-label {
+    font-weight: 500;
+    color: var(--text-muted);
+    min-width: 60px;
+}
+
+.preview-item-rule code,
+.preview-item-blocking-filter code {
+    background: var(--background-secondary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    color: var(--text-normal);
+}
+
+.preview-item-block-reason {
+    color: var(--text-error);
+}
+
+.tag {
+    display: inline-block;
+    background: var(--background-modifier-border);
+    color: var(--text-muted);
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    margin-right: 4px;
+}
+
+.preview-modal-empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+    font-size: 1.1em;
+    background: var(--background-secondary);
+    border-radius: 8px;
+    margin: 24px 0;
+}
+
+.preview-modal-footer {
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--background-modifier-border);
+    padding-top: 16px;
+    margin-top: 24px;
+}
+
+.preview-modal-button-container {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.preview-modal-button-container .setting-item {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.preview-modal-button-container .setting-item-control {
+    margin: 0 !important;
+}

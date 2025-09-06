@@ -2,6 +2,7 @@ import { App, TFile } from 'obsidian';
 import { getAllTags } from 'obsidian';
 import { log_error } from '../utils/Log';
 import { Rule } from '../types/Rule';
+import { PreviewEntry, MovePreview } from '../types/MovePreview';
 
 export class RuleManager {
     private rules: Rule[] = [];
@@ -195,5 +196,195 @@ export class RuleManager {
             log_error(new Error(`Error processing rules for file '${file.path}': ${error.message}`));
             return null;
         }
+    }
+
+    /**
+     * Generates preview information for a single file without actually moving it
+     */
+    public async generatePreviewForFile(file: TFile, skipFilter: boolean = false): Promise<PreviewEntry> {
+        try {
+            // Extract metadata (same as in moveFileBasedOnTags)
+            const fileCache = this.app.metadataCache.getFileCache(file);
+            const tags = getAllTags(fileCache || {}) || [];
+            const fileName = file.name;
+            const filePath = file.path;
+            const createdAt = (file.stat && file.stat.ctime) ? new Date(file.stat.ctime) : null;
+            const updatedAt = (file.stat && file.stat.mtime) ? new Date(file.stat.mtime) : null;
+            const properties = fileCache?.frontmatter || {};
+            
+            let fileContent = "";
+            try {
+                fileContent = await this.app.vault.read(file);
+            } catch {}
+
+            // Check filters first
+            if (!skipFilter && this.filter.length > 0) {
+                for (const filterStr of this.filter) {
+                    const match = filterStr.match(/^([a-zA-Z_]+):\s*(.*)$/);
+                    if (!match) continue;
+                    
+                    const type = match[1];
+                    const value = match[2];
+                    let filterMatch = false;
+                    
+                    switch (type) {
+                        case "tag":
+                            filterMatch = this.matchTag(tags, value);
+                            break;
+                        case "fileName":
+                            filterMatch = fileName === value;
+                            break;
+                        case "path":
+                            filterMatch = filePath === value;
+                            break;
+                        case "content":
+                            filterMatch = fileContent.includes(value);
+                            break;
+                        case "created_at":
+                            if (createdAt) filterMatch = createdAt.toISOString().startsWith(value);
+                            break;
+                        case "updated_at":
+                            if (updatedAt) filterMatch = updatedAt.toISOString().startsWith(value);
+                            break;
+                        case "property":
+                            filterMatch = this.matchProperty(properties, value);
+                            break;
+                    }
+                    
+                    if (!this.isFilterWhitelist && filterMatch) {
+                        return {
+                            fileName,
+                            currentPath: filePath,
+                            targetPath: null,
+                            willBeMoved: false,
+                            blockReason: this.isFilterWhitelist ? "Not in whitelist" : "Blocked by blacklist filter",
+                            blockingFilter: `${type}: ${value}`,
+                            tags
+                        };
+                    }
+                    
+                    if (this.isFilterWhitelist && !filterMatch) {
+                        return {
+                            fileName,
+                            currentPath: filePath,
+                            targetPath: null,
+                            willBeMoved: false,
+                            blockReason: "Not in whitelist",
+                            blockingFilter: `${type}: ${value}`,
+                            tags
+                        };
+                    }
+                }
+            }
+
+            // Sort rules by specificity
+            const sortedRules = this.rules.slice().sort((a, b) => {
+                const aMatch = a.criteria.match(/^tag:\s*(.*)$/);
+                const bMatch = b.criteria.match(/^tag:\s*(.*)$/);
+                
+                if (aMatch && bMatch) {
+                    const aLevels = (aMatch[1].match(/\//g) || []).length;
+                    const bLevels = (bMatch[1].match(/\//g) || []).length;
+                    return bLevels - aLevels;
+                }
+                return 0;
+            });
+
+            // Check rules for matches
+            for (const rule of sortedRules) {
+                const match = rule.criteria.match(/^([a-zA-Z_]+):\s*(.*)$/);
+                if (!match) continue;
+                
+                const type = match[1];
+                const value = match[2];
+                let ruleMatch = false;
+                
+                switch (type) {
+                    case "tag":
+                        ruleMatch = this.matchTag(tags, value);
+                        break;
+                    case "fileName":
+                        ruleMatch = fileName === value;
+                        break;
+                    case "path":
+                        ruleMatch = filePath === value;
+                        break;
+                    case "content":
+                        ruleMatch = fileContent.includes(value);
+                        break;
+                    case "created_at":
+                        if (createdAt) ruleMatch = createdAt.toISOString().startsWith(value);
+                        break;
+                    case "updated_at":
+                        if (updatedAt) ruleMatch = updatedAt.toISOString().startsWith(value);
+                        break;
+                    case "property":
+                        ruleMatch = this.matchProperty(properties, value);
+                        break;
+                }
+                
+                if (ruleMatch) {
+                    return {
+                        fileName,
+                        currentPath: filePath,
+                        targetPath: rule.path,
+                        willBeMoved: true,
+                        matchedRule: rule.criteria,
+                        tags
+                    };
+                }
+            }
+
+            // No rule matched, use default folder
+            return {
+                fileName,
+                currentPath: filePath,
+                targetPath: this.defaultFolder,
+                willBeMoved: true,
+                matchedRule: "Default destination",
+                tags
+            };
+
+        } catch (error) {
+            log_error(new Error(`Error generating preview for file '${file.path}': ${error.message}`));
+            return {
+                fileName: file.name,
+                currentPath: file.path,
+                targetPath: null,
+                willBeMoved: false,
+                blockReason: `Error: ${error.message}`,
+                tags: []
+            };
+        }
+    }
+
+    /**
+     * Generates a complete move preview for multiple files
+     */
+    public async generateMovePreview(files: TFile[], enableRules: boolean, enableFilter: boolean, isFilterWhitelist: boolean): Promise<MovePreview> {
+        const successfulMoves: PreviewEntry[] = [];
+        const blockedMoves: PreviewEntry[] = [];
+
+        for (const file of files) {
+            const preview = await this.generatePreviewForFile(file, !enableFilter);
+            
+            if (preview.willBeMoved) {
+                successfulMoves.push(preview);
+            } else {
+                blockedMoves.push(preview);
+            }
+        }
+
+        return {
+            successfulMoves,
+            blockedMoves,
+            totalFiles: files.length,
+            settings: {
+                enableRules,
+                enableFilter,
+                isFilterWhitelist,
+                defaultDestination: this.defaultFolder
+            }
+        };
     }
 } 

@@ -1,7 +1,8 @@
 import NoteMoverShortcutPlugin from "main";
-import { Editor, MarkdownView } from "obsidian";
+import { Editor, MarkdownView, Notice } from "obsidian";
 import { HistoryModal } from "../modals/HistoryModal";
 import { UpdateModal } from "../modals/UpdateModal";
+import { PreviewModal } from "../modals/PreviewModal";
 
 
 export class CommandHandler {
@@ -42,6 +43,38 @@ export class CommandHandler {
             name: 'Show update modal',
             callback: () => {
                 this.plugin.updateManager.showUpdateModal(true);
+            }
+        });
+
+        // Preview bulk movement command
+        this.plugin.addCommand({
+            id: 'preview-bulk-movement',
+            name: 'Preview bulk movement from inbox',
+            callback: async () => {
+                try {
+                    const preview = await this.plugin.noteMover.generateInboxMovePreview();
+                    new PreviewModal(this.plugin.app, this.plugin, preview).open();
+                } catch (error) {
+                    new Notice(`Error generating preview: ${error.message}`);
+                }
+            }
+        });
+
+        // Preview single note movement command
+        this.plugin.addCommand({
+            id: 'preview-note-movement',
+            name: 'Preview active note movement',
+            editorCallback: async (editor: Editor, view: MarkdownView) => {
+                try {
+                    const preview = await this.plugin.noteMover.generateActiveNotePreview();
+                    if (preview) {
+                        new PreviewModal(this.plugin.app, this.plugin, preview).open();
+                    } else {
+                        new Notice('No active note to preview.');
+                    }
+                } catch (error) {
+                    new Notice(`Error generating preview: ${error.message}`);
+                }
             }
         });
     }
