@@ -5,6 +5,7 @@ import { HistoryEntry } from '../../types/HistoryEntry';
 let mockHistory: HistoryEntry[] = [];
 let mockSettings: any;
 let mockPlugin: any;
+let mockFile: any;
 
 describe('HistoryManager', () => {
     let historyManager: HistoryManager;
@@ -12,6 +13,10 @@ describe('HistoryManager', () => {
     beforeEach(() => {
         mockHistory = [];
         mockSettings = { history: mockHistory };
+        mockFile = {
+            path: 'test/path.md',
+            name: 'test.md'
+        };
         mockPlugin = {
             settings: mockSettings,
             save_settings: jest.fn().mockImplementation(() => {
@@ -260,6 +265,371 @@ describe('HistoryManager', () => {
                 );
                 expect(historyManager.getHistory()).toHaveLength(0);
             });
+        });
+    });
+
+    describe('Bulk Operations', () => {
+        describe('startBulkOperation', () => {
+            it('should start a bulk operation and return ID', () => {
+                const bulkId = historyManager.startBulkOperation('bulk');
+                expect(bulkId).toBeDefined();
+                expect(typeof bulkId).toBe('string');
+                
+                const bulkOps = historyManager.getBulkOperations();
+                expect(bulkOps).toHaveLength(1);
+                expect(bulkOps[0].id).toBe(bulkId);
+                expect(bulkOps[0].operationType).toBe('bulk');
+                expect(bulkOps[0].entries).toEqual([]);
+                expect(bulkOps[0].totalFiles).toBe(0);
+            });
+
+            it('should start a periodic operation', () => {
+                const bulkId = historyManager.startBulkOperation('periodic');
+                const bulkOps = historyManager.getBulkOperations();
+                expect(bulkOps[0].operationType).toBe('periodic');
+            });
+
+            it('should limit bulk operations to MAX_BULK_OPERATIONS', () => {
+                // Start more than MAX_BULK_OPERATIONS (20) and add entries to prevent removal
+                for (let i = 0; i < 25; i++) {
+                    historyManager.startBulkOperation('bulk');
+                    // Add an entry to prevent the bulk operation from being removed when ended
+                    historyManager.addEntry({
+                        sourcePath: `/source/path${i}`,
+                        destinationPath: `/destination/path${i}`,
+                        fileName: `note${i}.md`,
+                    });
+                    historyManager.endBulkOperation();
+                }
+                
+                expect(historyManager.getBulkOperations()).toHaveLength(20);
+            });
+        });
+
+        describe('endBulkOperation', () => {
+            it('should end current bulk operation', () => {
+                const bulkId = historyManager.startBulkOperation('bulk');
+                
+                // Add an entry so the bulk operation won't be removed when ended
+                historyManager.addEntry({
+                    sourcePath: '/source/path',
+                    destinationPath: '/destination/path',
+                    fileName: 'note.md',
+                });
+                
+                historyManager.endBulkOperation();
+                
+                // Should still exist since it has entries
+                expect(historyManager.getBulkOperations()).toHaveLength(1);
+            });
+
+            it('should remove empty bulk operations when ended', () => {
+                const bulkId = historyManager.startBulkOperation('bulk');
+                historyManager.endBulkOperation();
+                
+                // Should be removed since it has no entries
+                expect(historyManager.getBulkOperations()).toHaveLength(0);
+            });
+
+            it('should handle ending when no bulk operation is active', () => {
+                // Should not throw
+                expect(() => historyManager.endBulkOperation()).not.toThrow();
+            });
+        });
+
+        describe('addEntry with bulk operations', () => {
+            it('should add entries to current bulk operation', () => {
+                const bulkId = historyManager.startBulkOperation('bulk');
+                
+                const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: '/source/path',
+                    destinationPath: '/destination/path',
+                    fileName: 'note.md',
+                };
+                
+                historyManager.addEntry(entry);
+                
+                const bulkOps = historyManager.getBulkOperations();
+                expect(bulkOps[0].entries).toHaveLength(1);
+                expect(bulkOps[0].totalFiles).toBe(1);
+                expect(bulkOps[0].entries[0].bulkOperationId).toBe(bulkId);
+                expect(bulkOps[0].entries[0].operationType).toBe('bulk');
+                
+                historyManager.endBulkOperation();
+            });
+
+            it('should add entries without bulk operation when none is active', () => {
+                const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: '/source/path',
+                    destinationPath: '/destination/path',
+                    fileName: 'note.md',
+                };
+                
+                historyManager.addEntry(entry);
+                
+                const history = historyManager.getHistory();
+                expect(history[0].bulkOperationId).toBeUndefined();
+                expect(history[0].operationType).toBe('single');
+            });
+        });
+
+        describe('undoBulkOperation', () => {
+            beforeEach(() => {
+                // Reset mocks for each test
+                mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+                mockPlugin.app.vault.adapter.exists.mockResolvedValue(true);
+                mockPlugin.app.fileManager.renameFile.mockResolvedValue(undefined);
+            });
+
+            it('should return false for non-existent bulk operation', async () => {
+                const result = await historyManager.undoBulkOperation('non-existent-id');
+                expect(result).toBe(false);
+            });
+
+            it('should successfully undo a bulk operation', async () => {
+                const bulkId = historyManager.startBulkOperation('bulk');
+                
+                // Add some entries to the bulk operation
+                const entry1: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: '/source/path1',
+                    destinationPath: '/destination/path1',
+                    fileName: 'note1.md',
+                };
+                const entry2: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: '/source/path2',
+                    destinationPath: '/destination/path2',
+                    fileName: 'note2.md',
+                };
+                
+                historyManager.addEntry(entry1);
+                historyManager.addEntry(entry2);
+                historyManager.endBulkOperation();
+                
+                const result = await historyManager.undoBulkOperation(bulkId);
+                
+                expect(result).toBe(true);
+                expect(mockPlugin.app.fileManager.renameFile).toHaveBeenCalledTimes(2);
+                expect(historyManager.getBulkOperations()).toHaveLength(0);
+                expect(historyManager.getHistory()).toHaveLength(0);
+            });
+
+            it('should handle partial undo failures gracefully', async () => {
+                const bulkId = historyManager.startBulkOperation('bulk');
+                
+                const entry1: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: '/source/path1',
+                    destinationPath: '/destination/path1',
+                    fileName: 'note1.md',
+                };
+                const entry2: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: '/source/path2',
+                    destinationPath: '/destination/path2',
+                    fileName: 'note2.md',
+                };
+                
+                historyManager.addEntry(entry1);
+                historyManager.addEntry(entry2);
+                historyManager.endBulkOperation();
+                
+                // Mock first file not found, second successful
+                mockPlugin.app.vault.getAbstractFileByPath
+                    .mockReturnValueOnce(null) // First call returns null (file not found)
+                    .mockReturnValueOnce(mockFile); // Second call returns file
+                
+                const result = await historyManager.undoBulkOperation(bulkId);
+                
+                expect(result).toBe(false); // Should return false since not all succeeded
+                expect(mockPlugin.app.fileManager.renameFile).toHaveBeenCalledTimes(1);
+                
+                // Should have one remaining entry in bulk operation
+                const bulkOps = historyManager.getBulkOperations();
+                expect(bulkOps).toHaveLength(1);
+                expect(bulkOps[0].entries).toHaveLength(1);
+            });
+
+            it('should create source folders when needed during bulk undo', async () => {
+                const bulkId = historyManager.startBulkOperation('bulk');
+                
+                const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: 'subfolder/nested/note.md',
+                    destinationPath: '/destination/note.md',
+                    fileName: 'note.md',
+                };
+                
+                historyManager.addEntry(entry);
+                historyManager.endBulkOperation();
+                
+                // Mock that source folder doesn't exist initially
+                mockPlugin.app.vault.adapter.exists
+                    .mockResolvedValueOnce(false) // First check for folder existence
+                    .mockResolvedValueOnce(true);  // After folder creation
+                
+                const result = await historyManager.undoBulkOperation(bulkId);
+                
+                expect(result).toBe(true);
+                expect(mockPlugin.app.vault.createFolder).toHaveBeenCalledWith('subfolder/nested');
+                expect(mockPlugin.app.fileManager.renameFile).toHaveBeenCalled();
+            });
+        });
+
+        describe('undoEntry with bulk operations', () => {
+            it('should remove entry from bulk operation when undoing individual entry', async () => {
+                const bulkId = historyManager.startBulkOperation('bulk');
+                
+                const entry1: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: '/source/path1',
+                    destinationPath: '/destination/path1',
+                    fileName: 'note1.md',
+                };
+                const entry2: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: '/source/path2',
+                    destinationPath: '/destination/path2',
+                    fileName: 'note2.md',
+                };
+                
+                historyManager.addEntry(entry1);
+                historyManager.addEntry(entry2);
+                historyManager.endBulkOperation();
+                
+                const history = historyManager.getHistory();
+                const result = await historyManager.undoEntry(history[0].id);
+                
+                expect(result).toBe(true);
+                expect(historyManager.getHistory()).toHaveLength(1);
+                
+                // Check that bulk operation still exists with one entry
+                const bulkOps = historyManager.getBulkOperations();
+                expect(bulkOps).toHaveLength(1);
+                expect(bulkOps[0].entries).toHaveLength(1);
+                expect(bulkOps[0].totalFiles).toBe(1);
+            });
+
+            it('should remove bulk operation when last entry is undone', async () => {
+                const bulkId = historyManager.startBulkOperation('bulk');
+                
+                const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                    sourcePath: '/source/path',
+                    destinationPath: '/destination/path',
+                    fileName: 'note.md',
+                };
+                
+                historyManager.addEntry(entry);
+                historyManager.endBulkOperation();
+                
+                const history = historyManager.getHistory();
+                const result = await historyManager.undoEntry(history[0].id);
+                
+                expect(result).toBe(true);
+                expect(historyManager.getHistory()).toHaveLength(0);
+                expect(historyManager.getBulkOperations()).toHaveLength(0);
+            });
+        });
+    });
+
+    describe('loadHistoryFromSettings', () => {
+        it('should load history from settings when valid array exists', () => {
+            const mockHistoryEntry: HistoryEntry = {
+                id: 'test-id',
+                sourcePath: '/source',
+                destinationPath: '/dest',
+                fileName: 'test.md',
+                timestamp: 123456789,
+                operationType: 'single'
+            };
+            
+            mockPlugin.settings.history = [mockHistoryEntry];
+            historyManager.loadHistoryFromSettings();
+            
+            const history = historyManager.getHistory();
+            expect(history).toHaveLength(1);
+            expect(history[0]).toEqual(mockHistoryEntry);
+        });
+
+        it('should initialize empty history when settings.history is not an array', () => {
+            mockPlugin.settings.history = null;
+            historyManager.loadHistoryFromSettings();
+            
+            const history = historyManager.getHistory();
+            expect(history).toEqual([]);
+        });
+
+        it('should load bulk operations from settings when valid array exists', () => {
+            const mockBulkOp = {
+                id: 'bulk-id',
+                operationType: 'bulk' as const,
+                timestamp: 123456789,
+                entries: [],
+                totalFiles: 0
+            };
+            
+            mockPlugin.settings.bulkOperations = [mockBulkOp];
+            historyManager.loadHistoryFromSettings();
+            
+            const bulkOps = historyManager.getBulkOperations();
+            expect(bulkOps).toHaveLength(1);
+            expect(bulkOps[0]).toEqual(mockBulkOp);
+        });
+
+        it('should initialize empty bulk operations when settings.bulkOperations is not an array', () => {
+            mockPlugin.settings.bulkOperations = null;
+            historyManager.loadHistoryFromSettings();
+            
+            const bulkOps = historyManager.getBulkOperations();
+            expect(bulkOps).toEqual([]);
+        });
+    });
+
+    describe('Error Handling', () => {
+        it('should handle file manager errors during undo', async () => {
+            mockPlugin.app.fileManager.renameFile.mockRejectedValue(new Error('File manager error'));
+            
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: '/source/path',
+                destinationPath: '/destination/path',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            
+            const history = historyManager.getHistory();
+            const result = await historyManager.undoEntry(history[0].id);
+            
+            expect(result).toBe(false);
+            expect(historyManager.getHistory()).toHaveLength(1); // Entry should remain
+        });
+
+        it('should handle missing files during undo gracefully', async () => {
+            mockPlugin.app.vault.getAbstractFileByPath.mockReturnValue(null);
+            
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: '/source/path',
+                destinationPath: '/destination/path',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            
+            const history = historyManager.getHistory();
+            const result = await historyManager.undoEntry(history[0].id);
+            
+            expect(result).toBe(false);
+        });
+
+        it('should handle folder creation errors during undo', async () => {
+            mockPlugin.app.vault.adapter.exists.mockResolvedValue(false);
+            mockPlugin.app.vault.createFolder.mockRejectedValue(new Error('Cannot create folder'));
+            
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: 'subfolder/nested/note.md',
+                destinationPath: '/destination/note.md',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+            
+            const history = historyManager.getHistory();
+            const result = await historyManager.undoEntry(history[0].id);
+            
+            expect(result).toBe(false);
+            expect(mockPlugin.app.vault.createFolder).toHaveBeenCalled();
+            expect(mockPlugin.app.fileManager.renameFile).not.toHaveBeenCalled();
         });
     });
 }); 
