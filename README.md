@@ -21,6 +21,8 @@ This will further distinguish this plugin for users who want a balance between s
 #### Basic Settings
 - **Inbox folder**: Specify the path to your inbox folder where new notes are initially stored.
 - **Note folder**: Specify the path to your main note folder where notes will be moved to by default.
+    
+    > The default note folder will be used if no rule is applied on a note that gets moved by the plugin
 
 #### Periodic Movement
 ![Periodic Movement Settings](images/noteMover-settings-periodic-movement.png)
