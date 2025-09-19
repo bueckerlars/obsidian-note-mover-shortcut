@@ -50,6 +50,7 @@ This will further distinguish this plugin for users who want a balance between s
 #### Rules
 ![Rules Configuration](images/noteMover-settings-rules.png)
 - **Enable rules**: When enabled, you can define custom rules for moving notes based on various criteria.
+- **Only move notes with rules**: When enabled, only notes matching defined rules will be moved, others remain untouched. When disabled, notes without matching rules are moved to the default destination folder.
 - **Rule configuration**: For each rule, specify:
   - **Criteria**: The criteria that triggers the rule. Supported types:
     - **Tags**: `tag: tagname` - Trigger for notes with specific tags
@@ -124,6 +125,7 @@ The plugin provides the following 6 commands that can be accessed through the co
 - **Name**: "Move all notes from inbox to notes folder"
 - **Description**: Moves all notes from the configured inbox folder to their respective destination folders based on the current settings:
   - If rules are enabled, notes will be moved according to their criteria
+  - If "Only move notes with rules" is enabled, only notes matching defined rules will be moved
   - If filters are enabled, only notes matching the filter criteria will be moved
   - Otherwise, all notes will be moved to the default note folder
   - **Preview**: Shows a preview of all files to be moved and their destinations before execution
@@ -187,6 +189,7 @@ This plugin is open-source. Contributions are welcome!
 - **Active Note Move**: Move the active note from the current location to the main notes folder with a single command
 - **Bulk Move**: The ability to move all notes from an "Inbox" folder to the main notes folder with a single command, saving you time and simplifying organization.
 - **Advanced Criteria-Based Moving**: Move notes to different destination folders based on various criteria including tags, properties (frontmatter), file names, content, paths, and dates, allowing for sophisticated note organization.
+- **Selective Rule-Based Movement**: Option to only move notes that match defined rules, providing flexibility for users who want selective note processing based on specific criteria.
 - **Automated Moving**: A feature that periodically moves notes from the "Inbox" folder if they meet specific criteria, such as lacking an "#inbox" tag.
 - **Move Preview**: Preview which files will be moved before execution, ensuring safe and predictable operations
 - **History Tracking**: Keep track of all note movements with a detailed history view
