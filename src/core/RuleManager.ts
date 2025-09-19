@@ -8,6 +8,7 @@ export class RuleManager {
     private rules: Rule[] = [];
     private filter: string[] = [];
     private isFilterWhitelist: boolean = false;
+    private onlyMoveNotesWithRules: boolean = false;
 
     constructor(
         private app: App,
@@ -21,6 +22,10 @@ export class RuleManager {
     public setFilter(filter: string[], isWhitelist: boolean): void {
         this.filter = filter;
         this.isFilterWhitelist = isWhitelist;
+    }
+
+    public setOnlyMoveNotesWithRules(onlyMoveNotesWithRules: boolean): void {
+        this.onlyMoveNotesWithRules = onlyMoveNotesWithRules;
     }
 
     /**
@@ -191,6 +196,11 @@ export class RuleManager {
                 }
             }
 
+            // If onlyMoveNotesWithRules is enabled and no rule matched, return null to skip the file
+            if (this.onlyMoveNotesWithRules) {
+                return null;
+            }
+
             return this.defaultFolder;
         } catch (error) {
             log_error(new Error(`Error processing rules for file '${file.path}': ${error.message}`));
@@ -335,15 +345,26 @@ export class RuleManager {
                 }
             }
 
-            // No rule matched, use default folder
-            return {
-                fileName,
-                currentPath: filePath,
-                targetPath: this.defaultFolder,
-                willBeMoved: true,
-                matchedRule: "Default destination",
-                tags
-            };
+            // No rule matched
+            if (this.onlyMoveNotesWithRules) {
+                return {
+                    fileName,
+                    currentPath: filePath,
+                    targetPath: null,
+                    willBeMoved: false,
+                    blockReason: "No matching rule found",
+                    tags
+                };
+            } else {
+                return {
+                    fileName,
+                    currentPath: filePath,
+                    targetPath: this.defaultFolder,
+                    willBeMoved: true,
+                    matchedRule: "Default destination",
+                    tags
+                };
+            }
 
         } catch (error) {
             log_error(new Error(`Error generating preview for file '${file.path}': ${error.message}`));

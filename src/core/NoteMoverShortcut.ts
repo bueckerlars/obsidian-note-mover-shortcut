@@ -21,6 +21,9 @@ export class NoteMoverShortcut {
 				this.plugin.settings.filter,
 				this.plugin.settings.isFilterWhitelist
 			);
+			this.ruleManager.setOnlyMoveNotesWithRules(
+				this.plugin.settings.onlyMoveNotesWithRules
+			);
 		}
 	}
 
@@ -42,7 +45,7 @@ export class NoteMoverShortcut {
 			if (this.plugin.settings.enableRules) {
 				const result = await this.ruleManager.moveFileBasedOnTags(file, skipFilter);
 				if (result === null) {
-					return; // File should be skipped based on filter
+					return; // File should be skipped based on filter or no matching rule
 				}
 				targetFolder = result;
 			}

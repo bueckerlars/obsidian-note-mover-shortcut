@@ -438,6 +438,57 @@ describe('RuleManager', () => {
         });
     });
 
+    // Tests für onlyMoveNotesWithRules
+    describe('onlyMoveNotesWithRules', () => {
+        it('should return null when onlyMoveNotesWithRules is enabled and no rules match', async () => {
+            ruleManager.setRules([{ criteria: 'tag: #other', path: 'custom/path' }]);
+            ruleManager.setOnlyMoveNotesWithRules(true);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBeNull();
+        });
+
+        it('should return rule path when onlyMoveNotesWithRules is enabled and rule matches', async () => {
+            ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'custom/path' }]);
+            ruleManager.setOnlyMoveNotesWithRules(true);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('custom/path');
+        });
+
+        it('should return default folder when onlyMoveNotesWithRules is disabled and no rules match', async () => {
+            ruleManager.setRules([{ criteria: 'tag: #other', path: 'custom/path' }]);
+            ruleManager.setOnlyMoveNotesWithRules(false);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('default');
+        });
+
+        it('should generate preview with willBeMoved false when onlyMoveNotesWithRules is enabled and no rules match', async () => {
+            ruleManager.setRules([{ criteria: 'tag: #other', path: 'custom/path' }]);
+            ruleManager.setOnlyMoveNotesWithRules(true);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(false);
+            expect(preview.targetPath).toBeNull();
+            expect(preview.blockReason).toBe('No matching rule found');
+        });
+
+        it('should generate preview with willBeMoved true when onlyMoveNotesWithRules is enabled and rule matches', async () => {
+            ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'custom/path' }]);
+            ruleManager.setOnlyMoveNotesWithRules(true);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(true);
+            expect(preview.targetPath).toBe('custom/path');
+            expect(preview.matchedRule).toBe('tag: #tag1');
+        });
+
+        it('should generate preview with willBeMoved true when onlyMoveNotesWithRules is disabled and no rules match', async () => {
+            ruleManager.setRules([{ criteria: 'tag: #other', path: 'custom/path' }]);
+            ruleManager.setOnlyMoveNotesWithRules(false);
+            const preview = await ruleManager.generatePreviewForFile(mockFile);
+            expect(preview.willBeMoved).toBe(true);
+            expect(preview.targetPath).toBe('default');
+            expect(preview.matchedRule).toBe('Default destination');
+        });
+    });
+
     // Tests für generateMovePreview
     describe('generateMovePreview', () => {
         it('should generate preview for multiple files', async () => {

@@ -22,6 +22,7 @@ export interface NoteMoverShortcutSettings {
 	isFilterWhitelist: boolean,
 	enableRules: boolean,
 	rules: Rule[],
+	onlyMoveNotesWithRules: boolean,
 	history?: HistoryEntry[],
 	bulkOperations?: BulkOperation[],
 	lastSeenVersion?: string,
@@ -37,6 +38,7 @@ export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
 	isFilterWhitelist: false,
 	enableRules: false,
 	rules: [],
+	onlyMoveNotesWithRules: false,
 }
 
 export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
@@ -256,6 +258,28 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					this.display();
 				})
 			);
+
+		if (this.plugin.settings.enableRules) {
+			const descOnlyMoveWithRules = document.createDocumentFragment();
+			descOnlyMoveWithRules.append(
+				'When enabled, only notes that match defined rules will be moved. Notes without matching rules will be left untouched.',
+				document.createElement('br'),
+				'When disabled, notes without matching rules will be moved to the default destination folder.',
+			);
+
+			new Setting(this.containerEl)
+				.setName('Only move notes with rules')
+				.setDesc(descOnlyMoveWithRules)
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings.onlyMoveNotesWithRules)
+					.onChange(async (value) => {
+						this.plugin.settings.onlyMoveNotesWithRules = value;
+						await this.plugin.save_settings();
+						// Update RuleManager
+						this.plugin.noteMover.updateRuleManager();
+					})
+				);
+		}
 	}
 
 	add_add_rule_button_setting(): void {

@@ -118,6 +118,19 @@ export class UpdateManager {
         // Da die CHANGELOG.md im Plugin-Verzeichnis liegt, nicht im Vault,
         // einbetten wir den Inhalt direkt hier
         return `# Changelog
+## [0.3.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.3...0.3.4)
+### Features
+- Added "Only move notes with rules" option #21
+  - New toggle in Rules settings to control note movement behavior
+  - When enabled: Only notes matching defined rules will be moved, others remain untouched
+  - When disabled: Notes without matching rules are moved to the default destination folder
+  - Provides flexibility for users who want selective note processing based on rules
+
+### Improvements
+- Enhanced rule processing logic to support selective note movement
+- Updated preview functionality to reflect the new movement behavior
+- Improved user experience with clear option descriptions and conditional UI display
+
 ## [0.3.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.2...0.3.3)
 ### Features
 - Implemented file move preview functionality to show which files will be moved before execution
@@ -300,7 +313,7 @@ export class UpdateManager {
         // Wenn keine fromVersion (erstes Start), zeige die letzten wichtigen Versionen
         if (!fromVersion) {
             // Definiere wichtige Versionen, die beim ersten Start gezeigt werden sollen
-            const importantVersionsToShow = ['0.3.0', '0.2.1', '0.2.0', '0.1.7', '0.1.6'];
+            const importantVersionsToShow = ['0.3.4', '0.3.3', '0.3.0', '0.2.1', '0.2.0', '0.1.7', '0.1.6'];
             return importantVersionsToShow.includes(version);
         }
 

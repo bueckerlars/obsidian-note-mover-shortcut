@@ -87,7 +87,8 @@ describe('NoteMoverShortcut', () => {
                 periodicMovementInterval: 5,
                 rules: [],
                 filter: [],
-                isFilterWhitelist: false
+                isFilterWhitelist: false,
+                onlyMoveNotesWithRules: false
             },
             historyManager: {
                 addEntry: jest.fn(),
@@ -208,6 +209,27 @@ describe('NoteMoverShortcut', () => {
             expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
                 mockFile,
                 'notes/test.md'
+            );
+        });
+
+        it('should skip file if onlyMoveNotesWithRules is enabled and no rules match', async () => {
+            plugin.settings.rules = [{ criteria: 'tag: #other', path: 'custom/path' }];
+            plugin.settings.destination = 'notes';
+            plugin.settings.onlyMoveNotesWithRules = true;
+            noteMover.updateRuleManager();
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).not.toHaveBeenCalled();
+        });
+
+        it('should move file to rule path if onlyMoveNotesWithRules is enabled and rule matches', async () => {
+            plugin.settings.rules = [{ criteria: 'tag: #test', path: 'custom/path' }];
+            plugin.settings.destination = 'notes';
+            plugin.settings.onlyMoveNotesWithRules = true;
+            noteMover.updateRuleManager();
+            await noteMover['moveFileBasedOnTags'](mockFile, 'default');
+            expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('custom/path/test.md')
             );
         });
 
@@ -379,10 +401,12 @@ describe('NoteMoverShortcut', () => {
             plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test' }];
             plugin.settings.filter = ['tag: #block'];
             plugin.settings.isFilterWhitelist = true;
+            plugin.settings.onlyMoveNotesWithRules = false;
             
             const mockRuleManager = {
                 setRules: jest.fn(),
-                setFilter: jest.fn()
+                setFilter: jest.fn(),
+                setOnlyMoveNotesWithRules: jest.fn()
             };
             noteMover['ruleManager'] = mockRuleManager as any;
             
@@ -390,6 +414,7 @@ describe('NoteMoverShortcut', () => {
             
             expect(mockRuleManager.setRules).toHaveBeenCalledWith([{ criteria: 'tag: #test', path: 'test' }]);
             expect(mockRuleManager.setFilter).toHaveBeenCalledWith(['tag: #block'], true);
+            expect(mockRuleManager.setOnlyMoveNotesWithRules).toHaveBeenCalledWith(false);
         });
 
         it('should not update rule manager when rules are disabled', () => {
@@ -397,7 +422,8 @@ describe('NoteMoverShortcut', () => {
             
             const mockRuleManager = {
                 setRules: jest.fn(),
-                setFilter: jest.fn()
+                setFilter: jest.fn(),
+                setOnlyMoveNotesWithRules: jest.fn()
             };
             noteMover['ruleManager'] = mockRuleManager as any;
             
@@ -405,6 +431,7 @@ describe('NoteMoverShortcut', () => {
             
             expect(mockRuleManager.setRules).not.toHaveBeenCalled();
             expect(mockRuleManager.setFilter).not.toHaveBeenCalled();
+            expect(mockRuleManager.setOnlyMoveNotesWithRules).not.toHaveBeenCalled();
         });
     });
 
