@@ -4,6 +4,7 @@ import { Rule } from '../types/Rule';
 import { PreviewEntry, MovePreview } from '../types/MovePreview';
 import { createError, handleError } from '../utils/Error';
 import { MetadataExtractor } from './MetadataExtractor';
+import { RuleMatcher } from './RuleMatcher';
 
 export class RuleManager {
     private rules: Rule[] = [];
@@ -11,12 +12,14 @@ export class RuleManager {
     private isFilterWhitelist: boolean = false;
     private onlyMoveNotesWithRules: boolean = false;
     private metadataExtractor: MetadataExtractor;
+    private ruleMatcher: RuleMatcher;
 
     constructor(
         private app: App,
         private defaultFolder: string
     ) {
         this.metadataExtractor = new MetadataExtractor(app);
+        this.ruleMatcher = new RuleMatcher();
     }
 
     public setRules(rules: Rule[]): void {
@@ -32,162 +35,21 @@ export class RuleManager {
         this.onlyMoveNotesWithRules = onlyMoveNotesWithRules;
     }
 
-    /**
-     * Matches tags hierarchically:
-     * - Exact match has highest priority
-     * - Parent tag matches all subtags (e.g., #food matches #food/recipes)
-     */
-    private matchTag(fileTags: string[], ruleTag: string): boolean {
-        // First check for exact match
-        if (fileTags.includes(ruleTag)) {
-            return true;
-        }
-
-        // Then check if any file tag is a subtag of the rule tag
-        // Rule: #food should match #food/recipes, #food/breakfast, etc.
-        return fileTags.some(fileTag => {
-            if (fileTag.startsWith(ruleTag + '/')) {
-                return true;
-            }
-            return false;
-        });
-    }
-
-    /**
-     * Matches properties from frontmatter:
-     * - Format: "key:value" for exact value match
-     * - Format: "key" for existence check (any value)
-     */
-    private matchProperty(properties: Record<string, any>, criteria: string): boolean {
-        // Check if criteria contains a colon to separate key and value
-        const colonIndex = criteria.indexOf(':');
-        
-        if (colonIndex === -1) {
-            // Format: "key" - check if property exists
-            const key = criteria.trim();
-            return properties.hasOwnProperty(key) && properties[key] !== undefined && properties[key] !== null;
-        } else {
-            // Format: "key:value" - check for exact value match
-            const key = criteria.substring(0, colonIndex).trim();
-            const expectedValue = criteria.substring(colonIndex + 1).trim();
-            
-            if (!properties.hasOwnProperty(key)) {
-                return false;
-            }
-            
-            const actualValue = properties[key];
-            
-            // Handle different value types
-            if (actualValue === null || actualValue === undefined) {
-                return false;
-            }
-            
-            // Convert both to strings for comparison to handle different types
-            const actualValueStr = String(actualValue).toLowerCase();
-            const expectedValueStr = expectedValue.toLowerCase();
-            
-            return actualValueStr === expectedValueStr;
-        }
-    }
 
     public async moveFileBasedOnTags(file: TFile, skipFilter: boolean = false): Promise<string | null> {
         try {
-            // Metadaten extrahieren
+            // Extract metadata
             const metadata = await this.metadataExtractor.extractFileMetadata(file);
-            const { tags, fileName, filePath, createdAt, updatedAt, properties, fileContent } = metadata;
 
             // Check if file should be skipped based on filter
-            if (!skipFilter && this.filter.length > 0) {
-                for (const filterStr of this.filter) {
-                    // Filter-String parsen: typ: value
-                    const match = filterStr.match(/^([a-zA-Z_]+):\s*(.*)$/);
-                    if (!match) continue;
-                    const type = match[1];
-                    const value = match[2];
-                    let filterMatch = false;
-                    switch (type) {
-                        case "tag":
-                            filterMatch = this.matchTag(tags, value);
-                            break;
-                        case "fileName":
-                            filterMatch = fileName === value;
-                            break;
-                        case "path":
-                            filterMatch = filePath === value;
-                            break;
-                        case "content":
-                            filterMatch = fileContent.includes(value);
-                            break;
-                        case "created_at":
-                            if (createdAt) filterMatch = createdAt.toISOString().startsWith(value);
-                            break;
-                        case "updated_at":
-                            if (updatedAt) filterMatch = updatedAt.toISOString().startsWith(value);
-                            break;
-                        case "property":
-                            filterMatch = this.matchProperty(properties, value);
-                            break;
-                    }
-                    if (!this.isFilterWhitelist && filterMatch) {
-                        return null; // Skip if match in blacklist
-                    }
-                    if (this.isFilterWhitelist && !filterMatch) {
-                        return null; // Skip if not match in whitelist
-                    }
-                }
+            if (!skipFilter && !this.ruleMatcher.evaluateFilter(metadata, this.filter, this.isFilterWhitelist)) {
+                return null; // File is blocked by filter
             }
 
-            // Sort rules by tag specificity (most specific first)
-            const sortedRules = this.rules.slice().sort((a, b) => {
-                const aMatch = a.criteria.match(/^tag:\s*(.*)$/);
-                const bMatch = b.criteria.match(/^tag:\s*(.*)$/);
-                
-                if (aMatch && bMatch) {
-                    // Count the number of subtag levels (slashes)
-                    const aLevels = (aMatch[1].match(/\//g) || []).length;
-                    const bLevels = (bMatch[1].match(/\//g) || []).length;
-                    return bLevels - aLevels; // More specific (more slashes) first
-                }
-                return 0; // Keep original order for non-tag rules
-            });
-
-            // Find matching rule (now for all criteria types)
-            for (const rule of sortedRules) {
-                // Rule-String parsen: typ: value
-                const match = rule.criteria.match(/^([a-zA-Z_]+):\s*(.*)$/);
-                if (!match) continue;
-                
-                const type = match[1];
-                const value = match[2];
-                let ruleMatch = false;
-                
-                switch (type) {
-                    case "tag":
-                        ruleMatch = this.matchTag(tags, value);
-                        break;
-                    case "fileName":
-                        ruleMatch = fileName === value;
-                        break;
-                    case "path":
-                        ruleMatch = filePath === value;
-                        break;
-                    case "content":
-                        ruleMatch = fileContent.includes(value);
-                        break;
-                    case "created_at":
-                        if (createdAt) ruleMatch = createdAt.toISOString().startsWith(value);
-                        break;
-                    case "updated_at":
-                        if (updatedAt) ruleMatch = updatedAt.toISOString().startsWith(value);
-                        break;
-                    case "property":
-                        ruleMatch = this.matchProperty(properties, value);
-                        break;
-                }
-                
-                if (ruleMatch) {
-                    return rule.path;
-                }
+            // Find matching rule
+            const matchingRule = this.ruleMatcher.findMatchingRule(metadata, this.rules);
+            if (matchingRule) {
+                return matchingRule.path;
             }
 
             // If onlyMoveNotesWithRules is enabled and no rule matched, return null to skip the file
@@ -209,124 +71,35 @@ export class RuleManager {
         try {
             // Extract metadata
             const metadata = await this.metadataExtractor.extractFileMetadata(file);
-            const { tags, fileName, filePath, createdAt, updatedAt, properties, fileContent } = metadata;
+            const { tags, fileName, filePath } = metadata;
 
             // Check filters first
-            if (!skipFilter && this.filter.length > 0) {
-                for (const filterStr of this.filter) {
-                    const match = filterStr.match(/^([a-zA-Z_]+):\s*(.*)$/);
-                    if (!match) continue;
-                    
-                    const type = match[1];
-                    const value = match[2];
-                    let filterMatch = false;
-                    
-                    switch (type) {
-                        case "tag":
-                            filterMatch = this.matchTag(tags, value);
-                            break;
-                        case "fileName":
-                            filterMatch = fileName === value;
-                            break;
-                        case "path":
-                            filterMatch = filePath === value;
-                            break;
-                        case "content":
-                            filterMatch = fileContent.includes(value);
-                            break;
-                        case "created_at":
-                            if (createdAt) filterMatch = createdAt.toISOString().startsWith(value);
-                            break;
-                        case "updated_at":
-                            if (updatedAt) filterMatch = updatedAt.toISOString().startsWith(value);
-                            break;
-                        case "property":
-                            filterMatch = this.matchProperty(properties, value);
-                            break;
-                    }
-                    
-                    if (!this.isFilterWhitelist && filterMatch) {
-                        return {
-                            fileName,
-                            currentPath: filePath,
-                            targetPath: null,
-                            willBeMoved: false,
-                            blockReason: this.isFilterWhitelist ? "Not in whitelist" : "Blocked by blacklist filter",
-                            blockingFilter: `${type}: ${value}`,
-                            tags
-                        };
-                    }
-                    
-                    if (this.isFilterWhitelist && !filterMatch) {
-                        return {
-                            fileName,
-                            currentPath: filePath,
-                            targetPath: null,
-                            willBeMoved: false,
-                            blockReason: "Not in whitelist",
-                            blockingFilter: `${type}: ${value}`,
-                            tags
-                        };
-                    }
-                }
-            }
-
-            // Sort rules by specificity
-            const sortedRules = this.rules.slice().sort((a, b) => {
-                const aMatch = a.criteria.match(/^tag:\s*(.*)$/);
-                const bMatch = b.criteria.match(/^tag:\s*(.*)$/);
-                
-                if (aMatch && bMatch) {
-                    const aLevels = (aMatch[1].match(/\//g) || []).length;
-                    const bLevels = (bMatch[1].match(/\//g) || []).length;
-                    return bLevels - aLevels;
-                }
-                return 0;
-            });
-
-            // Check rules for matches
-            for (const rule of sortedRules) {
-                const match = rule.criteria.match(/^([a-zA-Z_]+):\s*(.*)$/);
-                if (!match) continue;
-                
-                const type = match[1];
-                const value = match[2];
-                let ruleMatch = false;
-                
-                switch (type) {
-                    case "tag":
-                        ruleMatch = this.matchTag(tags, value);
-                        break;
-                    case "fileName":
-                        ruleMatch = fileName === value;
-                        break;
-                    case "path":
-                        ruleMatch = filePath === value;
-                        break;
-                    case "content":
-                        ruleMatch = fileContent.includes(value);
-                        break;
-                    case "created_at":
-                        if (createdAt) ruleMatch = createdAt.toISOString().startsWith(value);
-                        break;
-                    case "updated_at":
-                        if (updatedAt) ruleMatch = updatedAt.toISOString().startsWith(value);
-                        break;
-                    case "property":
-                        ruleMatch = this.matchProperty(properties, value);
-                        break;
-                }
-                
-                if (ruleMatch) {
+            if (!skipFilter) {
+                const filterDetails = this.ruleMatcher.getFilterMatchDetails(metadata, this.filter, this.isFilterWhitelist);
+                if (!filterDetails.passes) {
                     return {
                         fileName,
                         currentPath: filePath,
-                        targetPath: rule.path,
-                        willBeMoved: true,
-                        matchedRule: rule.criteria,
+                        targetPath: null,
+                        willBeMoved: false,
+                        blockReason: filterDetails.blockReason!,
+                        blockingFilter: filterDetails.blockingFilter!,
                         tags
                     };
                 }
+            }
+
+            // Check rules for matches
+            const matchingRule = this.ruleMatcher.findMatchingRule(metadata, this.rules);
+            if (matchingRule) {
+                return {
+                    fileName,
+                    currentPath: filePath,
+                    targetPath: matchingRule.path,
+                    willBeMoved: true,
+                    matchedRule: matchingRule.criteria,
+                    tags
+                };
             }
 
             // No rule matched
