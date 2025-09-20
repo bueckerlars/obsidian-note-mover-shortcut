@@ -5,6 +5,7 @@ import { Notice } from "obsidian";
 import { combinePath } from "../utils/PathUtils";
 import { RuleManager } from "./RuleManager";
 import { MovePreview } from "../types/MovePreview";
+import { createError, handleError } from "../utils/Error";
 
 export class NoteMoverShortcut {
 	private ruleManager: RuleManager;
@@ -78,8 +79,7 @@ export class NoteMoverShortcut {
 				this.plugin.historyManager.markPluginMoveEnd();
 			}
 		} catch (error) {
-			log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
-			throw error;
+			handleError(error, `Error moving file '${file.path}'`);
 		}
 	}
 
@@ -121,7 +121,7 @@ export class NoteMoverShortcut {
 					successCount++;
 				} catch (error) {
 					errorCount++;
-					log_error(new Error(`Error moving file '${file.path}': ${error.message}`));
+					handleError(error, `Error moving file '${file.path}'`, false);
 				}
 			}
 
@@ -206,7 +206,7 @@ export class NoteMoverShortcut {
 					await this.moveFileBasedOnTags(file, notesFolder);
 					successCount++;
 				} catch (error) {
-					log_error(new Error(`Error moving file '${file.path}' during periodic movement: ${error.message}`));
+					handleError(error, `Error moving file '${file.path}' during periodic movement`, false);
 				}
 			}
 
@@ -225,7 +225,7 @@ export class NoteMoverShortcut {
 		const file = app.workspace.getActiveFile();
 
 		if (!file) {
-			log_error(new Error("No file is open"));
+			handleError(createError("No file is open"), "moveFocusedNoteToDestination", false);
 			return;
 		}
 
@@ -264,14 +264,13 @@ export class NoteMoverShortcut {
 						new Notice(`Could not undo move for "${file.name}"`, 3000);
 					}
 				} catch (error) {
-					console.error('Error in undo button click handler:', error);
-					log_error(new Error(`Error undoing move: ${error.message}`));
+					handleError(error, "Error in undo button click handler", false);
 				}
 			};
 			noticeEl.appendChild(undoButton);
 			
 		} catch (error) {
-			log_error(error);
+			handleError(error, "moveFocusedNoteToDestination", false);
 			return;
 		}
 	}

@@ -2,7 +2,7 @@ import NoteMoverShortcutPlugin from "main";
 import { PluginSettingTab, App, Setting } from "obsidian";
 import { FolderSuggest } from "./suggesters/FolderSuggest";
 import { TagSuggest } from "./suggesters/TagSuggest";
-import { NoteMoverError } from "src/utils/Error";
+import { createError, handleError } from "src/utils/Error";
 import { log_error } from "src/utils/Log";
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import { ConfirmModal } from "../modals/ConfirmModal";
@@ -124,11 +124,11 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						const interval = parseInt(value);
 						if (isNaN(interval)) {
-							log_error(new NoteMoverError('Interval must be a number'));
+							handleError(createError('Interval must be a number'), 'Periodic movement interval setting', false);
 							return;
 						}
 						if (interval < 1) {
-							log_error(new NoteMoverError('Interval must be greater than 0'));
+							handleError(createError('Interval must be greater than 0'), 'Periodic movement interval setting', false);
 							return;
 						}
 
@@ -310,10 +310,10 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 								(rule) => rule.criteria === value
 							)
 							) {
-								log_error(
-									new NoteMoverError(
-										"This criteria already has a folder associated with it"
-									)
+								handleError(
+									createError("This criteria already has a folder associated with it"),
+									"Rules setting",
+									false
 								);
 								return;
 							}

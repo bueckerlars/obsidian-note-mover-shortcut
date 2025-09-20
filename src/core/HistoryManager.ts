@@ -1,5 +1,6 @@
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import NoteMoverShortcutPlugin from 'main';
+import { createError, handleError } from '../utils/Error';
 
 export class HistoryManager {
     private history: HistoryEntry[] = [];
@@ -125,7 +126,7 @@ export class HistoryManager {
         const file = this.plugin.app.vault.getAbstractFileByPath(entry.destinationPath);
         
         if (!file) {
-            console.error(`File not found at path: ${entry.destinationPath}`);
+            handleError(createError(`File not found at path: ${entry.destinationPath}`), "undoEntry", false);
             return false;
         }
 
@@ -136,7 +137,7 @@ export class HistoryManager {
                 console.log(`Creating source folder for individual undo: ${sourceFolderPath}`);
                 await this.plugin.app.vault.createFolder(sourceFolderPath);
             } catch (error) {
-                console.error(`Failed to create source folder ${sourceFolderPath}:`, error);
+                handleError(error, `Failed to create source folder ${sourceFolderPath}`, false);
                 return false;
             }
         }
@@ -171,7 +172,7 @@ export class HistoryManager {
             await this.saveHistory();
             return true;
         } catch (error) {
-            console.error('Fehler beim Rückgängigmachen:', error);
+            handleError(error, "Fehler beim Rückgängigmachen", false);
             return false;
         } finally {
             this.markPluginMoveEnd();
@@ -185,13 +186,13 @@ export class HistoryManager {
     public async undoLastMove(fileName: string): Promise<boolean> {
         const entry = this.getLastEntryForFile(fileName);
         if (!entry) {
-            console.log(`No history entry found for file: ${fileName}`);
+            handleError(createError(`No history entry found for file: ${fileName}`), "undoLastMove", false);
             return false;
         }
 
         const file = this.plugin.app.vault.getAbstractFileByPath(entry.destinationPath);
         if (!file) {
-            console.log(`File not found at path: ${entry.destinationPath}`);
+            handleError(createError(`File not found at path: ${entry.destinationPath}`), "undoLastMove", false);
             return false;
         }
 
@@ -202,7 +203,7 @@ export class HistoryManager {
                 console.log(`Creating source folder for undo: ${sourceFolderPath}`);
                 await this.plugin.app.vault.createFolder(sourceFolderPath);
             } catch (error) {
-                console.error(`Failed to create source folder ${sourceFolderPath}:`, error);
+                handleError(error, `Failed to create source folder ${sourceFolderPath}`, false);
                 return false;
             }
         }
@@ -225,7 +226,7 @@ export class HistoryManager {
             console.log('Move successful');
             return true;
         } catch (error) {
-            console.error('Error during undo:', error);
+            handleError(error, "Error during undo", false);
             return false;
         } finally {
             this.markPluginMoveEnd();
@@ -295,7 +296,7 @@ export class HistoryManager {
     public async undoBulkOperation(bulkOperationId: string): Promise<boolean> {
         const bulkOp = this.bulkOperations.find(op => op.id === bulkOperationId);
         if (!bulkOp) {
-            console.error(`Bulk operation with ID ${bulkOperationId} not found`);
+            handleError(createError(`Bulk operation with ID ${bulkOperationId} not found`), "undoBulkOperation", false);
             return false;
         }
 
@@ -311,7 +312,7 @@ export class HistoryManager {
             
             const file = this.plugin.app.vault.getAbstractFileByPath(entry.destinationPath);
             if (!file) {
-                console.error(`File not found at destination path: ${entry.destinationPath}`);
+                handleError(createError(`File not found at destination path: ${entry.destinationPath}`), "undoBulkOperation", false);
                 results.push(false);
                 continue;
             }
@@ -323,7 +324,7 @@ export class HistoryManager {
                     console.log(`Creating source folder: ${sourceFolderPath}`);
                     await this.plugin.app.vault.createFolder(sourceFolderPath);
                 } catch (error) {
-                    console.error(`Failed to create source folder ${sourceFolderPath}:`, error);
+                    handleError(error, `Failed to create source folder ${sourceFolderPath}`, false);
                     results.push(false);
                     continue;
                 }
@@ -342,7 +343,7 @@ export class HistoryManager {
                 
                 results.push(true);
             } catch (error) {
-                console.error(`Error undoing move for ${entry.fileName}:`, error);
+                handleError(error, `Error undoing move for ${entry.fileName}`, false);
                 results.push(false);
             } finally {
                 this.markPluginMoveEnd();

@@ -3,6 +3,7 @@ import { Editor, MarkdownView, Notice } from "obsidian";
 import { HistoryModal } from "../modals/HistoryModal";
 import { UpdateModal } from "../modals/UpdateModal";
 import { PreviewModal } from "../modals/PreviewModal";
+import { createError, handleError } from "../utils/Error";
 
 
 export class CommandHandler {
@@ -55,7 +56,8 @@ export class CommandHandler {
                     const preview = await this.plugin.noteMover.generateInboxMovePreview();
                     new PreviewModal(this.plugin.app, this.plugin, preview).open();
                 } catch (error) {
-                    new Notice(`Error generating preview: ${error.message}`);
+                    handleError(error, "Error generating preview", false);
+                    new Notice(`Error generating preview: ${error instanceof Error ? error.message : String(error)}`);
                 }
             }
         });
@@ -73,7 +75,8 @@ export class CommandHandler {
                         new Notice('No active note to preview.');
                     }
                 } catch (error) {
-                    new Notice(`Error generating preview: ${error.message}`);
+                    handleError(error, "Error generating preview", false);
+                    new Notice(`Error generating preview: ${error instanceof Error ? error.message : String(error)}`);
                 }
             }
         });

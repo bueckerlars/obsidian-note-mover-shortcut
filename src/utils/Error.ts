@@ -1,40 +1,33 @@
+// Simplified error handling utilities
 // Credits go to SilentVoid13 Templater Plugin: https://github.com/SilentVoid13/Templater
 
 import { log_error } from "./Log";
 
-export class NoteMoverError extends Error {
-    constructor(msg: string, public console_msg?: string) {
-        super(msg);
-        this.name = this.constructor.name;
-        if (Error.captureStackTrace) {
-            Error.captureStackTrace(this, this.constructor);
-        }
-    }
+/**
+ * Creates a standardized error with context information
+ * @param message - The error message
+ * @param context - Additional context about where the error occurred
+ * @returns A new Error instance with enhanced message
+ */
+export function createError(message: string, context?: string): Error {
+    const fullMessage = context ? `${context}: ${message}` : message;
+    const error = new Error(fullMessage);
+    return error;
 }
 
-export async function errorWrapper<T>(
-    fn: () => Promise<T>,
-    msg: string
-): Promise<T> {
-    try {
-        return await fn();
-    } catch (e) {
-        if (!(e instanceof NoteMoverError)) {
-            log_error(new NoteMoverError(msg, e.message));
-        } else {
-            log_error(e);
-        }
-        // @ts-ignore
-        return null as T;
-    }
-}
-
-export function errorWrapperSync<T>(fn: () => T, msg: string): T {
-    try {
-        return fn();
-    } catch (e) {
-        log_error(new NoteMoverError(msg, e.message));
-        // @ts-ignore
-        return null as T;
+/**
+ * Handles errors consistently by logging them and optionally re-throwing
+ * @param error - The error to handle
+ * @param context - Additional context about where the error occurred
+ * @param shouldThrow - Whether to re-throw the error after logging
+ */
+export function handleError(error: unknown, context?: string, shouldThrow: boolean = true): void {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const fullMessage = context ? `${context}: ${errorMessage}` : errorMessage;
+    
+    log_error(new Error(fullMessage));
+    
+    if (shouldThrow) {
+        throw error instanceof Error ? error : new Error(errorMessage);
     }
 }

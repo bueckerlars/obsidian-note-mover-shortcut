@@ -1,5 +1,4 @@
 import { Notice } from "obsidian";
-import { NoteMoverError } from "./Error";
 
 export function log_update(msg: string): void {
     const notice = new Notice("", 15000);

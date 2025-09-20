@@ -3,6 +3,7 @@ import { getAllTags } from 'obsidian';
 import { log_error } from '../utils/Log';
 import { Rule } from '../types/Rule';
 import { PreviewEntry, MovePreview } from '../types/MovePreview';
+import { createError, handleError } from '../utils/Error';
 
 export class RuleManager {
     private rules: Rule[] = [];
@@ -203,7 +204,7 @@ export class RuleManager {
 
             return this.defaultFolder;
         } catch (error) {
-            log_error(new Error(`Error processing rules for file '${file.path}': ${error.message}`));
+            handleError(error, `Error processing rules for file '${file.path}'`, false);
             return null;
         }
     }
@@ -367,13 +368,13 @@ export class RuleManager {
             }
 
         } catch (error) {
-            log_error(new Error(`Error generating preview for file '${file.path}': ${error.message}`));
+            handleError(error, `Error generating preview for file '${file.path}'`, false);
             return {
                 fileName: file.name,
                 currentPath: file.path,
                 targetPath: null,
                 willBeMoved: false,
-                blockReason: `Error: ${error.message}`,
+                blockReason: `Error: ${error instanceof Error ? error.message : String(error)}`,
                 tags: []
             };
         }
