@@ -83,20 +83,32 @@ export class NoteMoverShortcut {
 		}
 	}
 
-	async moveNotesFromInboxToNotesFolder() {
+	private async moveFilesFromInbox(options: {
+		createFolders: boolean;
+		showNotifications: boolean;
+		operationType: 'bulk' | 'periodic';
+	}): Promise<void> {
 		const { app } = this.plugin;
 		const inboxFolder = this.plugin.settings.inboxLocation;
 		const notesFolder = this.plugin.settings.destination;
 
 		// Check if both folders exist
 		if (!await app.vault.adapter.exists(inboxFolder)) {
-			await app.vault.createFolder(inboxFolder);
-			NoticeManager.info("Inbox folder created");
+			if (options.createFolders) {
+				await app.vault.createFolder(inboxFolder);
+				if (options.showNotifications) {
+					NoticeManager.info("Inbox folder created");
+				}
+			} else {
+				return; // Don't create folders during periodic operations
+			}
 		}
 
 		if (!await app.vault.adapter.exists(notesFolder)) {
 			await app.vault.createFolder(notesFolder);
-			NoticeManager.info("Notes folder created");
+			if (options.showNotifications) {
+				NoticeManager.info("Notes folder created");
+			}
 		}
 
 		// Get all files in the inbox folder
@@ -104,12 +116,14 @@ export class NoteMoverShortcut {
 		const inboxFiles = files.filter(file => file.path.startsWith(inboxFolder));
 
 		if (inboxFiles.length === 0) {
-			NoticeManager.info("No files found in inbox folder");
+			if (options.showNotifications) {
+				NoticeManager.info("No files found in inbox folder");
+			}
 			return;
 		}
 
 		// Start bulk operation
-		const bulkOperationId = this.plugin.historyManager.startBulkOperation('bulk');
+		const bulkOperationId = this.plugin.historyManager.startBulkOperation(options.operationType);
 		let successCount = 0;
 		let errorCount = 0;
 
@@ -121,30 +135,37 @@ export class NoteMoverShortcut {
 					successCount++;
 				} catch (error) {
 					errorCount++;
-					handleError(error, `Error moving file '${file.path}'`, false);
+					const errorMessage = options.operationType === 'periodic' 
+						? `Error moving file '${file.path}' during periodic movement`
+						: `Error moving file '${file.path}'`;
+					handleError(error, errorMessage, false);
 				}
 			}
 
 			// Show completion notice
-			if (successCount > 0) {
-				const totalFiles = successCount + errorCount;
-				const successMessage = errorCount > 0 
-					? `Moved ${successCount}/${totalFiles} files. ${errorCount} files had errors.`
-					: `Successfully moved ${successCount} files`;
-				
-				NoticeManager.showWithUndo(
-					'info',
-					`Bulk Operation: ${successMessage}`,
-					async () => {
-						const success = await this.plugin.historyManager.undoBulkOperation(bulkOperationId);
-						if (success) {
-							NoticeManager.success(`Bulk operation undone: ${successCount} files moved back`, { duration: 3000 });
-						} else {
-							NoticeManager.warning(`Could not undo all moves. Check individual files in history.`, { duration: 5000 });
-						}
-					},
-					"Undo All"
-				);
+			if (successCount > 0 && options.showNotifications) {
+				if (options.operationType === 'bulk') {
+					const totalFiles = successCount + errorCount;
+					const successMessage = errorCount > 0 
+						? `Moved ${successCount}/${totalFiles} files. ${errorCount} files had errors.`
+						: `Successfully moved ${successCount} files`;
+					
+					NoticeManager.showWithUndo(
+						'info',
+						`Bulk Operation: ${successMessage}`,
+						async () => {
+							const success = await this.plugin.historyManager.undoBulkOperation(bulkOperationId);
+							if (success) {
+								NoticeManager.success(`Bulk operation undone: ${successCount} files moved back`, { duration: 3000 });
+							} else {
+								NoticeManager.warning(`Could not undo all moves. Check individual files in history.`, { duration: 5000 });
+							}
+						},
+						"Undo All"
+					);
+				} else {
+					NoticeManager.info(`Periodic movement: Successfully moved ${successCount} files`);
+				}
 			}
 
 		} finally {
@@ -153,55 +174,23 @@ export class NoteMoverShortcut {
 		}
 	}
 
+	async moveNotesFromInboxToNotesFolder() {
+		await this.moveFilesFromInbox({
+			createFolders: true,
+			showNotifications: true,
+			operationType: 'bulk'
+		});
+	}
+
 	/**
 	 * Periodic version of bulk move - same logic but marked as periodic operation
 	 */
 	async moveNotesFromInboxToNotesFolderPeriodic() {
-		const { app } = this.plugin;
-		const inboxFolder = this.plugin.settings.inboxLocation;
-		const notesFolder = this.plugin.settings.destination;
-
-		// Check if both folders exist
-		if (!await app.vault.adapter.exists(inboxFolder)) {
-			return; // Don't create folders during periodic operations
-		}
-
-		if (!await app.vault.adapter.exists(notesFolder)) {
-			await app.vault.createFolder(notesFolder);
-			NoticeManager.info("Notes folder created");
-		}
-
-		// Get all files in the inbox folder
-		const files = await app.vault.getFiles();
-		const inboxFiles = files.filter(file => file.path.startsWith(inboxFolder));
-
-		if (inboxFiles.length === 0) {
-			return; // No logging needed for periodic operations
-		}
-
-		// Start periodic bulk operation
-		const bulkOperationId = this.plugin.historyManager.startBulkOperation('periodic');
-		let successCount = 0;
-
-		try {
-			// Iterate over each file and move it
-			for (const file of inboxFiles) {
-				try {
-					await this.moveFileBasedOnTags(file, notesFolder);
-					successCount++;
-				} catch (error) {
-					handleError(error, `Error moving file '${file.path}' during periodic movement`, false);
-				}
-			}
-
-			if (successCount > 0) {
-				NoticeManager.info(`Periodic movement: Successfully moved ${successCount} files`);
-			}
-
-		} finally {
-			// End bulk operation
-			this.plugin.historyManager.endBulkOperation();
-		}
+		await this.moveFilesFromInbox({
+			createFolders: false,
+			showNotifications: true,
+			operationType: 'periodic'
+		});
 	}
 
 	async moveFocusedNoteToDestination() {
