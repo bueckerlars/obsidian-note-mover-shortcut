@@ -72,7 +72,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     }
 
     getSuggestions(query: string): string[] {
-        // Prüfe, ob ein gültiger Typ gewählt ist (am Anfang des query)
+        // Check if a valid type is selected (at the beginning of the query)
         const typeMatch = SUGGEST_TYPES.find(t => query.startsWith(t.label));
         if (!typeMatch || query.trim() === "") {
             this.selectedType = null;
@@ -88,7 +88,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
                 return this.getPropertySuggestions(query, typeMatch.label);
             }
             
-            // Typ wurde gewählt, jetzt spezifische Vorschläge
+            // Type was selected, now provide specific suggestions
             const q = query.replace(/^[^:]+:\s*/, "").toLowerCase();
             switch (this.selectedType) {
                 case "tag":
@@ -98,11 +98,11 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
                 case "path":
                     return this.folders.map(f => f.path).filter(path => path.toLowerCase().includes(q)).map(path => `${typeMatch.label}${path}`);
                 case "content":
-                    // Platzhalter: Hier könnte man häufige Wörter oder ähnliches vorschlagen
+                    // Placeholder: Here we could suggest common words or similar
                     return [];
                 case "created_at":
                 case "updated_at":
-                    // Platzhalter: Hier könnte man Datumswerte vorschlagen
+                    // Placeholder: Here we could suggest date values
                     return [];
                 default:
                     return [];
@@ -143,7 +143,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     }
 
     selectSuggestion(value: string): void {
-        // Wenn ein Typ gewählt wurde, setze das Feld auf den Typ und lasse weitere Suggestions zu
+        // If a type was selected, set the field to the type and allow further suggestions
         const typeMatch = SUGGEST_TYPES.find(t => value === t.label);
         if (typeMatch) {
             this.selectedType = typeMatch.value;
@@ -178,7 +178,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
         } else {
             this.inputEl.value = value;
         }
-        // Wichtig: input Event triggern, damit onChange in Settings aufgerufen wird
+        // Important: trigger input event so onChange in Settings is called
         this.inputEl.trigger("input");
         this.close();
     }

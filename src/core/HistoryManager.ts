@@ -9,7 +9,7 @@ import { getParentPath, ensureFolderExists } from '../utils/PathUtils';
 export class HistoryManager {
     private history: HistoryEntry[] = [];
     private bulkOperations: BulkOperation[] = [];
-    private isPluginMove = false; // Flag um Plugin-interne Verschiebungen zu erkennen
+    private isPluginMove = false; // Flag to detect internal plugin moves
     private currentBulkOperationId: string | null = null;
     private currentBulkOperationType: OperationType | null = null;
 
@@ -73,39 +73,39 @@ export class HistoryManager {
     }
 
     /**
-     * Markiert das Ende einer Plugin-internen Verschiebung
+     * Marks the end of an internal plugin move
      */
     public markPluginMoveEnd(): void {
         this.isPluginMove = false;
     }
 
     /**
-     * Fügt einen History-Eintrag hinzu, aber nur wenn es sich nicht um eine Plugin-interne Verschiebung handelt
+     * Adds a history entry, but only if it's not an internal plugin move
      */
     public addEntryFromVaultEvent(sourcePath: string, destinationPath: string, fileName: string): void {
         if (this.isPluginMove) {
-            // Plugin-interne Verschiebung, überspringen
+            // Internal plugin move, skip
             return;
         }
 
-        // Prüfen ob es sich um eine echte Verschiebung handelt (verschiedene Ordner)
+        // Check if this is a real move (different folders)
         const sourceFolder = getParentPath(sourcePath);
         const destFolder = getParentPath(destinationPath);
         
         if (sourceFolder === destFolder) {
-            // Nur Umbenennung, keine Verschiebung
+            // Only renaming, not moving
             return;
         }
 
-        // Prüfen ob bereits ein Eintrag für diese Datei mit demselben Ziel existiert
+        // Check if an entry for this file with the same destination already exists
         const existingEntry = this.history.find(entry => 
             entry.fileName === fileName && 
             entry.destinationPath === destinationPath &&
-            Math.abs(Date.now() - entry.timestamp) < HISTORY_CONSTANTS.DUPLICATE_CHECK_WINDOW_MS // innerhalb einer Sekunde
+            Math.abs(Date.now() - entry.timestamp) < HISTORY_CONSTANTS.DUPLICATE_CHECK_WINDOW_MS // within one second
         );
 
         if (existingEntry) {
-            // Doppelter Eintrag, überspringen
+            // Duplicate entry, skip
             return;
         }
 
@@ -169,7 +169,7 @@ export class HistoryManager {
             await this.saveHistory();
             return true;
         } catch (error) {
-            handleError(error, "Fehler beim Rückgängigmachen", false);
+            handleError(error, "Error during undo operation", false);
             return false;
         } finally {
             this.markPluginMoveEnd();

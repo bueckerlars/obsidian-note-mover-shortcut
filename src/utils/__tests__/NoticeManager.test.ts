@@ -1,7 +1,7 @@
 import { NoticeManager } from '../NoticeManager';
 import { Notice } from 'obsidian';
 
-// Mock für die Notice Klasse
+// Mock for the Notice class
 jest.mock('obsidian', () => ({
     Notice: jest.fn().mockImplementation(() => ({
         noticeEl: {

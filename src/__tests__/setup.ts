@@ -1,6 +1,6 @@
 // Globale Jest-Setup-Datei
 
-// Mock für window.matchMedia
+// Mock for window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: jest.fn().mockImplementation(query => ({
@@ -15,16 +15,16 @@ Object.defineProperty(window, 'matchMedia', {
     })),
 });
 
-// Mock für document.createRange
+// Mock for document.createRange
 document.createRange = () => {
     const range = {
         setStart: () => {},
         setEnd: () => {},
-        // Die wichtigsten Eigenschaften für Node
+        // Essential properties for Node
         commonAncestorContainer: document.body
     };
     return range as any;
 }; 
 
-// Leerer Export, um die Datei zu einem Modul zu machen
+// Empty export to make the file a module
 export {}; 

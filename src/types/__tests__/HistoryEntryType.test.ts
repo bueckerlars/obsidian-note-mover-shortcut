@@ -1,6 +1,6 @@
 import type { HistoryEntry } from '../HistoryEntry';
 
-// Gültiges Beispiel
+// Valid example
 const validEntry: HistoryEntry = {
     id: '1',
     sourcePath: '/source/path',
@@ -9,7 +9,7 @@ const validEntry: HistoryEntry = {
     fileName: 'note.md',
 };
 
-// Ungültige Beispiele (diese Zeilen sollten TypeScript-Fehler auslösen, wenn sie auskommentiert werden)
+// Invalid examples (these lines should trigger TypeScript errors when uncommented)
 // const missingField: HistoryEntry = {
 //     id: '2',
 //     sourcePath: '/source/path',

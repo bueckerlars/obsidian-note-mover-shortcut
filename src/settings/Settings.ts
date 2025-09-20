@@ -9,7 +9,7 @@ import { ConfirmModal } from "../modals/ConfirmModal";
 import { SETTINGS_CONSTANTS } from "../config/constants";
 
 interface Rule {
-	criteria: string, // Format: "type: value" (z.B. "tag: #project", "fileName: notes.md")
+	criteria: string, // Format: "type: value" (e.g. "tag: #project", "fileName: notes.md")
 	path: string,
 }
 
@@ -181,12 +181,12 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		this.plugin.settings.filter.forEach((filter, index) => {
 			const s = new Setting(this.containerEl)
 				.addSearch((cb) => {
-					// AdvancedSuggest statt TagSuggest
+					// AdvancedSuggest instead of TagSuggest
 					new (require("./suggesters/AdvancedSuggest")).AdvancedSuggest(this.app, cb.inputEl);
 					cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER)
 						.setValue(filter || "")
 						.onChange(async (value) => {
-							// Leere Filter nicht speichern
+							// Don't save empty filters
 							if (!value || value.trim() === "") {
 								this.plugin.settings.filter[index] = "";
 							} else {
@@ -291,7 +291,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		this.plugin.settings.rules.forEach((rule, index) => {
 			const s = new Setting(this.containerEl)
 				.addSearch((cb) => {
-					// AdvancedSuggest statt TagSuggest
+					// AdvancedSuggest instead of TagSuggest
 					new (require("./suggesters/AdvancedSuggest")).AdvancedSuggest(this.app, cb.inputEl);
 					cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.CRITERIA)
 						.setValue(rule.criteria)

@@ -20,30 +20,30 @@ export class UpdateManager {
     }
 
     /**
-     * Überprüft, ob das Plugin aktualisiert wurde und zeigt das UpdateModal an
+     * Checks if the plugin has been updated and shows the UpdateModal
      */
     async checkForUpdates(): Promise<void> {
         const currentVersion = this.plugin.manifest.version;
         const lastSeenVersion = this.plugin.settings.lastSeenVersion;
 
-        // Beim ersten Start oder wenn eine neue Version erkannt wird
+        // On first start or when a new version is detected
         if (!lastSeenVersion || this.isNewerVersion(currentVersion, lastSeenVersion)) {
             await this.showUpdateModal();
         }
     }
 
     /**
-     * Zeigt das UpdateModal an (kann auch manuell aufgerufen werden)
-     * @param forceShow Wenn true, wird das Modal auch angezeigt wenn die Version bereits gesehen wurde
+     * Shows the UpdateModal (can also be called manually)
+     * @param forceShow If true, the modal will be shown even if the version has already been seen
      */
     async showUpdateModal(forceShow: boolean = false): Promise<void> {
         const currentVersion = this.plugin.manifest.version;
         let lastSeenVersion = this.plugin.settings.lastSeenVersion;
         
-        // Beim manuellen Aufruf (forceShow) verwende eine ältere Version als Basis,
-        // um sicherzustellen, dass relevante Informationen angezeigt werden
+        // For manual invocation (forceShow), use an older version as base,
+        // to ensure relevant information is displayed
         if (forceShow && lastSeenVersion === currentVersion) {
-            // Verwende eine ältere Version als Basis für die Anzeige
+            // Use an older version as base for display
             lastSeenVersion = '0.1.6';
         }
         
@@ -58,7 +58,7 @@ export class UpdateManager {
         );
         updateModal.open();
 
-        // Nur beim automatischen Aufruf die Version als "gesehen" markieren
+        // Only mark version as "seen" on automatic call
         if (!forceShow) {
             this.plugin.settings.lastSeenVersion = currentVersion;
             await this.plugin.save_settings();
@@ -67,9 +67,9 @@ export class UpdateManager {
 
     /**
      * Vergleicht zwei Versionsstrings
-     * @param current Die aktuelle Version
-     * @param last Die zuletzt gesehene Version
-     * @returns true wenn current neuer ist als last
+     * @param current The current version
+     * @param last The last seen version
+     * @returns true if current is newer than last
      */
     private isNewerVersion(current: string, last: string): boolean {
         const parseVersion = (version: string): number[] => {
@@ -79,7 +79,7 @@ export class UpdateManager {
         const currentParts = parseVersion(current);
         const lastParts = parseVersion(last);
 
-        // Gleiche Länge für Vergleich sicherstellen
+        // Ensure same length for comparison
         const maxLength = Math.max(currentParts.length, lastParts.length);
         while (currentParts.length < maxLength) currentParts.push(0);
         while (lastParts.length < maxLength) lastParts.push(0);
@@ -89,14 +89,14 @@ export class UpdateManager {
             if (currentParts[i] < lastParts[i]) return false;
         }
 
-        return false; // Versionen sind gleich
+        return false; // Versions are equal
     }
 
     /**
-     * Lädt relevante Changelog-Einträge zwischen zwei Versionen
-     * @param fromVersion Die Startversion (exklusiv)
-     * @param toVersion Die Endversion (inklusiv)
-     * @returns Array von Changelog-Einträgen
+     * Loads relevant changelog entries between two versions
+     * @param fromVersion The start version (exclusive)
+     * @param toVersion The end version (inclusive)
+     * @returns Array of changelog entries
      */
     private async getRelevantChangelogEntries(fromVersion: string | undefined, toVersion: string): Promise<ChangelogEntry[]> {
         try {
@@ -113,11 +113,11 @@ export class UpdateManager {
     }
 
     /**
-     * Lädt den Inhalt der CHANGELOG.md Datei
+     * Loads the content of the CHANGELOG.md file
      */
     private async loadChangelogContent(): Promise<string | null> {
-        // Da die CHANGELOG.md im Plugin-Verzeichnis liegt, nicht im Vault,
-        // einbetten wir den Inhalt direkt hier
+        // Since the CHANGELOG.md is located in the plugin directory, not in the vault,
+        // we embed the content directly here
         return `# Changelog
 ## [0.3.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.3...0.3.4)
 ### Features
@@ -236,7 +236,7 @@ export class UpdateManager {
     }
 
     /**
-     * Parst den Changelog-Inhalt und extrahiert relevante Versionen
+     * Parses the changelog content and extracts relevant versions
      */
     private parseChangelog(content: string, fromVersion: string | undefined, toVersion: string): ChangelogEntry[] {
         const entries: ChangelogEntry[] = [];
@@ -247,7 +247,7 @@ export class UpdateManager {
         let currentSection: 'features' | 'bugFixes' | 'improvements' | null = null;
 
         for (const line of lines) {
-            // Version-Header erkennen (z.B. "## [0.2.1]" oder "## [0.1.6]")
+            // Recognize version header (e.g. "## [0.2.1]" or "## [0.1.6]")
             const versionMatch = line.match(/^##\s*\[?(\d+\.\d+\.\d+)\]?/);
             if (versionMatch) {
                 // Vorherige Version speichern, falls vorhanden
@@ -282,7 +282,7 @@ export class UpdateManager {
                 continue;
             }
 
-            // Changelog-Einträge sammeln
+            // Collect changelog entries
             if (currentSection && line.startsWith('- ')) {
                 const changeText = line.substring(2).trim();
                 if (changeText) {
@@ -303,22 +303,22 @@ export class UpdateManager {
     }
 
     /**
-     * Bestimmt, ob eine Version in den Changelog-Einträgen enthalten sein soll
+     * Determines if a version should be included in the changelog entries
      */
     private shouldIncludeVersion(version: string, fromVersion: string | undefined, toVersion: string): boolean {
-        // Immer die aktuelle Version einschließen
+        // Always include the current version
         if (version === toVersion) {
             return true;
         }
 
-        // Wenn keine fromVersion (erstes Start), zeige die letzten wichtigen Versionen
+        // If no fromVersion (first start), show the last important versions
         if (!fromVersion) {
-            // Definiere wichtige Versionen, die beim ersten Start gezeigt werden sollen
+            // Define important versions that should be shown on first start
             const importantVersionsToShow = ['0.3.4', '0.3.3', '0.3.0', '0.2.1', '0.2.0', '0.1.7', '0.1.6'];
             return importantVersionsToShow.includes(version);
         }
 
-        // Version muss zwischen fromVersion (exklusiv) und toVersion (inklusiv) liegen
+        // Version must be between fromVersion (exclusive) and toVersion (inclusive)
         return this.isNewerVersion(version, fromVersion) && 
                (version === toVersion || this.isNewerVersion(toVersion, version));
     }

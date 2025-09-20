@@ -183,7 +183,7 @@ describe('RuleManager', () => {
         expect(result).toBeNull(); // Da catch-Block return null
     });
 
-    // Tests für hierarchisches Tag-Matching (Subtag-Feature)
+    // Tests for hierarchical tag matching (subtag feature)
     describe('Hierarchical Tag Matching', () => {
         beforeEach(() => {
             // Reset mock to avoid interference from other tests
@@ -415,7 +415,7 @@ describe('RuleManager', () => {
         });
     });
 
-    // Tests für generatePreviewForFile
+    // Tests for generatePreviewForFile
     describe('generatePreviewForFile', () => {
         it('should generate preview for file with matching rule', async () => {
             mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
@@ -593,7 +593,7 @@ describe('RuleManager', () => {
         });
     });
 
-    // Tests für onlyMoveNotesWithRules
+    // Tests for onlyMoveNotesWithRules
     describe('onlyMoveNotesWithRules', () => {
         it('should return null when onlyMoveNotesWithRules is enabled and no rules match', async () => {
             ruleManager.setRules([{ criteria: 'tag: #other', path: 'custom/path' }]);
@@ -644,7 +644,7 @@ describe('RuleManager', () => {
         });
     });
 
-    // Tests für verschiedene Kriterientypen
+    // Tests for various criteria types
     describe('Rule Criteria Types', () => {
         it('should match fileName criteria', async () => {
             ruleManager.setRules([{ criteria: 'fileName: file.md', path: 'test-folder' }]);
@@ -691,7 +691,7 @@ describe('RuleManager', () => {
         });
     });
 
-    // Tests für Tag-Sortierung nach Spezifität
+    // Tests for tag sorting by specificity
     describe('Rule Sorting by Specificity', () => {
         it('should prioritize more specific tag rules', async () => {
             // Mock file with food/recipes/italian tag
@@ -728,7 +728,7 @@ describe('RuleManager', () => {
         });
     });
 
-    // Tests für generateMovePreview
+    // Tests for generateMovePreview
     describe('generateMovePreview', () => {
         it('should generate preview for multiple files', async () => {
             const files = [mockFile, { ...mockFile, name: 'file2.md', path: 'folder/file2.md' }];

@@ -28,26 +28,26 @@ export default class NoteMoverShortcutPlugin extends Plugin {
 
 		this.addSettingTab(new NoteMoverShortcutSettingsTab(this));
 		
-		// Event-Listener für automatische History-Erstellung bei manuellen Dateioperationen
+		// Event listener for automatic history creation during manual file operations
 		this.setupVaultEventListeners();
 
-		// Prüfe auf Updates nach dem vollständigen Laden
+		// Check for updates after complete loading
 		this.app.workspace.onLayoutReady(() => {
 			this.updateManager.checkForUpdates();
 		});
 	}
 
 	onunload() {
-		// Event-Listener werden automatisch beim Plugin unload entfernt
+		// Event listeners are automatically removed when the plugin is unloaded
 	}
 
 	/**
-	 * Einrichtung der Event-Listener für automatische History-Erstellung
+	 * Setup of event listeners for automatic history creation
 	 */
 	private setupVaultEventListeners(): void {
-		// Überwache Dateiumbenennung/verschiebung
+		// Monitor file renaming/moving
 		this.registerEvent(this.app.vault.on('rename', (file, oldPath) => {
-			// Nur bei Markdown-Dateien
+			// Only for Markdown files
 			if (file instanceof TFile && file.extension === 'md') {
 				this.historyManager.addEntryFromVaultEvent(
 					oldPath,

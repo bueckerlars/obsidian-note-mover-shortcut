@@ -4,7 +4,7 @@ import NoteMoverShortcutPlugin from '../../main';
 import { NoticeManager } from '../utils/NoticeManager';
 import { combinePath } from '../utils/PathUtils';
 
-// Mocks für globale Funktionen
+// Mocks for global functions
 const setIntervalMock = jest.fn();
 const clearIntervalMock = jest.fn();
 global.window = Object.assign(global.window || {}, {

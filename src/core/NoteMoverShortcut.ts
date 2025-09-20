@@ -73,7 +73,7 @@ export class NoteMoverShortcut {
 					fileName: file.name
 				});
 			} finally {
-				// Beende Plugin-interne Verschiebung (auch bei Fehlern)
+				// End internal plugin move (even on errors)
 				this.plugin.historyManager.markPluginMoveEnd();
 			}
 		} catch (error) {

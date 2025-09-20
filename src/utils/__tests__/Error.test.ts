@@ -1,7 +1,7 @@
 import { createError, handleError } from '../Error';
 import { NoticeManager } from '../NoticeManager';
 
-// Mock für die NoticeManager Funktion
+// Mock for the NoticeManager function
 jest.mock('../NoticeManager', () => ({
     NoticeManager: {
         error: jest.fn()

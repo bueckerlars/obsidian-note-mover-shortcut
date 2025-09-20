@@ -39,7 +39,7 @@ export class UpdateModal extends Modal {
             modalContainer.style.maxWidth = '95vw';
         }
 
-        // Title mit Icon
+        // Title with icon
         const titleContainer = contentEl.createEl('div', { cls: 'update-modal-title-container' });
         const titleIcon = titleContainer.createEl('span', { cls: 'update-modal-icon' });
         titleIcon.innerHTML = '🎉';
@@ -73,7 +73,7 @@ export class UpdateModal extends Modal {
             this.renderChangelog(changelogContainer);
         }
 
-        // Footer mit Links und Button
+        // Footer with links and button
         const footerContainer = contentEl.createEl('div', { cls: 'update-modal-footer' });
         
         // GitHub Link
@@ -85,7 +85,7 @@ export class UpdateModal extends Modal {
         });
         githubLink.setAttribute('target', '_blank');
 
-        // Schließen Button
+        // Close button
         const buttonContainer = footerContainer.createEl('div', { cls: 'update-modal-button-container' });
         new Setting(buttonContainer)
             .addButton((button: ButtonComponent) => {

@@ -151,7 +151,7 @@ export class RuleManager {
                 return 0; // Keep original order for non-tag rules
             });
 
-            // Find matching rule (jetzt für alle Kriterien-Typen)
+            // Find matching rule (now for all criteria types)
             for (const rule of sortedRules) {
                 // Rule-String parsen: typ: value
                 const match = rule.criteria.match(/^([a-zA-Z_]+):\s*(.*)$/);
