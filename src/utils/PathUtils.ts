@@ -1,3 +1,5 @@
+import { App } from 'obsidian';
+
 /**
  * Formats a path correctly by removing double slashes
  * and ensuring the path is relative to vault root (no leading slash)
@@ -42,4 +44,57 @@ export function combinePath(folder: string, file: string): string {
     }
 
     return formattedFolder + '/' + file;
+}
+
+/**
+ * Extracts the parent path from a full file path
+ * @param fullPath - The full path including filename
+ * @returns The parent directory path, or empty string if no parent
+ */
+export function getParentPath(fullPath: string): string {
+    if (!fullPath) {
+        return '';
+    }
+
+    const lastSlashIndex = fullPath.lastIndexOf('/');
+    if (lastSlashIndex === -1) {
+        // No slash found, file is in root directory
+        return '';
+    }
+
+    return fullPath.substring(0, lastSlashIndex);
+}
+
+/**
+ * Ensures that a folder exists in the vault, creating it if necessary
+ * @param app - The Obsidian App instance
+ * @param folderPath - The path of the folder to ensure exists
+ * @returns Promise<boolean> - true if folder exists or was created successfully, false on error
+ */
+export async function ensureFolderExists(app: App, folderPath: string): Promise<boolean> {
+    // Handle empty or root paths
+    if (!folderPath || folderPath === '/' || folderPath === '') {
+        return true; // Root always exists
+    }
+
+    // Format the path to ensure consistency
+    const formattedPath = formatPath(folderPath);
+    if (!formattedPath) {
+        return true; // Root path after formatting
+    }
+
+    try {
+        // Check if folder already exists
+        const exists = await app.vault.adapter.exists(formattedPath);
+        if (exists) {
+            return true;
+        }
+
+        // Create the folder
+        await app.vault.createFolder(formattedPath);
+        return true;
+    } catch (error) {
+        console.error(`Failed to create folder ${formattedPath}:`, error);
+        return false;
+    }
 } 

@@ -32,8 +32,9 @@ describe('RuleManager', () => {
         // Create mock for MetadataExtractor
         mockMetadataExtractor = {
             extractFileMetadata: jest.fn(),
-            extractBasicMetadata: jest.fn()
-        } as jest.Mocked<MetadataExtractor>;
+            extractBasicMetadata: jest.fn(),
+            extractAllTags: jest.fn()
+        } as unknown as jest.Mocked<MetadataExtractor>;
 
         // Mock the constructor
         (MetadataExtractor as jest.MockedClass<typeof MetadataExtractor>).mockImplementation(() => mockMetadataExtractor);

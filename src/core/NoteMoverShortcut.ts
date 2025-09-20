@@ -1,13 +1,12 @@
-import NoteMoverShortcutPlugin from "main";
-import { SETTINGS_CONSTANTS, GENERAL_CONSTANTS, NOTIFICATION_CONSTANTS } from "../config/constants";
-import { type OperationType } from "../types/Common";
-import { getAllTags, TFile } from "obsidian";
-import { NoticeManager } from "../utils/NoticeManager";
-import { Notice } from "obsidian";
-import { combinePath } from "../utils/PathUtils";
-import { RuleManager } from "./RuleManager";
-import { MovePreview } from "../types/MovePreview";
-import { createError, handleError } from "../utils/Error";
+import { App, TFile } from 'obsidian';
+import { NoticeManager } from '../utils/NoticeManager';
+import { RuleManager } from './RuleManager';
+import { createError, handleError } from '../utils/Error';
+import { combinePath, ensureFolderExists } from '../utils/PathUtils';
+import NoteMoverShortcutPlugin from 'main';
+import { type OperationType } from '../types/Common';
+import { MovePreview } from '../types/MovePreview';
+import { SETTINGS_CONSTANTS, GENERAL_CONSTANTS, NOTIFICATION_CONSTANTS } from '../config/constants';
 
 export class NoteMoverShortcut {
 	private ruleManager: RuleManager;
@@ -55,13 +54,10 @@ export class NoteMoverShortcut {
 			
 			const newPath = combinePath(targetFolder, file.name);
 
-			// Ensure target folder exists before moving the file
-			if (targetFolder !== '/' && targetFolder !== '') {
-				if (!await app.vault.adapter.exists(targetFolder)) {
-					await app.vault.createFolder(targetFolder);
-					NoticeManager.info(`Target folder created: ${targetFolder}`);
-				}
-			}
+		// Ensure target folder exists before moving the file
+		if (!await ensureFolderExists(app, targetFolder)) {
+			throw createError(`Failed to create target folder: ${targetFolder}`);
+		}
 
 			// Markiere Plugin-interne Verschiebung
 			this.plugin.historyManager.markPluginMoveStart();
@@ -97,7 +93,9 @@ export class NoteMoverShortcut {
 		// Check if both folders exist
 		if (!await app.vault.adapter.exists(inboxFolder)) {
 			if (options.createFolders) {
-				await app.vault.createFolder(inboxFolder);
+				if (!await ensureFolderExists(app, inboxFolder)) {
+					throw createError(`Failed to create inbox folder: ${inboxFolder}`);
+				}
 				if (options.showNotifications) {
 					NoticeManager.info("Inbox folder created");
 				}
@@ -106,11 +104,11 @@ export class NoteMoverShortcut {
 			}
 		}
 
-		if (!await app.vault.adapter.exists(notesFolder)) {
-			await app.vault.createFolder(notesFolder);
-			if (options.showNotifications) {
-				NoticeManager.info("Notes folder created");
-			}
+		if (!await ensureFolderExists(app, notesFolder)) {
+			throw createError(`Failed to create notes folder: ${notesFolder}`);
+		}
+		if (options.showNotifications && !await app.vault.adapter.exists(notesFolder)) {
+			NoticeManager.info("Notes folder created");
 		}
 
 		// Get all files in the inbox folder
@@ -242,9 +240,8 @@ export class NoteMoverShortcut {
 		const inboxFolder = this.plugin.settings.inboxLocation;
 
 		// Check if inbox folder exists, create if not
-		if (!await app.vault.adapter.exists(inboxFolder)) {
-			await app.vault.createFolder(inboxFolder);
-			NoticeManager.info("Inbox folder created");
+		if (!await ensureFolderExists(app, inboxFolder)) {
+			throw createError(`Failed to create inbox folder: ${inboxFolder}`);
 		}
 
 		// Get all files in the inbox folder

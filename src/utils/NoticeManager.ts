@@ -18,7 +18,7 @@ export class NoticeManager {
      * @param message - The message to display
      * @param options - Additional options for the notice
      */
-    public static show(type: NoticeType, message: string, options: NoticeOptions = {}): Notice {
+    public static show(type: NotificationType, message: string, options: NoticeOptions = {}): Notice {
         const duration = options.duration ?? NOTIFICATION_CONSTANTS.DEFAULT_DURATIONS[type];
         const notice = new Notice("", duration);
         const noticeEl = notice.noticeEl;
@@ -109,7 +109,7 @@ export class NoticeManager {
      * @param options - Additional options
      */
     public static showWithUndo(
-        type: NoticeType, 
+        type: NotificationType, 
         message: string, 
         onUndo: () => void, 
         undoText?: string,

@@ -4,6 +4,7 @@ import { createError, handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
 import { HISTORY_CONSTANTS } from '../config/constants';
 import { type OperationType } from '../types/Common';
+import { getParentPath, ensureFolderExists } from '../utils/PathUtils';
 
 export class HistoryManager {
     private history: HistoryEntry[] = [];
@@ -88,8 +89,8 @@ export class HistoryManager {
         }
 
         // Prüfen ob es sich um eine echte Verschiebung handelt (verschiedene Ordner)
-        const sourceFolder = sourcePath.substring(0, sourcePath.lastIndexOf('/'));
-        const destFolder = destinationPath.substring(0, destinationPath.lastIndexOf('/'));
+        const sourceFolder = getParentPath(sourcePath);
+        const destFolder = getParentPath(destinationPath);
         
         if (sourceFolder === destFolder) {
             // Nur Umbenennung, keine Verschiebung
@@ -132,15 +133,10 @@ export class HistoryManager {
         }
 
         // Check if source folder exists, create if necessary
-        const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
-        if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
-            try {
-                NoticeManager.info(`Creating source folder for individual undo: ${sourceFolderPath}`);
-                await this.plugin.app.vault.createFolder(sourceFolderPath);
-            } catch (error) {
-                handleError(error, `Failed to create source folder ${sourceFolderPath}`, false);
-                return false;
-            }
+        const sourceFolderPath = getParentPath(entry.sourcePath);
+        if (sourceFolderPath && !await ensureFolderExists(this.plugin.app, sourceFolderPath)) {
+            handleError(createError(`Failed to create source folder ${sourceFolderPath}`), "undoEntry", false);
+            return false;
         }
 
         try {
@@ -198,15 +194,10 @@ export class HistoryManager {
         }
 
         // Check if source folder exists, create if necessary
-        const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
-        if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
-            try {
-                NoticeManager.info(`Creating source folder for undo: ${sourceFolderPath}`);
-                await this.plugin.app.vault.createFolder(sourceFolderPath);
-            } catch (error) {
-                handleError(error, `Failed to create source folder ${sourceFolderPath}`, false);
-                return false;
-            }
+        const sourceFolderPath = getParentPath(entry.sourcePath);
+        if (sourceFolderPath && !await ensureFolderExists(this.plugin.app, sourceFolderPath)) {
+            handleError(createError(`Failed to create source folder ${sourceFolderPath}`), "undoLastMove", false);
+            return false;
         }
 
         try {
@@ -319,16 +310,11 @@ export class HistoryManager {
             }
 
             // Check if source folder exists, create if necessary
-            const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
-            if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
-                try {
-                    NoticeManager.info(`Creating source folder: ${sourceFolderPath}`);
-                    await this.plugin.app.vault.createFolder(sourceFolderPath);
-                } catch (error) {
-                    handleError(error, `Failed to create source folder ${sourceFolderPath}`, false);
-                    results.push(false);
-                    continue;
-                }
+            const sourceFolderPath = getParentPath(entry.sourcePath);
+            if (sourceFolderPath && !await ensureFolderExists(this.plugin.app, sourceFolderPath)) {
+                handleError(createError(`Failed to create source folder ${sourceFolderPath}`), "undoBulkOperation", false);
+                results.push(false);
+                continue;
             }
 
             try {
