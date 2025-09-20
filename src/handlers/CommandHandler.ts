@@ -4,6 +4,7 @@ import { HistoryModal } from "../modals/HistoryModal";
 import { UpdateModal } from "../modals/UpdateModal";
 import { PreviewModal } from "../modals/PreviewModal";
 import { createError, handleError } from "../utils/Error";
+import { NoticeManager } from "../utils/NoticeManager";
 
 
 export class CommandHandler {
@@ -57,7 +58,7 @@ export class CommandHandler {
                     new PreviewModal(this.plugin.app, this.plugin, preview).open();
                 } catch (error) {
                     handleError(error, "Error generating preview", false);
-                    new Notice(`Error generating preview: ${error instanceof Error ? error.message : String(error)}`);
+                    NoticeManager.error(`Error generating preview: ${error instanceof Error ? error.message : String(error)}`);
                 }
             }
         });
@@ -72,11 +73,11 @@ export class CommandHandler {
                     if (preview) {
                         new PreviewModal(this.plugin.app, this.plugin, preview).open();
                     } else {
-                        new Notice('No active note to preview.');
+                        NoticeManager.warning('No active note to preview.');
                     }
                 } catch (error) {
                     handleError(error, "Error generating preview", false);
-                    new Notice(`Error generating preview: ${error instanceof Error ? error.message : String(error)}`);
+                    NoticeManager.error(`Error generating preview: ${error instanceof Error ? error.message : String(error)}`);
                 }
             }
         });

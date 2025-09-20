@@ -1,6 +1,7 @@
 import { TFile } from 'obsidian';
 import NoteMoverShortcutPlugin from 'main';
 import { UpdateModal } from '../modals/UpdateModal';
+import { NoticeManager } from '../utils/NoticeManager';
 
 interface ChangelogEntry {
     version: string;
@@ -106,7 +107,7 @@ export class UpdateManager {
 
             return this.parseChangelog(changelogContent, fromVersion, toVersion);
         } catch (error) {
-            console.error('Fehler beim Laden des Changelogs:', error);
+            NoticeManager.error(`Fehler beim Laden des Changelogs: ${error instanceof Error ? error.message : String(error)}`);
             return [];
         }
     }

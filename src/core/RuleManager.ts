@@ -1,6 +1,6 @@
 import { App, TFile } from 'obsidian';
 import { getAllTags } from 'obsidian';
-import { log_error } from '../utils/Log';
+import { NoticeManager } from '../utils/NoticeManager';
 import { Rule } from '../types/Rule';
 import { PreviewEntry, MovePreview } from '../types/MovePreview';
 import { createError, handleError } from '../utils/Error';

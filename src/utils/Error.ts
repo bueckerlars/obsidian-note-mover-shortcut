@@ -1,7 +1,7 @@
 // Simplified error handling utilities
 // Credits go to SilentVoid13 Templater Plugin: https://github.com/SilentVoid13/Templater
 
-import { log_error } from "./Log";
+import { NoticeManager } from "./NoticeManager";
 
 /**
  * Creates a standardized error with context information
@@ -25,7 +25,7 @@ export function handleError(error: unknown, context?: string, shouldThrow: boole
     const errorMessage = error instanceof Error ? error.message : String(error);
     const fullMessage = context ? `${context}: ${errorMessage}` : errorMessage;
     
-    log_error(new Error(fullMessage));
+    NoticeManager.error(fullMessage);
     
     if (shouldThrow) {
         throw error instanceof Error ? error : new Error(errorMessage);

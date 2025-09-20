@@ -3,7 +3,7 @@ import { PluginSettingTab, App, Setting } from "obsidian";
 import { FolderSuggest } from "./suggesters/FolderSuggest";
 import { TagSuggest } from "./suggesters/TagSuggest";
 import { createError, handleError } from "src/utils/Error";
-import { log_error } from "src/utils/Log";
+import { NoticeManager } from "src/utils/NoticeManager";
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import { ConfirmModal } from "../modals/ConfirmModal";
 

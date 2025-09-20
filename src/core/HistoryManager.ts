@@ -1,6 +1,7 @@
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import NoteMoverShortcutPlugin from 'main';
 import { createError, handleError } from '../utils/Error';
+import { NoticeManager } from '../utils/NoticeManager';
 
 export class HistoryManager {
     private history: HistoryEntry[] = [];
@@ -134,7 +135,7 @@ export class HistoryManager {
         const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
         if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
             try {
-                console.log(`Creating source folder for individual undo: ${sourceFolderPath}`);
+                NoticeManager.info(`Creating source folder for individual undo: ${sourceFolderPath}`);
                 await this.plugin.app.vault.createFolder(sourceFolderPath);
             } catch (error) {
                 handleError(error, `Failed to create source folder ${sourceFolderPath}`, false);
@@ -200,7 +201,7 @@ export class HistoryManager {
         const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
         if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
             try {
-                console.log(`Creating source folder for undo: ${sourceFolderPath}`);
+                NoticeManager.info(`Creating source folder for undo: ${sourceFolderPath}`);
                 await this.plugin.app.vault.createFolder(sourceFolderPath);
             } catch (error) {
                 handleError(error, `Failed to create source folder ${sourceFolderPath}`, false);
@@ -209,7 +210,7 @@ export class HistoryManager {
         }
 
         try {
-            console.log(`Attempting to move file from ${entry.destinationPath} to ${entry.sourcePath}`);
+            NoticeManager.info(`Attempting to move file from ${entry.destinationPath} to ${entry.sourcePath}`);
             this.markPluginMoveStart();
             await this.plugin.app.fileManager.renameFile(
                 file,
@@ -223,7 +224,7 @@ export class HistoryManager {
                 await this.saveHistory();
             }
             
-            console.log('Move successful');
+            NoticeManager.success('Move successful');
             return true;
         } catch (error) {
             handleError(error, "Error during undo", false);
@@ -300,7 +301,7 @@ export class HistoryManager {
             return false;
         }
 
-        console.log(`Starting bulk undo for operation: ${bulkOp.id}, ${bulkOp.entries.length} entries`);
+        NoticeManager.info(`Starting bulk undo for operation: ${bulkOp.id}, ${bulkOp.entries.length} entries`);
         
         const results: boolean[] = [];
         
@@ -308,7 +309,7 @@ export class HistoryManager {
         const sortedEntries = [...bulkOp.entries].sort((a, b) => b.timestamp - a.timestamp);
         
         for (const entry of sortedEntries) {
-            console.log(`Attempting to undo: ${entry.fileName} from ${entry.destinationPath} to ${entry.sourcePath}`);
+            NoticeManager.info(`Attempting to undo: ${entry.fileName} from ${entry.destinationPath} to ${entry.sourcePath}`);
             
             const file = this.plugin.app.vault.getAbstractFileByPath(entry.destinationPath);
             if (!file) {
@@ -321,7 +322,7 @@ export class HistoryManager {
             const sourceFolderPath = entry.sourcePath.substring(0, entry.sourcePath.lastIndexOf('/'));
             if (sourceFolderPath && sourceFolderPath !== '' && !await this.plugin.app.vault.adapter.exists(sourceFolderPath)) {
                 try {
-                    console.log(`Creating source folder: ${sourceFolderPath}`);
+                    NoticeManager.info(`Creating source folder: ${sourceFolderPath}`);
                     await this.plugin.app.vault.createFolder(sourceFolderPath);
                 } catch (error) {
                     handleError(error, `Failed to create source folder ${sourceFolderPath}`, false);
@@ -333,7 +334,7 @@ export class HistoryManager {
             try {
                 this.markPluginMoveStart();
                 await this.plugin.app.fileManager.renameFile(file, entry.sourcePath);
-                console.log(`Successfully moved ${entry.fileName} back to ${entry.sourcePath}`);
+                NoticeManager.success(`Successfully moved ${entry.fileName} back to ${entry.sourcePath}`);
                 
                 // Remove from individual history
                 const historyIndex = this.history.findIndex(h => h.id === entry.id);
@@ -352,7 +353,7 @@ export class HistoryManager {
 
         // Only remove the bulk operation if at least some operations were successful
         const successCount = results.filter(r => r).length;
-        console.log(`Bulk undo completed: ${successCount}/${results.length} successful`);
+        NoticeManager.info(`Bulk undo completed: ${successCount}/${results.length} successful`);
         
         if (successCount > 0) {
             // Create a map of successfully undone entries by ID

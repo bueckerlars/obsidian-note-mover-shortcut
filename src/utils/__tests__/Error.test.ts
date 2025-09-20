@@ -1,9 +1,11 @@
 import { createError, handleError } from '../Error';
-import { log_error } from '../Log';
+import { NoticeManager } from '../NoticeManager';
 
-// Mock für die log_error Funktion
-jest.mock('../Log', () => ({
-    log_error: jest.fn()
+// Mock für die NoticeManager Funktion
+jest.mock('../NoticeManager', () => ({
+    NoticeManager: {
+        error: jest.fn()
+    }
 }));
 
 describe('Error', () => {
@@ -41,38 +43,37 @@ describe('Error', () => {
         it('should log and re-throw error by default', () => {
             const error = new Error('Test Error');
             expect(() => handleError(error, 'Test Context')).toThrow('Test Error');
-            expect(log_error).toHaveBeenCalledWith(expect.any(Error));
+            expect(NoticeManager.error).toHaveBeenCalledWith('Test Context: Test Error');
         });
 
         it('should log but not re-throw when shouldThrow is false', () => {
             const error = new Error('Test Error');
             expect(() => handleError(error, 'Test Context', false)).not.toThrow();
-            expect(log_error).toHaveBeenCalledWith(expect.any(Error));
+            expect(NoticeManager.error).toHaveBeenCalledWith('Test Context: Test Error');
         });
 
         it('should handle non-Error objects', () => {
             const error = { custom: 'error' };
             expect(() => handleError(error, 'Test Context')).toThrow('custom');
-            expect(log_error).toHaveBeenCalledWith(expect.any(Error));
+            expect(NoticeManager.error).toHaveBeenCalledWith('Test Context: custom');
         });
 
         it('should handle string errors', () => {
             const error = 'String error';
             expect(() => handleError(error, 'Test Context')).toThrow('String error');
-            expect(log_error).toHaveBeenCalledWith(expect.any(Error));
+            expect(NoticeManager.error).toHaveBeenCalledWith('Test Context: String error');
         });
 
         it('should handle undefined errors', () => {
             const error = undefined;
             expect(() => handleError(error, 'Test Context')).toThrow('undefined');
-            expect(log_error).toHaveBeenCalledWith(expect.any(Error));
+            expect(NoticeManager.error).toHaveBeenCalledWith('Test Context: undefined');
         });
 
         it('should create proper error message with context', () => {
             const error = new Error('Original Error');
             expect(() => handleError(error, 'Test Context')).toThrow('Original Error');
-            const loggedError = (log_error as jest.Mock).mock.calls[0][0];
-            expect(loggedError.message).toBe('Test Context: Original Error');
+            expect(NoticeManager.error).toHaveBeenCalledWith('Test Context: Original Error');
         });
     });
 }); 

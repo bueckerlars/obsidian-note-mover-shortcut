@@ -1,7 +1,7 @@
 import { NoteMoverShortcut } from '../core/NoteMoverShortcut';
 import { App, TFile, getAllTags, Notice } from 'obsidian';
 import NoteMoverShortcutPlugin from '../../main';
-import { log_error, log_info } from '../utils/Log';
+import { NoticeManager } from '../utils/NoticeManager';
 import { combinePath } from '../utils/PathUtils';
 
 // Mocks für globale Funktionen
@@ -512,7 +512,7 @@ describe('NoteMoverShortcut', () => {
             mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
             mockApp.vault.getFiles = jest.fn().mockResolvedValue([]);
             
-            const logInfoSpy = jest.spyOn(require('../utils/Log'), 'log_info');
+            const logInfoSpy = jest.spyOn(NoticeManager, 'info');
             
             await noteMover.moveNotesFromInboxToNotesFolderPeriodic();
             

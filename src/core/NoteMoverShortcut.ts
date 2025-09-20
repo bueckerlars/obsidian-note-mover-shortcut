@@ -1,6 +1,6 @@
 import NoteMoverShortcutPlugin from "main";
 import { getAllTags, TFile } from "obsidian";
-import { log_error, log_info } from "../utils/Log";
+import { NoticeManager } from "../utils/NoticeManager";
 import { Notice } from "obsidian";
 import { combinePath } from "../utils/PathUtils";
 import { RuleManager } from "./RuleManager";
@@ -57,7 +57,7 @@ export class NoteMoverShortcut {
 			if (targetFolder !== '/' && targetFolder !== '') {
 				if (!await app.vault.adapter.exists(targetFolder)) {
 					await app.vault.createFolder(targetFolder);
-					log_info(`Target folder created: ${targetFolder}`);
+					NoticeManager.info(`Target folder created: ${targetFolder}`);
 				}
 			}
 
@@ -91,12 +91,12 @@ export class NoteMoverShortcut {
 		// Check if both folders exist
 		if (!await app.vault.adapter.exists(inboxFolder)) {
 			await app.vault.createFolder(inboxFolder);
-			log_info("Inbox folder created");
+			NoticeManager.info("Inbox folder created");
 		}
 
 		if (!await app.vault.adapter.exists(notesFolder)) {
 			await app.vault.createFolder(notesFolder);
-			log_info("Notes folder created");
+			NoticeManager.info("Notes folder created");
 		}
 
 		// Get all files in the inbox folder
@@ -104,7 +104,7 @@ export class NoteMoverShortcut {
 		const inboxFiles = files.filter(file => file.path.startsWith(inboxFolder));
 
 		if (inboxFiles.length === 0) {
-			log_info("No files found in inbox folder");
+			NoticeManager.info("No files found in inbox folder");
 			return;
 		}
 
@@ -132,35 +132,19 @@ export class NoteMoverShortcut {
 					? `Moved ${successCount}/${totalFiles} files. ${errorCount} files had errors.`
 					: `Successfully moved ${successCount} files`;
 				
-				const notice = new Notice("", 8000);
-				const noticeEl = notice.noticeEl;
-				
-				// Add title
-				const title = document.createElement("b");
-				title.textContent = "NoteMover Bulk Operation:";
-				noticeEl.appendChild(title);
-				noticeEl.appendChild(document.createElement("br"));
-				
-				// Add message
-				const message = document.createElement("span");
-				message.textContent = successMessage;
-				noticeEl.appendChild(message);
-				
-				// Add undo button
-				const undoButton = document.createElement("button");
-				undoButton.textContent = "Undo All";
-				undoButton.className = "mod-warning";
-				undoButton.style.marginLeft = "10px";
-				undoButton.onclick = async () => {
-					const success = await this.plugin.historyManager.undoBulkOperation(bulkOperationId);
-					if (success) {
-						notice.hide();
-						new Notice(`Bulk operation undone: ${successCount} files moved back`, 3000);
-					} else {
-						new Notice(`Could not undo all moves. Check individual files in history.`, 5000);
-					}
-				};
-				noticeEl.appendChild(undoButton);
+				NoticeManager.showWithUndo(
+					'info',
+					`Bulk Operation: ${successMessage}`,
+					async () => {
+						const success = await this.plugin.historyManager.undoBulkOperation(bulkOperationId);
+						if (success) {
+							NoticeManager.success(`Bulk operation undone: ${successCount} files moved back`, { duration: 3000 });
+						} else {
+							NoticeManager.warning(`Could not undo all moves. Check individual files in history.`, { duration: 5000 });
+						}
+					},
+					"Undo All"
+				);
 			}
 
 		} finally {
@@ -184,7 +168,7 @@ export class NoteMoverShortcut {
 
 		if (!await app.vault.adapter.exists(notesFolder)) {
 			await app.vault.createFolder(notesFolder);
-			log_info("Notes folder created");
+			NoticeManager.info("Notes folder created");
 		}
 
 		// Get all files in the inbox folder
@@ -211,7 +195,7 @@ export class NoteMoverShortcut {
 			}
 
 			if (successCount > 0) {
-				log_info(`Periodic movement: Successfully moved ${successCount} files`);
+				NoticeManager.info(`Periodic movement: Successfully moved ${successCount} files`);
 			}
 
 		} finally {
@@ -234,40 +218,24 @@ export class NoteMoverShortcut {
 			await this.moveFileBasedOnTags(file, this.plugin.settings.destination, true);
 			
 			// Create notice with undo button
-			const notice = new Notice("", 8000);
-			const noticeEl = notice.noticeEl;
-			
-			// Add title
-			const title = document.createElement("b");
-			title.textContent = "NoteMover:";
-			noticeEl.appendChild(title);
-			noticeEl.appendChild(document.createElement("br"));
-			
-			// Add message
-			const message = document.createElement("span");
-			message.textContent = `Note "${file.name}" has been moved`;
-			noticeEl.appendChild(message);
-			
-			// Add undo button
-			const undoButton = document.createElement("button");
-			undoButton.textContent = "Undo";
-			undoButton.className = "mod-warning";
-			undoButton.style.marginLeft = "10px";
-			undoButton.onclick = async () => {
-				try {
-					console.log(`Attempting to undo move for file: ${file.name}`);
-					const success = await this.plugin.historyManager.undoLastMove(file.name);
-					if (success) {
-						notice.hide();
-						new Notice(`Note "${file.name}" has been moved back`, 3000);
-					} else {
-						new Notice(`Could not undo move for "${file.name}"`, 3000);
+			NoticeManager.showWithUndo(
+				'info',
+				`Note "${file.name}" has been moved`,
+				async () => {
+					try {
+						NoticeManager.info(`Attempting to undo move for file: ${file.name}`);
+						const success = await this.plugin.historyManager.undoLastMove(file.name);
+						if (success) {
+							NoticeManager.success(`Note "${file.name}" has been moved back`, { duration: 3000 });
+						} else {
+							NoticeManager.warning(`Could not undo move for "${file.name}"`, { duration: 3000 });
+						}
+					} catch (error) {
+						handleError(error, "Error in undo button click handler", false);
 					}
-				} catch (error) {
-					handleError(error, "Error in undo button click handler", false);
-				}
-			};
-			noticeEl.appendChild(undoButton);
+				},
+				"Undo"
+			);
 			
 		} catch (error) {
 			handleError(error, "moveFocusedNoteToDestination", false);
@@ -285,7 +253,7 @@ export class NoteMoverShortcut {
 		// Check if inbox folder exists, create if not
 		if (!await app.vault.adapter.exists(inboxFolder)) {
 			await app.vault.createFolder(inboxFolder);
-			log_info("Inbox folder created");
+			NoticeManager.info("Inbox folder created");
 		}
 
 		// Get all files in the inbox folder

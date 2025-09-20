@@ -1,6 +1,7 @@
 import { Modal, Setting, App } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
 import { BulkOperation, HistoryEntry } from '../types/HistoryEntry';
+import { NoticeManager } from '../utils/NoticeManager';
 
 export class HistoryModal extends Modal {
     constructor(
@@ -120,13 +121,7 @@ export class HistoryModal extends Modal {
                                 this.onOpen(); // Refresh the modal
                             } else {
                                 // Show error message
-                                const notice = document.createElement('div');
-                                notice.textContent = `Could not undo move for ${entry.fileName}. File may have been moved or deleted.`;
-                                notice.style.color = 'var(--text-error)';
-                                notice.style.fontSize = '0.8em';
-                                notice.style.marginTop = '5px';
-                                fileEl.appendChild(notice);
-                                setTimeout(() => notice.remove(), 5000);
+                                NoticeManager.error(`Could not undo move for ${entry.fileName}. File may have been moved or deleted.`, { duration: 5000 });
                             }
                         });
                 });
@@ -145,12 +140,7 @@ export class HistoryModal extends Modal {
                             this.onOpen(); // Refresh the modal
                         } else {
                             // Show error message
-                            const notice = document.createElement('div');
-                            notice.textContent = 'Some files could not be moved back. Check console for details.';
-                            notice.style.color = 'var(--text-error)';
-                            notice.style.marginTop = '10px';
-                            bulkEntryEl.appendChild(notice);
-                            setTimeout(() => notice.remove(), 5000);
+                            NoticeManager.warning('Some files could not be moved back. Check console for details.', { duration: 5000 });
                         }
                     });
             });

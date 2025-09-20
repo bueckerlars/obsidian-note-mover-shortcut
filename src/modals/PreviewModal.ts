@@ -1,6 +1,7 @@
 import { Modal, Setting, App, ButtonComponent, TFile, Notice } from 'obsidian';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import NoteMoverShortcutPlugin from 'main';
+import { NoticeManager } from '../utils/NoticeManager';
 
 export class PreviewModal extends Modal {
     private movePreview: MovePreview;
@@ -195,16 +196,16 @@ export class PreviewModal extends Modal {
                     movedCount++;
                 }
             } catch (error) {
-                console.error(`Error moving file ${entry.fileName}:`, error);
+                NoticeManager.error(`Error moving file ${entry.fileName}: ${error instanceof Error ? error.message : String(error)}`);
                 errorCount++;
             }
         }
 
         // Show completion notice
         if (errorCount === 0) {
-            new Notice(`Successfully moved ${movedCount} files!`);
+            NoticeManager.success(`Successfully moved ${movedCount} files!`);
         } else {
-            new Notice(`Moved ${movedCount} files with ${errorCount} errors. Check console for details.`);
+            NoticeManager.warning(`Moved ${movedCount} files with ${errorCount} errors. Check console for details.`);
         }
     }
 }
