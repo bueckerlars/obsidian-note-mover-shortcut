@@ -22,7 +22,11 @@ export function createError(message: string, context?: string): Error {
  * @param shouldThrow - Whether to re-throw the error after logging
  */
 export function handleError(error: unknown, context?: string, shouldThrow: boolean = true): void {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error
+        ? error.message
+        : (typeof error === 'object' && error !== null
+            ? JSON.stringify(error)
+            : String(error));
     const fullMessage = context ? `${context}: ${errorMessage}` : errorMessage;
     
     NoticeManager.error(fullMessage);

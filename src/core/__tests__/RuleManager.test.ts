@@ -1,25 +1,20 @@
 import { RuleManager } from '../RuleManager';
+import { MetadataExtractor } from '../MetadataExtractor';
 import { App, TFile, getAllTags } from 'obsidian';
 
-jest.mock('obsidian', () => {
-    const original = jest.requireActual('obsidian');
-    return {
-        ...original,
-        getAllTags: jest.fn()
-    };
-});
-
-(getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+// Mock the MetadataExtractor
+jest.mock('../MetadataExtractor');
 
 describe('RuleManager', () => {
     let mockApp: any;
     let mockFile: TFile;
     let ruleManager: RuleManager;
+    let mockMetadataExtractor: jest.Mocked<MetadataExtractor>;
 
     beforeEach(() => {
         mockApp = {
             metadataCache: {
-                getFileCache: jest.fn().mockReturnValue({ 
+                getFileCache: jest.fn().mockReturnValue({
                     tags: [{ tag: '#tag1' }],
                     frontmatter: { status: 'completed', priority: 'high', project: 'work' }
                 })
@@ -33,7 +28,32 @@ describe('RuleManager', () => {
             path: 'folder/file.md',
             stat: { ctime: Date.now(), mtime: Date.now() }
         } as any;
+
+        // Create mock for MetadataExtractor
+        mockMetadataExtractor = {
+            extractFileMetadata: jest.fn(),
+            extractBasicMetadata: jest.fn()
+        } as jest.Mocked<MetadataExtractor>;
+
+        // Mock the constructor
+        (MetadataExtractor as jest.MockedClass<typeof MetadataExtractor>).mockImplementation(() => mockMetadataExtractor);
+
         ruleManager = new RuleManager(mockApp, 'default');
+
+        // Set up default mock behavior
+        mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+            fileName: 'file.md',
+            filePath: 'folder/file.md',
+            tags: ['#tag1'],
+            properties: { status: 'completed', priority: 'high', project: 'work' },
+            fileContent: 'file content',
+            createdAt: new Date(mockFile.stat.ctime),
+            updatedAt: new Date(mockFile.stat.mtime)
+        });
+
+        // Mock getAllTags to return default tags
+        const mockGetAllTags = getAllTags as jest.MockedFunction<typeof getAllTags>;
+        mockGetAllTags.mockReturnValue(['#tag1']);
     });
 
     it('should skip file if fileName filter matches (blacklist)', async () => {
@@ -156,8 +176,8 @@ describe('RuleManager', () => {
         expect(result).toBe('default');
     });
 
-    it('should handle error in getFileCache gracefully', async () => {
-        mockApp.metadataCache.getFileCache = jest.fn(() => { throw new Error('fail'); });
+    it('should handle error in metadata extraction gracefully', async () => {
+        mockMetadataExtractor.extractFileMetadata.mockRejectedValue(new Error('fail'));
         const result = await ruleManager.moveFileBasedOnTags(mockFile);
         expect(result).toBeNull(); // Da catch-Block return null
     });
@@ -166,18 +186,34 @@ describe('RuleManager', () => {
     describe('Hierarchical Tag Matching', () => {
         beforeEach(() => {
             // Reset mock to avoid interference from other tests
-            (getAllTags as jest.Mock).mockClear();
+            jest.clearAllMocks();
         });
 
         it('should match parent tag when file has subtag', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#food/recipes'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
             expect(result).toBe('food-folder');
         });
 
         it('should prioritize more specific tag rules over general ones', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#food/recipes'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([
                 { criteria: 'tag: #food', path: 'food-folder' },
                 { criteria: 'tag: #food/recipes', path: 'recipes-folder' }
@@ -187,14 +223,30 @@ describe('RuleManager', () => {
         });
 
         it('should match exact tag over subtag pattern', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#food']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#food'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
             expect(result).toBe('food-folder');
         });
 
         it('should handle multiple subtag levels', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes/italian']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#food/recipes/italian'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([
                 { criteria: 'tag: #food', path: 'food-folder' },
                 { criteria: 'tag: #food/recipes', path: 'recipes-folder' },
@@ -205,21 +257,45 @@ describe('RuleManager', () => {
         });
 
         it('should not match unrelated tags', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#foods']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#foods'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
             expect(result).toBe('default');
         });
 
         it('should handle hierarchical filtering in blacklist', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#food/recipes'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setFilter(['tag: #food'], false); // blacklist
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
             expect(result).toBeNull(); // Should be filtered out
         });
 
         it('should handle hierarchical filtering in whitelist', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#food/recipes']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#food/recipes'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setFilter(['tag: #food'], true); // whitelist
             ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
@@ -272,7 +348,15 @@ describe('RuleManager', () => {
         });
 
         it('should handle missing frontmatter gracefully', async () => {
-            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({ tags: [{ tag: '#tag1' }] });
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: {}, // No frontmatter properties
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([{ criteria: 'property: status:completed', path: 'archive' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
             expect(result).toBe('default');
@@ -285,9 +369,14 @@ describe('RuleManager', () => {
         });
 
         it('should handle numeric property values', async () => {
-            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-                tags: [{ tag: '#tag1' }],
-                frontmatter: { priority: 1, status: 'completed' }
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: { priority: 1, status: 'completed' },
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
             });
             ruleManager.setRules([{ criteria: 'property: priority:1', path: 'priority-1' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
@@ -295,9 +384,14 @@ describe('RuleManager', () => {
         });
 
         it('should handle null property values', async () => {
-            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-                tags: [{ tag: '#tag1' }],
-                frontmatter: { status: null, priority: undefined }
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: { status: null, priority: undefined },
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
             });
             ruleManager.setRules([{ criteria: 'property: status:null', path: 'null-folder' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
@@ -305,9 +399,14 @@ describe('RuleManager', () => {
         });
 
         it('should handle undefined property values', async () => {
-            mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-                tags: [{ tag: '#tag1' }],
-                frontmatter: { status: undefined }
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: { status: undefined },
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
             });
             ruleManager.setRules([{ criteria: 'property: status:undefined', path: 'undefined-folder' }]);
             const result = await ruleManager.moveFileBasedOnTags(mockFile);
@@ -318,7 +417,15 @@ describe('RuleManager', () => {
     // Tests für generatePreviewForFile
     describe('generatePreviewForFile', () => {
         it('should generate preview for file with matching rule', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'special' }]);
             const preview = await ruleManager.generatePreviewForFile(mockFile);
             expect(preview.willBeMoved).toBe(true);
@@ -327,7 +434,15 @@ describe('RuleManager', () => {
         });
 
         it('should generate preview for file blocked by blacklist filter', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setFilter(['tag: #tag1'], false);
             const preview = await ruleManager.generatePreviewForFile(mockFile);
             expect(preview.willBeMoved).toBe(false);
@@ -336,7 +451,15 @@ describe('RuleManager', () => {
         });
 
         it('should generate preview for file not in whitelist', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setFilter(['tag: #other'], true);
             const preview = await ruleManager.generatePreviewForFile(mockFile);
             expect(preview.willBeMoved).toBe(false);
@@ -345,6 +468,15 @@ describe('RuleManager', () => {
         });
 
         it('should generate preview for file with no matching rules (default folder)', async () => {
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([{ criteria: 'tag: #other', path: 'special' }]);
             const preview = await ruleManager.generatePreviewForFile(mockFile);
             expect(preview.willBeMoved).toBe(true);
@@ -353,7 +485,7 @@ describe('RuleManager', () => {
         });
 
         it('should handle error in generatePreviewForFile', async () => {
-            mockApp.metadataCache.getFileCache = jest.fn(() => { throw new Error('fail'); });
+            mockMetadataExtractor.extractFileMetadata.mockRejectedValue(new Error('fail'));
             const preview = await ruleManager.generatePreviewForFile(mockFile);
             expect(preview.willBeMoved).toBe(false);
             expect(preview.targetPath).toBeNull();
@@ -412,7 +544,15 @@ describe('RuleManager', () => {
         });
 
         it('should handle invalid rule criteria in preview', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([{ criteria: 'invalid-format', path: 'special' }]);
             const preview = await ruleManager.generatePreviewForFile(mockFile);
             expect(preview.willBeMoved).toBe(true);
@@ -420,8 +560,15 @@ describe('RuleManager', () => {
         });
 
         it('should handle created_at rule with null createdAt in preview', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
-            mockFile.stat = { ctime: null, mtime: Date.now() } as any;
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: null,
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
             ruleManager.setRules([{ criteria: 'created_at: 2023-01-01', path: 'date-folder' }]);
             const preview = await ruleManager.generatePreviewForFile(mockFile);
             expect(preview.willBeMoved).toBe(true);
@@ -429,8 +576,15 @@ describe('RuleManager', () => {
         });
 
         it('should handle updated_at rule with null updatedAt in preview', async () => {
-            (getAllTags as jest.Mock).mockReturnValue(['#tag1']);
-            mockFile.stat = { ctime: Date.now(), mtime: null } as any;
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#tag1'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: null
+            });
             ruleManager.setRules([{ criteria: 'updated_at: 2023-01-01', path: 'date-folder' }]);
             const preview = await ruleManager.generatePreviewForFile(mockFile);
             expect(preview.willBeMoved).toBe(true);
@@ -489,6 +643,90 @@ describe('RuleManager', () => {
         });
     });
 
+    // Tests für verschiedene Kriterientypen
+    describe('Rule Criteria Types', () => {
+        it('should match fileName criteria', async () => {
+            ruleManager.setRules([{ criteria: 'fileName: file.md', path: 'test-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('test-folder');
+        });
+
+        it('should match path criteria', async () => {
+            ruleManager.setRules([{ criteria: 'path: folder/file.md', path: 'path-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('path-folder');
+        });
+
+        it('should match content criteria', async () => {
+            ruleManager.setRules([{ criteria: 'content: file content', path: 'content-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('content-folder');
+        });
+
+        it('should match created_at criteria', async () => {
+            const date = new Date(mockFile.stat.ctime).toISOString().slice(0, 10);
+            ruleManager.setRules([{ criteria: `created_at: ${date}`, path: 'date-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('date-folder');
+        });
+
+        it('should match updated_at criteria', async () => {
+            const date = new Date(mockFile.stat.mtime).toISOString().slice(0, 10);
+            ruleManager.setRules([{ criteria: `updated_at: ${date}`, path: 'updated-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('updated-folder');
+        });
+
+        it('should match property criteria with key only', async () => {
+            ruleManager.setRules([{ criteria: 'property: status', path: 'property-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('property-folder');
+        });
+
+        it('should match property criteria with key:value', async () => {
+            ruleManager.setRules([{ criteria: 'property: status:completed', path: 'status-folder' }]);
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('status-folder');
+        });
+    });
+
+    // Tests für Tag-Sortierung nach Spezifität
+    describe('Rule Sorting by Specificity', () => {
+        it('should prioritize more specific tag rules', async () => {
+            // Mock file with food/recipes/italian tag
+            mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+                fileName: 'file.md',
+                filePath: 'folder/file.md',
+                tags: ['#food/recipes/italian'],
+                properties: {},
+                fileContent: 'file content',
+                createdAt: new Date(mockFile.stat.ctime),
+                updatedAt: new Date(mockFile.stat.mtime)
+            });
+
+            ruleManager.setRules([
+                { criteria: 'tag: #food', path: 'food-folder' },
+                { criteria: 'tag: #food/recipes', path: 'recipes-folder' },
+                { criteria: 'tag: #food/recipes/italian', path: 'italian-folder' }
+            ]);
+
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('italian-folder'); // Most specific should match first
+        });
+
+        it('should handle mixed criteria types in sorting', async () => {
+            ruleManager.setRules([
+                { criteria: 'fileName: file.md', path: 'filename-folder' },
+                { criteria: 'tag: #food', path: 'food-folder' },
+                { criteria: 'tag: #food/recipes', path: 'recipes-folder' }
+            ]);
+
+            // Should match fileName rule first (not a tag rule, so original order preserved)
+            const result = await ruleManager.moveFileBasedOnTags(mockFile);
+            expect(result).toBe('filename-folder');
+        });
+    });
+
     // Tests für generateMovePreview
     describe('generateMovePreview', () => {
         it('should generate preview for multiple files', async () => {
@@ -506,6 +744,32 @@ describe('RuleManager', () => {
 
         it('should separate successful and blocked moves', async () => {
             const files = [mockFile, { ...mockFile, name: 'file2.md', path: 'folder/file2.md' }];
+
+            // Mock different metadata for each file
+            mockMetadataExtractor.extractFileMetadata.mockImplementation(async (file) => {
+                if (file.name === 'file2.md') {
+                    return {
+                        fileName: 'file2.md',
+                        filePath: 'folder/file2.md',
+                        tags: ['#tag1'],
+                        properties: {},
+                        fileContent: 'file2 content',
+                        createdAt: new Date(mockFile.stat.ctime),
+                        updatedAt: new Date(mockFile.stat.mtime)
+                    };
+                } else {
+                    return {
+                        fileName: 'file.md',
+                        filePath: 'folder/file.md',
+                        tags: ['#tag1'],
+                        properties: {},
+                        fileContent: 'file content',
+                        createdAt: new Date(mockFile.stat.ctime),
+                        updatedAt: new Date(mockFile.stat.mtime)
+                    };
+                }
+            });
+
             ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'special' }]);
             ruleManager.setFilter(['fileName: file2.md'], false);
             const preview = await ruleManager.generateMovePreview(files, true, true, false);

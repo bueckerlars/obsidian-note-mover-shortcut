@@ -1,23 +1,19 @@
-import { App, CachedMetadata, AbstractInputSuggest, getAllTags } from "obsidian";
+import { App, AbstractInputSuggest } from "obsidian";
+import { MetadataExtractor } from "../../core/MetadataExtractor";
 
 export class TagSuggest extends AbstractInputSuggest<string> {
     private tags: Set<string>;
+    private metadataExtractor: MetadataExtractor;
 
     constructor(app: App, private inputEl: HTMLInputElement) {
         super(app, inputEl);
         this.tags = new Set();
+        this.metadataExtractor = new MetadataExtractor(app);
         this.loadTags();
     }
     
     private loadTags(): void {
-        const files = this.app.vault.getMarkdownFiles();
-
-        files.forEach(file => {
-            const cachedMetadata = this.app.metadataCache.getFileCache(file)!;
-            
-            const fileTags = getAllTags(cachedMetadata) || [];
-            fileTags.forEach(tag => this.tags.add(tag));
-        });
+        this.tags = this.metadataExtractor.extractAllTags();
     }
 
     getSuggestions(inputStr: string): string[] {

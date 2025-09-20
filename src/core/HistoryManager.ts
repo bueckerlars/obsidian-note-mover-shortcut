@@ -250,7 +250,7 @@ export class HistoryManager {
         
         const bulkOp: BulkOperation = {
             id: bulkOperationId,
-            operationType,
+            operationType: operationType === 'single' ? 'bulk' : operationType,
             timestamp: Date.now(),
             entries: [],
             totalFiles: 0

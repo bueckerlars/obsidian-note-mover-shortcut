@@ -54,8 +54,8 @@ describe('Error', () => {
 
         it('should handle non-Error objects', () => {
             const error = { custom: 'error' };
-            expect(() => handleError(error, 'Test Context')).toThrow('custom');
-            expect(NoticeManager.error).toHaveBeenCalledWith('Test Context: custom');
+            expect(() => handleError(error, 'Test Context')).toThrow('{"custom":"error"}');
+            expect(NoticeManager.error).toHaveBeenCalledWith('Test Context: {"custom":"error"}');
         });
 
         it('should handle string errors', () => {

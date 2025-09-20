@@ -150,19 +150,37 @@ describe('HistoryManager', () => {
             // Mock that source folder doesn't exist and creation fails
             mockPlugin.app.vault.adapter.exists.mockResolvedValueOnce(false);
             mockPlugin.app.vault.createFolder.mockRejectedValueOnce(new Error('Folder creation failed'));
-            
+
             const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
                 sourcePath: 'subfolder/nested/note.md',
                 destinationPath: 'notes/note.md',
                 fileName: 'note.md',
             };
             historyManager.addEntry(entry);
-            
+
             const result = await historyManager.undoLastMove('note.md');
-            
+
             expect(result).toBe(false);
             expect(mockPlugin.app.vault.createFolder).toHaveBeenCalledWith('subfolder/nested');
             expect(mockPlugin.app.fileManager.renameFile).not.toHaveBeenCalled();
+            // Entry should still exist since undo failed
+            expect(historyManager.getHistory()).toHaveLength(1);
+        });
+
+        it('should handle file rename errors during undoLastMove', async () => {
+            mockPlugin.app.fileManager.renameFile.mockRejectedValue(new Error('File rename failed'));
+
+            const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+                sourcePath: 'source/note.md',
+                destinationPath: 'destination/note.md',
+                fileName: 'note.md',
+            };
+            historyManager.addEntry(entry);
+
+            const result = await historyManager.undoLastMove('note.md');
+
+            expect(result).toBe(false);
+            expect(mockPlugin.app.fileManager.renameFile).toHaveBeenCalled();
             // Entry should still exist since undo failed
             expect(historyManager.getHistory()).toHaveLength(1);
         });

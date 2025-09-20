@@ -190,7 +190,7 @@ export class NoteMoverShortcut {
 	async moveNotesFromInboxToNotesFolderPeriodic() {
 		await this.moveFilesFromInbox({
 			createFolders: false,
-			showNotifications: true,
+			showNotifications: false,
 			operationType: 'periodic'
 		});
 	}

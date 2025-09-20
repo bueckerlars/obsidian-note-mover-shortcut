@@ -1,4 +1,5 @@
-import { App, AbstractInputSuggest, TFolder, TAbstractFile, getAllTags } from "obsidian";
+import { App, AbstractInputSuggest, TFolder, TAbstractFile } from "obsidian";
+import { MetadataExtractor } from "../../core/MetadataExtractor";
 
 export type SuggestType = "tag" | "content" | "fileName" | "created_at" | "path" | "updated_at" | "property";
 
@@ -19,9 +20,11 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     private fileNames: string[] = [];
     private propertyKeys: Set<string> = new Set();
     private propertyValues: Map<string, Set<string>> = new Map();
-    
+    private metadataExtractor: MetadataExtractor;
+
     constructor(app: App, private inputEl: HTMLInputElement) {
         super(app, inputEl);
+        this.metadataExtractor = new MetadataExtractor(app);
         this.loadTags();
         this.loadFolders();
         this.loadFileNames();
@@ -29,12 +32,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     }
 
     private loadTags(): void {
-        const files = this.app.vault.getMarkdownFiles();
-        files.forEach(file => {
-            const cachedMetadata = this.app.metadataCache.getFileCache(file)!;
-            const fileTags = getAllTags(cachedMetadata) || [];
-            fileTags.forEach(tag => this.tags.add(tag));
-        });
+        this.tags = this.metadataExtractor.extractAllTags();
     }
 
     private loadFolders(): void {

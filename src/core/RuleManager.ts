@@ -1,20 +1,23 @@
 import { App, TFile } from 'obsidian';
-import { getAllTags } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
 import { Rule } from '../types/Rule';
 import { PreviewEntry, MovePreview } from '../types/MovePreview';
 import { createError, handleError } from '../utils/Error';
+import { MetadataExtractor } from './MetadataExtractor';
 
 export class RuleManager {
     private rules: Rule[] = [];
     private filter: string[] = [];
     private isFilterWhitelist: boolean = false;
     private onlyMoveNotesWithRules: boolean = false;
+    private metadataExtractor: MetadataExtractor;
 
     constructor(
         private app: App,
         private defaultFolder: string
-    ) {}
+    ) {
+        this.metadataExtractor = new MetadataExtractor(app);
+    }
 
     public setRules(rules: Rule[]): void {
         this.rules = rules;
@@ -90,18 +93,8 @@ export class RuleManager {
     public async moveFileBasedOnTags(file: TFile, skipFilter: boolean = false): Promise<string | null> {
         try {
             // Metadaten extrahieren
-            const fileCache = this.app.metadataCache.getFileCache(file)!;
-            const tags = getAllTags(fileCache) || [];
-            const fileName = file.name;
-            const filePath = file.path;
-            const createdAt = (file.stat && file.stat.ctime) ? new Date(file.stat.ctime) : null;
-            const updatedAt = (file.stat && file.stat.mtime) ? new Date(file.stat.mtime) : null;
-            const properties = fileCache.frontmatter || {};
-            // Inhalt könnte optional geladen werden
-            let fileContent = "";
-            try {
-                fileContent = await this.app.vault.read(file);
-            } catch {}
+            const metadata = await this.metadataExtractor.extractFileMetadata(file);
+            const { tags, fileName, filePath, createdAt, updatedAt, properties, fileContent } = metadata;
 
             // Check if file should be skipped based on filter
             if (!skipFilter && this.filter.length > 0) {
@@ -214,19 +207,9 @@ export class RuleManager {
      */
     public async generatePreviewForFile(file: TFile, skipFilter: boolean = false): Promise<PreviewEntry> {
         try {
-            // Extract metadata (same as in moveFileBasedOnTags)
-            const fileCache = this.app.metadataCache.getFileCache(file);
-            const tags = getAllTags(fileCache || {}) || [];
-            const fileName = file.name;
-            const filePath = file.path;
-            const createdAt = (file.stat && file.stat.ctime) ? new Date(file.stat.ctime) : null;
-            const updatedAt = (file.stat && file.stat.mtime) ? new Date(file.stat.mtime) : null;
-            const properties = fileCache?.frontmatter || {};
-            
-            let fileContent = "";
-            try {
-                fileContent = await this.app.vault.read(file);
-            } catch {}
+            // Extract metadata
+            const metadata = await this.metadataExtractor.extractFileMetadata(file);
+            const { tags, fileName, filePath, createdAt, updatedAt, properties, fileContent } = metadata;
 
             // Check filters first
             if (!skipFilter && this.filter.length > 0) {
