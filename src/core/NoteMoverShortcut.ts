@@ -1,4 +1,6 @@
 import NoteMoverShortcutPlugin from "main";
+import { SETTINGS_CONSTANTS, GENERAL_CONSTANTS, NOTIFICATION_CONSTANTS } from "../config/constants";
+import { type OperationType } from "../types/Common";
 import { getAllTags, TFile } from "obsidian";
 import { NoticeManager } from "../utils/NoticeManager";
 import { Notice } from "obsidian";
@@ -86,7 +88,7 @@ export class NoteMoverShortcut {
 	private async moveFilesFromInbox(options: {
 		createFolders: boolean;
 		showNotifications: boolean;
-		operationType: 'bulk' | 'periodic';
+		operationType: OperationType;
 	}): Promise<void> {
 		const { app } = this.plugin;
 		const inboxFolder = this.plugin.settings.inboxLocation;
@@ -156,12 +158,12 @@ export class NoteMoverShortcut {
 						async () => {
 							const success = await this.plugin.historyManager.undoBulkOperation(bulkOperationId);
 							if (success) {
-								NoticeManager.success(`Bulk operation undone: ${successCount} files moved back`, { duration: 3000 });
+								NoticeManager.success(`Bulk operation undone: ${successCount} files moved back`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
 							} else {
-								NoticeManager.warning(`Could not undo all moves. Check individual files in history.`, { duration: 5000 });
+								NoticeManager.warning(`Could not undo all moves. Check individual files in history.`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
 							}
 						},
-						"Undo All"
+						SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL
 					);
 				} else {
 					NoticeManager.info(`Periodic movement: Successfully moved ${successCount} files`);
@@ -292,7 +294,7 @@ export class NoteMoverShortcut {
 			const interval = this.plugin.settings.periodicMovementInterval;
 			this.intervalId = window.setInterval(async () => {
 				await this.moveNotesFromInboxToNotesFolderPeriodic();
-			}, interval * 60 * 1000);
+			}, interval * GENERAL_CONSTANTS.TIME_CONVERSIONS.MINUTES_TO_MILLISECONDS);
 		}
 	}
 }

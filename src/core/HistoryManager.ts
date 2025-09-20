@@ -2,15 +2,15 @@ import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import NoteMoverShortcutPlugin from 'main';
 import { createError, handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
+import { HISTORY_CONSTANTS } from '../config/constants';
+import { type OperationType } from '../types/Common';
 
 export class HistoryManager {
     private history: HistoryEntry[] = [];
     private bulkOperations: BulkOperation[] = [];
-    private readonly MAX_HISTORY_ENTRIES = 50;
-    private readonly MAX_BULK_OPERATIONS = 20;
     private isPluginMove = false; // Flag um Plugin-interne Verschiebungen zu erkennen
     private currentBulkOperationId: string | null = null;
-    private currentBulkOperationType: 'bulk' | 'periodic' | null = null;
+    private currentBulkOperationType: OperationType | null = null;
 
     constructor(private plugin: NoteMoverShortcutPlugin) { }
 
@@ -57,7 +57,7 @@ export class HistoryManager {
             }
         }
         
-        if (this.history.length > this.MAX_HISTORY_ENTRIES) {
+        if (this.history.length > HISTORY_CONSTANTS.MAX_HISTORY_ENTRIES) {
             this.history.pop();
         }
 
@@ -100,7 +100,7 @@ export class HistoryManager {
         const existingEntry = this.history.find(entry => 
             entry.fileName === fileName && 
             entry.destinationPath === destinationPath &&
-            Math.abs(Date.now() - entry.timestamp) < 1000 // innerhalb einer Sekunde
+            Math.abs(Date.now() - entry.timestamp) < HISTORY_CONSTANTS.DUPLICATE_CHECK_WINDOW_MS // innerhalb einer Sekunde
         );
 
         if (existingEntry) {
@@ -243,7 +243,7 @@ export class HistoryManager {
     /**
      * Starts a new bulk operation
      */
-    public startBulkOperation(operationType: 'bulk' | 'periodic'): string {
+    public startBulkOperation(operationType: OperationType): string {
         const bulkOperationId = crypto.randomUUID();
         this.currentBulkOperationId = bulkOperationId;
         this.currentBulkOperationType = operationType;
@@ -259,7 +259,7 @@ export class HistoryManager {
         this.bulkOperations.unshift(bulkOp);
         
         // Limit bulk operations history
-        if (this.bulkOperations.length > this.MAX_BULK_OPERATIONS) {
+        if (this.bulkOperations.length > HISTORY_CONSTANTS.MAX_BULK_OPERATIONS) {
             this.bulkOperations.pop();
         }
         

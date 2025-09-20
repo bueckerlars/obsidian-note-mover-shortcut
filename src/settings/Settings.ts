@@ -6,6 +6,7 @@ import { createError, handleError } from "src/utils/Error";
 import { NoticeManager } from "src/utils/NoticeManager";
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import { ConfirmModal } from "../modals/ConfirmModal";
+import { SETTINGS_CONSTANTS } from "../config/constants";
 
 interface Rule {
 	criteria: string, // Format: "type: value" (z.B. "tag: #project", "fileName: notes.md")
@@ -28,18 +29,7 @@ export interface NoteMoverShortcutSettings {
 	lastSeenVersion?: string,
 }
 
-export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = {
-	destination: '/',
-	inboxLocation: '',
-	enablePeriodicMovement: false,
-	periodicMovementInterval: 5,
-	enableFilter: false,
-	filter: [],
-	isFilterWhitelist: false,
-	enableRules: false,
-	rules: [],
-	onlyMoveNotesWithRules: false,
-}
+export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = SETTINGS_CONSTANTS.DEFAULT_SETTINGS;
 
 export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 	constructor(private plugin: NoteMoverShortcutPlugin) {
@@ -71,7 +61,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 			.setDesc('Set your inbox folder')
 			.addSearch((cb) => {
 				new FolderSuggest(this.app, cb.inputEl);
-				cb.setPlaceholder('Example: folder1/folder2')
+				cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FOLDER_PATH)
 					.setValue(this.plugin.settings.inboxLocation)
 					.onChange((new_folder) => {
 						this.plugin.settings.inboxLocation = new_folder;
@@ -86,7 +76,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 			.setDesc('Set your main note folder')
 			.addSearch((cb) => {
 				new FolderSuggest(this.app, cb.inputEl);
-				cb.setPlaceholder("Example: folder1/folder2")
+				cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FOLDER_PATH)
 					.setValue(this.plugin.settings.destination)
 					.onChange((new_folder) => {
 						this.plugin.settings.destination = new_folder;
@@ -119,7 +109,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.setName('Periodic movement interval')
 				.setDesc('Set the interval for the periodic movement of notes in minutes')
 				.addText(text => text
-					.setPlaceholder('5')
+					.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.INTERVAL)
 					.setValue(this.plugin.settings.periodicMovementInterval.toString())
 					.onChange(async (value) => {
 						const interval = parseInt(value);
@@ -193,7 +183,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.addSearch((cb) => {
 					// AdvancedSuggest statt TagSuggest
 					new (require("./suggesters/AdvancedSuggest")).AdvancedSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Filter (z.B. tag:, fileName:, path:, property:, ...)')
+					cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER)
 						.setValue(filter || "")
 						.onChange(async (value) => {
 							// Leere Filter nicht speichern
@@ -303,7 +293,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				.addSearch((cb) => {
 					// AdvancedSuggest statt TagSuggest
 					new (require("./suggesters/AdvancedSuggest")).AdvancedSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Criteria (z.B. tag:, fileName:, path:, property:, ...)')
+					cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.CRITERIA)
 						.setValue(rule.criteria)
 						.onChange(async (value) => {
 							if (value && this.plugin.settings.rules.some(
@@ -329,7 +319,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 				})
 				.addSearch((cb) => {
 					new FolderSuggest(this.app, cb.inputEl);
-					cb.setPlaceholder('Path')
+					cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.PATH)
 						.setValue(rule.path)
 						.onChange(async (value) => {
 							this.plugin.settings.rules[index].path = value;
@@ -385,14 +375,14 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 			.setName('Clear history')
 			.setDesc('Clears the history of moved notes')
 			.addButton(btn => btn
-				.setButtonText('Clear history')
+				.setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY)
 				.setWarning()
 				.onClick(async () => {
 					const confirmed = await ConfirmModal.show(this.app, {
-						title: 'Clear History',
-						message: 'Are you sure you want to clear the history?<br/><br/>This action cannot be undone.',
-						confirmText: 'Clear History',
-						cancelText: 'Cancel',
+						title: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_TITLE,
+						message: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_MESSAGE,
+						confirmText: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CONFIRM,
+						cancelText: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CANCEL,
 						danger: true
 					});
 					

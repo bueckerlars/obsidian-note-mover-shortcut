@@ -1,4 +1,5 @@
 import { AbstractInputSuggest, App, TAbstractFile, TFolder } from "obsidian";
+import { GENERAL_CONSTANTS } from "../../config/constants";
 
 export class FolderSuggest extends AbstractInputSuggest<TFolder> {
 
@@ -20,7 +21,7 @@ export class FolderSuggest extends AbstractInputSuggest<TFolder> {
             }
         });
 
-        return folders.slice(0, 1000);
+        return folders.slice(0, GENERAL_CONSTANTS.SUGGESTION_LIMITS.FOLDER_SUGGESTIONS);
     }
 
     renderSuggestion(value: TFolder, el: HTMLElement): void {

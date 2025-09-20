@@ -2,6 +2,7 @@ import { Modal, Setting, App } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
 import { BulkOperation, HistoryEntry } from '../types/HistoryEntry';
 import { NoticeManager } from '../utils/NoticeManager';
+import { NOTIFICATION_CONSTANTS, SETTINGS_CONSTANTS } from '../config/constants';
 
 export class HistoryModal extends Modal {
     constructor(
@@ -121,7 +122,7 @@ export class HistoryModal extends Modal {
                                 this.onOpen(); // Refresh the modal
                             } else {
                                 // Show error message
-                                NoticeManager.error(`Could not undo move for ${entry.fileName}. File may have been moved or deleted.`, { duration: 5000 });
+                                NoticeManager.error(`Could not undo move for ${entry.fileName}. File may have been moved or deleted.`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
                             }
                         });
                 });
@@ -131,7 +132,7 @@ export class HistoryModal extends Modal {
         new Setting(bulkEntryEl)
             .addButton(button => {
                 button
-                    .setButtonText('Undo All')
+                    .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL)
                     .setIcon('undo')
                     .setTooltip(`Undo entire ${operationTypeText.toLowerCase()}`)
                     .onClick(async () => {
@@ -140,7 +141,7 @@ export class HistoryModal extends Modal {
                             this.onOpen(); // Refresh the modal
                         } else {
                             // Show error message
-                            NoticeManager.warning('Some files could not be moved back. Check console for details.', { duration: 5000 });
+                            NoticeManager.warning('Some files could not be moved back. Check console for details.', { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
                         }
                     });
             });

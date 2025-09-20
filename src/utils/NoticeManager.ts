@@ -1,6 +1,7 @@
 import { Notice } from "obsidian";
+import { NOTIFICATION_CONSTANTS } from "../config/constants";
+import { type NotificationType } from "../types/Common";
 
-export type NoticeType = 'info' | 'error' | 'update' | 'success' | 'warning';
 
 export interface NoticeOptions {
     duration?: number;
@@ -10,21 +11,6 @@ export interface NoticeOptions {
 }
 
 export class NoticeManager {
-    private static readonly DEFAULT_DURATIONS = {
-        info: 8000,
-        error: 15000,
-        update: 15000,
-        success: 5000,
-        warning: 10000
-    };
-
-    private static readonly DEFAULT_TITLES = {
-        info: "NoteMover info:",
-        error: "NoteMover error:",
-        update: "NoteMover update:",
-        success: "NoteMover success:",
-        warning: "NoteMover warning:"
-    };
 
     /**
      * Shows a notice with the specified type and message
@@ -33,13 +19,13 @@ export class NoticeManager {
      * @param options - Additional options for the notice
      */
     public static show(type: NoticeType, message: string, options: NoticeOptions = {}): Notice {
-        const duration = options.duration ?? this.DEFAULT_DURATIONS[type];
+        const duration = options.duration ?? NOTIFICATION_CONSTANTS.DEFAULT_DURATIONS[type];
         const notice = new Notice("", duration);
         const noticeEl = notice.noticeEl;
-        
+
         // Add title
         const title = document.createElement("b");
-        title.textContent = this.DEFAULT_TITLES[type];
+        title.textContent = NOTIFICATION_CONSTANTS.DEFAULT_TITLES[type];
         noticeEl.appendChild(title);
         noticeEl.appendChild(document.createElement("br"));
         
@@ -53,7 +39,7 @@ export class NoticeManager {
             const undoButton = document.createElement("button");
             undoButton.textContent = options.undoText ?? "Undo";
             undoButton.className = "mod-warning";
-            undoButton.style.marginLeft = "10px";
+            undoButton.style.marginLeft = NOTIFICATION_CONSTANTS.CSS_STYLES.UNDO_BUTTON_MARGIN;
             undoButton.onclick = () => {
                 try {
                     options.onUndo!();
