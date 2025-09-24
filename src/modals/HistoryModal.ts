@@ -104,8 +104,30 @@ export class HistoryModal extends BaseModal {
                 text: `${entry.sourcePath} → ${entry.destinationPath}`
             });
             
-            // Individual undo button for each file
+            // Individual buttons for each file
             new Setting(fileEl)
+                .addButton(button => {
+                    button
+                        .setIcon('file-text')
+                        .setTooltip(`Open ${entry.fileName}`)
+                        .onClick(() => {
+                            // Try to open the file at its current location (destination path)
+                            const file = this.app.vault.getAbstractFileByPath(entry.destinationPath);
+                            if (file) {
+                                this.app.workspace.getLeaf().openFile(file);
+                                this.close(); // Close the modal after opening the file
+                            } else {
+                                // If file not found at destination, try source path
+                                const sourceFile = this.app.vault.getAbstractFileByPath(entry.sourcePath);
+                                if (sourceFile) {
+                                    this.app.workspace.getLeaf().openFile(sourceFile);
+                                    this.close(); // Close the modal after opening the file
+                                } else {
+                                    NoticeManager.error(`Could not find file ${entry.fileName}`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
+                                }
+                            }
+                        });
+                })
                 .addButton(button => {
                     button
                         .setIcon('undo')
@@ -159,6 +181,28 @@ export class HistoryModal extends BaseModal {
         });
 
         new Setting(entryEl)
+            .addButton(button => {
+                button
+                    .setIcon('file-text')
+                    .setTooltip(`Open ${entry.fileName}`)
+                    .onClick(() => {
+                        // Try to open the file at its current location (destination path)
+                        const file = this.app.vault.getAbstractFileByPath(entry.destinationPath);
+                        if (file) {
+                            this.app.workspace.getLeaf().openFile(file);
+                            this.close(); // Close the modal after opening the file
+                        } else {
+                            // If file not found at destination, try source path
+                            const sourceFile = this.app.vault.getAbstractFileByPath(entry.sourcePath);
+                            if (sourceFile) {
+                                this.app.workspace.getLeaf().openFile(sourceFile);
+                                this.close(); // Close the modal after opening the file
+                            } else {
+                                NoticeManager.error(`Could not find file ${entry.fileName}`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
+                            }
+                        }
+                    });
+            })
             .addButton(button => {
                 button
                     .setIcon('undo')
