@@ -26,11 +26,7 @@ export class UpdateModal extends BaseModal {
             title: `NoteMover updated to version ${currentVersion}!`,
             titleIcon: '🎉',
             cssClass: 'note-mover-update-modal',
-            size: {
-                minWidth: '600px',
-                width: '800px',
-                maxWidth: '95vw'
-            },
+            size: 'medium',
             ...options
         });
         this.currentVersion = currentVersion;
@@ -45,12 +41,12 @@ export class UpdateModal extends BaseModal {
         if (this.lastSeenVersion) {
             contentEl.createEl('p', { 
                 text: `What's new since version ${this.lastSeenVersion}?`, 
-                cls: 'update-modal-subtitle' 
+                cls: 'modal-subtitle' 
             });
         } else {
             contentEl.createEl('p', { 
                 text: 'Here are the latest changes:', 
-                cls: 'update-modal-subtitle' 
+                cls: 'modal-subtitle' 
             });
         }
 
@@ -67,7 +63,7 @@ export class UpdateModal extends BaseModal {
         }
 
         // Footer with links and button
-        const footerContainer = contentEl.createEl('div', { cls: 'update-modal-footer' });
+        const footerContainer = contentEl.createEl('div', { cls: 'modal-footer' });
         
         // GitHub Link
         const linkContainer = footerContainer.createEl('div', { cls: 'update-modal-links' });
@@ -79,7 +75,7 @@ export class UpdateModal extends BaseModal {
         githubLink.setAttribute('target', '_blank');
 
         // Close button
-        const buttonContainer = this.createButtonContainer(footerContainer, 'update-modal-button-container');
+        const buttonContainer = this.createButtonContainer(footerContainer);
         this.createButton(
             buttonContainer,
             'Close',

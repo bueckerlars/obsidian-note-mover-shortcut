@@ -2,6 +2,158 @@
     width: calc(100% - 20px);
 }
 
+/* ===== COMMON MODAL STYLES ===== */
+
+/* Modal Size Classes */
+.modal-size-small {
+    width: 400px !important;
+    min-width: 350px !important;
+}
+
+.modal-size-medium {
+    min-width: 600px !important;
+    width: 800px !important;
+    max-width: 95vw !important;
+}
+
+.modal-size-large {
+    min-width: 700px !important;
+    width: 900px !important;
+    max-width: 95vw !important;
+}
+
+/* Common Modal Title Styles */
+.modal-title-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.modal-title-icon {
+    font-size: 2em;
+    line-height: 1;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.6em;
+    font-weight: bold;
+    color: var(--text-normal);
+}
+
+.modal-subtitle {
+    margin: 0 0 24px 0;
+    color: var(--text-muted);
+    font-size: 1.1em;
+}
+
+/* Common Button Container Styles */
+.modal-button-container {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    align-items: center;
+}
+
+.modal-button-container .setting-item {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.modal-button-container .setting-item-control {
+    margin: 0 !important;
+}
+
+/* Common Section Styles */
+.modal-section {
+    margin-bottom: 24px;
+}
+
+.modal-section:last-child {
+    margin-bottom: 16px;
+}
+
+.modal-section-header {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.modal-section-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Common Footer Styles */
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--background-modifier-border);
+    padding-top: 16px;
+    margin-top: 24px;
+}
+
+/* Common List Styles */
+.modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-list-item {
+    padding: 16px;
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-primary);
+}
+
+/* Common Empty State Styles */
+.modal-empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+    font-size: 1.1em;
+    background: var(--background-secondary);
+    border-radius: 8px;
+    margin: 24px 0;
+}
+
+/* Common Info Box Styles */
+.modal-info-box {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.modal-info-row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+
+.modal-info-row span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.modal-info-row code {
+    background: var(--background-primary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
 /* Verlaufshistorie Modal */
 .note-mover-history-modal {
     padding: 32px 0 20px 0;
@@ -151,31 +303,6 @@
     box-sizing: border-box;
 }
 
-.update-modal-title-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.update-modal-icon {
-    font-size: 2em;
-    line-height: 1;
-}
-
-.update-modal-title {
-    margin: 0;
-    font-size: 1.6em;
-    font-weight: bold;
-    color: var(--text-normal);
-}
-
-.update-modal-subtitle {
-    margin: 0 0 24px 0;
-    color: var(--text-muted);
-    font-size: 1.1em;
-}
-
 .changelog-container {
     max-height: 400px;
     overflow-y: auto;
@@ -232,35 +359,10 @@
     margin-bottom: 0;
 }
 
-.update-modal-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    border-top: 1px solid var(--background-modifier-border);
-    padding-top: 16px;
-}
-
 .update-modal-links {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.update-modal-button-container {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
-.update-modal-button-container .setting-item {
-    border: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.update-modal-button-container .setting-item-control {
-    margin: 0 !important;
 }
 
 .update-modal-github-link {
@@ -288,61 +390,6 @@
     box-sizing: border-box;
 }
 
-.preview-modal-title-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.preview-modal-icon {
-    font-size: 2em;
-    line-height: 1;
-}
-
-.preview-modal-title {
-    margin: 0;
-    font-size: 1.6em;
-    font-weight: bold;
-    color: var(--text-normal);
-}
-
-.preview-modal-subtitle {
-    margin: 0 0 12px 0;
-    color: var(--text-muted);
-    font-size: 1.1em;
-    font-weight: 500;
-}
-
-.preview-modal-settings-info {
-    margin-bottom: 20px;
-    padding: 12px 16px;
-    background: var(--background-secondary);
-    border-radius: 6px;
-    border: 1px solid var(--background-modifier-border);
-}
-
-.settings-row {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-    font-size: 0.9em;
-    color: var(--text-muted);
-}
-
-.settings-row span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.settings-row code {
-    background: var(--background-primary);
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 0.85em;
-}
-
 .preview-section {
     margin-bottom: 24px;
 }
@@ -351,48 +398,20 @@
     margin-bottom: 16px;
 }
 
-.preview-section-header {
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.preview-section-header h3 {
-    margin: 0;
-    font-size: 1.2em;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.preview-section-success .preview-section-header h3 {
+.preview-section-success .modal-section-header h3 {
     color: var(--text-success);
 }
 
-.preview-section-blocked .preview-section-header h3 {
+.preview-section-blocked .modal-section-header h3 {
     color: var(--text-error);
 }
 
-.preview-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.preview-item {
-    padding: 16px;
-    border-radius: 6px;
-    border: 1px solid var(--background-modifier-border);
-    background: var(--background-primary);
-}
-
-.preview-item-success {
+.modal-list-item.preview-item-success {
     border-left: 3px solid var(--text-success);
     background: var(--background-primary-alt);
 }
 
-.preview-item-blocked {
+.modal-list-item.preview-item-blocked {
     border-left: 3px solid var(--text-error);
     background: var(--background-primary-alt);
 }
@@ -478,39 +497,6 @@
     margin-right: 4px;
 }
 
-.preview-modal-empty {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--text-muted);
-    font-size: 1.1em;
-    background: var(--background-secondary);
-    border-radius: 8px;
-    margin: 24px 0;
-}
-
-.preview-modal-footer {
-    display: flex;
-    justify-content: center;
-    border-top: 1px solid var(--background-modifier-border);
-    padding-top: 16px;
-    margin-top: 24px;
-}
-
-.preview-modal-button-container {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-}
-
-.preview-modal-button-container .setting-item {
-    border: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.preview-modal-button-container .setting-item-control {
-    margin: 0 !important;
-}
 
 /* Confirm Modal Styles */
 .confirm-modal {
@@ -519,12 +505,9 @@
     text-align: center;
 }
 
-.confirm-modal-title {
-    margin: 0 0 16px 0;
-    font-size: 1.4em;
-    font-weight: bold;
-    color: var(--text-normal);
+.confirm-modal .modal-title {
     text-align: center;
+    font-size: 1.4em;
 }
 
 .confirm-modal-message {
@@ -535,25 +518,11 @@
     text-align: center;
 }
 
-.confirm-modal-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    align-items: center;
+.confirm-modal .modal-button-container {
     border-top: 1px solid var(--background-modifier-border);
     padding-top: 16px;
 }
 
-.confirm-modal-buttons .setting-item {
-    border: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.confirm-modal-buttons .setting-item-control {
-    margin: 0 !important;
-}
-
-.confirm-modal-buttons button {
+.confirm-modal .modal-button-container button {
     min-width: 80px;
 }

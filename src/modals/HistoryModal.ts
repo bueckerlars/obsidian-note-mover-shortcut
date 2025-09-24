@@ -14,11 +14,7 @@ export class HistoryModal extends BaseModal {
         super(app, {
             title: 'NoteMover History',
             cssClass: 'note-mover-history-modal',
-            size: {
-                minWidth: '700px',
-                width: '900px',
-                maxWidth: '95vw'
-            },
+            size: 'large',
             ...options
         });
     }

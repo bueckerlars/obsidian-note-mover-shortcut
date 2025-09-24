@@ -17,11 +17,7 @@ export class PreviewModal extends BaseModal {
             title: 'Move Preview',
             titleIcon: '🔍',
             cssClass: 'note-mover-preview-modal',
-            size: {
-                minWidth: '700px',
-                width: '900px',
-                maxWidth: '95vw'
-            },
+            size: 'large',
             ...options
         });
         this.movePreview = movePreview;
@@ -35,13 +31,13 @@ export class PreviewModal extends BaseModal {
         const subtitle = `${stats.totalFiles} files analyzed • ${stats.successfulMoves.length} will be moved • ${stats.blockedMoves.length} blocked`;
         contentEl.createEl('p', { 
             text: subtitle, 
-            cls: 'preview-modal-subtitle' 
+            cls: 'modal-subtitle' 
         });
 
         // Settings info
-        const settingsInfo = contentEl.createEl('div', { cls: 'preview-modal-settings-info' });
+        const settingsInfo = contentEl.createEl('div', { cls: 'modal-info-box' });
         settingsInfo.innerHTML = `
-            <div class="settings-row">
+            <div class="modal-info-row">
                 <span>Rules enabled: ${stats.settings.enableRules ? '✅' : '❌'}</span>
                 <span>Filter enabled: ${stats.settings.enableFilter ? '✅' : '❌'}</span>
                 <span>Default destination: <code>${stats.settings.defaultDestination}</code></span>
@@ -61,7 +57,7 @@ export class PreviewModal extends BaseModal {
         // No files message
         if (stats.totalFiles === 0) {
             contentEl.createEl('div', { 
-                cls: 'preview-modal-empty',
+                cls: 'modal-empty',
                 text: 'No files found to analyze.'
             });
         }
@@ -71,15 +67,15 @@ export class PreviewModal extends BaseModal {
     }
 
     private createSuccessfulMovesSection(container: HTMLElement, entries: PreviewEntry[]) {
-        const section = container.createEl('div', { cls: 'preview-section preview-section-success' });
+        const section = this.createSection(container, 'preview-section preview-section-success');
         
-        const header = section.createEl('div', { cls: 'preview-section-header' });
+        const header = section.createEl('div', { cls: 'modal-section-header' });
         header.innerHTML = `<h3>✅ Files to be moved (${entries.length})</h3>`;
 
-        const list = section.createEl('div', { cls: 'preview-list' });
+        const list = section.createEl('div', { cls: 'modal-list' });
         
         entries.forEach(entry => {
-            const item = list.createEl('div', { cls: 'preview-item preview-item-success' });
+            const item = list.createEl('div', { cls: 'modal-list-item preview-item-success' });
             
             const mainInfo = item.createEl('div', { cls: 'preview-item-main' });
             const fileName = mainInfo.createEl('div', { cls: 'preview-item-filename' });
@@ -107,15 +103,15 @@ export class PreviewModal extends BaseModal {
     }
 
     private createBlockedMovesSection(container: HTMLElement, entries: PreviewEntry[]) {
-        const section = container.createEl('div', { cls: 'preview-section preview-section-blocked' });
+        const section = this.createSection(container, 'preview-section preview-section-blocked');
         
-        const header = section.createEl('div', { cls: 'preview-section-header' });
+        const header = section.createEl('div', { cls: 'modal-section-header' });
         header.innerHTML = `<h3>❌ Blocked files (${entries.length})</h3>`;
 
-        const list = section.createEl('div', { cls: 'preview-list' });
+        const list = section.createEl('div', { cls: 'modal-list' });
         
         entries.forEach(entry => {
-            const item = list.createEl('div', { cls: 'preview-item preview-item-blocked' });
+            const item = list.createEl('div', { cls: 'modal-list-item preview-item-blocked' });
             
             const mainInfo = item.createEl('div', { cls: 'preview-item-main' });
             const fileName = mainInfo.createEl('div', { cls: 'preview-item-filename' });
@@ -144,9 +140,9 @@ export class PreviewModal extends BaseModal {
     }
 
     private createActionButtons(container: HTMLElement) {
-        const footer = container.createEl('div', { cls: 'preview-modal-footer' });
+        const footer = container.createEl('div', { cls: 'modal-footer' });
         
-        const buttonContainer = this.createButtonContainer(footer, 'preview-modal-button-container');
+        const buttonContainer = this.createButtonContainer(footer);
         
         // Cancel button
         this.createButton(

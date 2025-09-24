@@ -16,10 +16,7 @@ export class ConfirmModal extends BaseModal {
     constructor(app: App, options: ConfirmModalOptions) {
         super(app, {
             cssClass: 'confirm-modal',
-            size: {
-                width: '400px',
-                minWidth: '350px'
-            },
+            size: 'small',
             ...options
         });
         this.confirmOptions = {
@@ -40,7 +37,7 @@ export class ConfirmModal extends BaseModal {
         messageEl.innerHTML = this.confirmOptions.message;
 
         // Button container
-        const buttonContainer = this.createButtonContainer(contentEl, 'confirm-modal-buttons');
+        const buttonContainer = this.createButtonContainer(contentEl);
 
         // Cancel button
         this.createButton(

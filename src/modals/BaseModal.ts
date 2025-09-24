@@ -1,13 +1,6 @@
 import { Modal, App, Setting, ButtonComponent } from 'obsidian';
 
-export interface ModalSize {
-    width?: string;
-    minWidth?: string;
-    maxWidth?: string;
-    height?: string;
-    minHeight?: string;
-    maxHeight?: string;
-}
+export type ModalSize = 'small' | 'medium' | 'large';
 
 export interface BaseModalOptions {
     title?: string;
@@ -63,18 +56,15 @@ export abstract class BaseModal extends Modal {
     }
 
     /**
-     * Set modal size based on options
+     * Set modal size based on options using CSS classes
      */
     protected setModalSize(): void {
         const modalContainer = this.contentEl.parentElement;
         if (modalContainer && this.options.size) {
-            const { size } = this.options;
-            if (size.width) modalContainer.style.width = size.width;
-            if (size.minWidth) modalContainer.style.minWidth = size.minWidth;
-            if (size.maxWidth) modalContainer.style.maxWidth = size.maxWidth;
-            if (size.height) modalContainer.style.height = size.height;
-            if (size.minHeight) modalContainer.style.minHeight = size.minHeight;
-            if (size.maxHeight) modalContainer.style.maxHeight = size.maxHeight;
+            // Remove any existing size classes
+            modalContainer.classList.remove('modal-size-small', 'modal-size-medium', 'modal-size-large');
+            // Add the appropriate size class
+            modalContainer.classList.add(`modal-size-${this.options.size}`);
         }
     }
 
