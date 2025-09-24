@@ -156,9 +156,9 @@ export class NoteMoverShortcut {
 						async () => {
 							const success = await this.plugin.historyManager.undoBulkOperation(bulkOperationId);
 							if (success) {
-								NoticeManager.success(`Bulk operation undone: ${successCount} files moved back`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
+								NoticeManager.success(`Bulk operation undone: ${successCount} files moved back`, { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE });
 							} else {
-								NoticeManager.warning(`Could not undo all moves. Check individual files in history.`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
+								NoticeManager.warning(`Could not undo all moves. Check individual files in history.`, { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE });
 							}
 						},
 						SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL

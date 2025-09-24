@@ -123,7 +123,7 @@ export class HistoryModal extends BaseModal {
                                     this.app.workspace.getLeaf().openFile(sourceFile);
                                     this.close(); // Close the modal after opening the file
                                 } else {
-                                    NoticeManager.error(`Could not find file ${entry.fileName}`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
+                                    NoticeManager.error(`Could not find file ${entry.fileName}`, { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE });
                                 }
                             }
                         });
@@ -138,7 +138,7 @@ export class HistoryModal extends BaseModal {
                                 this.onOpen(); // Refresh the modal
                             } else {
                                 // Show error message
-                                NoticeManager.error(`Could not undo move for ${entry.fileName}. File may have been moved or deleted.`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
+                                NoticeManager.error(`Could not undo move for ${entry.fileName}. File may have been moved or deleted.`, { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE });
                             }
                         });
                 });
@@ -157,7 +157,7 @@ export class HistoryModal extends BaseModal {
                             this.onOpen(); // Refresh the modal
                         } else {
                             // Show error message
-                            NoticeManager.warning('Some files could not be moved back. Check console for details.', { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
+                            NoticeManager.warning('Some files could not be moved back. Check console for details.', { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE });
                         }
                     });
             });
@@ -198,7 +198,7 @@ export class HistoryModal extends BaseModal {
                                 this.app.workspace.getLeaf().openFile(sourceFile);
                                 this.close(); // Close the modal after opening the file
                             } else {
-                                NoticeManager.error(`Could not find file ${entry.fileName}`, { duration: NOTIFICATION_CONSTANTS.CSS_STYLES.DURATION_OVERRIDE });
+                                NoticeManager.error(`Could not find file ${entry.fileName}`, { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE });
                             }
                         }
                     });

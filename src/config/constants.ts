@@ -33,10 +33,7 @@ export const NOTIFICATION_CONSTANTS = {
         warning: "NoteMover warning:",
     } as const,
 
-    CSS_STYLES: {
-        UNDO_BUTTON_MARGIN: "10px",
-        DURATION_OVERRIDE: 5000, // Used for specific notifications that need different duration
-    } as const,
+    DURATION_OVERRIDE: 5000, // Used for specific notifications that need different duration
 } as const;
 
 // =============================================================================
