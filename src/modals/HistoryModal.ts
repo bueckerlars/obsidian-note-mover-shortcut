@@ -1,32 +1,30 @@
-import { Modal, Setting, App } from 'obsidian';
+import { Setting, App } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
 import { BulkOperation, HistoryEntry } from '../types/HistoryEntry';
 import { NoticeManager } from '../utils/NoticeManager';
 import { NOTIFICATION_CONSTANTS, SETTINGS_CONSTANTS } from '../config/constants';
+import { BaseModal, BaseModalOptions } from './BaseModal';
 
-export class HistoryModal extends Modal {
+export class HistoryModal extends BaseModal {
     constructor(
         app: App,
-        private historyManager: HistoryManager
+        private historyManager: HistoryManager,
+        options: BaseModalOptions = {}
     ) {
-        super(app);
+        super(app, {
+            title: 'NoteMover History',
+            cssClass: 'note-mover-history-modal',
+            size: {
+                minWidth: '700px',
+                width: '900px',
+                maxWidth: '95vw'
+            },
+            ...options
+        });
     }
 
-    onOpen() {
+    protected createContent(): void {
         const { contentEl } = this;
-        contentEl.empty();
-        contentEl.addClass('note-mover-history-modal');
-
-        // Title
-        const titleEl = contentEl.createEl('h2', { text: 'NoteMover History', cls: 'note-mover-history-title' });
-
-        // Modal-Container
-        const modalContainer = contentEl.parentElement;
-        if (modalContainer) {
-            modalContainer.style.minWidth = '700px';
-            modalContainer.style.width = '900px';
-            modalContainer.style.maxWidth = '95vw';
-        }
 
         const history = this.historyManager.getHistory();
         const bulkOperations = this.historyManager.getBulkOperations();
@@ -179,7 +177,6 @@ export class HistoryModal extends Modal {
     }
 
     onClose() {
-        const { contentEl } = this;
-        contentEl.empty();
+        super.onClose();
     }
 } 

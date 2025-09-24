@@ -1,4 +1,5 @@
-import { Modal, Setting, App, ButtonComponent } from 'obsidian';
+import { Setting, App, ButtonComponent } from 'obsidian';
+import { BaseModal, BaseModalOptions } from './BaseModal';
 
 interface ChangelogEntry {
     version: string;
@@ -9,7 +10,7 @@ interface ChangelogEntry {
     };
 }
 
-export class UpdateModal extends Modal {
+export class UpdateModal extends BaseModal {
     private currentVersion: string;
     private lastSeenVersion: string;
     private changelogEntries: ChangelogEntry[];
@@ -18,35 +19,27 @@ export class UpdateModal extends Modal {
         app: App,
         currentVersion: string,
         lastSeenVersion: string,
-        changelogEntries: ChangelogEntry[]
+        changelogEntries: ChangelogEntry[],
+        options: BaseModalOptions = {}
     ) {
-        super(app);
+        super(app, {
+            title: `NoteMover updated to version ${currentVersion}!`,
+            titleIcon: '🎉',
+            cssClass: 'note-mover-update-modal',
+            size: {
+                minWidth: '600px',
+                width: '800px',
+                maxWidth: '95vw'
+            },
+            ...options
+        });
         this.currentVersion = currentVersion;
         this.lastSeenVersion = lastSeenVersion;
         this.changelogEntries = changelogEntries;
     }
 
-    onOpen() {
+    protected createContent(): void {
         const { contentEl } = this;
-        contentEl.empty();
-        contentEl.addClass('note-mover-update-modal');
-
-        // Modal-Container
-        const modalContainer = contentEl.parentElement;
-        if (modalContainer) {
-            modalContainer.style.minWidth = '600px';
-            modalContainer.style.width = '800px';
-            modalContainer.style.maxWidth = '95vw';
-        }
-
-        // Title with icon
-        const titleContainer = contentEl.createEl('div', { cls: 'update-modal-title-container' });
-        const titleIcon = titleContainer.createEl('span', { cls: 'update-modal-icon' });
-        titleIcon.innerHTML = '🎉';
-        titleContainer.createEl('h2', { 
-            text: `NoteMover updated to version ${this.currentVersion}!`, 
-            cls: 'update-modal-title' 
-        });
 
         // Subtitle
         if (this.lastSeenVersion) {
@@ -86,16 +79,17 @@ export class UpdateModal extends Modal {
         githubLink.setAttribute('target', '_blank');
 
         // Close button
-        const buttonContainer = footerContainer.createEl('div', { cls: 'update-modal-button-container' });
-        new Setting(buttonContainer)
-            .addButton((button: ButtonComponent) => {
-                return button
-                    .setButtonText('Close')
-                    .setCta()
-                    .onClick(() => {
-                        this.close();
-                    });
-            });
+        const buttonContainer = this.createButtonContainer(footerContainer, 'update-modal-button-container');
+        this.createButton(
+            buttonContainer,
+            'Close',
+            () => {
+                this.close();
+            },
+            {
+                isPrimary: true
+            }
+        );
     }
 
     private renderChangelog(container: HTMLElement) {
@@ -137,7 +131,6 @@ export class UpdateModal extends Modal {
     }
 
     onClose() {
-        const { contentEl } = this;
-        contentEl.empty();
+        super.onClose();
     }
 }

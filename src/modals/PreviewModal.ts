@@ -1,41 +1,34 @@
-import { Modal, Setting, App, ButtonComponent, TFile, Notice } from 'obsidian';
+import { Setting, App, TFile, Notice } from 'obsidian';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import NoteMoverShortcutPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
+import { BaseModal, BaseModalOptions } from './BaseModal';
 
-export class PreviewModal extends Modal {
+export class PreviewModal extends BaseModal {
     private movePreview: MovePreview;
 
     constructor(
         app: App,
         private plugin: NoteMoverShortcutPlugin,
-        movePreview: MovePreview
+        movePreview: MovePreview,
+        options: BaseModalOptions = {}
     ) {
-        super(app);
+        super(app, {
+            title: 'Move Preview',
+            titleIcon: '🔍',
+            cssClass: 'note-mover-preview-modal',
+            size: {
+                minWidth: '700px',
+                width: '900px',
+                maxWidth: '95vw'
+            },
+            ...options
+        });
         this.movePreview = movePreview;
     }
 
-    onOpen() {
+    protected createContent(): void {
         const { contentEl } = this;
-        contentEl.empty();
-        contentEl.addClass('note-mover-preview-modal');
-
-        // Set modal size
-        const modalContainer = contentEl.parentElement;
-        if (modalContainer) {
-            modalContainer.style.minWidth = '700px';
-            modalContainer.style.width = '900px';
-            modalContainer.style.maxWidth = '95vw';
-        }
-
-        // Title
-        const titleContainer = contentEl.createEl('div', { cls: 'preview-modal-title-container' });
-        const titleIcon = titleContainer.createEl('span', { cls: 'preview-modal-icon' });
-        titleIcon.innerHTML = '🔍';
-        titleContainer.createEl('h2', { 
-            text: 'Move Preview', 
-            cls: 'preview-modal-title' 
-        });
 
         // Subtitle with statistics
         const stats = this.movePreview;
@@ -153,27 +146,29 @@ export class PreviewModal extends Modal {
     private createActionButtons(container: HTMLElement) {
         const footer = container.createEl('div', { cls: 'preview-modal-footer' });
         
-        const buttonContainer = footer.createEl('div', { cls: 'preview-modal-button-container' });
+        const buttonContainer = this.createButtonContainer(footer, 'preview-modal-button-container');
         
         // Cancel button
-        new Setting(buttonContainer)
-            .addButton(btn => {
-                btn.setButtonText('Cancel');
-                btn.onClick(() => {
-                    this.close();
-                });
-            });
+        this.createButton(
+            buttonContainer,
+            'Cancel',
+            () => {
+                this.close();
+            }
+        );
 
         // Execute moves button (only if there are moves to execute)
         if (this.movePreview.successfulMoves.length > 0) {
-            new Setting(buttonContainer)
-                .addButton(btn => {
-                    btn.setButtonText(`Move ${this.movePreview.successfulMoves.length} files`);
-                    btn.setCta();
-                    btn.onClick(() => {
-                        this.executeMoves();
-                    });
-                });
+            this.createButton(
+                buttonContainer,
+                `Move ${this.movePreview.successfulMoves.length} files`,
+                () => {
+                    this.executeMoves();
+                },
+                {
+                    isPrimary: true
+                }
+            );
         }
     }
 
