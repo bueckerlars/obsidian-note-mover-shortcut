@@ -14,8 +14,8 @@ import { NoticeManager } from '../../utils/NoticeManager';
 
 const addCommand = jest.fn();
 const moveFocusedNoteToDestination = jest.fn();
-const moveNotesFromInboxToNotesFolder = jest.fn();
-const generateInboxMovePreview = jest.fn();
+const moveAllFilesInVault = jest.fn();
+const generateVaultMovePreview = jest.fn();
 const generateActiveNotePreview = jest.fn();
 const open = jest.fn();
 const showUpdateModal = jest.fn();
@@ -39,8 +39,8 @@ describe('CommandHandler', () => {
     beforeEach(() => {
         addCommand.mockClear();
         moveFocusedNoteToDestination.mockClear();
-        moveNotesFromInboxToNotesFolder.mockClear();
-        generateInboxMovePreview.mockClear();
+        moveAllFilesInVault.mockClear();
+        generateVaultMovePreview.mockClear();
         generateActiveNotePreview.mockClear();
         open.mockClear();
         showUpdateModal.mockClear();
@@ -49,8 +49,8 @@ describe('CommandHandler', () => {
             addCommand,
             noteMover: {
                 moveFocusedNoteToDestination,
-                moveNotesFromInboxToNotesFolder,
-                generateInboxMovePreview,
+                moveAllFilesInVault,
+                generateVaultMovePreview,
                 generateActiveNotePreview,
             },
             app: {},
@@ -82,11 +82,11 @@ describe('CommandHandler', () => {
         expect(moveFocusedNoteToDestination).toHaveBeenCalled();
     });
 
-    it('calls moveNotesFromInboxToNotesFolder in bulk callback', () => {
+    it('calls moveAllFilesInVault in bulk callback', () => {
         handler.setup();
         const callback = addCommand.mock.calls[1][0].callback;
         callback();
-        expect(moveNotesFromInboxToNotesFolder).toHaveBeenCalled();
+        expect(moveAllFilesInVault).toHaveBeenCalled();
     });
 
     it('opens HistoryModal in history callback', () => {
@@ -105,13 +105,13 @@ describe('CommandHandler', () => {
 
     it('handles preview bulk movement callback with success', async () => {
         const mockPreview = { successfulMoves: [], blockedMoves: [] };
-        generateInboxMovePreview.mockResolvedValue(mockPreview);
+        generateVaultMovePreview.mockResolvedValue(mockPreview);
         
         handler.setup();
         const callback = addCommand.mock.calls[4][0].callback;
         await callback();
         
-        expect(generateInboxMovePreview).toHaveBeenCalled();
+        expect(generateVaultMovePreview).toHaveBeenCalled();
         expect(open).toHaveBeenCalled();
     });
 

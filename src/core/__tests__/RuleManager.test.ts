@@ -735,15 +735,11 @@ describe('RuleManager', () => {
             ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'special' }]);
             const preview = await ruleManager.generateMovePreview(files, true, false, false);
             expect(preview.successfulMoves).toHaveLength(2);
-            expect(preview.blockedMoves).toHaveLength(0);
             expect(preview.totalFiles).toBe(2);
-            expect(preview.settings.enableRules).toBe(true);
-            expect(preview.settings.enableFilter).toBe(false);
             expect(preview.settings.isFilterWhitelist).toBe(false);
-            expect(preview.settings.defaultDestination).toBe('default');
         });
 
-        it('should separate successful and blocked moves', async () => {
+        it('should only include files that will be moved', async () => {
             const files = [mockFile, { ...mockFile, name: 'file2.md', path: 'folder/file2.md' }];
 
             // Mock different metadata for each file
@@ -775,15 +771,12 @@ describe('RuleManager', () => {
             ruleManager.setFilter(['fileName: file2.md'], false);
             const preview = await ruleManager.generateMovePreview(files, true, true, false);
             expect(preview.successfulMoves).toHaveLength(1);
-            expect(preview.blockedMoves).toHaveLength(1);
             expect(preview.successfulMoves[0].fileName).toBe('file.md');
-            expect(preview.blockedMoves[0].fileName).toBe('file2.md');
         });
 
         it('should handle empty file list', async () => {
             const preview = await ruleManager.generateMovePreview([], true, false, false);
             expect(preview.successfulMoves).toHaveLength(0);
-            expect(preview.blockedMoves).toHaveLength(0);
             expect(preview.totalFiles).toBe(0);
         });
     });

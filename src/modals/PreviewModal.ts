@@ -28,31 +28,20 @@ export class PreviewModal extends BaseModal {
 
         // Subtitle with statistics
         const stats = this.movePreview;
-        const subtitle = `${stats.totalFiles} files analyzed • ${stats.successfulMoves.length} will be moved • ${stats.blockedMoves.length} blocked`;
+        const subtitle = `${stats.totalFiles} files analyzed • ${stats.successfulMoves.length} will be moved`;
         contentEl.createEl('p', { 
             text: subtitle, 
             cls: 'modal-subtitle' 
         });
 
-        // Settings info
-        const settingsInfo = contentEl.createEl('div', { cls: 'modal-info-box' });
-        settingsInfo.innerHTML = `
-            <div class="modal-info-row">
-                <span>Rules enabled: ${stats.settings.enableRules ? '✅' : '❌'}</span>
-                <span>Filter enabled: ${stats.settings.enableFilter ? '✅' : '❌'}</span>
-                <span>Default destination: <code>${stats.settings.defaultDestination}</code></span>
-            </div>
-        `;
+        // Settings info removed - Rules and Filter are always enabled now
 
         // Successful moves section
         if (stats.successfulMoves.length > 0) {
             this.createSuccessfulMovesSection(contentEl, stats.successfulMoves);
         }
 
-        // Blocked moves section
-        if (stats.blockedMoves.length > 0) {
-            this.createBlockedMovesSection(contentEl, stats.blockedMoves);
-        }
+        // Blocked moves section removed - only files that will be moved are shown
 
         // No files message
         if (stats.totalFiles === 0) {
@@ -102,42 +91,7 @@ export class PreviewModal extends BaseModal {
         });
     }
 
-    private createBlockedMovesSection(container: HTMLElement, entries: PreviewEntry[]) {
-        const section = this.createSection(container, 'preview-section preview-section-blocked');
-        
-        const header = section.createEl('div', { cls: 'modal-section-header' });
-        header.innerHTML = `<h3>❌ Blocked files (${entries.length})</h3>`;
-
-        const list = section.createEl('div', { cls: 'modal-list' });
-        
-        entries.forEach(entry => {
-            const item = list.createEl('div', { cls: 'modal-list-item preview-item-blocked' });
-            
-            const mainInfo = item.createEl('div', { cls: 'preview-item-main' });
-            const fileName = mainInfo.createEl('div', { cls: 'preview-item-filename' });
-            fileName.textContent = entry.fileName;
-            
-            const pathInfo = mainInfo.createEl('div', { cls: 'preview-item-paths' });
-            pathInfo.innerHTML = `<span class="current-path">${entry.currentPath}</span>`;
-            
-            const details = item.createEl('div', { cls: 'preview-item-details' });
-            
-            if (entry.blockReason) {
-                const reason = details.createEl('div', { cls: 'preview-item-block-reason' });
-                reason.innerHTML = `<span class="block-reason-label">Blocked:</span> ${entry.blockReason}`;
-            }
-            
-            if (entry.blockingFilter) {
-                const filter = details.createEl('div', { cls: 'preview-item-blocking-filter' });
-                filter.innerHTML = `<span class="filter-label">Filter:</span> <code>${entry.blockingFilter}</code>`;
-            }
-            
-            if (entry.tags && entry.tags.length > 0) {
-                const tags = details.createEl('div', { cls: 'preview-item-tags' });
-                tags.innerHTML = `<span class="tags-label">Tags:</span> ${entry.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}`;
-            }
-        });
-    }
+    // createBlockedMovesSection removed - only files that will be moved are shown
 
     private createActionButtons(container: HTMLElement) {
         const footer = container.createEl('div', { cls: 'modal-footer' });
@@ -183,7 +137,7 @@ export class PreviewModal extends BaseModal {
                 const file = this.app.vault.getAbstractFileByPath(entry.currentPath);
                 if (file && file instanceof TFile) {
                     // Use the existing move logic from NoteMoverShortcut
-                    await this.plugin.noteMover.moveFileBasedOnTags(file, entry.targetPath || this.movePreview.settings.defaultDestination, true);
+                    await this.plugin.noteMover.moveFileBasedOnTags(file, entry.targetPath || '/', true);
                     movedCount++;
                 }
             } catch (error) {

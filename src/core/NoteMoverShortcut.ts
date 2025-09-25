@@ -12,21 +12,20 @@ export class NoteMoverShortcut {
 	private ruleManager: RuleManager;
 
 	constructor(private plugin: NoteMoverShortcutPlugin) {
-		this.ruleManager = new RuleManager(plugin.app, plugin.settings.destination);
+		this.ruleManager = new RuleManager(plugin.app, '/');
 		this.updateRuleManager();
 	}
 
 	public updateRuleManager(): void {
-		if (this.plugin.settings.enableRules) {
-			this.ruleManager.setRules(this.plugin.settings.rules);
-			this.ruleManager.setFilter(
-				this.plugin.settings.filter,
-				this.plugin.settings.isFilterWhitelist
-			);
-			this.ruleManager.setOnlyMoveNotesWithRules(
-				this.plugin.settings.onlyMoveNotesWithRules
-			);
-		}
+		// Always update rules and filters (no toggle check)
+		this.ruleManager.setRules(this.plugin.settings.rules);
+		this.ruleManager.setFilter(
+			this.plugin.settings.filter,
+			this.plugin.settings.isFilterWhitelist
+		);
+		this.ruleManager.setOnlyMoveNotesWithRules(
+			this.plugin.settings.onlyMoveNotesWithRules
+		);
 	}
 
 	async setup(): Promise<void> {
@@ -43,14 +42,12 @@ export class NoteMoverShortcut {
 		try {
 			let targetFolder = defaultFolder;
 
-			// Check if rules are enabled
-			if (this.plugin.settings.enableRules) {
-				const result = await this.ruleManager.moveFileBasedOnTags(file, skipFilter);
-				if (result === null) {
-					return; // File should be skipped based on filter or no matching rule
-				}
-				targetFolder = result;
+			// Always use rules and filters (no toggle check)
+			const result = await this.ruleManager.moveFileBasedOnTags(file, skipFilter);
+			if (result === null) {
+				return; // File should be skipped based on filter or no matching rule
 			}
+			targetFolder = result;
 			
 			const newPath = combinePath(targetFolder, file.name);
 
@@ -81,43 +78,19 @@ export class NoteMoverShortcut {
 		}
 	}
 
-	private async moveFilesFromInbox(options: {
+	private async moveAllFiles(options: {
 		createFolders: boolean;
 		showNotifications: boolean;
 		operationType: OperationType;
 	}): Promise<void> {
 		const { app } = this.plugin;
-		const inboxFolder = this.plugin.settings.inboxLocation;
-		const notesFolder = this.plugin.settings.destination;
 
-		// Check if both folders exist
-		if (!await app.vault.adapter.exists(inboxFolder)) {
-			if (options.createFolders) {
-				if (!await ensureFolderExists(app, inboxFolder)) {
-					throw createError(`Failed to create inbox folder: ${inboxFolder}`);
-				}
-				if (options.showNotifications) {
-					NoticeManager.info("Inbox folder created");
-				}
-			} else {
-				return; // Don't create folders during periodic operations
-			}
-		}
-
-		if (!await ensureFolderExists(app, notesFolder)) {
-			throw createError(`Failed to create notes folder: ${notesFolder}`);
-		}
-		if (options.showNotifications && !await app.vault.adapter.exists(notesFolder)) {
-			NoticeManager.info("Notes folder created");
-		}
-
-		// Get all files in the inbox folder
+		// Get all files in the vault
 		const files = await app.vault.getFiles();
-		const inboxFiles = files.filter(file => file.path.startsWith(inboxFolder));
 
-		if (inboxFiles.length === 0) {
+		if (files.length === 0) {
 			if (options.showNotifications) {
-				NoticeManager.info("No files found in inbox folder");
+				NoticeManager.info("No files found in vault");
 			}
 			return;
 		}
@@ -129,9 +102,9 @@ export class NoteMoverShortcut {
 
 		try {
 			// Iterate over each file and move it
-			for (const file of inboxFiles) {
+			for (const file of files) {
 				try {
-					await this.moveFileBasedOnTags(file, notesFolder);
+					await this.moveFileBasedOnTags(file, '/');
 					successCount++;
 				} catch (error) {
 					errorCount++;
@@ -174,8 +147,8 @@ export class NoteMoverShortcut {
 		}
 	}
 
-	async moveNotesFromInboxToNotesFolder() {
-		await this.moveFilesFromInbox({
+	async moveAllFilesInVault() {
+		await this.moveAllFiles({
 			createFolders: true,
 			showNotifications: true,
 			operationType: 'bulk'
@@ -185,8 +158,8 @@ export class NoteMoverShortcut {
 	/**
 	 * Periodic version of bulk move - same logic but marked as periodic operation
 	 */
-	async moveNotesFromInboxToNotesFolderPeriodic() {
-		await this.moveFilesFromInbox({
+	async moveAllFilesInVaultPeriodic() {
+		await this.moveAllFiles({
 			createFolders: false,
 			showNotifications: false,
 			operationType: 'periodic'
@@ -203,8 +176,8 @@ export class NoteMoverShortcut {
 		}
 
 		try {
-			// Move file to destination without filtering
-			await this.moveFileBasedOnTags(file, this.plugin.settings.destination, true);
+			// Move file using rules and filters
+			await this.moveFileBasedOnTags(file, '/', false);
 			
 			// Create notice with undo button
 			NoticeManager.showWithUndo(
@@ -233,26 +206,19 @@ export class NoteMoverShortcut {
 	}
 
 	/**
-	 * Generates a preview of moves for files in the inbox folder
+	 * Generates a preview of moves for all files in the vault
 	 */
-	async generateInboxMovePreview(): Promise<MovePreview> {
+	async generateVaultMovePreview(): Promise<MovePreview> {
 		const { app } = this.plugin;
-		const inboxFolder = this.plugin.settings.inboxLocation;
 
-		// Check if inbox folder exists, create if not
-		if (!await ensureFolderExists(app, inboxFolder)) {
-			throw createError(`Failed to create inbox folder: ${inboxFolder}`);
-		}
-
-		// Get all files in the inbox folder
+		// Get all files in the vault
 		const files = await app.vault.getFiles();
-		const inboxFiles = files.filter(file => file.path.startsWith(inboxFolder));
 
 		// Generate preview using RuleManager
 		return await this.ruleManager.generateMovePreview(
-			inboxFiles,
-			this.plugin.settings.enableRules,
-			this.plugin.settings.enableFilter,
+			files,
+			true, // Rules are always enabled
+			true, // Filter is always enabled
 			this.plugin.settings.isFilterWhitelist
 		);
 	}
@@ -271,8 +237,8 @@ export class NoteMoverShortcut {
 		// Generate preview for single file
 		return await this.ruleManager.generateMovePreview(
 			[activeFile],
-			this.plugin.settings.enableRules,
-			this.plugin.settings.enableFilter,
+			true, // Rules are always enabled
+			true, // Filter is always enabled
 			this.plugin.settings.isFilterWhitelist
 		);
 	}
@@ -290,7 +256,7 @@ export class NoteMoverShortcut {
 		if (this.plugin.settings.enablePeriodicMovement) {
 			const interval = this.plugin.settings.periodicMovementInterval;
 			this.intervalId = window.setInterval(async () => {
-				await this.moveNotesFromInboxToNotesFolderPeriodic();
+				await this.moveAllFilesInVaultPeriodic();
 			}, interval * GENERAL_CONSTANTS.TIME_CONVERSIONS.MINUTES_TO_MILLISECONDS);
 		}
 	}

@@ -42,14 +42,10 @@ export const NOTIFICATION_CONSTANTS = {
 
 export const SETTINGS_CONSTANTS = {
     DEFAULT_SETTINGS: {
-        destination: '/',
-        inboxLocation: '',
         enablePeriodicMovement: false,
         periodicMovementInterval: 5,
-        enableFilter: false,
         filter: [] as string[],
         isFilterWhitelist: false,
-        enableRules: false,
         rules: [] as any[],
         onlyMoveNotesWithRules: false,
     },

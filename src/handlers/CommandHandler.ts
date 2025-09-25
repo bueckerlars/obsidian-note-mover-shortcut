@@ -24,9 +24,9 @@ export class CommandHandler {
         // Bulk movement command
         this.plugin.addCommand({
             id: 'trigger-note-bulk-move',
-            name: 'Move all notes from inbox to notes folder',
+            name: 'Move all files in vault',
             callback: () => {
-                this.plugin.noteMover.moveNotesFromInboxToNotesFolder();
+                this.plugin.noteMover.moveAllFilesInVault();
             },
         });
 
@@ -51,10 +51,10 @@ export class CommandHandler {
         // Preview bulk movement command
         this.plugin.addCommand({
             id: 'preview-bulk-movement',
-            name: 'Preview bulk movement from inbox',
+            name: 'Preview bulk movement for all files',
             callback: async () => {
                 try {
-                    const preview = await this.plugin.noteMover.generateInboxMovePreview();
+                    const preview = await this.plugin.noteMover.generateVaultMovePreview();
                     new PreviewModal(this.plugin.app, this.plugin, preview).open();
                 } catch (error) {
                     handleError(error, "Error generating preview", false);

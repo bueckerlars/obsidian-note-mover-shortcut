@@ -14,19 +14,6 @@ export class FilterSettingsSection {
 		new Setting(this.containerEl).setName('Filter').setHeading();
 
 		new Setting(this.containerEl)
-			.setName('Enable filter')
-			.setDesc('Enable the filter')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.enableFilter)
-				.onChange(async (value) => {
-					this.plugin.settings.enableFilter = value;
-					await this.plugin.save_settings();
-					this.refreshDisplay();
-				})
-			);
-
-		if (this.plugin.settings.enableFilter) {
-			new Setting(this.containerEl)
 			.setName('Toggle blacklist/whitelist')
 			.setDesc('Toggle between a blacklist or a whitelist')
 			.addToggle(toggle => toggle
@@ -38,22 +25,21 @@ export class FilterSettingsSection {
 					this.plugin.noteMover.updateRuleManager();
 				})
 			);
-	
-			this.addPeriodicMovementFilterArray();
-	
-			new Setting(this.containerEl)
-				.addButton(btn => btn
-					.setButtonText('Add new filter')
-					.setCta()
-					.onClick(async () => {
-						this.plugin.settings.filter.push('');
-						await this.plugin.save_settings();
-						// Update RuleManager
-						this.plugin.noteMover.updateRuleManager();
-						this.refreshDisplay();
-					})
-				);
-		}
+
+		this.addPeriodicMovementFilterArray();
+
+		new Setting(this.containerEl)
+			.addButton(btn => btn
+				.setButtonText('Add new filter')
+				.setCta()
+				.onClick(async () => {
+					this.plugin.settings.filter.push('');
+					await this.plugin.save_settings();
+					// Update RuleManager
+					this.plugin.noteMover.updateRuleManager();
+					this.refreshDisplay();
+				})
+			);
 	}
 
 	addPeriodicMovementFilterArray(): void {

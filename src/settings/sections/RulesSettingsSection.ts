@@ -16,46 +16,34 @@ export class RulesSettingsSection {
 
 		const descUseRules = document.createDocumentFragment();
 		descUseRules.append(
-			'When enabled, the NoteMover will move notes to the folder associated with the specified criteria.',
+			'The NoteMover will move files to the folder associated with the specified criteria.',
 			document.createElement('br'),
 			'Criteria can be tags, filenames, paths, content, properties, or dates. If multiple rules match, the first one will be applied.',
 		);
 
 		new Setting(this.containerEl)
-			.setName('Enable rules')
-			.setDesc(descUseRules)
+			.setName('Rules description')
+			.setDesc(descUseRules);
+
+		const descOnlyMoveWithRules = document.createDocumentFragment();
+		descOnlyMoveWithRules.append(
+			'When enabled, only files that match defined rules will be moved. Files without matching rules will be left untouched.',
+			document.createElement('br'),
+			'When disabled, files without matching rules will be moved to the root folder.',
+		);
+
+		new Setting(this.containerEl)
+			.setName('Only move files with rules')
+			.setDesc(descOnlyMoveWithRules)
 			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.enableRules)
+				.setValue(this.plugin.settings.onlyMoveNotesWithRules)
 				.onChange(async (value) => {
-					this.plugin.settings.enableRules = value;
+					this.plugin.settings.onlyMoveNotesWithRules = value;
 					await this.plugin.save_settings();
 					// Update RuleManager
 					this.plugin.noteMover.updateRuleManager();
-					this.refreshDisplay();
 				})
 			);
-
-		if (this.plugin.settings.enableRules) {
-			const descOnlyMoveWithRules = document.createDocumentFragment();
-			descOnlyMoveWithRules.append(
-				'When enabled, only notes that match defined rules will be moved. Notes without matching rules will be left untouched.',
-				document.createElement('br'),
-				'When disabled, notes without matching rules will be moved to the default destination folder.',
-			);
-
-			new Setting(this.containerEl)
-				.setName('Only move notes with rules')
-				.setDesc(descOnlyMoveWithRules)
-				.addToggle(toggle => toggle
-					.setValue(this.plugin.settings.onlyMoveNotesWithRules)
-					.onChange(async (value) => {
-						this.plugin.settings.onlyMoveNotesWithRules = value;
-						await this.plugin.save_settings();
-						// Update RuleManager
-						this.plugin.noteMover.updateRuleManager();
-					})
-				);
-		}
 	}
 
 	addAddRuleButtonSetting(): void {

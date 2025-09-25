@@ -20,15 +20,10 @@ export interface PreviewEntry {
 export interface MovePreview {
     /** Files that would be successfully moved */
     successfulMoves: PreviewEntry[];
-    /** Files that would be blocked from moving */
-    blockedMoves: PreviewEntry[];
     /** Total number of files analyzed */
     totalFiles: number;
     /** Settings used for this preview */
     settings: {
-        enableRules: boolean;
-        enableFilter: boolean;
         isFilterWhitelist: boolean;
-        defaultDestination: string;
     };
 }

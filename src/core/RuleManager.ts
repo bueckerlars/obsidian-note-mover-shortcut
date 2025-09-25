@@ -141,27 +141,21 @@ export class RuleManager {
      */
     public async generateMovePreview(files: TFile[], enableRules: boolean, enableFilter: boolean, isFilterWhitelist: boolean): Promise<MovePreview> {
         const successfulMoves: PreviewEntry[] = [];
-        const blockedMoves: PreviewEntry[] = [];
 
         for (const file of files) {
             const preview = await this.generatePreviewForFile(file, !enableFilter);
             
             if (preview.willBeMoved) {
                 successfulMoves.push(preview);
-            } else {
-                blockedMoves.push(preview);
             }
+            // Only include files that will be moved - blocked files are ignored
         }
 
         return {
             successfulMoves,
-            blockedMoves,
             totalFiles: files.length,
             settings: {
-                enableRules,
-                enableFilter,
-                isFilterWhitelist,
-                defaultDestination: this.defaultFolder
+                isFilterWhitelist
             }
         };
     }
