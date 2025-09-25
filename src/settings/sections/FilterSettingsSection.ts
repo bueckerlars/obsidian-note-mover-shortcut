@@ -14,12 +14,14 @@ export class FilterSettingsSection {
 		new Setting(this.containerEl).setName('Filter').setHeading();
 
 		new Setting(this.containerEl)
-			.setName('Toggle blacklist/whitelist')
-			.setDesc('Toggle between a blacklist or a whitelist')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.isFilterWhitelist)
+			.setName('Filter mode')
+			.setDesc('Choose between blacklist or whitelist mode')
+			.addDropdown(dropdown => dropdown
+				.addOption('blacklist', 'Blacklist (exclude matching files)')
+				.addOption('whitelist', 'Whitelist (include only matching files)')
+				.setValue(this.plugin.settings.isFilterWhitelist ? 'whitelist' : 'blacklist')
 				.onChange(async (value) => {
-					this.plugin.settings.isFilterWhitelist = value;
+					this.plugin.settings.isFilterWhitelist = value === 'whitelist';
 					await this.plugin.save_settings();
 					// Update RuleManager
 					this.plugin.noteMover.updateRuleManager();
