@@ -37,6 +37,45 @@ export class RuleMatcher {
     }
 
     /**
+     * Matches file names with wildcard pattern support
+     * 
+     * Supports:
+     * - Exact matches: "test.md" matches "test.md"
+     * - Wildcards: "Daily*" matches "Daily Test.md", "Daily Notes.md"
+     * - Single character: "test?.md" matches "test1.md", "testA.md"
+     * - Case insensitive matching
+     * 
+     * @param fileName - The actual file name to match against
+     * @param pattern - The pattern to match (may contain wildcards)
+     * @returns True if fileName matches the pattern
+     */
+    public matchFileName(fileName: string, pattern: string): boolean {
+        // 1. Exact match (for backward compatibility)
+        if (fileName === pattern) {
+            return true;
+        }
+        
+        // 2. Wildcard pattern matching
+        if (pattern.includes('*') || pattern.includes('?')) {
+            // Convert wildcard pattern to regex
+            // First escape all regex special characters except * and ?
+            let regexPattern = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+            
+            // Then convert wildcards to regex patterns
+            regexPattern = regexPattern
+                .replace(/\*/g, '.*')  // * -> .*
+                .replace(/\?/g, '.');  // ? -> .
+            
+            // Create case-insensitive regex
+            const regex = new RegExp(`^${regexPattern}$`, 'i');
+            return regex.test(fileName);
+        }
+        
+        // 3. Case-insensitive exact match (fallback)
+        return fileName.toLowerCase() === pattern.toLowerCase();
+    }
+
+    /**
      * Matches frontmatter properties with flexible criteria
      * 
      * @param properties - Frontmatter properties object
@@ -97,7 +136,7 @@ export class RuleMatcher {
             case "tag":
                 return this.matchTag(tags, value);
             case "fileName":
-                return fileName === value;
+                return this.matchFileName(fileName, value);
             case "path":
                 return filePath === value;
             case "content":

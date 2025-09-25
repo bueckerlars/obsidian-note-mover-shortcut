@@ -75,6 +75,62 @@ describe('RuleMatcher', () => {
         });
     });
 
+    describe('matchFileName', () => {
+        it('should match exact file names', () => {
+            expect(ruleMatcher.matchFileName('test.md', 'test.md')).toBe(true);
+            expect(ruleMatcher.matchFileName('Daily Test.md', 'Daily Test.md')).toBe(true);
+            expect(ruleMatcher.matchFileName('test.md', 'other.md')).toBe(false);
+        });
+
+        it('should match wildcard patterns with *', () => {
+            // Test cases from the user's issue
+            expect(ruleMatcher.matchFileName('Daily Test.md', 'Daily*')).toBe(true);
+            expect(ruleMatcher.matchFileName('Daily Notes.md', 'Daily*')).toBe(true);
+            expect(ruleMatcher.matchFileName('Course - Introduction.md', 'Course*')).toBe(true);
+            expect(ruleMatcher.matchFileName('Course - Advanced.md', 'Course*')).toBe(true);
+            
+            // Edge cases
+            expect(ruleMatcher.matchFileName('test.md', 'test*')).toBe(true);
+            expect(ruleMatcher.matchFileName('test.txt', 'test*')).toBe(true);
+            expect(ruleMatcher.matchFileName('other.md', 'test*')).toBe(false);
+            expect(ruleMatcher.matchFileName('pretest.md', 'test*')).toBe(false);
+        });
+
+        it('should match wildcard patterns with ?', () => {
+            expect(ruleMatcher.matchFileName('test1.md', 'test?.md')).toBe(true);
+            expect(ruleMatcher.matchFileName('testA.md', 'test?.md')).toBe(true);
+            expect(ruleMatcher.matchFileName('test.md', 'test?.md')).toBe(false);
+            expect(ruleMatcher.matchFileName('test12.md', 'test?.md')).toBe(false);
+        });
+
+        it('should be case insensitive', () => {
+            expect(ruleMatcher.matchFileName('Daily Test.md', 'daily*')).toBe(true);
+            expect(ruleMatcher.matchFileName('daily test.md', 'Daily*')).toBe(true);
+            expect(ruleMatcher.matchFileName('COURSE - Intro.md', 'course*')).toBe(true);
+        });
+
+        it('should handle complex patterns', () => {
+            expect(ruleMatcher.matchFileName('Course - Introduction.md', 'Course*')).toBe(true);
+            expect(ruleMatcher.matchFileName('Course - Advanced Topics.md', 'Course*')).toBe(true);
+            expect(ruleMatcher.matchFileName('Meeting Notes.md', 'Meeting*')).toBe(true);
+            expect(ruleMatcher.matchFileName('Daily Test.md', 'Daily*')).toBe(true);
+        });
+
+        it('should handle patterns with special regex characters', () => {
+            // Test that special regex characters are properly escaped
+            expect(ruleMatcher.matchFileName('test.file.md', 'test.file*')).toBe(true);
+            expect(ruleMatcher.matchFileName('test+file.md', 'test+file*')).toBe(true);
+            expect(ruleMatcher.matchFileName('test[file].md', 'test[file]*')).toBe(true);
+            expect(ruleMatcher.matchFileName('test(file).md', 'test(file)*')).toBe(true);
+        });
+
+        it('should handle empty patterns', () => {
+            expect(ruleMatcher.matchFileName('test.md', '')).toBe(false);
+            expect(ruleMatcher.matchFileName('', 'test*')).toBe(false);
+            expect(ruleMatcher.matchFileName('', '')).toBe(true);
+        });
+    });
+
     describe('evaluateCriteria', () => {
         it('should evaluate tag criteria', () => {
             expect(ruleMatcher.evaluateCriteria(mockMetadata, 'tag:#work')).toBe(true);
@@ -85,6 +141,38 @@ describe('RuleMatcher', () => {
         it('should evaluate fileName criteria', () => {
             expect(ruleMatcher.evaluateCriteria(mockMetadata, 'fileName:test.md')).toBe(true);
             expect(ruleMatcher.evaluateCriteria(mockMetadata, 'fileName:other.md')).toBe(false);
+        });
+
+        it('should evaluate fileName criteria with wildcards', () => {
+            // Test wildcard patterns
+            expect(ruleMatcher.evaluateCriteria(mockMetadata, 'fileName:test*')).toBe(true);
+            expect(ruleMatcher.evaluateCriteria(mockMetadata, 'fileName:*.md')).toBe(true);
+            expect(ruleMatcher.evaluateCriteria(mockMetadata, 'fileName:test?.md')).toBe(false); // ? requires exactly one character
+            expect(ruleMatcher.evaluateCriteria(mockMetadata, 'fileName:other*')).toBe(false);
+            expect(ruleMatcher.evaluateCriteria(mockMetadata, 'fileName:*.txt')).toBe(false);
+        });
+
+        it('should handle real-world fileName patterns from user issue', () => {
+            // Create metadata for the specific files mentioned in the issue
+            const dailyTestMetadata = {
+                ...mockMetadata,
+                fileName: 'Daily Test.md'
+            };
+            const courseMetadata = {
+                ...mockMetadata,
+                fileName: 'Course - Introduction.md'
+            };
+
+            // Test the exact patterns the user tried
+            expect(ruleMatcher.evaluateCriteria(dailyTestMetadata, 'fileName:Daily')).toBe(false); // No wildcard
+            expect(ruleMatcher.evaluateCriteria(dailyTestMetadata, 'fileName:Daily*')).toBe(true); // With wildcard
+            expect(ruleMatcher.evaluateCriteria(dailyTestMetadata, 'fileName:Daily -')).toBe(false); // No wildcard
+            expect(ruleMatcher.evaluateCriteria(dailyTestMetadata, 'fileName:Daily *')).toBe(true); // With wildcard (space instead of dash)
+            
+            expect(ruleMatcher.evaluateCriteria(courseMetadata, 'fileName:Course')).toBe(false); // No wildcard
+            expect(ruleMatcher.evaluateCriteria(courseMetadata, 'fileName:Course*')).toBe(true); // With wildcard
+            expect(ruleMatcher.evaluateCriteria(courseMetadata, 'fileName:Course -')).toBe(false); // No wildcard
+            expect(ruleMatcher.evaluateCriteria(courseMetadata, 'fileName:Course - *')).toBe(true); // With wildcard
         });
 
         it('should evaluate path criteria', () => {
