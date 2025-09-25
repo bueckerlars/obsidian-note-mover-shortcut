@@ -14,4 +14,13 @@ export interface BulkOperation {
     timestamp: number;
     entries: HistoryEntry[];
     totalFiles: number;
+}
+
+// Time filter options for history modal
+export type TimeFilter = 'all' | 'today' | 'week' | 'month';
+
+// Retention policy settings
+export interface RetentionPolicy {
+    value: number;
+    unit: 'days' | 'weeks' | 'months';
 } 

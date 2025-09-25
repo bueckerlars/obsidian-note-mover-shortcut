@@ -1,6 +1,6 @@
 import NoteMoverShortcutPlugin from "main";
 import { PluginSettingTab } from "obsidian";
-import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
+import { HistoryEntry, BulkOperation, RetentionPolicy } from '../types/HistoryEntry';
 import { SETTINGS_CONSTANTS } from "../config/constants";
 import {
 	PeriodicMovementSettingsSection,
@@ -25,6 +25,7 @@ export interface NoteMoverShortcutSettings {
 	history?: HistoryEntry[],
 	bulkOperations?: BulkOperation[],
 	lastSeenVersion?: string,
+	retentionPolicy?: RetentionPolicy,
 }
 
 export const DEFAULT_SETTINGS: NoteMoverShortcutSettings = SETTINGS_CONSTANTS.DEFAULT_SETTINGS;

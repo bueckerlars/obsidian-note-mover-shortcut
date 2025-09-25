@@ -163,6 +163,52 @@
     box-sizing: border-box;
 }
 
+/* Time Filter Container */
+.time-filter-container {
+    margin-bottom: 20px;
+    padding: 0;
+    background: none;
+    border: none;
+}
+
+.time-filter-container .setting-item {
+    margin-bottom: 0;
+    border: none !important;
+    box-shadow: none !important;
+    background: none !important;
+}
+
+.time-filter-container .setting-item-name {
+    font-weight: 600;
+    color: var(--text-normal);
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.time-filter-container .setting-item-control {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-right: 16px;
+}
+
+/* Retention Policy Settings - Inline layout */
+.setting-item-control .retention-value-input {
+    width: 80px !important;
+    margin-right: 8px !important;
+}
+
+.setting-item-control .retention-unit-dropdown {
+    width: 100px !important;
+}
+
+.setting-item-control {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
 .history-list {
     display: flex;
     flex-direction: column;

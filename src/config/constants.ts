@@ -10,6 +10,10 @@ export const HISTORY_CONSTANTS = {
     MAX_HISTORY_ENTRIES: 50,
     MAX_BULK_OPERATIONS: 20,
     DUPLICATE_CHECK_WINDOW_MS: 1000, // 1 second window to detect duplicate entries
+    DEFAULT_RETENTION_POLICY: {
+        value: 30,
+        unit: 'days' as const
+    }
 } as const;
 
 // =============================================================================
@@ -48,6 +52,7 @@ export const SETTINGS_CONSTANTS = {
         isFilterWhitelist: false,
         rules: [] as any[],
         onlyMoveNotesWithRules: false,
+        retentionPolicy: HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
     },
 
     PLACEHOLDER_TEXTS: {
@@ -82,6 +87,20 @@ export const SETTINGS_CONSTANTS = {
         EXPORT_ERROR: "Failed to export settings",
         INVALID_FILE: "Invalid file format. Please select a valid JSON file.",
         VALIDATION_ERRORS: "Settings validation failed",
+        // History time filter texts
+        TIME_FILTER_ALL: "All",
+        TIME_FILTER_TODAY: "Today",
+        TIME_FILTER_WEEK: "This Week",
+        TIME_FILTER_MONTH: "This Month",
+        TIME_FILTER_LABEL: "Show entries from:",
+        // Retention policy texts
+        RETENTION_POLICY_TITLE: "Retention Policy",
+        RETENTION_POLICY_DESC: "Configure how long history entries should be kept",
+        RETENTION_POLICY_VALUE_LABEL: "Keep entries for:",
+        RETENTION_POLICY_UNIT_LABEL: "Unit:",
+        RETENTION_POLICY_DAYS: "Days",
+        RETENTION_POLICY_WEEKS: "Weeks",
+        RETENTION_POLICY_MONTHS: "Months",
     } as const,
 } as const;
 

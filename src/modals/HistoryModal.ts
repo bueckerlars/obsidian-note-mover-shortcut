@@ -1,11 +1,13 @@
 import { Setting, App, TFile } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
-import { BulkOperation, HistoryEntry } from '../types/HistoryEntry';
+import { BulkOperation, HistoryEntry, TimeFilter } from '../types/HistoryEntry';
 import { NoticeManager } from '../utils/NoticeManager';
 import { NOTIFICATION_CONSTANTS, SETTINGS_CONSTANTS } from '../config/constants';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class HistoryModal extends BaseModal {
+    private currentTimeFilter: TimeFilter = 'all';
+
     constructor(
         app: App,
         private historyManager: HistoryManager,
@@ -21,11 +23,14 @@ export class HistoryModal extends BaseModal {
     protected createContent(): void {
         const { contentEl } = this;
 
-        const history = this.historyManager.getHistory();
-        const bulkOperations = this.historyManager.getBulkOperations();
+        // Create time filter dropdown
+        this.createTimeFilterDropdown(contentEl);
+
+        const history = this.historyManager.getFilteredHistory(this.currentTimeFilter);
+        const bulkOperations = this.historyManager.getFilteredBulkOperations(this.currentTimeFilter);
         
         if (history.length === 0 && bulkOperations.length === 0) {
-            contentEl.createEl('p', { text: 'No history entries available.' });
+            contentEl.createEl('p', { text: 'No history entries available for the selected time period.' });
             return;
         }
 
@@ -55,6 +60,31 @@ export class HistoryModal extends BaseModal {
                 this.createSingleEntry(historyList, operation.data);
             }
         });
+    }
+
+    private createTimeFilterDropdown(container: HTMLElement): void {
+        const filterContainer = container.createEl('div', { cls: 'time-filter-container' });
+        
+        new Setting(filterContainer)
+            .setName(SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_LABEL)
+            .addDropdown(dropdown => {
+                dropdown
+                    .addOption('all', SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_ALL)
+                    .addOption('today', SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_TODAY)
+                    .addOption('week', SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_WEEK)
+                    .addOption('month', SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_MONTH)
+                    .setValue(this.currentTimeFilter)
+                    .onChange((value: string) => {
+                        this.currentTimeFilter = value as TimeFilter;
+                        this.refreshContent();
+                    });
+            });
+    }
+
+    private refreshContent(): void {
+        const { contentEl } = this;
+        contentEl.empty();
+        this.createContent();
     }
 
     private createBulkOperationEntry(container: HTMLElement, bulkOp: BulkOperation) {

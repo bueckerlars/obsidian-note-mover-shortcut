@@ -1,4 +1,4 @@
-import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
+import { HistoryEntry, BulkOperation, TimeFilter, RetentionPolicy } from '../types/HistoryEntry';
 import NoteMoverShortcutPlugin from 'main';
 import { createError, handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
@@ -118,6 +118,133 @@ export class HistoryManager {
 
     public getHistory(): HistoryEntry[] {
         return [...this.history];
+    }
+
+    /**
+     * Get filtered history based on time filter
+     */
+    public getFilteredHistory(timeFilter: TimeFilter = 'all'): HistoryEntry[] {
+        if (timeFilter === 'all') {
+            return this.getHistory();
+        }
+
+        const now = Date.now();
+        let cutoffTime: number;
+
+        switch (timeFilter) {
+            case 'today':
+                // Start of today
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                cutoffTime = today.getTime();
+                break;
+            case 'week':
+                // Start of this week (Monday)
+                const week = new Date();
+                const dayOfWeek = week.getDay();
+                const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday is 0, so 6 days to Monday
+                week.setDate(week.getDate() - daysToMonday);
+                week.setHours(0, 0, 0, 0);
+                cutoffTime = week.getTime();
+                break;
+            case 'month':
+                // Start of this month
+                const month = new Date();
+                month.setDate(1);
+                month.setHours(0, 0, 0, 0);
+                cutoffTime = month.getTime();
+                break;
+            default:
+                return this.getHistory();
+        }
+
+        return this.history.filter(entry => entry.timestamp >= cutoffTime);
+    }
+
+    /**
+     * Get filtered bulk operations based on time filter
+     */
+    public getFilteredBulkOperations(timeFilter: TimeFilter = 'all'): BulkOperation[] {
+        if (timeFilter === 'all') {
+            return this.getBulkOperations();
+        }
+
+        const now = Date.now();
+        let cutoffTime: number;
+
+        switch (timeFilter) {
+            case 'today':
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                cutoffTime = today.getTime();
+                break;
+            case 'week':
+                const week = new Date();
+                const dayOfWeek = week.getDay();
+                const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                week.setDate(week.getDate() - daysToMonday);
+                week.setHours(0, 0, 0, 0);
+                cutoffTime = week.getTime();
+                break;
+            case 'month':
+                const month = new Date();
+                month.setDate(1);
+                month.setHours(0, 0, 0, 0);
+                cutoffTime = month.getTime();
+                break;
+            default:
+                return this.getBulkOperations();
+        }
+
+        return this.bulkOperations.filter(op => op.timestamp >= cutoffTime);
+    }
+
+    /**
+     * Clean up old history entries based on retention policy
+     */
+    public async cleanupOldEntries(): Promise<void> {
+        const retentionPolicy = this.plugin.settings.retentionPolicy || HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY;
+        const cutoffTime = this.calculateRetentionCutoffTime(retentionPolicy);
+
+        // Filter out old entries
+        const oldHistoryCount = this.history.length;
+        this.history = this.history.filter(entry => entry.timestamp >= cutoffTime);
+        const removedHistoryCount = oldHistoryCount - this.history.length;
+
+        // Filter out old bulk operations
+        const oldBulkCount = this.bulkOperations.length;
+        this.bulkOperations = this.bulkOperations.filter(op => op.timestamp >= cutoffTime);
+        const removedBulkCount = oldBulkCount - this.bulkOperations.length;
+
+        if (removedHistoryCount > 0 || removedBulkCount > 0) {
+            await this.saveHistory();
+            NoticeManager.info(`Cleaned up ${removedHistoryCount} history entries and ${removedBulkCount} bulk operations older than ${retentionPolicy.value} ${retentionPolicy.unit}`);
+        }
+    }
+
+    /**
+     * Calculate cutoff time based on retention policy
+     */
+    private calculateRetentionCutoffTime(retentionPolicy: RetentionPolicy): number {
+        const now = Date.now();
+        let millisecondsToSubtract: number;
+
+        switch (retentionPolicy.unit) {
+            case 'days':
+                millisecondsToSubtract = retentionPolicy.value * 24 * 60 * 60 * 1000;
+                break;
+            case 'weeks':
+                millisecondsToSubtract = retentionPolicy.value * 7 * 24 * 60 * 60 * 1000;
+                break;
+            case 'months':
+                // Approximate months as 30 days
+                millisecondsToSubtract = retentionPolicy.value * 30 * 24 * 60 * 60 * 1000;
+                break;
+            default:
+                millisecondsToSubtract = 30 * 24 * 60 * 60 * 1000; // Default to 30 days
+        }
+
+        return now - millisecondsToSubtract;
     }
 
     public async undoEntry(entryId: string): Promise<boolean> {
