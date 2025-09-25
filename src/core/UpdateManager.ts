@@ -2,6 +2,10 @@ import { TFile } from 'obsidian';
 import NoteMoverShortcutPlugin from 'main';
 import { UpdateModal } from '../modals/UpdateModal';
 import { NoticeManager } from '../utils/NoticeManager';
+import { RuleMatcher } from './RuleMatcher';
+import { FileMovementService } from './FileMovementService';
+import { BaseModal } from 'src/modals/BaseModal';
+import { MetadataExtractor } from './MetadataExtractor';
 
 interface ChangelogEntry {
     version: string;
@@ -119,6 +123,47 @@ export class UpdateManager {
         // Since the CHANGELOG.md is located in the plugin directory, not in the vault,
         // we embed the content directly here
         return `# Changelog
+## [0.4.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.4...0.4.0)
+### Features
+- Added a button for opening notes in the \`History Modal\`
+- Added Wildcard and Regex matching for filenames in the rules 
+- Added Settings for importing and exporting settings 
+
+### Changes
+- Implemented comprehensive codebase refactoring for improved maintainability and performance
+- Added new \`FileMovementService\` class for unified file movement operations
+  - Centralized file movement logic with plugin move tracking
+  - Enhanced folder creation and batch operation support
+  - Improved error handling and history integration
+- Introduced \`MetadataExtractor\` class for standardized file metadata access
+  - Efficient extraction of file metadata, tags, and frontmatter properties
+  - Optimized performance for large vaults with caching mechanisms
+- Created new \`RuleMatcher\` class for advanced rule and filter matching
+  - Hierarchical tag matching with specificity-based rule sorting
+  - Enhanced wildcard pattern matching for file names
+  - Improved frontmatter property evaluation
+- Added \`BaseModal\` class for consistent modal UI across the plugin
+  - Standardized modal creation and styling
+  - Improved user experience with consistent design patterns
+- Implemented \`NoticeManager\` class for unified notification system
+  - Customizable notice types with undo functionality
+  - Enhanced error reporting and user feedback
+
+### Improvements
+- Refactored all modal classes to extend \`BaseModal\` for consistency
+- Enhanced error handling with standardized error creation and management
+- Improved test coverage with comprehensive unit tests for new classes
+- Added configuration constants for better maintainability
+- Optimized suggestion systems with improved metadata extraction
+- Enhanced path utilities with new helper functions
+- Improved code organization and separation of concerns
+
+### Bug Fixes
+- Fixed various edge cases in file movement operations
+- Improved error handling for folder creation failures
+- Enhanced undo functionality for complex file operations
+- Fixed issues with metadata extraction in edge cases
+
 ## [0.3.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.3...0.3.4)
 ### Features
 - Added "Only move notes with rules" option #21
