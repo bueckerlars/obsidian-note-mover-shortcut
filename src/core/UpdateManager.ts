@@ -123,6 +123,14 @@ export class UpdateManager {
         // Since the CHANGELOG.md is located in the plugin directory, not in the vault,
         // we embed the content directly here
         return `# Changelog
+## [0.4.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.0...0.4.1)
+
+> Attention: Breaking Changes
+
+### Changes
+- Removed inbox and notes folder settings 
+- Added setting for history rentention policy and dropdown in the history modal to select timespan of the entries shown
+
 ## [0.4.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.3.4...0.4.0)
 ### Features
 - Added a button for opening notes in the \`History Modal\`
