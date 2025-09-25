@@ -1,4 +1,4 @@
-import { Setting, App } from 'obsidian';
+import { Setting, App, TFile } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
 import { BulkOperation, HistoryEntry } from '../types/HistoryEntry';
 import { NoticeManager } from '../utils/NoticeManager';
@@ -113,13 +113,13 @@ export class HistoryModal extends BaseModal {
                         .onClick(() => {
                             // Try to open the file at its current location (destination path)
                             const file = this.app.vault.getAbstractFileByPath(entry.destinationPath);
-                            if (file) {
+                            if (file && file instanceof TFile) {
                                 this.app.workspace.getLeaf().openFile(file);
                                 this.close(); // Close the modal after opening the file
                             } else {
                                 // If file not found at destination, try source path
                                 const sourceFile = this.app.vault.getAbstractFileByPath(entry.sourcePath);
-                                if (sourceFile) {
+                                if (sourceFile && sourceFile instanceof TFile) {
                                     this.app.workspace.getLeaf().openFile(sourceFile);
                                     this.close(); // Close the modal after opening the file
                                 } else {
@@ -188,13 +188,13 @@ export class HistoryModal extends BaseModal {
                     .onClick(() => {
                         // Try to open the file at its current location (destination path)
                         const file = this.app.vault.getAbstractFileByPath(entry.destinationPath);
-                        if (file) {
+                        if (file && file instanceof TFile) {
                             this.app.workspace.getLeaf().openFile(file);
                             this.close(); // Close the modal after opening the file
                         } else {
                             // If file not found at destination, try source path
                             const sourceFile = this.app.vault.getAbstractFileByPath(entry.sourcePath);
-                            if (sourceFile) {
+                            if (sourceFile && sourceFile instanceof TFile) {
                                 this.app.workspace.getLeaf().openFile(sourceFile);
                                 this.close(); // Close the modal after opening the file
                             } else {
