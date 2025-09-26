@@ -3,16 +3,35 @@ import { App, Setting } from "obsidian";
 import { createError, handleError } from "src/utils/Error";
 import { SETTINGS_CONSTANTS } from "../../config/constants";
 
-export class PeriodicMovementSettingsSection {
+export class TriggerSettingsSection {
 	constructor(
 		private plugin: NoteMoverShortcutPlugin,
 		private containerEl: HTMLElement,
 		private refreshDisplay: () => void
 	) {}
 
-	addPeriodicMovementSetting(): void {
-		new Setting(this.containerEl).setName('Periodic movement').setHeading();
+	addTriggerSettings(): void {
+		new Setting(this.containerEl).setName('Triggers').setHeading();
 
+		// On Edit Trigger Toggle
+		new Setting(this.containerEl)
+			.setName('Enable on-edit trigger')
+			.setDesc('Automatically check and move the edited note when a file is modified')
+			.addToggle(toggle => toggle
+				.setValue((this.plugin.settings as any).enableOnEditTrigger === true)
+				.onChange(async (value) => {
+					(this.plugin.settings as any).enableOnEditTrigger = value;
+					await this.plugin.save_settings();
+					// Activate/Deactivate on-edit listener
+					// Uses new TriggerEventHandler
+					(this.plugin as any).triggerHandler?.toggleOnEditListener();
+
+					// Force refresh display
+					this.refreshDisplay();
+				})
+			);
+
+		// Periodic Movement Toggle
 		new Setting(this.containerEl)
 			.setName('Enable periodic movement')
 			.setDesc('Enable the periodic movement of notes')
@@ -21,8 +40,8 @@ export class PeriodicMovementSettingsSection {
 				.onChange(async (value) => {
 					this.plugin.settings.enablePeriodicMovement = value;
 					await this.plugin.save_settings();
-					// Toggle interval based in the new value
-					this.plugin.noteMover.togglePeriodicMovementInterval();
+					// Toggle interval based on the new value via TriggerEventHandler
+					(this.plugin as any).triggerHandler?.togglePeriodic();
 					
 					// Force refresh display
 					this.refreshDisplay();
@@ -49,6 +68,8 @@ export class PeriodicMovementSettingsSection {
 
 						this.plugin.settings.periodicMovementInterval = interval;
 						await this.plugin.save_settings();
+						// If periodic is enabled, restart interval via handler
+						(this.plugin as any).triggerHandler?.togglePeriodic();
 					})
 				);
 		}

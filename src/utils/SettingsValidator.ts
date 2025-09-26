@@ -41,6 +41,7 @@ export class SettingsValidator {
         // Validate boolean fields
         const booleanFields = [
             'enablePeriodicMovement',
+            'enableOnEditTrigger',
             'enableFilter',
             'isFilterWhitelist',
             'enableRules',

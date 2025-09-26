@@ -11,10 +11,15 @@ The "NoteMover Shortcut" plugin streamlines your file organization in Obsidian. 
 ## Configuration
 ### Settings:
 
-#### Periodic Movement
-![Periodic Movement Settings](images/noteMover-settings-periodic-movement.png)
+#### Trigger Settings
+![Periodic Movement Settings](images/noteMover-settings-trigger.png)
+- **Enable on-edit trigger**: When enabled, the plugin listens for file modifications (on edit) and automatically checks the edited note against your rules and filters. If a positive match is found, the note is moved immediately after the edit.
 - **Enable periodic movement**: When enabled, the plugin will automatically move all files in your vault at regular intervals.
 - **Periodic movement interval**: Set the interval in minutes between automatic file movements (minimum: 1 minute).
+
+Notes:
+- The on-edit trigger only reacts to Markdown files and runs the same rule- and filter-based movement logic as manual commands.
+- Periodic movement has been refactored to use the same unified event handler as the on-edit trigger, ensuring consistent behavior and a single orchestration point.
 
 #### Filter Settings
 ![Filter Settings](images/noteMover-settings-filter.png)
@@ -176,7 +181,9 @@ This plugin is open-source. Contributions are welcome!
 - **Bulk Move**: The ability to move all files in your vault to appropriate destination folders with a single command, saving you time and simplifying organization.
 - **Advanced Criteria-Based Moving**: Move files to different destination folders based on various criteria including tags, properties (frontmatter), file names, content, paths, and dates, allowing for sophisticated file organization.
 - **Selective Rule-Based Movement**: Option to only move files that match defined rules, providing flexibility for users who want selective file processing based on specific criteria.
-- **Automated Moving**: A feature that periodically moves all files in your vault if they meet specific criteria.
+- **Automated Moving**: Two automation modes:
+  - On-Edit Trigger: Automatically checks and moves the just edited note.
+  - Periodic Movement: Periodically moves files across the vault at a configured interval.
 - **Move Preview**: Preview which files will be moved before execution, ensuring safe and predictable operations
 - **History Tracking**: Keep track of all file movements with a detailed history view
 - **Undo Functionality**: Easily revert any file movements if needed, with support for both individual and bulk undo operations

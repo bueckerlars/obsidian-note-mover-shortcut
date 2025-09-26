@@ -29,10 +29,7 @@ export class NoteMoverShortcut {
 	}
 
 	async setup(): Promise<void> {
-		// Start periodic movement interval if enabled
-		if (this.plugin.settings.enablePeriodicMovement) {
-			this.togglePeriodicMovementInterval();
-		}
+		// Periodic setup moved to TriggerEventHandler
 	}
 
 	public async moveFileBasedOnTags(file: TFile, defaultFolder: string, skipFilter: boolean = false): Promise<void> {
@@ -243,21 +240,5 @@ export class NoteMoverShortcut {
 		);
 	}
 
-	private intervalId: number | null = null;
-
-	public togglePeriodicMovementInterval(): void {
-		// Clear interval if it is already running
-		if (this.intervalId) {
-			window.clearInterval(this.intervalId);
-			this.intervalId = null;
-		}
-
-		// Start new interval if periodic movement is enabled
-		if (this.plugin.settings.enablePeriodicMovement) {
-			const interval = this.plugin.settings.periodicMovementInterval;
-			this.intervalId = window.setInterval(async () => {
-				await this.moveAllFilesInVaultPeriodic();
-			}, interval * GENERAL_CONSTANTS.TIME_CONVERSIONS.MINUTES_TO_MILLISECONDS);
-		}
-	}
+	// Periodic scheduling moved to TriggerEventHandler
 }

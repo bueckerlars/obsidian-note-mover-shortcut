@@ -48,6 +48,7 @@ export const SETTINGS_CONSTANTS = {
     DEFAULT_SETTINGS: {
         enablePeriodicMovement: false,
         periodicMovementInterval: 5,
+        enableOnEditTrigger: false,
         filter: [] as string[],
         isFilterWhitelist: false,
         rules: [] as any[],

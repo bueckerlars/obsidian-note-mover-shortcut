@@ -18,6 +18,7 @@ interface Rule {
 export interface NoteMoverShortcutSettings {
 	enablePeriodicMovement: boolean,
 	periodicMovementInterval: number,
+    enableOnEditTrigger?: boolean,
 	filter: string[],
 	isFilterWhitelist: boolean,
 	rules: Rule[],
@@ -58,7 +59,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 		this.historySettings = new HistorySettingsSection(this.plugin, this.containerEl);
 		this.importExportSettings = new ImportExportSettingsSection(this.plugin, this.containerEl, () => this.display());
 
-		this.periodicMovementSettings.addPeriodicMovementSetting();
+		this.periodicMovementSettings.addTriggerSettings();
 
 		this.filterSettings.addFilterSettings();
 
