@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.4.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.1...0.4.2)
+## [0.4.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.1...0.4.2)
 ### Features
 - Added an option for "on-edit" note movement
 - Changed the filter whitelist/blacklist toggle to a dropdown 
