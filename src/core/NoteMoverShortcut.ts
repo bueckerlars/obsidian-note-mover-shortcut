@@ -26,9 +26,6 @@ export class NoteMoverShortcut {
       this.plugin.settings.filter,
       this.plugin.settings.isFilterWhitelist
     );
-    this.ruleManager.setOnlyMoveNotesWithRules(
-      this.plugin.settings.onlyMoveNotesWithRules
-    );
   }
 
   async setup(): Promise<void> {

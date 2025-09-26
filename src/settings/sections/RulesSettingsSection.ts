@@ -24,27 +24,6 @@ export class RulesSettingsSection {
     new Setting(this.containerEl)
       .setName('Rules description')
       .setDesc(descUseRules);
-
-    const descOnlyMoveWithRules = document.createDocumentFragment();
-    descOnlyMoveWithRules.append(
-      'When enabled, only files that match defined rules will be moved. Files without matching rules will be left untouched.',
-      document.createElement('br'),
-      'When disabled, files without matching rules will be moved to the root folder.'
-    );
-
-    new Setting(this.containerEl)
-      .setName('Only move files with rules')
-      .setDesc(descOnlyMoveWithRules)
-      .addToggle(toggle =>
-        toggle
-          .setValue(this.plugin.settings.onlyMoveNotesWithRules)
-          .onChange(async value => {
-            this.plugin.settings.onlyMoveNotesWithRules = value;
-            await this.plugin.save_settings();
-            // Update RuleManager
-            this.plugin.noteMover.updateRuleManager();
-          })
-      );
   }
 
   addAddRuleButtonSetting(): void {

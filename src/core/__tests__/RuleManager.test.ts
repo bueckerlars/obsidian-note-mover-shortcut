@@ -95,16 +95,16 @@ describe('RuleManager', () => {
     expect(result).toBeNull();
   });
 
-  it('should not skip file if skipFilter=true', async () => {
+  it('should not skip file if skipFilter=true but still return null if no rules match', async () => {
     ruleManager.setFilter(['fileName: file.md'], false);
     const result = await ruleManager.moveFileBasedOnTags(mockFile, true);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should handle invalid filter string gracefully', async () => {
     ruleManager.setFilter(['invalidfilter'], false);
     const result = await ruleManager.moveFileBasedOnTags(mockFile);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should return rule path if tag matches', async () => {
@@ -138,13 +138,13 @@ describe('RuleManager', () => {
   it('should return defaultFolder if no rules match', async () => {
     ruleManager.setRules([{ criteria: 'tag: #other', path: 'special' }]);
     const result = await ruleManager.moveFileBasedOnTags(mockFile);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should handle invalid rule criteria format', async () => {
     ruleManager.setRules([{ criteria: 'invalid-format', path: 'special' }]);
     const result = await ruleManager.moveFileBasedOnTags(mockFile);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should handle created_at rule with null createdAt', async () => {
@@ -153,7 +153,7 @@ describe('RuleManager', () => {
       { criteria: 'created_at: 2023-01-01', path: 'date-folder' },
     ]);
     const result = await ruleManager.moveFileBasedOnTags(mockFile);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should handle updated_at rule with null updatedAt', async () => {
@@ -162,33 +162,33 @@ describe('RuleManager', () => {
       { criteria: 'updated_at: 2023-01-01', path: 'date-folder' },
     ]);
     const result = await ruleManager.moveFileBasedOnTags(mockFile);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should handle missing tags gracefully', async () => {
     mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({});
     const result = await ruleManager.moveFileBasedOnTags(mockFile);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should handle missing rules gracefully', async () => {
     ruleManager.setRules([]);
     const result = await ruleManager.moveFileBasedOnTags(mockFile);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should handle null createdAt/updatedAt', async () => {
     mockFile.stat = { ctime: undefined, mtime: undefined } as any;
     ruleManager.setFilter(['created_at: 2023-01-01'], false);
     const result = await ruleManager.moveFileBasedOnTags(mockFile);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should handle error in file read gracefully', async () => {
     mockApp.vault.read = jest.fn().mockRejectedValue(new Error('fail'));
     ruleManager.setFilter(['content: something'], false);
     const result = await ruleManager.moveFileBasedOnTags(mockFile);
-    expect(result).toBe('default');
+    expect(result).toBeNull();
   });
 
   it('should handle error in metadata extraction gracefully', async () => {
@@ -285,7 +285,7 @@ describe('RuleManager', () => {
       });
       ruleManager.setRules([{ criteria: 'tag: #food', path: 'food-folder' }]);
       const result = await ruleManager.moveFileBasedOnTags(mockFile);
-      expect(result).toBe('default');
+      expect(result).toBeNull();
     });
 
     it('should handle hierarchical filtering in blacklist', async () => {
@@ -337,7 +337,7 @@ describe('RuleManager', () => {
     it('should move file if property filter matches (whitelist)', async () => {
       ruleManager.setFilter(['property: status:completed'], true);
       const result = await ruleManager.moveFileBasedOnTags(mockFile);
-      expect(result).toBe('default');
+      expect(result).toBeNull();
     });
 
     it('should move file based on property rule', async () => {
@@ -361,7 +361,7 @@ describe('RuleManager', () => {
         { criteria: 'property: nonexistent:value', path: 'nonexistent-folder' },
       ]);
       const result = await ruleManager.moveFileBasedOnTags(mockFile);
-      expect(result).toBe('default');
+      expect(result).toBeNull();
     });
 
     it('should return default if property value does not match', async () => {
@@ -369,7 +369,7 @@ describe('RuleManager', () => {
         { criteria: 'property: status:pending', path: 'pending-folder' },
       ]);
       const result = await ruleManager.moveFileBasedOnTags(mockFile);
-      expect(result).toBe('default');
+      expect(result).toBeNull();
     });
 
     it('should handle missing frontmatter gracefully', async () => {
@@ -386,7 +386,7 @@ describe('RuleManager', () => {
         { criteria: 'property: status:completed', path: 'archive' },
       ]);
       const result = await ruleManager.moveFileBasedOnTags(mockFile);
-      expect(result).toBe('default');
+      expect(result).toBeNull();
     });
 
     it('should handle case insensitive property values', async () => {
@@ -428,7 +428,7 @@ describe('RuleManager', () => {
         { criteria: 'property: status:null', path: 'null-folder' },
       ]);
       const result = await ruleManager.moveFileBasedOnTags(mockFile);
-      expect(result).toBe('default');
+      expect(result).toBeNull();
     });
 
     it('should handle undefined property values', async () => {
@@ -445,7 +445,7 @@ describe('RuleManager', () => {
         { criteria: 'property: status:undefined', path: 'undefined-folder' },
       ]);
       const result = await ruleManager.moveFileBasedOnTags(mockFile);
-      expect(result).toBe('default');
+      expect(result).toBeNull();
     });
   });
 
@@ -514,9 +514,9 @@ describe('RuleManager', () => {
       });
       ruleManager.setRules([{ criteria: 'tag: #other', path: 'special' }]);
       const preview = await ruleManager.generatePreviewForFile(mockFile);
-      expect(preview.willBeMoved).toBe(true);
-      expect(preview.targetPath).toBe('default');
-      expect(preview.matchedRule).toBe('Default destination');
+      expect(preview.willBeMoved).toBe(false);
+      expect(preview.targetPath).toBeNull();
+      expect(preview.blockReason).toBe('No matching rule found');
     });
 
     it('should handle error in generatePreviewForFile', async () => {
@@ -529,11 +529,12 @@ describe('RuleManager', () => {
       expect(preview.blockReason).toBe('Error: fail');
     });
 
-    it('should skip filter when skipFilter=true', async () => {
+    it('should skip filter when skipFilter=true but still not move if no rules match', async () => {
       ruleManager.setFilter(['tag: #tag1'], false);
       const preview = await ruleManager.generatePreviewForFile(mockFile, true);
-      expect(preview.willBeMoved).toBe(true);
-      expect(preview.targetPath).toBe('default');
+      expect(preview.willBeMoved).toBe(false);
+      expect(preview.targetPath).toBeNull();
+      expect(preview.blockReason).toBe('No matching rule found');
     });
 
     it('should handle property-based filtering in preview', async () => {
@@ -592,8 +593,9 @@ describe('RuleManager', () => {
       });
       ruleManager.setRules([{ criteria: 'invalid-format', path: 'special' }]);
       const preview = await ruleManager.generatePreviewForFile(mockFile);
-      expect(preview.willBeMoved).toBe(true);
-      expect(preview.targetPath).toBe('default');
+      expect(preview.willBeMoved).toBe(false);
+      expect(preview.targetPath).toBeNull();
+      expect(preview.blockReason).toBe('No matching rule found');
     });
 
     it('should handle created_at rule with null createdAt in preview', async () => {
@@ -610,8 +612,9 @@ describe('RuleManager', () => {
         { criteria: 'created_at: 2023-01-01', path: 'date-folder' },
       ]);
       const preview = await ruleManager.generatePreviewForFile(mockFile);
-      expect(preview.willBeMoved).toBe(true);
-      expect(preview.targetPath).toBe('default');
+      expect(preview.willBeMoved).toBe(false);
+      expect(preview.targetPath).toBeNull();
+      expect(preview.blockReason).toBe('No matching rule found');
     });
 
     it('should handle updated_at rule with null updatedAt in preview', async () => {
@@ -628,59 +631,40 @@ describe('RuleManager', () => {
         { criteria: 'updated_at: 2023-01-01', path: 'date-folder' },
       ]);
       const preview = await ruleManager.generatePreviewForFile(mockFile);
-      expect(preview.willBeMoved).toBe(true);
-      expect(preview.targetPath).toBe('default');
+      expect(preview.willBeMoved).toBe(false);
+      expect(preview.targetPath).toBeNull();
+      expect(preview.blockReason).toBe('No matching rule found');
     });
   });
 
-  // Tests for onlyMoveNotesWithRules
-  describe('onlyMoveNotesWithRules', () => {
-    it('should return null when onlyMoveNotesWithRules is enabled and no rules match', async () => {
+  // Tests for rule-based movement (onlyMoveNotesWithRules is now always true)
+  describe('rule-based movement', () => {
+    it('should return null when no rules match (files without rules are skipped)', async () => {
       ruleManager.setRules([{ criteria: 'tag: #other', path: 'custom/path' }]);
-      ruleManager.setOnlyMoveNotesWithRules(true);
       const result = await ruleManager.moveFileBasedOnTags(mockFile);
       expect(result).toBeNull();
     });
 
-    it('should return rule path when onlyMoveNotesWithRules is enabled and rule matches', async () => {
+    it('should return rule path when rule matches', async () => {
       ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'custom/path' }]);
-      ruleManager.setOnlyMoveNotesWithRules(true);
       const result = await ruleManager.moveFileBasedOnTags(mockFile);
       expect(result).toBe('custom/path');
     });
 
-    it('should return default folder when onlyMoveNotesWithRules is disabled and no rules match', async () => {
+    it('should generate preview with willBeMoved false when no rules match', async () => {
       ruleManager.setRules([{ criteria: 'tag: #other', path: 'custom/path' }]);
-      ruleManager.setOnlyMoveNotesWithRules(false);
-      const result = await ruleManager.moveFileBasedOnTags(mockFile);
-      expect(result).toBe('default');
-    });
-
-    it('should generate preview with willBeMoved false when onlyMoveNotesWithRules is enabled and no rules match', async () => {
-      ruleManager.setRules([{ criteria: 'tag: #other', path: 'custom/path' }]);
-      ruleManager.setOnlyMoveNotesWithRules(true);
       const preview = await ruleManager.generatePreviewForFile(mockFile);
       expect(preview.willBeMoved).toBe(false);
       expect(preview.targetPath).toBeNull();
       expect(preview.blockReason).toBe('No matching rule found');
     });
 
-    it('should generate preview with willBeMoved true when onlyMoveNotesWithRules is enabled and rule matches', async () => {
+    it('should generate preview with willBeMoved true when rule matches', async () => {
       ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'custom/path' }]);
-      ruleManager.setOnlyMoveNotesWithRules(true);
       const preview = await ruleManager.generatePreviewForFile(mockFile);
       expect(preview.willBeMoved).toBe(true);
       expect(preview.targetPath).toBe('custom/path');
       expect(preview.matchedRule).toBe('tag: #tag1');
-    });
-
-    it('should generate preview with willBeMoved true when onlyMoveNotesWithRules is disabled and no rules match', async () => {
-      ruleManager.setRules([{ criteria: 'tag: #other', path: 'custom/path' }]);
-      ruleManager.setOnlyMoveNotesWithRules(false);
-      const preview = await ruleManager.generatePreviewForFile(mockFile);
-      expect(preview.willBeMoved).toBe(true);
-      expect(preview.targetPath).toBe('default');
-      expect(preview.matchedRule).toBe('Default destination');
     });
   });
 

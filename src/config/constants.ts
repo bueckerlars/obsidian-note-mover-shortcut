@@ -52,7 +52,6 @@ export const SETTINGS_CONSTANTS = {
     filter: [] as string[],
     isFilterWhitelist: false,
     rules: [] as any[],
-    onlyMoveNotesWithRules: false,
     retentionPolicy: HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
   },
 
