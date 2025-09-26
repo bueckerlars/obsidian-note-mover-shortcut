@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.1...0.4.2)
+### Features
+- Added an option for "on-edit" note movement
+
+## Changes
+- Renamed the periodic movement settings section to trigger section
+- Implemented an event system for periodic movements and on-edit movement
+
 ## [0.4.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.0...0.4.1)
 
 > Attention: Breaking Changes
