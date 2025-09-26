@@ -547,8 +547,9 @@ describe('NoteMoverShortcut', () => {
         .mockResolvedValueOnce(undefined) // First file succeeds
         .mockRejectedValueOnce(new Error('Second file fails')); // Second file fails
 
-      const file1 = { path: 'file1.md', name: 'file1.md' };
-      const file2 = { path: 'file2.md', name: 'file2.md' };
+      // Create files in different folders so they need to be moved
+      const file1 = { path: 'inbox/file1.md', name: 'file1.md' };
+      const file2 = { path: 'inbox/file2.md', name: 'file2.md' };
       mockApp.vault.getFiles = jest.fn().mockResolvedValue([file1, file2]);
 
       await noteMover.moveAllFilesInVault();

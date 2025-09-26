@@ -58,6 +58,11 @@ export class NoteMoverShortcut {
 
       const newPath = combinePath(targetFolder, file.name);
 
+      // Skip if file is already in the correct location
+      if (originalPath === newPath) {
+        return; // File is already in the correct folder, no need to move
+      }
+
       // Ensure target folder exists before moving the file
       if (!(await ensureFolderExists(app, targetFolder))) {
         throw createError(`Failed to create target folder: ${targetFolder}`);

@@ -95,6 +95,11 @@ export class FileMovementService {
     } = options;
 
     try {
+      // Skip if file is already in the correct location
+      if (file.path === targetPath) {
+        return true; // File is already in the correct location, no need to move
+      }
+
       // Ensure target folder exists
       const targetFolder = getParentPath(targetPath);
       if (targetFolder && !(await ensureFolderExists(this.app, targetFolder))) {
