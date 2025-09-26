@@ -240,5 +240,4 @@ export class NoteMoverShortcut {
 		);
 	}
 
-	// Periodic scheduling moved to TriggerEventHandler
 }

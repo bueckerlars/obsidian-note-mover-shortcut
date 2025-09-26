@@ -104,16 +104,9 @@ describe('NoteMoverShortcut', () => {
     });
 
     describe('setup', () => {
-        it('should not start interval if periodic movement is disabled', () => {
+        it('should complete setup without errors', () => {
             plugin.settings.enablePeriodicMovement = false;
-            noteMover.setup();
-            expect(window.setInterval).not.toHaveBeenCalled();
-        });
-
-        it('should start interval if periodic movement is enabled', () => {
-            plugin.settings.enablePeriodicMovement = true;
-            noteMover.setup();
-            expect(window.setInterval).toHaveBeenCalled();
+            expect(() => noteMover.setup()).not.toThrow();
         });
     });
 
@@ -146,20 +139,6 @@ describe('NoteMoverShortcut', () => {
         });
     });
 
-    describe('togglePeriodicMovementInterval', () => {
-        it('should clear existing interval', () => {
-            const mockIntervalId = 123;
-            noteMover['intervalId'] = mockIntervalId;
-            noteMover.togglePeriodicMovementInterval();
-            expect(window.clearInterval).toHaveBeenCalledWith(mockIntervalId);
-        });
-
-        it('should start new interval if periodic movement is enabled', () => {
-            plugin.settings.enablePeriodicMovement = true;
-            noteMover.togglePeriodicMovementInterval();
-            expect(window.setInterval).toHaveBeenCalled();
-        });
-    });
 
     describe('moveFileBasedOnTags', () => {
         beforeEach(() => {
