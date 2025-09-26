@@ -216,3 +216,42 @@ This plugin is open-source. Contributions are welcome!
 - **Move Preview**: Preview which files will be moved before execution, ensuring safe and predictable operations
 - **History Tracking**: Keep track of all file movements with a detailed history view
 - **Undo Functionality**: Easily revert any file movements if needed, with support for both individual and bulk undo operations
+
+## Development
+
+### Build Process
+
+The plugin uses a build-time changelog generation system:
+
+1. **Changelog Generation**: The `CHANGELOG.md` file is parsed at build time and converted to a TypeScript file (`src/generated/changelog.ts`)
+2. **Build Scripts**:
+   - `npm run generate-changelog` - Generates changelog from CHANGELOG.md
+   - `npm run dev` - Development build with changelog generation
+   - `npm run build` - Production build with changelog generation
+
+This approach ensures that:
+
+- The changelog is always up-to-date with the actual CHANGELOG.md file
+- No manual copying of changelog content is required
+- The generated changelog is type-safe and optimized for the plugin
+
+### Project Structure
+
+```
+.
+├── main.ts                 # Entry point
+├── manifest.json          # Plugin manifest
+├── styles.css            # Plugin styles
+├── scripts/              # Build scripts
+│   └── generate-changelog.ts  # Changelog parser
+├── src/
+│   ├── core/             # Core functionality
+│   ├── generated/        # Auto-generated files (gitignored)
+│   │   └── changelog.ts  # Generated from CHANGELOG.md
+│   ├── handlers/         # Command handlers
+│   ├── modals/           # Modal components
+│   ├── settings/         # Settings management
+│   ├── types/            # Type definitions
+│   └── utils/            # Utility functions
+└── __tests__/            # Test files
+```

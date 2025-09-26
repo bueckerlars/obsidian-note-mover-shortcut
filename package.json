@@ -4,8 +4,9 @@
   "description": "Quickly and easily move notes to a predefined folder. Perfect for organizing your notes.",
   "main": "main.js",
   "scripts": {
-    "dev": "node esbuild.config.mjs",
-    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "dev": "npm run generate-changelog && node esbuild.config.mjs",
+    "build": "npm run generate-changelog && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "generate-changelog": "tsx scripts/generate-changelog.ts",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -36,6 +37,7 @@
     "prettier": "^3.6.2",
     "ts-jest": "^29.4.0",
     "tslib": "2.4.0",
+    "tsx": "^4.20.6",
     "typescript": "4.7.4"
   },
   "dependencies": {

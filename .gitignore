@@ -25,4 +25,7 @@ data.json
 # Exclude coverage
 coverage
 
+# Exclude generated files
+src/generated/
+
 docs
