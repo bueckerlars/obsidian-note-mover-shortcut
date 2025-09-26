@@ -3,10 +3,10 @@ const errorSpy = jest.fn();
 const warningSpy = jest.fn();
 
 jest.mock('../../utils/NoticeManager', () => ({
-    error: errorSpy,
-    warning: warningSpy,
-    info: jest.fn(),
-    success: jest.fn()
+  error: errorSpy,
+  warning: warningSpy,
+  info: jest.fn(),
+  success: jest.fn(),
 }));
 
 import { CommandHandler } from '../CommandHandler';
@@ -21,113 +21,112 @@ const open = jest.fn();
 const showUpdateModal = jest.fn();
 
 jest.mock('../../modals/HistoryModal', () => {
-    return {
-        HistoryModal: jest.fn().mockImplementation(() => ({ open })),
-    };
+  return {
+    HistoryModal: jest.fn().mockImplementation(() => ({ open })),
+  };
 });
 
 jest.mock('../../modals/PreviewModal', () => {
-    return {
-        PreviewModal: jest.fn().mockImplementation(() => ({ open })),
-    };
+  return {
+    PreviewModal: jest.fn().mockImplementation(() => ({ open })),
+  };
 });
 
 describe('CommandHandler', () => {
-    let pluginMock: any;
-    let handler: CommandHandler;
+  let pluginMock: any;
+  let handler: CommandHandler;
 
-    beforeEach(() => {
-        addCommand.mockClear();
-        moveFocusedNoteToDestination.mockClear();
-        moveAllFilesInVault.mockClear();
-        generateVaultMovePreview.mockClear();
-        generateActiveNotePreview.mockClear();
-        open.mockClear();
-        showUpdateModal.mockClear();
+  beforeEach(() => {
+    addCommand.mockClear();
+    moveFocusedNoteToDestination.mockClear();
+    moveAllFilesInVault.mockClear();
+    generateVaultMovePreview.mockClear();
+    generateActiveNotePreview.mockClear();
+    open.mockClear();
+    showUpdateModal.mockClear();
 
-        pluginMock = {
-            addCommand,
-            noteMover: {
-                moveFocusedNoteToDestination,
-                moveAllFilesInVault,
-                generateVaultMovePreview,
-                generateActiveNotePreview,
-            },
-            app: {},
-            historyManager: {},
-            updateManager: {
-                showUpdateModal,
-            },
-        };
-        handler = new CommandHandler(pluginMock);
-    });
+    pluginMock = {
+      addCommand,
+      noteMover: {
+        moveFocusedNoteToDestination,
+        moveAllFilesInVault,
+        generateVaultMovePreview,
+        generateActiveNotePreview,
+      },
+      app: {},
+      historyManager: {},
+      updateManager: {
+        showUpdateModal,
+      },
+    };
+    handler = new CommandHandler(pluginMock);
+  });
 
-    it('registers all commands correctly', () => {
-        handler.setup();
-        expect(addCommand).toHaveBeenCalledTimes(6);
-        const calls = addCommand.mock.calls;
-        expect(calls[0][0].id).toBe('trigger-note-movement');
-        expect(calls[1][0].id).toBe('trigger-note-bulk-move');
-        expect(calls[2][0].id).toBe('show-history');
-        expect(calls[3][0].id).toBe('show-update-modal');
-        expect(calls[4][0].id).toBe('preview-bulk-movement');
-        expect(calls[5][0].id).toBe('preview-note-movement');
-    });
+  it('registers all commands correctly', () => {
+    handler.setup();
+    expect(addCommand).toHaveBeenCalledTimes(6);
+    const calls = addCommand.mock.calls;
+    expect(calls[0][0].id).toBe('trigger-note-movement');
+    expect(calls[1][0].id).toBe('trigger-note-bulk-move');
+    expect(calls[2][0].id).toBe('show-history');
+    expect(calls[3][0].id).toBe('show-update-modal');
+    expect(calls[4][0].id).toBe('preview-bulk-movement');
+    expect(calls[5][0].id).toBe('preview-note-movement');
+  });
 
-    it('calls moveFocusedNoteToDestination in editor callback', () => {
-        handler.setup();
-        // Extract and execute editor callback from the first command
-        const editorCallback = addCommand.mock.calls[0][0].editorCallback;
-        editorCallback({}, {});
-        expect(moveFocusedNoteToDestination).toHaveBeenCalled();
-    });
+  it('calls moveFocusedNoteToDestination in editor callback', () => {
+    handler.setup();
+    // Extract and execute editor callback from the first command
+    const editorCallback = addCommand.mock.calls[0][0].editorCallback;
+    editorCallback({}, {});
+    expect(moveFocusedNoteToDestination).toHaveBeenCalled();
+  });
 
-    it('calls moveAllFilesInVault in bulk callback', () => {
-        handler.setup();
-        const callback = addCommand.mock.calls[1][0].callback;
-        callback();
-        expect(moveAllFilesInVault).toHaveBeenCalled();
-    });
+  it('calls moveAllFilesInVault in bulk callback', () => {
+    handler.setup();
+    const callback = addCommand.mock.calls[1][0].callback;
+    callback();
+    expect(moveAllFilesInVault).toHaveBeenCalled();
+  });
 
-    it('opens HistoryModal in history callback', () => {
-        handler.setup();
-        const callback = addCommand.mock.calls[2][0].callback;
-        callback();
-        expect(open).toHaveBeenCalled();
-    });
+  it('opens HistoryModal in history callback', () => {
+    handler.setup();
+    const callback = addCommand.mock.calls[2][0].callback;
+    callback();
+    expect(open).toHaveBeenCalled();
+  });
 
-    it('calls showUpdateModal in update modal callback', () => {
-        handler.setup();
-        const callback = addCommand.mock.calls[3][0].callback;
-        callback();
-        expect(showUpdateModal).toHaveBeenCalledWith(true);
-    });
+  it('calls showUpdateModal in update modal callback', () => {
+    handler.setup();
+    const callback = addCommand.mock.calls[3][0].callback;
+    callback();
+    expect(showUpdateModal).toHaveBeenCalledWith(true);
+  });
 
-    it('handles preview bulk movement callback with success', async () => {
-        const mockPreview = { successfulMoves: [], blockedMoves: [] };
-        generateVaultMovePreview.mockResolvedValue(mockPreview);
-        
-        handler.setup();
-        const callback = addCommand.mock.calls[4][0].callback;
-        await callback();
-        
-        expect(generateVaultMovePreview).toHaveBeenCalled();
-        expect(open).toHaveBeenCalled();
-    });
+  it('handles preview bulk movement callback with success', async () => {
+    const mockPreview = { successfulMoves: [], blockedMoves: [] };
+    generateVaultMovePreview.mockResolvedValue(mockPreview);
 
-    it('handles preview note movement callback with success', async () => {
-        const mockPreview = { successfulMoves: [], blockedMoves: [] };
-        generateActiveNotePreview.mockResolvedValue(mockPreview);
+    handler.setup();
+    const callback = addCommand.mock.calls[4][0].callback;
+    await callback();
 
-        handler.setup();
-        const editorCallback = addCommand.mock.calls[5][0].editorCallback;
-        await editorCallback({}, {});
+    expect(generateVaultMovePreview).toHaveBeenCalled();
+    expect(open).toHaveBeenCalled();
+  });
 
-        expect(generateActiveNotePreview).toHaveBeenCalled();
-        expect(open).toHaveBeenCalled();
-    });
+  it('handles preview note movement callback with success', async () => {
+    const mockPreview = { successfulMoves: [], blockedMoves: [] };
+    generateActiveNotePreview.mockResolvedValue(mockPreview);
 
-    // Error handling tests would require complex mock setup
-    // These are covered by the existing tests that verify the commands are registered correctly
+    handler.setup();
+    const editorCallback = addCommand.mock.calls[5][0].editorCallback;
+    await editorCallback({}, {});
 
-}); 
+    expect(generateActiveNotePreview).toHaveBeenCalled();
+    expect(open).toHaveBeenCalled();
+  });
+
+  // Error handling tests would require complex mock setup
+  // These are covered by the existing tests that verify the commands are registered correctly
+});

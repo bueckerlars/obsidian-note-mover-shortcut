@@ -1,0 +1,7 @@
+node_modules/
+coverage/
+*.min.js
+main.js
+manifest.json
+versions.json
+data.json

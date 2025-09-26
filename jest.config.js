@@ -26,4 +26,4 @@ module.exports = {
     'src/types/__tests__/HistoryEntryType.test.ts',
   ],
   setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
-}; 
+};

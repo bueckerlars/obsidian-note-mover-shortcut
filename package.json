@@ -1,35 +1,53 @@
 {
-	"name": "obsidian-note-mover-shortcut",
-	"version": "0.4.2",
-	"description": "Quickly and easily move notes to a predefined folder. Perfect for organizing your notes.",
-	"main": "main.js",
-	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"test": "jest",
-		"test:watch": "jest --watch",
-		"test:coverage": "jest --coverage"
-	},
-	"keywords": [],
-	"author": "bueckerlars",
-	"license": "MIT",
-	"devDependencies": {
-		"@testing-library/jest-dom": "^6.6.3",
-		"@types/jest": "^29.5.14",
-		"@types/node": "^16.11.6",
-		"@typescript-eslint/eslint-plugin": "5.29.0",
-		"@typescript-eslint/parser": "5.29.0",
-		"builtin-modules": "3.3.0",
-		"esbuild": "^0.25.9",
-		"jest": "^30.0.0",
-		"jest-environment-jsdom": "^30.0.0",
-		"obsidian": "latest",
-		"ts-jest": "^29.4.0",
-		"tslib": "2.4.0",
-		"typescript": "4.7.4"
-	},
-	"dependencies": {
-		"@popperjs/core": "^2.11.8"
-	}
+  "name": "obsidian-note-mover-shortcut",
+  "version": "0.4.2",
+  "description": "Quickly and easily move notes to a predefined folder. Perfect for organizing your notes.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "version": "node version-bump.mjs && git add manifest.json versions.json",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "bueckerlars",
+  "license": "MIT",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^16.11.6",
+    "@typescript-eslint/eslint-plugin": "5.29.0",
+    "@typescript-eslint/parser": "5.29.0",
+    "builtin-modules": "3.3.0",
+    "esbuild": "^0.25.9",
+    "husky": "^9.1.7",
+    "jest": "^30.0.0",
+    "jest-environment-jsdom": "^30.0.0",
+    "lint-staged": "^16.2.1",
+    "obsidian": "latest",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.0",
+    "tslib": "2.4.0",
+    "typescript": "4.7.4"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8"
+  },
+  "lint-staged": {
+    "*.{ts,js}": [
+      "eslint --fix --max-warnings 0",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
 }

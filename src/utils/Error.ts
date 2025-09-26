@@ -1,7 +1,7 @@
 // Simplified error handling utilities
 // Credits go to SilentVoid13 Templater Plugin: https://github.com/SilentVoid13/Templater
 
-import { NoticeManager } from "./NoticeManager";
+import { NoticeManager } from './NoticeManager';
 
 /**
  * Creates a standardized error with context information
@@ -10,9 +10,9 @@ import { NoticeManager } from "./NoticeManager";
  * @returns A new Error instance with enhanced message
  */
 export function createError(message: string, context?: string): Error {
-    const fullMessage = context ? `${context}: ${message}` : message;
-    const error = new Error(fullMessage);
-    return error;
+  const fullMessage = context ? `${context}: ${message}` : message;
+  const error = new Error(fullMessage);
+  return error;
 }
 
 /**
@@ -21,17 +21,22 @@ export function createError(message: string, context?: string): Error {
  * @param context - Additional context about where the error occurred
  * @param shouldThrow - Whether to re-throw the error after logging
  */
-export function handleError(error: unknown, context?: string, shouldThrow: boolean = true): void {
-    const errorMessage = error instanceof Error
-        ? error.message
-        : (typeof error === 'object' && error !== null
-            ? JSON.stringify(error)
-            : String(error));
-    const fullMessage = context ? `${context}: ${errorMessage}` : errorMessage;
-    
-    NoticeManager.error(fullMessage);
-    
-    if (shouldThrow) {
-        throw error instanceof Error ? error : new Error(errorMessage);
-    }
+export function handleError(
+  error: unknown,
+  context?: string,
+  shouldThrow = true
+): void {
+  const errorMessage =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error !== null
+        ? JSON.stringify(error)
+        : String(error);
+  const fullMessage = context ? `${context}: ${errorMessage}` : errorMessage;
+
+  NoticeManager.error(fullMessage);
+
+  if (shouldThrow) {
+    throw error instanceof Error ? error : new Error(errorMessage);
+  }
 }

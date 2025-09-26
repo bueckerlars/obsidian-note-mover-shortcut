@@ -1,33 +1,38 @@
-import { App, AbstractInputSuggest } from "obsidian";
-import { MetadataExtractor } from "../../core/MetadataExtractor";
+import { App, AbstractInputSuggest } from 'obsidian';
+import { MetadataExtractor } from '../../core/MetadataExtractor';
 
 export class TagSuggest extends AbstractInputSuggest<string> {
-    private tags: Set<string>;
-    private metadataExtractor: MetadataExtractor;
+  private tags: Set<string>;
+  private metadataExtractor: MetadataExtractor;
 
-    constructor(app: App, private inputEl: HTMLInputElement) {
-        super(app, inputEl);
-        this.tags = new Set();
-        this.metadataExtractor = new MetadataExtractor(app);
-        this.loadTags();
-    }
-    
-    private loadTags(): void {
-        this.tags = this.metadataExtractor.extractAllTags();
-    }
+  constructor(
+    app: App,
+    private inputEl: HTMLInputElement
+  ) {
+    super(app, inputEl);
+    this.tags = new Set();
+    this.metadataExtractor = new MetadataExtractor(app);
+    this.loadTags();
+  }
 
-    getSuggestions(inputStr: string): string[] {
-        const lowerInput = inputStr.toLowerCase();
-        return Array.from(this.tags).filter(tag => tag.toLowerCase().includes(lowerInput));
-    }
+  private loadTags(): void {
+    this.tags = this.metadataExtractor.extractAllTags();
+  }
 
-    renderSuggestion(value: string, el: HTMLElement): void {
-        el.setText(value);
-    }
+  getSuggestions(inputStr: string): string[] {
+    const lowerInput = inputStr.toLowerCase();
+    return Array.from(this.tags).filter(tag =>
+      tag.toLowerCase().includes(lowerInput)
+    );
+  }
 
-    selectSuggestion(value: string): void {
-        this.inputEl.value = value;
-        this.inputEl.trigger("input");
-        this.close();
-    }
+  renderSuggestion(value: string, el: HTMLElement): void {
+    el.setText(value);
+  }
+
+  selectSuggestion(value: string): void {
+    this.inputEl.value = value;
+    this.inputEl.trigger('input');
+    this.close();
+  }
 }

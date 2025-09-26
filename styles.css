@@ -2,583 +2,582 @@
 
 /* Search Input Styles */
 .note_mover_search {
-    width: calc(100% - 20px);
+  width: calc(100% - 20px);
 }
 
 /* ===== COMMON MODAL STYLES ===== */
 
 /* Modal Size Classes */
 .modal-size-small {
-    width: 400px !important;
-    min-width: 350px !important;
+  width: 400px !important;
+  min-width: 350px !important;
 }
 
 .modal-size-medium {
-    min-width: 600px !important;
-    width: 800px !important;
-    max-width: 95vw !important;
+  min-width: 600px !important;
+  width: 800px !important;
+  max-width: 95vw !important;
 }
 
 .modal-size-large {
-    min-width: 700px !important;
-    width: 900px !important;
-    max-width: 95vw !important;
+  min-width: 700px !important;
+  width: 900px !important;
+  max-width: 95vw !important;
 }
 
 /* Common Modal Title Styles */
 .modal-title-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .modal-title-icon {
-    font-size: 2em;
-    line-height: 1;
+  font-size: 2em;
+  line-height: 1;
 }
 
 .modal-title {
-    margin: 0;
-    font-size: 1.6em;
-    font-weight: bold;
-    color: var(--text-normal);
+  margin: 0;
+  font-size: 1.6em;
+  font-weight: bold;
+  color: var(--text-normal);
 }
 
 .modal-subtitle {
-    margin: 0 0 24px 0;
-    color: var(--text-muted);
-    font-size: 1.1em;
+  margin: 0 0 24px 0;
+  color: var(--text-muted);
+  font-size: 1.1em;
 }
 
 /* Common Button Container Styles */
 .modal-button-container {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  align-items: center;
 }
 
 .modal-button-container .setting-item {
-    border: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .modal-button-container .setting-item-control {
-    margin: 0 !important;
+  margin: 0 !important;
 }
 
 /* Common Section Styles */
 .modal-section {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .modal-section:last-child {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 .modal-section-header {
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .modal-section-header h3 {
-    margin: 0;
-    font-size: 1.2em;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Common Footer Styles */
 .modal-footer {
-    display: flex;
-    justify-content: center;
-    border-top: 1px solid var(--background-modifier-border);
-    padding-top: 16px;
-    margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: 16px;
+  margin-top: 24px;
 }
 
 /* Common List Styles */
 .modal-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .modal-list-item {
-    padding: 16px;
-    border-radius: 6px;
-    border: 1px solid var(--background-modifier-border);
-    background: var(--background-primary);
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
 }
 
 /* Common Empty State Styles */
 .modal-empty {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--text-muted);
-    font-size: 1.1em;
-    background: var(--background-secondary);
-    border-radius: 8px;
-    margin: 24px 0;
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  font-size: 1.1em;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  margin: 24px 0;
 }
 
 /* Common Info Box Styles */
 .modal-info-box {
-    margin-bottom: 20px;
-    padding: 12px 16px;
-    background: var(--background-secondary);
-    border-radius: 6px;
-    border: 1px solid var(--background-modifier-border);
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
 }
 
 .modal-info-row {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-    font-size: 0.9em;
-    color: var(--text-muted);
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  font-size: 0.9em;
+  color: var(--text-muted);
 }
 
 .modal-info-row span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .modal-info-row code {
-    background: var(--background-primary);
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 0.85em;
+  background: var(--background-primary);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.85em;
 }
 
 /* Verlaufshistorie Modal */
 .note-mover-history-modal {
-    padding: 32px 0 20px 0;
-    box-sizing: border-box;
+  padding: 32px 0 20px 0;
+  box-sizing: border-box;
 }
 
 /* Time Filter Container */
 .time-filter-container {
-    margin-bottom: 20px;
-    padding: 0;
-    background: none;
-    border: none;
+  margin-bottom: 20px;
+  padding: 0;
+  background: none;
+  border: none;
 }
 
 .time-filter-container .setting-item {
-    margin-bottom: 0;
-    border: none !important;
-    box-shadow: none !important;
-    background: none !important;
+  margin-bottom: 0;
+  border: none !important;
+  box-shadow: none !important;
+  background: none !important;
 }
 
 .time-filter-container .setting-item-name {
-    font-weight: 600;
-    color: var(--text-normal);
-    display: flex;
-    align-items: center;
-    height: 100%;
+  font-weight: 600;
+  color: var(--text-normal);
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .time-filter-container .setting-item-control {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    margin-right: 16px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin-right: 16px;
 }
 
 /* Retention Policy Settings - Inline layout */
 .setting-item-control .retention-value-input {
-    width: 80px !important;
-    margin-right: 8px !important;
+  width: 80px !important;
+  margin-right: 8px !important;
 }
 
 .setting-item-control .retention-unit-dropdown {
-    width: 100px !important;
+  width: 100px !important;
 }
 
 .setting-item-control {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
 
 .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    width: 100%;
-    margin: 0;
-    padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .history-entry:first-child {
-    margin-top: 0;
-    border-top: none;
+  margin-top: 0;
+  border-top: none;
 }
 
 .history-entry {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 12px 24px;
-    border-bottom: 1px solid var(--background-modifier-border);
-    background: none;
-    box-sizing: border-box;
-    gap: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: none;
+  box-sizing: border-box;
+  gap: 16px;
 }
 
 .history-entry:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .history-entry-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 0;
-    min-width: 0;
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .history-entry-info {
-    font-weight: 600;
-    font-size: 1em;
-    color: var(--text-normal);
-    margin-bottom: 2px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  font-weight: 600;
+  font-size: 1em;
+  color: var(--text-normal);
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .history-entry-paths {
-    color: var(--text-muted);
-    font-size: 0.92em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  color: var(--text-muted);
+  font-size: 0.92em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .setting-item-control {
-    flex-shrink: 0;
-    margin-left: 16px;
-    display: flex;
-    align-items: center;
+  flex-shrink: 0;
+  margin-left: 16px;
+  display: flex;
+  align-items: center;
 }
 
 .setting-item {
-    border: none !important;
-    box-shadow: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .note-mover-history-title {
-    margin: 0 0 16px 0;
-    font-size: 1.4em;
-    font-weight: bold;
-    text-align: left;
-    color: var(--text-normal);
+  margin: 0 0 16px 0;
+  font-size: 1.4em;
+  font-weight: bold;
+  text-align: left;
+  color: var(--text-normal);
 }
 
 /* Bulk Operation Styles */
 .history-entry.bulk-operation {
-    background: var(--background-secondary);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 8px;
-    margin-bottom: 8px;
-    padding: 16px 24px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  padding: 16px 24px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
 }
 
 .history-entry.single-operation {
-    border-left: 3px solid var(--interactive-accent);
+  border-left: 3px solid var(--interactive-accent);
 }
 
 .bulk-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .bulk-operation-info {
-    font-weight: 600;
-    font-size: 1.1em;
-    color: var(--text-normal);
+  font-weight: 600;
+  font-size: 1.1em;
+  color: var(--text-normal);
 }
 
 .bulk-details {
-    margin-top: 8px;
+  margin-top: 8px;
 }
 
 .bulk-details summary {
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 0.9em;
-    margin-bottom: 8px;
-    user-select: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.9em;
+  margin-bottom: 8px;
+  user-select: none;
 }
 
 .bulk-details summary:hover {
-    color: var(--text-normal);
+  color: var(--text-normal);
 }
 
 .bulk-files-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin-left: 0;
-    padding-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-left: 0;
+  padding-top: 0;
 }
 
 /* Bulk file entries use the same styling as regular history entries */
 .history-entry.bulk-file-entry {
-    background: var(--background-primary);
-    border-left: 2px solid var(--background-modifier-border);
-    margin-bottom: 0;
-    border-bottom: 1px solid var(--background-modifier-border-hover);
+  background: var(--background-primary);
+  border-left: 2px solid var(--background-modifier-border);
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
 }
 
 /* Update Modal Styles */
 .note-mover-update-modal {
-    padding: 32px 0 20px 0;
-    box-sizing: border-box;
+  padding: 32px 0 20px 0;
+  box-sizing: border-box;
 }
 
 .changelog-container {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 24px;
-    background: var(--background-secondary);
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 24px;
+  background: var(--background-secondary);
 }
 
 .changelog-version {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .changelog-version:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .changelog-version-title {
-    margin: 0 0 12px 0;
-    font-size: 1.3em;
-    font-weight: bold;
-    color: var(--text-accent);
-    border-bottom: 1px solid var(--background-modifier-border);
-    padding-bottom: 6px;
+  margin: 0 0 12px 0;
+  font-size: 1.3em;
+  font-weight: bold;
+  color: var(--text-accent);
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 6px;
 }
 
 .changelog-section {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 .changelog-section:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .changelog-section-title {
-    margin: 0 0 8px 0;
-    font-size: 1em;
-    font-weight: 600;
-    color: var(--text-normal);
+  margin: 0 0 8px 0;
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-normal);
 }
 
 .changelog-list {
-    margin: 0;
-    padding-left: 20px;
-    color: var(--text-normal);
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-normal);
 }
 
 .changelog-list li {
-    margin-bottom: 4px;
+  margin-bottom: 4px;
 }
 
 .changelog-list li:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .update-modal-links {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .update-modal-github-link {
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 0.9em;
-    transition: color 0.2s ease;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: color 0.2s ease;
 }
 
 .update-modal-github-link:hover {
-    color: var(--text-accent);
-    text-decoration: underline;
+  color: var(--text-accent);
+  text-decoration: underline;
 }
 
 .no-changelog-text {
-    color: var(--text-muted);
-    font-style: italic;
-    text-align: center;
-    margin: 24px 0;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  margin: 24px 0;
 }
 
 /* Preview Modal Styles */
 .note-mover-preview-modal {
-    padding: 16px 0 20px 0;
-    box-sizing: border-box;
+  padding: 16px 0 20px 0;
+  box-sizing: border-box;
 }
 
 .preview-section {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .preview-section:last-child {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 .preview-section-success .modal-section-header h3 {
-    color: var(--text-success);
+  color: var(--text-success);
 }
 
 .preview-section-blocked .modal-section-header h3 {
-    color: var(--text-error);
+  color: var(--text-error);
 }
 
 .modal-list-item.preview-item-success {
-    border-left: 3px solid var(--text-success);
-    background: var(--background-primary-alt);
+  border-left: 3px solid var(--text-success);
+  background: var(--background-primary-alt);
 }
 
 .modal-list-item.preview-item-blocked {
-    border-left: 3px solid var(--text-error);
-    background: var(--background-primary-alt);
+  border-left: 3px solid var(--text-error);
+  background: var(--background-primary-alt);
 }
 
 .preview-item-main {
-    margin-bottom: 8px;
+  margin-bottom: 8px;
 }
 
 .preview-item-filename {
-    font-weight: 600;
-    font-size: 1em;
-    color: var(--text-normal);
-    margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 1em;
+  color: var(--text-normal);
+  margin-bottom: 4px;
 }
 
 .preview-item-paths {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: var(--font-monospace);
-    font-size: 0.85em;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-monospace);
+  font-size: 0.85em;
 }
 
 .current-path {
-    color: var(--text-muted);
+  color: var(--text-muted);
 }
 
 .arrow {
-    color: var(--text-accent);
-    font-weight: bold;
+  color: var(--text-accent);
+  font-weight: bold;
 }
 
 .target-path {
-    color: var(--text-success);
-    font-weight: 500;
+  color: var(--text-success);
+  font-weight: 500;
 }
 
 .preview-item-details {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 0.9em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9em;
 }
 
 .preview-item-rule,
 .preview-item-block-reason,
 .preview-item-blocking-filter,
 .preview-item-tags {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .rule-label,
 .block-reason-label,
 .filter-label,
 .tags-label {
-    font-weight: 500;
-    color: var(--text-muted);
-    min-width: 60px;
+  font-weight: 500;
+  color: var(--text-muted);
+  min-width: 60px;
 }
 
 .preview-item-rule code,
 .preview-item-blocking-filter code {
-    background: var(--background-secondary);
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 0.8em;
-    color: var(--text-normal);
+  background: var(--background-secondary);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.8em;
+  color: var(--text-normal);
 }
 
 .preview-item-block-reason {
-    color: var(--text-error);
+  color: var(--text-error);
 }
 
 .tag {
-    display: inline-block;
-    background: var(--background-modifier-border);
-    color: var(--text-muted);
-    padding: 2px 6px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    margin-right: 4px;
+  display: inline-block;
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  margin-right: 4px;
 }
-
 
 /* Confirm Modal Styles */
 .confirm-modal {
-    padding: 24px 0 16px 0;
-    box-sizing: border-box;
-    text-align: center;
+  padding: 24px 0 16px 0;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .confirm-modal .modal-title {
-    text-align: center;
-    font-size: 1.4em;
+  text-align: center;
+  font-size: 1.4em;
 }
 
 .confirm-modal-message {
-    margin: 0 0 24px 0;
-    color: var(--text-muted);
-    font-size: 1em;
-    line-height: 1.5;
-    text-align: center;
+  margin: 0 0 24px 0;
+  color: var(--text-muted);
+  font-size: 1em;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .confirm-modal .modal-button-container {
-    border-top: 1px solid var(--background-modifier-border);
-    padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: 16px;
 }
 
 .confirm-modal .modal-button-container button {
-    min-width: 80px;
+  min-width: 80px;
 }
 
 /* ===== NOTICE STYLES ===== */
 
 /* Undo Button Styles */
 .notice-undo-button {
-    margin-left: 10px;
+  margin-left: 10px;
 }
