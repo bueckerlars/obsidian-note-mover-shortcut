@@ -29,14 +29,16 @@ export class TriggerEventHandler {
         }
 
         if ((this.plugin.settings as any).enableOnEditTrigger) {
-            const unregister = this.plugin.registerEvent(
+            this.plugin.registerEvent(
                 this.plugin.app.vault.on('modify', async (file) => {
                     if (file instanceof TFile && file.extension === 'md') {
                         await this.handleOnEdit(file);
                     }
                 })
             );
-            this.onEditUnregister = unregister;
+            // Obsidian's registerEvent doesn't return an unregister function
+            // The event is automatically cleaned up when the plugin unloads
+            this.onEditUnregister = null;
         }
     }
 
