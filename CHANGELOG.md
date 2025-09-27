@@ -4,7 +4,7 @@
 
 ### Feature
 
-- Implemented check if note is in the correct folder already bevor move
+- Implemented check if note is in the correct folder already befor move
 - Implemented drag&drop reordering for rules and filters
 
 ### Bug Fixes
