@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.2...0.4.3)
+
+### Changes
+
+- Removed `onlyMoveNotesWithRules` setting
+
+### Fixes
+
+- Bulk moves skip notes that are in the correct folder already
+
+### Improvements
+
+- The `UpdateMangager` gets a dynamic on build-time generated changelog instead of a copy from the `CHANGELOG.md`
+
 ## [0.4.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.1...0.4.2)
 
 ### Features
