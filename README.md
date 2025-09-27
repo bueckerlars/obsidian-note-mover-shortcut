@@ -52,7 +52,6 @@ Notes:
 ![Rules Configuration](images/noteMover-settings-rules.png)
 
 - **Rules description**: Define custom rules for moving files based on various criteria. Rules are always active.
-- **Only move files with rules**: When enabled, only files matching defined rules will be moved, others remain untouched. When disabled, files without matching rules are moved to the root folder.
 - **Rule configuration**: For each rule, specify:
   - **Criteria**: The criteria that triggers the rule. Supported types:
     - **Tags**: `tag: tagname` - Trigger for files with specific tags
