@@ -75,6 +75,17 @@ describe('RuleManager', () => {
     expect(result).toBeNull();
   });
 
+  it('should skip file if folder path filter matches (blacklist)', async () => {
+    // Test that folder blacklist works for files in subfolders
+    const templateFile = {
+      ...mockFile,
+      path: 'Templates/Meeting Notes.md',
+    };
+    ruleManager.setFilter(['path: Templates'], false);
+    const result = await ruleManager.moveFileBasedOnTags(templateFile);
+    expect(result).toBeNull();
+  });
+
   it('should skip file if content filter matches (blacklist)', async () => {
     ruleManager.setFilter(['content: file content'], false);
     const result = await ruleManager.moveFileBasedOnTags(mockFile);

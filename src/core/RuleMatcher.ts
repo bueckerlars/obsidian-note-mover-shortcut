@@ -153,7 +153,9 @@ export class RuleMatcher {
       case 'fileName':
         return this.matchFileName(fileName, value);
       case 'path':
-        return filePath === value;
+        // For path filters, check if the file path starts with the filter value
+        // This allows folder blacklisting to work (e.g., "Templates" matches "Templates/Meeting Notes.md")
+        return filePath === value || filePath.startsWith(value + '/');
       case 'content':
         return fileContent.includes(value);
       case 'created_at':

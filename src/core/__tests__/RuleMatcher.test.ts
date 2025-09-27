@@ -252,6 +252,32 @@ describe('RuleMatcher', () => {
       ).toBe(false);
     });
 
+    it('should evaluate path criteria for folder blacklist (should match subfolders)', () => {
+      // Test that folder blacklist should match files in subfolders
+      const templateFileMetadata = {
+        ...mockMetadata,
+        filePath: 'Templates/Meeting Notes.md',
+      };
+
+      // This should match because the file is in the Templates folder
+      expect(
+        ruleMatcher.evaluateCriteria(templateFileMetadata, 'path:Templates')
+      ).toBe(true);
+
+      // This should also match for exact path
+      expect(
+        ruleMatcher.evaluateCriteria(
+          templateFileMetadata,
+          'path:Templates/Meeting Notes.md'
+        )
+      ).toBe(true);
+
+      // This should not match
+      expect(
+        ruleMatcher.evaluateCriteria(templateFileMetadata, 'path:Other')
+      ).toBe(false);
+    });
+
     it('should evaluate content criteria', () => {
       expect(
         ruleMatcher.evaluateCriteria(mockMetadata, 'content:test file')
