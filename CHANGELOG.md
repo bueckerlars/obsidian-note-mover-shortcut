@@ -2,9 +2,9 @@
 
 ## [0.4.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.3...0.4.4)
 
-### Feature
+### Features
 
-- Implemented check if note is in the correct folder already bevor move
+- Implemented check if note is in the correct folder already before move
 - Implemented drag&drop reordering for rules and filters
 
 ### Bug Fixes

@@ -7,6 +7,9 @@ interface ChangelogEntry {
     features?: string[];
     bugFixes?: string[];
     improvements?: string[];
+    changes?: string[];
+    fixes?: string[];
+    performance?: string[];
   };
 }
 
@@ -148,6 +151,54 @@ export class UpdateModal extends BaseModal {
         });
         entry.changes.bugFixes.forEach(bugFix => {
           bugFixesList.createEl('li', { text: bugFix });
+        });
+      }
+
+      if (entry.changes.changes && entry.changes.changes.length > 0) {
+        const changesSection = versionContainer.createEl('div', {
+          cls: 'changelog-section',
+        });
+        changesSection.createEl('h4', {
+          text: '🔄 Changes',
+          cls: 'changelog-section-title',
+        });
+        const changesList = changesSection.createEl('ul', {
+          cls: 'changelog-list',
+        });
+        entry.changes.changes.forEach(change => {
+          changesList.createEl('li', { text: change });
+        });
+      }
+
+      if (entry.changes.fixes && entry.changes.fixes.length > 0) {
+        const fixesSection = versionContainer.createEl('div', {
+          cls: 'changelog-section',
+        });
+        fixesSection.createEl('h4', {
+          text: '🔧 Fixes',
+          cls: 'changelog-section-title',
+        });
+        const fixesList = fixesSection.createEl('ul', {
+          cls: 'changelog-list',
+        });
+        entry.changes.fixes.forEach(fix => {
+          fixesList.createEl('li', { text: fix });
+        });
+      }
+
+      if (entry.changes.performance && entry.changes.performance.length > 0) {
+        const performanceSection = versionContainer.createEl('div', {
+          cls: 'changelog-section',
+        });
+        performanceSection.createEl('h4', {
+          text: '⚡ Performance',
+          cls: 'changelog-section-title',
+        });
+        const performanceList = performanceSection.createEl('ul', {
+          cls: 'changelog-list',
+        });
+        entry.changes.performance.forEach(performance => {
+          performanceList.createEl('li', { text: performance });
         });
       }
     });
