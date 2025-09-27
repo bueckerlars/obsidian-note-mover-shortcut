@@ -10,6 +10,7 @@
 ### Bug Fixes
 
 - Fixed skipping of already moved files
+- Fixed filter blacklist for folders [#33](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/33)
 
 ## [0.4.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.2...0.4.3)
 
