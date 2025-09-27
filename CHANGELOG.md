@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.3...0.4.4)
+
+### Feature
+
+- Implemented check if note is in the correct folder already bevor move
+
 ## [0.4.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.2...0.4.3)
 
 ### Changes

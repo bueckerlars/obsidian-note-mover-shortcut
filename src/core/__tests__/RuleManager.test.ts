@@ -666,6 +666,33 @@ describe('RuleManager', () => {
       expect(preview.targetPath).toBe('custom/path');
       expect(preview.matchedRule).toBe('tag: #tag1');
     });
+
+    it('should generate preview with willBeMoved false when file is already in correct folder', async () => {
+      // Mock file that is already in the target folder
+      const fileInCorrectFolder = {
+        ...mockFile,
+        path: 'custom/path/file.md',
+      };
+
+      mockMetadataExtractor.extractFileMetadata.mockResolvedValue({
+        fileName: 'file.md',
+        filePath: 'custom/path/file.md', // File is already in the target folder
+        tags: ['#tag1'],
+        properties: {},
+        fileContent: 'file content',
+        createdAt: new Date(mockFile.stat.ctime),
+        updatedAt: new Date(mockFile.stat.mtime),
+      });
+
+      ruleManager.setRules([{ criteria: 'tag: #tag1', path: 'custom/path' }]);
+      const preview =
+        await ruleManager.generatePreviewForFile(fileInCorrectFolder);
+
+      expect(preview.willBeMoved).toBe(false);
+      expect(preview.targetPath).toBe('custom/path');
+      expect(preview.matchedRule).toBe('tag: #tag1');
+      expect(preview.blockReason).toBe('File is already in the correct folder');
+    });
   });
 
   // Tests for various criteria types

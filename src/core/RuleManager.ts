@@ -3,6 +3,7 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { Rule } from '../types/Rule';
 import { PreviewEntry, MovePreview } from '../types/MovePreview';
 import { createError, handleError } from '../utils/Error';
+import { combinePath } from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
 import { RuleMatcher } from './RuleMatcher';
 
@@ -109,6 +110,22 @@ export class RuleManager {
         this.rules
       );
       if (matchingRule) {
+        // Calculate the full target path
+        const fullTargetPath = combinePath(matchingRule.path, fileName);
+
+        // Check if file is already in the correct location
+        if (filePath === fullTargetPath) {
+          return {
+            fileName,
+            currentPath: filePath,
+            targetPath: matchingRule.path,
+            willBeMoved: false,
+            blockReason: 'File is already in the correct folder',
+            matchedRule: matchingRule.criteria,
+            tags,
+          };
+        }
+
         return {
           fileName,
           currentPath: filePath,
