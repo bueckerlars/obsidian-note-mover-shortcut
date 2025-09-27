@@ -26,7 +26,6 @@ export interface NoteMoverShortcutSettings {
   filter: string[];
   isFilterWhitelist: boolean;
   rules: Rule[];
-  onlyMoveNotesWithRules: boolean;
   history?: HistoryEntry[];
   bulkOperations?: BulkOperation[];
   lastSeenVersion?: string;

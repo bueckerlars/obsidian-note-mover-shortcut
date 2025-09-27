@@ -45,7 +45,6 @@ export class SettingsValidator {
       'enableFilter',
       'isFilterWhitelist',
       'enableRules',
-      'onlyMoveNotesWithRules',
     ];
     for (const field of booleanFields) {
       if (!this.validateBooleanField(settings[field], field, result)) {
@@ -336,7 +335,6 @@ export class SettingsValidator {
       'isFilterWhitelist',
       'enableRules',
       'rules',
-      'onlyMoveNotesWithRules',
       'lastSeenVersion',
     ];
 

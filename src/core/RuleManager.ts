@@ -10,7 +10,6 @@ export class RuleManager {
   private rules: Rule[] = [];
   private filter: string[] = [];
   private isFilterWhitelist = false;
-  private onlyMoveNotesWithRules = false;
   private metadataExtractor: MetadataExtractor;
   private ruleMatcher: RuleMatcher;
 
@@ -29,10 +28,6 @@ export class RuleManager {
   public setFilter(filter: string[], isWhitelist: boolean): void {
     this.filter = filter;
     this.isFilterWhitelist = isWhitelist;
-  }
-
-  public setOnlyMoveNotesWithRules(onlyMoveNotesWithRules: boolean): void {
-    this.onlyMoveNotesWithRules = onlyMoveNotesWithRules;
   }
 
   public async moveFileBasedOnTags(
@@ -64,12 +59,8 @@ export class RuleManager {
         return matchingRule.path;
       }
 
-      // If onlyMoveNotesWithRules is enabled and no rule matched, return null to skip the file
-      if (this.onlyMoveNotesWithRules) {
-        return null;
-      }
-
-      return this.defaultFolder;
+      // No rule matched - skip the file since only notes with rules should be moved
+      return null;
     } catch (error) {
       handleError(
         error,
@@ -128,26 +119,15 @@ export class RuleManager {
         };
       }
 
-      // No rule matched
-      if (this.onlyMoveNotesWithRules) {
-        return {
-          fileName,
-          currentPath: filePath,
-          targetPath: null,
-          willBeMoved: false,
-          blockReason: 'No matching rule found',
-          tags,
-        };
-      } else {
-        return {
-          fileName,
-          currentPath: filePath,
-          targetPath: this.defaultFolder,
-          willBeMoved: true,
-          matchedRule: 'Default destination',
-          tags,
-        };
-      }
+      // No rule matched - skip the file since only notes with rules should be moved
+      return {
+        fileName,
+        currentPath: filePath,
+        targetPath: null,
+        willBeMoved: false,
+        blockReason: 'No matching rule found',
+        tags,
+      };
     } catch (error) {
       handleError(
         error,
