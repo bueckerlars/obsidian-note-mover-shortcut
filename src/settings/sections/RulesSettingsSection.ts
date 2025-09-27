@@ -3,8 +3,11 @@ import { App, Setting } from 'obsidian';
 import { FolderSuggest } from '../suggesters/FolderSuggest';
 import { createError, handleError } from 'src/utils/Error';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
+import { DragDropManager } from '../../utils/DragDropManager';
 
 export class RulesSettingsSection {
+  private dragDropManager: DragDropManager | null = null;
+
   constructor(
     private plugin: NoteMoverShortcutPlugin,
     private containerEl: HTMLElement,
@@ -42,8 +45,16 @@ export class RulesSettingsSection {
   }
 
   addRulesArray(): void {
+    // Create a container for rules with drag & drop
+    const rulesContainer = document.createElement('div');
+    rulesContainer.className = 'rules-container';
+    this.containerEl.appendChild(rulesContainer);
+
+    // Setup drag & drop manager
+    this.setupDragDropManager(rulesContainer);
+
     this.plugin.settings.rules.forEach((rule, index) => {
-      const s = new Setting(this.containerEl)
+      const s = new Setting(rulesContainer)
         .addSearch(cb => {
           // AdvancedSuggest instead of TagSuggest
           new (require('../suggesters/AdvancedSuggest').AdvancedSuggest)(
@@ -88,16 +99,6 @@ export class RulesSettingsSection {
           cb.containerEl.addClass('note_mover_search');
         })
         .addExtraButton(btn =>
-          btn.setIcon('up-chevron-glyph').onClick(() => {
-            this.moveRule(index, -1);
-          })
-        )
-        .addExtraButton(btn =>
-          btn.setIcon('down-chevron-glyph').onClick(() => {
-            this.moveRule(index, 1);
-          })
-        )
-        .addExtraButton(btn =>
           btn.setIcon('cross').onClick(async () => {
             this.plugin.settings.rules.splice(index, 1);
             await this.plugin.save_settings();
@@ -106,6 +107,9 @@ export class RulesSettingsSection {
             this.refreshDisplay();
           })
         );
+
+      // Add drag handle to the setting
+      this.addDragHandle(s.settingEl, index);
       s.infoEl.remove();
     });
   }
@@ -118,6 +122,47 @@ export class RulesSettingsSection {
     [this.plugin.settings.rules[index], this.plugin.settings.rules[newIndex]] =
       [this.plugin.settings.rules[newIndex], this.plugin.settings.rules[index]];
     this.plugin.save_settings();
+    this.refreshDisplay();
+  }
+
+  private setupDragDropManager(container: HTMLElement): void {
+    // Clean up existing manager
+    if (this.dragDropManager) {
+      this.dragDropManager.destroy();
+    }
+
+    this.dragDropManager = new DragDropManager(container, {
+      onReorder: (fromIndex: number, toIndex: number) => {
+        this.reorderRules(fromIndex, toIndex);
+      },
+      onSave: async () => {
+        await this.plugin.save_settings();
+        this.plugin.noteMover.updateRuleManager();
+      },
+      itemSelector: '.setting-item',
+      handleSelector: '.drag-handle',
+    });
+  }
+
+  private addDragHandle(settingEl: HTMLElement, index: number): void {
+    const handle = DragDropManager.createDragHandle();
+    const handleContainer = document.createElement('div');
+    handleContainer.className = 'drag-handle-container';
+    handleContainer.appendChild(handle);
+
+    // Insert handle at the beginning of the setting
+    settingEl.insertBefore(handleContainer, settingEl.firstChild);
+    settingEl.classList.add('with-drag-handle');
+  }
+
+  private reorderRules(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+
+    const rules = this.plugin.settings.rules;
+    const [movedRule] = rules.splice(fromIndex, 1);
+    rules.splice(toIndex, 0, movedRule);
+
+    // Refresh display to show new order
     this.refreshDisplay();
   }
 

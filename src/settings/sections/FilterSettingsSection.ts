@@ -1,8 +1,11 @@
 import NoteMoverShortcutPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
+import { DragDropManager } from '../../utils/DragDropManager';
 
 export class FilterSettingsSection {
+  private dragDropManager: DragDropManager | null = null;
+
   constructor(
     private plugin: NoteMoverShortcutPlugin,
     private containerEl: HTMLElement,
@@ -48,8 +51,16 @@ export class FilterSettingsSection {
   }
 
   addPeriodicMovementFilterArray(): void {
+    // Create a container for filters with drag & drop
+    const filtersContainer = document.createElement('div');
+    filtersContainer.className = 'filters-container';
+    this.containerEl.appendChild(filtersContainer);
+
+    // Setup drag & drop manager
+    this.setupDragDropManager(filtersContainer);
+
     this.plugin.settings.filter.forEach((filter, index) => {
-      const s = new Setting(this.containerEl)
+      const s = new Setting(filtersContainer)
         .addSearch(cb => {
           // AdvancedSuggest instead of TagSuggest
           new (require('../suggesters/AdvancedSuggest').AdvancedSuggest)(
@@ -73,16 +84,6 @@ export class FilterSettingsSection {
           cb.containerEl.addClass('note_mover_search');
         })
         .addExtraButton(btn =>
-          btn.setIcon('up-chevron-glyph').onClick(() => {
-            this.moveFilter(index, -1);
-          })
-        )
-        .addExtraButton(btn =>
-          btn.setIcon('down-chevron-glyph').onClick(() => {
-            this.moveFilter(index, 1);
-          })
-        )
-        .addExtraButton(btn =>
           btn.setIcon('cross').onClick(async () => {
             this.plugin.settings.filter.splice(index, 1);
             await this.plugin.save_settings();
@@ -91,6 +92,9 @@ export class FilterSettingsSection {
             this.refreshDisplay();
           })
         );
+
+      // Add drag handle to the setting
+      this.addDragHandle(s.settingEl, index);
       s.infoEl.remove();
     });
   }
@@ -108,6 +112,47 @@ export class FilterSettingsSection {
       this.plugin.settings.filter[index],
     ];
     this.plugin.save_settings();
+    this.refreshDisplay();
+  }
+
+  private setupDragDropManager(container: HTMLElement): void {
+    // Clean up existing manager
+    if (this.dragDropManager) {
+      this.dragDropManager.destroy();
+    }
+
+    this.dragDropManager = new DragDropManager(container, {
+      onReorder: (fromIndex: number, toIndex: number) => {
+        this.reorderFilters(fromIndex, toIndex);
+      },
+      onSave: async () => {
+        await this.plugin.save_settings();
+        this.plugin.noteMover.updateRuleManager();
+      },
+      itemSelector: '.setting-item',
+      handleSelector: '.drag-handle',
+    });
+  }
+
+  private addDragHandle(settingEl: HTMLElement, index: number): void {
+    const handle = DragDropManager.createDragHandle();
+    const handleContainer = document.createElement('div');
+    handleContainer.className = 'drag-handle-container';
+    handleContainer.appendChild(handle);
+
+    // Insert handle at the beginning of the setting
+    settingEl.insertBefore(handleContainer, settingEl.firstChild);
+    settingEl.classList.add('with-drag-handle');
+  }
+
+  private reorderFilters(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+
+    const filters = this.plugin.settings.filter;
+    const [movedFilter] = filters.splice(fromIndex, 1);
+    filters.splice(toIndex, 0, movedFilter);
+
+    // Refresh display to show new order
     this.refreshDisplay();
   }
 

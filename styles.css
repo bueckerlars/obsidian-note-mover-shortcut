@@ -575,6 +575,80 @@
   min-width: 80px;
 }
 
+/* ===== DRAG & DROP STYLES ===== */
+
+/* Drag Handle Styles */
+.drag-handle {
+  cursor: grab;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+  color: var(--text-muted);
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Dragging State Styles */
+.setting-item.dragging {
+  opacity: 0.5;
+  transform: rotate(1deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  position: relative;
+}
+
+.setting-item.drag-over {
+  border-top: 2px solid var(--interactive-accent) !important;
+  background: var(--background-modifier-hover) !important;
+}
+
+.setting-item.drag-over-top {
+  border-top: 2px solid var(--interactive-accent) !important;
+}
+
+.setting-item.drag-over-bottom {
+  border-bottom: 2px solid var(--interactive-accent) !important;
+}
+
+/* Drag Handle Container */
+.drag-handle-container {
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+/* Setting Item with Drag Handle */
+.setting-item.with-drag-handle {
+  display: flex;
+  align-items: center;
+}
+
+.setting-item.with-drag-handle .setting-item-info {
+  flex: 1;
+}
+
+.setting-item.with-drag-handle .setting-item-control {
+  flex-shrink: 0;
+}
+
+/* Smooth transitions for reordering */
+.setting-item {
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
 /* ===== NOTICE STYLES ===== */
 
 /* Undo Button Styles */
