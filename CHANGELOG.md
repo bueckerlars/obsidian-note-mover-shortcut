@@ -6,6 +6,10 @@
 
 - Implemented check if note is in the correct folder already bevor move
 
+### Bug Fixes
+
+- Fixed skipping of already moved files
+
 ## [0.4.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.2...0.4.3)
 
 ### Changes
