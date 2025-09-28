@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.5](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.4...0.4.5)
+
+### Fixes
+
+- Rule Matching: RuleMatcher now leverages MetadataExtractor to support list-property matching via parseListProperty/isListProperty.
+- Debounced Rendering: Introduce DebounceManager; SettingsTab refreshes via debounced display() and provides cleanup().
+- Memory Safety: FilterSettingsSection/RulesSettingsSection track AdvancedSuggest instances and DragDropManager; added cleanup() and proper refresh after DnD save.
+
 ## [0.4.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.3...0.4.4)
 
 ### Features
