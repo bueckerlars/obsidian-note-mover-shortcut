@@ -622,6 +622,214 @@ describe('HistoryManager', () => {
     });
   });
 
+  describe('getFilteredHistory', () => {
+    beforeEach(() => {
+      // Add some test entries with different timestamps
+      const now = Date.now();
+      const oneDayAgo = now - 24 * 60 * 60 * 1000;
+      const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
+
+      // Mock Date.now for consistent testing
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+
+      historyManager.addEntry({
+        sourcePath: '/source/path1',
+        destinationPath: '/destination/path1',
+        fileName: 'note1.md',
+      });
+
+      // Add entry from yesterday
+      jest.spyOn(Date, 'now').mockReturnValue(oneDayAgo);
+      historyManager.addEntry({
+        sourcePath: '/source/path2',
+        destinationPath: '/destination/path2',
+        fileName: 'note2.md',
+      });
+
+      // Add entry from last week
+      jest.spyOn(Date, 'now').mockReturnValue(oneWeekAgo);
+      historyManager.addEntry({
+        sourcePath: '/source/path3',
+        destinationPath: '/destination/path3',
+        fileName: 'note3.md',
+      });
+
+      // Add entry from last month
+      jest.spyOn(Date, 'now').mockReturnValue(oneMonthAgo);
+      historyManager.addEntry({
+        sourcePath: '/source/path4',
+        destinationPath: '/destination/path4',
+        fileName: 'note4.md',
+      });
+
+      // Reset to current time
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should return all entries when timeFilter is "all"', () => {
+      const filtered = historyManager.getFilteredHistory('all');
+      expect(filtered).toHaveLength(4);
+    });
+
+    it('should return only today entries when timeFilter is "today"', () => {
+      const filtered = historyManager.getFilteredHistory('today');
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].fileName).toBe('note1.md');
+    });
+
+    it('should return only this week entries when timeFilter is "week"', () => {
+      const filtered = historyManager.getFilteredHistory('week');
+      expect(filtered).toHaveLength(2); // today + yesterday
+    });
+
+    it('should return only this month entries when timeFilter is "month"', () => {
+      const filtered = historyManager.getFilteredHistory('month');
+      expect(filtered).toHaveLength(3); // today + yesterday + last week
+    });
+
+    it('should handle invalid timeFilter by returning all entries', () => {
+      const filtered = historyManager.getFilteredHistory('invalid' as any);
+      expect(filtered).toHaveLength(4);
+    });
+  });
+
+  describe('getFilteredBulkOperations', () => {
+    beforeEach(() => {
+      const now = Date.now();
+      const oneDayAgo = now - 24 * 60 * 60 * 1000;
+      const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+
+      // Mock Date.now for consistent testing
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+
+      // Add bulk operations with different timestamps
+      historyManager.startBulkOperation('bulk');
+      historyManager.addEntry({
+        sourcePath: '/source/path1',
+        destinationPath: '/destination/path1',
+        fileName: 'note1.md',
+      });
+      historyManager.endBulkOperation();
+
+      // Add bulk operation from yesterday
+      jest.spyOn(Date, 'now').mockReturnValue(oneDayAgo);
+      historyManager.startBulkOperation('bulk');
+      historyManager.addEntry({
+        sourcePath: '/source/path2',
+        destinationPath: '/destination/path2',
+        fileName: 'note2.md',
+      });
+      historyManager.endBulkOperation();
+
+      // Add bulk operation from last week
+      jest.spyOn(Date, 'now').mockReturnValue(oneWeekAgo);
+      historyManager.startBulkOperation('bulk');
+      historyManager.addEntry({
+        sourcePath: '/source/path3',
+        destinationPath: '/destination/path3',
+        fileName: 'note3.md',
+      });
+      historyManager.endBulkOperation();
+
+      // Reset to current time
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should return all bulk operations when timeFilter is "all"', () => {
+      const filtered = historyManager.getFilteredBulkOperations('all');
+      expect(filtered).toHaveLength(3);
+    });
+
+    it('should return only today bulk operations when timeFilter is "today"', () => {
+      const filtered = historyManager.getFilteredBulkOperations('today');
+      expect(filtered).toHaveLength(1);
+    });
+
+    it('should return only this week bulk operations when timeFilter is "week"', () => {
+      const filtered = historyManager.getFilteredBulkOperations('week');
+      expect(filtered).toHaveLength(2);
+    });
+
+    it('should return only this month bulk operations when timeFilter is "month"', () => {
+      const filtered = historyManager.getFilteredBulkOperations('month');
+      expect(filtered).toHaveLength(3);
+    });
+  });
+
+  describe('getBulkOperations', () => {
+    it('should return all bulk operations', () => {
+      historyManager.startBulkOperation('bulk');
+      historyManager.addEntry({
+        sourcePath: '/source/path',
+        destinationPath: '/destination/path',
+        fileName: 'note.md',
+      });
+      historyManager.endBulkOperation();
+
+      const bulkOps = historyManager.getBulkOperations();
+      expect(bulkOps).toHaveLength(1);
+      expect(bulkOps[0].operationType).toBe('bulk');
+    });
+  });
+
+  describe('addEntry with bulk operations', () => {
+    it('should add entry to current bulk operation when one is active', () => {
+      const bulkId = historyManager.startBulkOperation('bulk');
+
+      const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+        sourcePath: '/source/path',
+        destinationPath: '/destination/path',
+        fileName: 'note.md',
+      };
+
+      historyManager.addEntry(entry);
+
+      const bulkOps = historyManager.getBulkOperations();
+      expect(bulkOps[0].entries).toHaveLength(1);
+      expect(bulkOps[0].totalFiles).toBe(1);
+      expect(bulkOps[0].entries[0].bulkOperationId).toBe(bulkId);
+    });
+
+    it('should not add entry to bulk operation when none is active', () => {
+      const entry: Omit<HistoryEntry, 'id' | 'timestamp'> = {
+        sourcePath: '/source/path',
+        destinationPath: '/destination/path',
+        fileName: 'note.md',
+      };
+
+      historyManager.addEntry(entry);
+
+      const history = historyManager.getHistory();
+      expect(history[0].bulkOperationId).toBeUndefined();
+      expect(history[0].operationType).toBe('single');
+    });
+  });
+
+  describe('History limit management', () => {
+    it('should limit history to MAX_HISTORY_ENTRIES', () => {
+      // Add more entries than the limit
+      for (let i = 0; i < 150; i++) {
+        historyManager.addEntry({
+          sourcePath: `/source/path${i}`,
+          destinationPath: `/destination/path${i}`,
+          fileName: `note${i}.md`,
+        });
+      }
+
+      const history = historyManager.getHistory();
+      expect(history.length).toBeLessThanOrEqual(100); // Assuming MAX_HISTORY_ENTRIES is 100
+    });
+  });
+
   describe('Error Handling', () => {
     it('should handle file manager errors during undo', async () => {
       mockPlugin.app.fileManager.renameFile.mockRejectedValue(

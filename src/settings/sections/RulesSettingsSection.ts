@@ -1,12 +1,14 @@
 import NoteMoverShortcutPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { FolderSuggest } from '../suggesters/FolderSuggest';
-import { createError, handleError } from 'src/utils/Error';
+import { AdvancedSuggest } from '../suggesters/AdvancedSuggest';
+import { createError, handleError } from '../../utils/Error';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { DragDropManager } from '../../utils/DragDropManager';
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
+  private advancedSuggestInstances: AdvancedSuggest[] = [];
 
   constructor(
     private plugin: NoteMoverShortcutPlugin,
@@ -45,6 +47,9 @@ export class RulesSettingsSection {
   }
 
   addRulesArray(): void {
+    // Clean up existing AdvancedSuggest instances before creating new ones
+    this.cleanupAdvancedSuggestInstances();
+
     // Create a container for rules with drag & drop
     const rulesContainer = document.createElement('div');
     rulesContainer.className = 'rules-container';
@@ -57,10 +62,9 @@ export class RulesSettingsSection {
       const s = new Setting(rulesContainer)
         .addSearch(cb => {
           // AdvancedSuggest instead of TagSuggest
-          new (require('../suggesters/AdvancedSuggest').AdvancedSuggest)(
-            this.app,
-            cb.inputEl
-          );
+          const advancedSuggest = new AdvancedSuggest(this.app, cb.inputEl);
+          // Track the instance for cleanup
+          this.advancedSuggestInstances.push(advancedSuggest);
           cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.CRITERIA)
             .setValue(rule.criteria)
             .onChange(async value => {
@@ -169,5 +173,26 @@ export class RulesSettingsSection {
 
   private get app(): App {
     return this.plugin.app;
+  }
+
+  /**
+   * Clean up AdvancedSuggest instances to prevent memory leaks
+   */
+  private cleanupAdvancedSuggestInstances(): void {
+    this.advancedSuggestInstances.forEach(instance => {
+      instance.destroy();
+    });
+    this.advancedSuggestInstances = [];
+  }
+
+  /**
+   * Public cleanup method to be called when the section is destroyed
+   */
+  public cleanup(): void {
+    this.cleanupAdvancedSuggestInstances();
+    if (this.dragDropManager) {
+      this.dragDropManager.destroy();
+      this.dragDropManager = null;
+    }
   }
 }

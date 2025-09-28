@@ -474,4 +474,41 @@ describe('AdvancedSuggest', () => {
       }).not.toThrow();
     });
   });
+
+  describe('cleanup', () => {
+    it('should remove event listeners when destroyed', () => {
+      // Create instance
+      advancedSuggest = new AdvancedSuggest(mockApp, mockInputEl);
+
+      // Verify event listener was added
+      expect(mockApp.metadataCache.on).toHaveBeenCalledWith(
+        'changed',
+        expect.any(Function)
+      );
+
+      // Call destroy
+      advancedSuggest.destroy();
+
+      // Verify event listener was removed
+      expect(mockApp.metadataCache.off).toHaveBeenCalledWith(
+        'changed',
+        expect.any(Function)
+      );
+    });
+
+    it('should be safe to call destroy multiple times', () => {
+      // Create instance
+      advancedSuggest = new AdvancedSuggest(mockApp, mockInputEl);
+
+      // Call destroy multiple times
+      expect(() => {
+        advancedSuggest.destroy();
+        advancedSuggest.destroy();
+        advancedSuggest.destroy();
+      }).not.toThrow();
+
+      // Should still have called off the expected number of times
+      expect(mockApp.metadataCache.off).toHaveBeenCalledTimes(3);
+    });
+  });
 });

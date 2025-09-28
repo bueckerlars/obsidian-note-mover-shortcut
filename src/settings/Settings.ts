@@ -84,6 +84,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   display(): void {
     this.containerEl.empty();
 
+    // Clean up existing section instances before creating new ones
+    this.cleanupExistingSections();
+
     // Ensure arrays exist but don't remove empty rules during display
     this.ensureArraysExist();
 
@@ -173,9 +176,29 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   }
 
   /**
-   * Cleanup method to cancel any pending debounced operations
+   * Clean up existing section instances to prevent memory leaks
+   */
+  private cleanupExistingSections(): void {
+    if (
+      this.filterSettings &&
+      typeof this.filterSettings.cleanup === 'function'
+    ) {
+      this.filterSettings.cleanup();
+    }
+    if (
+      this.rulesSettings &&
+      typeof this.rulesSettings.cleanup === 'function'
+    ) {
+      this.rulesSettings.cleanup();
+    }
+    // Note: Other sections don't have AdvancedSuggest instances, so no cleanup needed
+  }
+
+  /**
+   * Cleanup method to cancel any pending debounced operations and clean up sections
    */
   cleanup(): void {
     this.debounceManager.cancelAll();
+    this.cleanupExistingSections();
   }
 }

@@ -2,9 +2,11 @@ import NoteMoverShortcutPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { DragDropManager } from '../../utils/DragDropManager';
+import { AdvancedSuggest } from '../suggesters/AdvancedSuggest';
 
 export class FilterSettingsSection {
   private dragDropManager: DragDropManager | null = null;
+  private advancedSuggestInstances: AdvancedSuggest[] = [];
 
   constructor(
     private plugin: NoteMoverShortcutPlugin,
@@ -51,6 +53,9 @@ export class FilterSettingsSection {
   }
 
   addPeriodicMovementFilterArray(): void {
+    // Clean up existing AdvancedSuggest instances before creating new ones
+    this.cleanupAdvancedSuggestInstances();
+
     // Create a container for filters with drag & drop
     const filtersContainer = document.createElement('div');
     filtersContainer.className = 'filters-container';
@@ -63,10 +68,9 @@ export class FilterSettingsSection {
       const s = new Setting(filtersContainer)
         .addSearch(cb => {
           // AdvancedSuggest instead of TagSuggest
-          new (require('../suggesters/AdvancedSuggest').AdvancedSuggest)(
-            this.app,
-            cb.inputEl
-          );
+          const advancedSuggest = new AdvancedSuggest(this.app, cb.inputEl);
+          // Track the instance for cleanup
+          this.advancedSuggestInstances.push(advancedSuggest);
           cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER)
             .setValue(filter || '')
             .onChange(async value => {
@@ -159,5 +163,26 @@ export class FilterSettingsSection {
 
   private get app(): App {
     return this.plugin.app;
+  }
+
+  /**
+   * Clean up AdvancedSuggest instances to prevent memory leaks
+   */
+  private cleanupAdvancedSuggestInstances(): void {
+    this.advancedSuggestInstances.forEach(instance => {
+      instance.destroy();
+    });
+    this.advancedSuggestInstances = [];
+  }
+
+  /**
+   * Public cleanup method to be called when the section is destroyed
+   */
+  public cleanup(): void {
+    this.cleanupAdvancedSuggestInstances();
+    if (this.dragDropManager) {
+      this.dragDropManager.destroy();
+      this.dragDropManager = null;
+    }
   }
 }
