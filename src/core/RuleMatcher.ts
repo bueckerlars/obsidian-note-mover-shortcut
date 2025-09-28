@@ -244,16 +244,7 @@ export class RuleMatcher {
   public findMatchingRule(metadata: FileMetadata, rules: Rule[]): Rule | null {
     const sortedRules = this.sortRulesBySpecificity(rules);
 
-    // For list properties, we need to find the highest priority match
-    const listPropertyMatches = this.findListPropertyMatches(
-      metadata,
-      sortedRules
-    );
-    if (listPropertyMatches.length > 0) {
-      return listPropertyMatches[0]; // Return the first (highest priority) match
-    }
-
-    // Fallback to regular rule matching for non-list properties
+    // Check rules in order, respecting the original rule precedence
     for (const rule of sortedRules) {
       if (this.evaluateCriteria(metadata, rule.criteria)) {
         return rule;
@@ -261,52 +252,6 @@ export class RuleMatcher {
     }
 
     return null;
-  }
-
-  /**
-   * Finds all matching rules for list properties and returns them in priority order
-   *
-   * @param metadata - File metadata object
-   * @param rules - Array of rules to evaluate (should be pre-sorted by specificity)
-   * @returns Array of matching rules in priority order
-   */
-  private findListPropertyMatches(
-    metadata: FileMetadata,
-    rules: Rule[]
-  ): Rule[] {
-    const matches: Rule[] = [];
-
-    for (const rule of rules) {
-      // Only check property rules for list property matching
-      if (!rule.criteria.startsWith('property:')) {
-        continue;
-      }
-
-      const match = rule.criteria.match(/^property:\s*(.+):(.+)$/);
-      if (!match) {
-        continue;
-      }
-
-      const key = match[1];
-      const expectedValue = match[2];
-
-      // Check if this property exists and is a list
-      if (!metadata.properties.hasOwnProperty(key)) {
-        continue;
-      }
-
-      const propertyValue = metadata.properties[key];
-      if (!this.metadataExtractor.isListProperty(propertyValue)) {
-        continue;
-      }
-
-      // Check if any item in the list matches the expected value
-      if (this.matchListProperty(propertyValue, expectedValue)) {
-        matches.push(rule);
-      }
-    }
-
-    return matches;
   }
 
   /**

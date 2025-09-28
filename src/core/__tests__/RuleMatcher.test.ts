@@ -542,7 +542,7 @@ describe('RuleMatcher', () => {
         listPropertyMetadata,
         mixedRules
       );
-      expect(result?.path).toBe('authors'); // List property rule should be prioritized
+      expect(result?.path).toBe('active-files'); // First matching rule should win
     });
 
     it('should handle multiple list property matches correctly', () => {
