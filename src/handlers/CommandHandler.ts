@@ -85,5 +85,45 @@ export class CommandHandler {
         }
       },
     });
+
+    // Add current file to blacklist command
+    this.plugin.addCommand({
+      id: 'add-current-file-to-blacklist',
+      name: 'Add current file to blacklist',
+      editorCallback: async (editor: Editor, view: MarkdownView) => {
+        try {
+          const fileName = view.file?.name;
+          if (!fileName) {
+            NoticeManager.warning('No active file to add to blacklist.');
+            return;
+          }
+
+          // Create filename filter
+          const filterValue = `fileName: ${fileName}`;
+
+          // Check if filter already exists
+          if (this.plugin.settings.filter.includes(filterValue)) {
+            NoticeManager.warning(
+              `File "${fileName}" is already in the blacklist.`
+            );
+            return;
+          }
+
+          // Add filter to settings
+          this.plugin.settings.filter.push(filterValue);
+          await this.plugin.save_settings();
+
+          // Update RuleManager
+          this.plugin.noteMover.updateRuleManager();
+
+          NoticeManager.success(`File "${fileName}" added to blacklist.`);
+        } catch (error) {
+          handleError(error, 'Error adding file to blacklist', false);
+          NoticeManager.error(
+            `Error adding file to blacklist: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      },
+    });
   }
 }
