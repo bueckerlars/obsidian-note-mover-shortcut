@@ -17,6 +17,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   public historyManager: HistoryManager;
   public updateManager: UpdateManager;
   public triggerHandler: TriggerEventHandler;
+  private settingTab: NoteMoverShortcutSettingsTab;
 
   async onload() {
     await this.load_settings();
@@ -33,7 +34,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       this.noteMover.moveFocusedNoteToDestination();
     });
 
-    this.addSettingTab(new NoteMoverShortcutSettingsTab(this));
+    this.settingTab = new NoteMoverShortcutSettingsTab(this);
+    this.addSettingTab(this.settingTab);
 
     // Initialize triggers
     this.triggerHandler.togglePeriodic();
@@ -49,6 +51,10 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   }
 
   onunload() {
+    // Cleanup settings tab debounce manager
+    if (this.settingTab) {
+      this.settingTab.cleanup();
+    }
     // Event listeners are automatically removed when the plugin is unloaded
   }
 

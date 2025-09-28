@@ -138,6 +138,8 @@ export class RulesSettingsSection {
       onSave: async () => {
         await this.plugin.save_settings();
         this.plugin.noteMover.updateRuleManager();
+        // Refresh display after settings are fully saved
+        this.refreshDisplay();
       },
       itemSelector: '.setting-item',
       handleSelector: '.drag-handle',
@@ -162,8 +164,7 @@ export class RulesSettingsSection {
     const [movedRule] = rules.splice(fromIndex, 1);
     rules.splice(toIndex, 0, movedRule);
 
-    // Refresh display to show new order
-    this.refreshDisplay();
+    // Note: refreshDisplay() will be called by the onSave callback after settings are saved
   }
 
   private get app(): App {
