@@ -50,7 +50,6 @@ export const SETTINGS_CONSTANTS = {
     periodicMovementInterval: 5,
     enableOnEditTrigger: false,
     filter: [] as string[],
-    isFilterWhitelist: false,
     rules: [] as any[],
     retentionPolicy: HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
   },

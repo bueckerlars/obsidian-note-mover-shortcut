@@ -139,7 +139,6 @@ describe('FilterSettingsSection', () => {
       },
       settings: {
         filter: ['filter1', 'filter2'],
-        isFilterWhitelist: false,
       },
       save_settings: jest.fn(),
       noteMover: {

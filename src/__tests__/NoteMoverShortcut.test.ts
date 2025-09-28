@@ -87,7 +87,6 @@ describe('NoteMoverShortcut', () => {
         periodicMovementInterval: 5,
         rules: [],
         filter: [],
-        isFilterWhitelist: false,
       },
       historyManager: {
         addEntry: jest.fn(),
@@ -155,7 +154,6 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should skip file if tag is in blacklist', async () => {
-      plugin.settings.isFilterWhitelist = false;
       plugin.settings.filter = ['tag: #test'];
       // destination setting removed
       noteMover.updateRuleManager();
@@ -164,7 +162,6 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should skip file if tag is not in whitelist', async () => {
-      plugin.settings.isFilterWhitelist = true;
       plugin.settings.filter = ['tag: #other'];
       // destination setting removed
       noteMover.updateRuleManager();
@@ -308,8 +305,7 @@ describe('NoteMoverShortcut', () => {
       expect(mockRuleManager.generateMovePreview).toHaveBeenCalledWith(
         [mockFile],
         true, // Rules always enabled
-        true, // Filter always enabled
-        false // isFilterWhitelist
+        true // Filter always enabled
       );
       expect(result).toBe(mockPreview);
     });
@@ -338,8 +334,7 @@ describe('NoteMoverShortcut', () => {
       expect(mockRuleManager.generateMovePreview).toHaveBeenCalledWith(
         [file1, file2, file3],
         true, // Rules always enabled
-        true, // Filter always enabled
-        false // isFilterWhitelist
+        true // Filter always enabled
       );
     });
   });
@@ -364,8 +359,7 @@ describe('NoteMoverShortcut', () => {
       expect(mockRuleManager.generateMovePreview).toHaveBeenCalledWith(
         [mockFile],
         true, // Rules are always enabled
-        true, // Filter is always enabled
-        false // isFilterWhitelist
+        true // Filter is always enabled
       );
       expect(result).toBe(mockPreview);
     });
@@ -384,7 +378,6 @@ describe('NoteMoverShortcut', () => {
       // Rules are always enabled now
       plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test' }];
       plugin.settings.filter = ['tag: #block'];
-      plugin.settings.isFilterWhitelist = true;
 
       const mockRuleManager = {
         setRules: jest.fn(),
@@ -398,16 +391,12 @@ describe('NoteMoverShortcut', () => {
       expect(mockRuleManager.setRules).toHaveBeenCalledWith([
         { criteria: 'tag: #test', path: 'test' },
       ]);
-      expect(mockRuleManager.setFilter).toHaveBeenCalledWith(
-        ['tag: #block'],
-        true
-      );
+      expect(mockRuleManager.setFilter).toHaveBeenCalledWith(['tag: #block']);
     });
 
     it('should always update rule manager with current settings', () => {
       plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test/path' }];
       plugin.settings.filter = ['tag: #filter'];
-      plugin.settings.isFilterWhitelist = true;
 
       const mockRuleManager = {
         setRules: jest.fn(),
@@ -422,8 +411,7 @@ describe('NoteMoverShortcut', () => {
         plugin.settings.rules
       );
       expect(mockRuleManager.setFilter).toHaveBeenCalledWith(
-        plugin.settings.filter,
-        plugin.settings.isFilterWhitelist
+        plugin.settings.filter
       );
     });
   });
@@ -517,7 +505,6 @@ describe('NoteMoverShortcut', () => {
     it('should update rule manager with current settings', () => {
       plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test/path' }];
       plugin.settings.filter = ['tag: #filter'];
-      plugin.settings.isFilterWhitelist = true;
 
       noteMover.updateRuleManager();
 

@@ -72,7 +72,6 @@ describe('NoteMoverShortcutSettingsTab', () => {
           { criteria: 'fileName: notes.md', path: '/notes' },
         ],
         filter: ['filter1', 'filter2'],
-        isFilterWhitelist: false,
       },
     };
 

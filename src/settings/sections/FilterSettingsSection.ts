@@ -18,22 +18,11 @@ export class FilterSettingsSection {
     // Filter settings
     new Setting(this.containerEl).setName('Filter').setHeading();
 
+    // Add description for blacklist filters
     new Setting(this.containerEl)
-      .setName('Filter mode')
-      .setDesc('Choose between blacklist or whitelist mode')
-      .addDropdown(dropdown =>
-        dropdown
-          .addOption('blacklist', 'Blacklist (exclude matching files)')
-          .addOption('whitelist', 'Whitelist (include only matching files)')
-          .setValue(
-            this.plugin.settings.isFilterWhitelist ? 'whitelist' : 'blacklist'
-          )
-          .onChange(async value => {
-            this.plugin.settings.isFilterWhitelist = value === 'whitelist';
-            await this.plugin.save_settings();
-            // Update RuleManager
-            this.plugin.noteMover.updateRuleManager();
-          })
+      .setName('Filter Description')
+      .setDesc(
+        'These are blacklist filters. Files that match any of the specified criteria will be excluded from movement operations.'
       );
 
     this.addPeriodicMovementFilterArray();

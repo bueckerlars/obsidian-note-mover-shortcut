@@ -200,17 +200,13 @@ export class RuleMatcher {
 
   /**
    * Evaluates filter rules to determine if file should be processed
+   * Filters now always work as blacklist (exclude matching files)
    *
    * @param metadata - File metadata object
    * @param filter - Array of filter criteria
-   * @param isFilterWhitelist - True for whitelist, false for blacklist
    * @returns True if file should be processed
    */
-  public evaluateFilter(
-    metadata: FileMetadata,
-    filter: string[],
-    isFilterWhitelist: boolean
-  ): boolean {
+  public evaluateFilter(metadata: FileMetadata, filter: string[]): boolean {
     if (filter.length === 0) {
       return true; // No filter means all files pass
     }
@@ -218,12 +214,8 @@ export class RuleMatcher {
     for (const filterStr of filter) {
       const filterMatch = this.evaluateCriteria(metadata, filterStr);
 
-      if (!isFilterWhitelist && filterMatch) {
+      if (filterMatch) {
         return false; // Blacklist: file matches filter, so skip it
-      }
-
-      if (isFilterWhitelist && !filterMatch) {
-        return false; // Whitelist: file doesn't match filter, so skip it
       }
     }
 
@@ -277,16 +269,15 @@ export class RuleMatcher {
 
   /**
    * Gets detailed filter match information for debugging/preview
+   * Filters now always work as blacklist (exclude matching files)
    *
    * @param metadata - File metadata object
    * @param filter - Array of filter criteria
-   * @param isFilterWhitelist - True for whitelist mode
    * @returns Object with pass/fail status and blocking details
    */
   public getFilterMatchDetails(
     metadata: FileMetadata,
-    filter: string[],
-    isFilterWhitelist: boolean
+    filter: string[]
   ): {
     passes: boolean;
     blockingFilter?: string;
@@ -299,19 +290,11 @@ export class RuleMatcher {
     for (const filterStr of filter) {
       const filterMatch = this.evaluateCriteria(metadata, filterStr);
 
-      if (!isFilterWhitelist && filterMatch) {
+      if (filterMatch) {
         return {
           passes: false,
           blockingFilter: filterStr,
           blockReason: 'Blocked by blacklist filter',
-        };
-      }
-
-      if (isFilterWhitelist && !filterMatch) {
-        return {
-          passes: false,
-          blockingFilter: filterStr,
-          blockReason: 'Not in whitelist',
         };
       }
     }

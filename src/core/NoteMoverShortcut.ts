@@ -22,10 +22,7 @@ export class NoteMoverShortcut {
   public updateRuleManager(): void {
     // Always update rules and filters (no toggle check)
     this.ruleManager.setRules(this.plugin.settings.rules);
-    this.ruleManager.setFilter(
-      this.plugin.settings.filter,
-      this.plugin.settings.isFilterWhitelist
-    );
+    this.ruleManager.setFilter(this.plugin.settings.filter);
   }
 
   async setup(): Promise<void> {
@@ -252,8 +249,7 @@ export class NoteMoverShortcut {
     return await this.ruleManager.generateMovePreview(
       files,
       true, // Rules are always enabled
-      true, // Filter is always enabled
-      this.plugin.settings.isFilterWhitelist
+      true // Filter is always enabled
     );
   }
 
@@ -272,8 +268,7 @@ export class NoteMoverShortcut {
     return await this.ruleManager.generateMovePreview(
       [activeFile],
       true, // Rules are always enabled
-      true, // Filter is always enabled
-      this.plugin.settings.isFilterWhitelist
+      true // Filter is always enabled
     );
   }
 }

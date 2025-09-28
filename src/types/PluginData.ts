@@ -27,7 +27,6 @@ export interface TriggerSettings {
 
 export interface FilterSettings {
   filter: Filter[];
-  mode: 'whitelist' | 'blacklist';
 }
 
 export interface Filter {
