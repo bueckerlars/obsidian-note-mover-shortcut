@@ -419,47 +419,32 @@ describe('RuleMatcher', () => {
 
   describe('evaluateFilter', () => {
     it('should pass when no filter is set', () => {
-      expect(ruleMatcher.evaluateFilter(mockMetadata, [], false)).toBe(true);
-      expect(ruleMatcher.evaluateFilter(mockMetadata, [], true)).toBe(true);
+      expect(ruleMatcher.evaluateFilter(mockMetadata, [])).toBe(true);
     });
 
-    it('should handle blacklist filter', () => {
+    it('should handle blacklist filter (always blacklist mode)', () => {
       // File matches blacklist filter - should not pass
-      expect(
-        ruleMatcher.evaluateFilter(mockMetadata, ['tag:#work'], false)
-      ).toBe(false);
+      expect(ruleMatcher.evaluateFilter(mockMetadata, ['tag:#work'])).toBe(
+        false
+      );
       // File doesn't match blacklist filter - should pass
-      expect(
-        ruleMatcher.evaluateFilter(mockMetadata, ['tag:#home'], false)
-      ).toBe(true);
+      expect(ruleMatcher.evaluateFilter(mockMetadata, ['tag:#home'])).toBe(
+        true
+      );
     });
 
-    it('should handle whitelist filter', () => {
-      // File matches whitelist filter - should pass
-      expect(
-        ruleMatcher.evaluateFilter(mockMetadata, ['tag:#work'], true)
-      ).toBe(true);
-      // File doesn't match whitelist filter - should not pass
-      expect(
-        ruleMatcher.evaluateFilter(mockMetadata, ['tag:#home'], true)
-      ).toBe(false);
-    });
+    // Note: whitelist mode removed, now always blacklist
 
-    it('should handle multiple filters', () => {
+    it('should handle multiple filters (blacklist mode)', () => {
       const multipleFilters = ['tag:#work', 'fileName:test.md'];
 
       // Blacklist: if any filter matches, file is blocked
-      expect(
-        ruleMatcher.evaluateFilter(mockMetadata, multipleFilters, false)
-      ).toBe(false);
-
-      // Whitelist: all filters must match for file to pass
-      expect(
-        ruleMatcher.evaluateFilter(mockMetadata, multipleFilters, true)
-      ).toBe(true);
+      expect(ruleMatcher.evaluateFilter(mockMetadata, multipleFilters)).toBe(
+        false
+      );
 
       const mixedFilters = ['tag:#work', 'fileName:other.md'];
-      expect(ruleMatcher.evaluateFilter(mockMetadata, mixedFilters, true)).toBe(
+      expect(ruleMatcher.evaluateFilter(mockMetadata, mixedFilters)).toBe(
         false
       );
     });
@@ -622,39 +607,24 @@ describe('RuleMatcher', () => {
 
   describe('getFilterMatchDetails', () => {
     it('should return passes=true when no filter', () => {
-      const result = ruleMatcher.getFilterMatchDetails(mockMetadata, [], false);
+      const result = ruleMatcher.getFilterMatchDetails(mockMetadata, []);
       expect(result.passes).toBe(true);
       expect(result.blockingFilter).toBeUndefined();
     });
 
     it('should provide blocking filter details for blacklist', () => {
-      const result = ruleMatcher.getFilterMatchDetails(
-        mockMetadata,
-        ['tag:#work'],
-        false
-      );
+      const result = ruleMatcher.getFilterMatchDetails(mockMetadata, [
+        'tag:#work',
+      ]);
       expect(result.passes).toBe(false);
       expect(result.blockingFilter).toBe('tag:#work');
       expect(result.blockReason).toBe('Blocked by blacklist filter');
     });
 
-    it('should provide blocking filter details for whitelist', () => {
-      const result = ruleMatcher.getFilterMatchDetails(
-        mockMetadata,
-        ['tag:#home'],
-        true
-      );
-      expect(result.passes).toBe(false);
-      expect(result.blockingFilter).toBe('tag:#home');
-      expect(result.blockReason).toBe('Not in whitelist');
-    });
-
     it('should return passes=true when filter passes', () => {
-      const result = ruleMatcher.getFilterMatchDetails(
-        mockMetadata,
-        ['tag:#work'],
-        true
-      );
+      const result = ruleMatcher.getFilterMatchDetails(mockMetadata, [
+        'tag:#home',
+      ]);
       expect(result.passes).toBe(true);
       expect(result.blockingFilter).toBeUndefined();
     });

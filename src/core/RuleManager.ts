@@ -10,7 +10,6 @@ import { RuleMatcher } from './RuleMatcher';
 export class RuleManager {
   private rules: Rule[] = [];
   private filter: string[] = [];
-  private isFilterWhitelist = false;
   private metadataExtractor: MetadataExtractor;
   private ruleMatcher: RuleMatcher;
 
@@ -26,9 +25,8 @@ export class RuleManager {
     this.rules = rules;
   }
 
-  public setFilter(filter: string[], isWhitelist: boolean): void {
+  public setFilter(filter: string[]): void {
     this.filter = filter;
-    this.isFilterWhitelist = isWhitelist;
   }
 
   public async moveFileBasedOnTags(
@@ -42,11 +40,7 @@ export class RuleManager {
       // Check if file should be skipped based on filter
       if (
         !skipFilter &&
-        !this.ruleMatcher.evaluateFilter(
-          metadata,
-          this.filter,
-          this.isFilterWhitelist
-        )
+        !this.ruleMatcher.evaluateFilter(metadata, this.filter)
       ) {
         return null; // File is blocked by filter
       }
@@ -88,8 +82,7 @@ export class RuleManager {
       if (!skipFilter) {
         const filterDetails = this.ruleMatcher.getFilterMatchDetails(
           metadata,
-          this.filter,
-          this.isFilterWhitelist
+          this.filter
         );
         if (!filterDetails.passes) {
           return {
@@ -168,8 +161,7 @@ export class RuleManager {
   public async generateMovePreview(
     files: TFile[],
     enableRules: boolean,
-    enableFilter: boolean,
-    isFilterWhitelist: boolean
+    enableFilter: boolean
   ): Promise<MovePreview> {
     const successfulMoves: PreviewEntry[] = [];
 
@@ -186,7 +178,7 @@ export class RuleManager {
       successfulMoves,
       totalFiles: files.length,
       settings: {
-        isFilterWhitelist,
+        isFilterWhitelist: false, // Always blacklist mode
       },
     };
   }

@@ -43,7 +43,6 @@ export class SettingsValidator {
       'enablePeriodicMovement',
       'enableOnEditTrigger',
       'enableFilter',
-      'isFilterWhitelist',
       'enableRules',
     ];
     for (const field of booleanFields) {
@@ -332,7 +331,6 @@ export class SettingsValidator {
       'periodicMovementInterval',
       'enableFilter',
       'filter',
-      'isFilterWhitelist',
       'enableRules',
       'rules',
       'lastSeenVersion',

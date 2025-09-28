@@ -22,10 +22,35 @@ export class NoteMoverShortcut {
   public updateRuleManager(): void {
     // Always update rules and filters (no toggle check)
     this.ruleManager.setRules(this.plugin.settings.rules);
-    this.ruleManager.setFilter(
-      this.plugin.settings.filter,
-      this.plugin.settings.isFilterWhitelist
-    );
+    this.ruleManager.setFilter(this.plugin.settings.filter);
+  }
+
+  public async addFileToBlacklist(fileName: string): Promise<void> {
+    try {
+      // Create filename filter
+      const filterValue = `fileName: ${fileName}`;
+
+      // Check if filter already exists
+      if (this.plugin.settings.filter.includes(filterValue)) {
+        NoticeManager.warning(
+          `File "${fileName}" is already in the blacklist.`
+        );
+        return;
+      }
+
+      // Add filter to settings
+      this.plugin.settings.filter.push(filterValue);
+      await this.plugin.save_settings();
+
+      // Update RuleManager
+      this.updateRuleManager();
+
+      NoticeManager.success(`File "${fileName}" added to blacklist.`);
+    } catch (error) {
+      NoticeManager.error(
+        `Error adding file to blacklist: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 
   async setup(): Promise<void> {
@@ -252,8 +277,7 @@ export class NoteMoverShortcut {
     return await this.ruleManager.generateMovePreview(
       files,
       true, // Rules are always enabled
-      true, // Filter is always enabled
-      this.plugin.settings.isFilterWhitelist
+      true // Filter is always enabled
     );
   }
 
@@ -272,8 +296,7 @@ export class NoteMoverShortcut {
     return await this.ruleManager.generateMovePreview(
       [activeFile],
       true, // Rules are always enabled
-      true, // Filter is always enabled
-      this.plugin.settings.isFilterWhitelist
+      true // Filter is always enabled
     );
   }
 }

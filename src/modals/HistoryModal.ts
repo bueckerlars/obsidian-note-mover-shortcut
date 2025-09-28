@@ -7,6 +7,7 @@ import {
   SETTINGS_CONSTANTS,
 } from '../config/constants';
 import { BaseModal, BaseModalOptions } from './BaseModal';
+import NoteMoverShortcutPlugin from 'main';
 
 export class HistoryModal extends BaseModal {
   private currentTimeFilter: TimeFilter = 'all';
@@ -14,6 +15,7 @@ export class HistoryModal extends BaseModal {
   constructor(
     app: App,
     private historyManager: HistoryManager,
+    private plugin: NoteMoverShortcutPlugin,
     options: BaseModalOptions = {}
   ) {
     super(app, {
@@ -205,6 +207,14 @@ export class HistoryModal extends BaseModal {
                 );
               }
             });
+        })
+        .addButton(button => {
+          button
+            .setIcon('ban')
+            .setTooltip(`Add ${entry.fileName} to blacklist`)
+            .onClick(async () => {
+              await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
+            });
         });
     });
 
@@ -288,6 +298,14 @@ export class HistoryModal extends BaseModal {
             if (success) {
               this.onOpen();
             }
+          });
+      })
+      .addButton(button => {
+        button
+          .setIcon('ban')
+          .setTooltip(`Add ${entry.fileName} to blacklist`)
+          .onClick(async () => {
+            await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
           });
       });
   }

@@ -33,7 +33,11 @@ export class CommandHandler {
       id: 'show-history',
       name: 'Show history',
       callback: () => {
-        new HistoryModal(this.plugin.app, this.plugin.historyManager).open();
+        new HistoryModal(
+          this.plugin.app,
+          this.plugin.historyManager,
+          this.plugin
+        ).open();
       },
     });
 
@@ -81,6 +85,29 @@ export class CommandHandler {
           handleError(error, 'Error generating preview', false);
           NoticeManager.error(
             `Error generating preview: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      },
+    });
+
+    // Add current file to blacklist command
+    this.plugin.addCommand({
+      id: 'add-current-file-to-blacklist',
+      name: 'Add current file to blacklist',
+      editorCallback: async (editor: Editor, view: MarkdownView) => {
+        try {
+          const fileName = view.file?.name;
+          if (!fileName) {
+            NoticeManager.warning('No active file to add to blacklist.');
+            return;
+          }
+
+          // Use centralized function
+          await this.plugin.noteMover.addFileToBlacklist(fileName);
+        } catch (error) {
+          handleError(error, 'Error adding file to blacklist', false);
+          NoticeManager.error(
+            `Error adding file to blacklist: ${error instanceof Error ? error.message : String(error)}`
           );
         }
       },

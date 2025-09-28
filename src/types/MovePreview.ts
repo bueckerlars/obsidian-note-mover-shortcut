@@ -24,6 +24,6 @@ export interface MovePreview {
   totalFiles: number;
   /** Settings used for this preview */
   settings: {
-    isFilterWhitelist: boolean;
+    isFilterWhitelist: boolean; // Always false now (blacklist mode)
   };
 }

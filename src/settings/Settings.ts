@@ -25,7 +25,6 @@ export interface NoteMoverShortcutSettings {
   periodicMovementInterval: number;
   enableOnEditTrigger?: boolean;
   filter: string[];
-  isFilterWhitelist: boolean;
   rules: Rule[];
   history?: HistoryEntry[];
   bulkOperations?: BulkOperation[];
