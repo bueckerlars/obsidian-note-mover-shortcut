@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.5...0.4.6)
+
+### Features
+
+- Added `Add current file to blacklist` command.
+- Added new action button on history entries to add the file to blacklist
+
+### Changes
+
+- Removed `FilerMode` setting and reworked filter logic to work always if mode is set to blacklist
+
 ## [0.4.5](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.4...0.4.5)
 
 ### Fixes
