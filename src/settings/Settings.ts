@@ -84,8 +84,8 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   display(): void {
     this.containerEl.empty();
 
-    // Validate settings before rendering to prevent data loss
-    this.validateSettings();
+    // Ensure arrays exist but don't remove empty rules during display
+    this.ensureArraysExist();
 
     // Update containerEl references for all sections
     this.periodicMovementSettings = new PeriodicMovementSettingsSection(
@@ -127,9 +127,9 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   }
 
   /**
-   * Validate settings to prevent data loss during rendering
+   * Ensure arrays exist without removing empty rules during display
    */
-  private validateSettings(): void {
+  private ensureArraysExist(): void {
     // Ensure rules array exists and is valid
     if (!Array.isArray(this.plugin.settings.rules)) {
       this.plugin.settings.rules = [];
@@ -139,6 +139,15 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
     if (!Array.isArray(this.plugin.settings.filter)) {
       this.plugin.settings.filter = [];
     }
+  }
+
+  /**
+   * Validate settings to prevent data loss during rendering
+   * This method should only be called when explicitly validating settings
+   */
+  private validateSettings(): void {
+    // Ensure arrays exist first
+    this.ensureArraysExist();
 
     // Remove any invalid rules (empty criteria or path)
     this.plugin.settings.rules = this.plugin.settings.rules.filter(

@@ -1,13 +1,16 @@
 import { RuleMatcher } from '../RuleMatcher';
 import { FileMetadata } from '../../types/Common';
 import { Rule } from '../../types/Rule';
+import { MetadataExtractor } from '../MetadataExtractor';
 
 describe('RuleMatcher', () => {
   let ruleMatcher: RuleMatcher;
   let mockMetadata: FileMetadata;
 
   beforeEach(() => {
-    ruleMatcher = new RuleMatcher();
+    const mockApp = {} as any;
+    const metadataExtractor = new MetadataExtractor(mockApp);
+    ruleMatcher = new RuleMatcher(metadataExtractor);
     mockMetadata = {
       fileName: 'test.md',
       filePath: 'folder/test.md',
@@ -82,6 +85,101 @@ describe('RuleMatcher', () => {
       expect(ruleMatcher.matchProperty(properties, 'empty:something')).toBe(
         false
       );
+    });
+
+    it('should match list properties with individual values', () => {
+      const listProperties = {
+        up: ['Authors', 'Content Creators'],
+        tags: 'work, project, urgent',
+        categories: 'tech\nscience\nresearch',
+      };
+
+      // Test array list properties
+      expect(ruleMatcher.matchProperty(listProperties, 'up:Authors')).toBe(
+        true
+      );
+      expect(
+        ruleMatcher.matchProperty(listProperties, 'up:Content Creators')
+      ).toBe(true);
+      expect(ruleMatcher.matchProperty(listProperties, 'up:Editors')).toBe(
+        false
+      );
+
+      // Test comma-separated string list properties
+      expect(ruleMatcher.matchProperty(listProperties, 'tags:work')).toBe(true);
+      expect(ruleMatcher.matchProperty(listProperties, 'tags:project')).toBe(
+        true
+      );
+      expect(ruleMatcher.matchProperty(listProperties, 'tags:urgent')).toBe(
+        true
+      );
+      expect(ruleMatcher.matchProperty(listProperties, 'tags:personal')).toBe(
+        false
+      );
+
+      // Test newline-separated string list properties
+      expect(ruleMatcher.matchProperty(listProperties, 'categories:tech')).toBe(
+        true
+      );
+      expect(
+        ruleMatcher.matchProperty(listProperties, 'categories:science')
+      ).toBe(true);
+      expect(
+        ruleMatcher.matchProperty(listProperties, 'categories:research')
+      ).toBe(true);
+      expect(ruleMatcher.matchProperty(listProperties, 'categories:art')).toBe(
+        false
+      );
+    });
+
+    it('should handle case insensitive matching for list properties', () => {
+      const listProperties = {
+        up: ['Authors', 'Content Creators'],
+        tags: 'work, project, urgent',
+      };
+
+      expect(ruleMatcher.matchProperty(listProperties, 'up:authors')).toBe(
+        true
+      );
+      expect(
+        ruleMatcher.matchProperty(listProperties, 'up:content creators')
+      ).toBe(true);
+      expect(ruleMatcher.matchProperty(listProperties, 'tags:WORK')).toBe(true);
+      expect(ruleMatcher.matchProperty(listProperties, 'tags:PROJECT')).toBe(
+        true
+      );
+    });
+
+    it('should handle single values in list properties', () => {
+      const singleValueProperties = {
+        up: ['Authors'],
+        tags: 'work',
+        status: 'active',
+      };
+
+      // Single array item should still work
+      expect(
+        ruleMatcher.matchProperty(singleValueProperties, 'up:Authors')
+      ).toBe(true);
+      expect(
+        ruleMatcher.matchProperty(singleValueProperties, 'up:Editors')
+      ).toBe(false);
+
+      // Single string value should still work
+      expect(
+        ruleMatcher.matchProperty(singleValueProperties, 'tags:work')
+      ).toBe(true);
+      expect(
+        ruleMatcher.matchProperty(singleValueProperties, 'tags:personal')
+      ).toBe(false);
+
+      // Non-list property should work as before
+      expect(
+        ruleMatcher.matchProperty(singleValueProperties, 'status:active')
+      ).toBe(true);
+      expect(
+        ruleMatcher.matchProperty(singleValueProperties, 'status:inactive')
+      ).toBe(false);
     });
   });
 
@@ -401,6 +499,93 @@ describe('RuleMatcher', () => {
 
       const result = ruleMatcher.findMatchingRule(mockMetadata, specificRules);
       expect(result?.path).toBe('specific-project'); // More specific rule should win
+    });
+
+    it('should handle list property hierarchy matching', () => {
+      const listPropertyMetadata: FileMetadata = {
+        ...mockMetadata,
+        properties: {
+          up: ['Authors', 'Content Creators'],
+          status: 'active',
+        },
+      };
+
+      const listPropertyRules: Rule[] = [
+        { criteria: 'property:up:Content Creators', path: 'content-creators' },
+        { criteria: 'property:up:Authors', path: 'authors' },
+        { criteria: 'property:status:active', path: 'active-files' },
+      ];
+
+      const result = ruleMatcher.findMatchingRule(
+        listPropertyMetadata,
+        listPropertyRules
+      );
+      expect(result?.path).toBe('content-creators'); // First rule in order should win
+    });
+
+    it('should prioritize list property rules over regular property rules', () => {
+      const listPropertyMetadata: FileMetadata = {
+        ...mockMetadata,
+        properties: {
+          up: ['Authors', 'Content Creators'],
+          status: 'active',
+        },
+      };
+
+      const mixedRules: Rule[] = [
+        { criteria: 'property:status:active', path: 'active-files' },
+        { criteria: 'property:up:Authors', path: 'authors' },
+        { criteria: 'property:up:Content Creators', path: 'content-creators' },
+      ];
+
+      const result = ruleMatcher.findMatchingRule(
+        listPropertyMetadata,
+        mixedRules
+      );
+      expect(result?.path).toBe('authors'); // List property rule should be prioritized
+    });
+
+    it('should handle multiple list property matches correctly', () => {
+      const listPropertyMetadata: FileMetadata = {
+        ...mockMetadata,
+        properties: {
+          up: ['Authors', 'Content Creators', 'Editors'],
+        },
+      };
+
+      const listPropertyRules: Rule[] = [
+        { criteria: 'property:up:Editors', path: 'editors' },
+        { criteria: 'property:up:Content Creators', path: 'content-creators' },
+        { criteria: 'property:up:Authors', path: 'authors' },
+      ];
+
+      const result = ruleMatcher.findMatchingRule(
+        listPropertyMetadata,
+        listPropertyRules
+      );
+      expect(result?.path).toBe('editors'); // First matching rule should win
+    });
+
+    it('should fall back to regular rules when no list property matches', () => {
+      const listPropertyMetadata: FileMetadata = {
+        ...mockMetadata,
+        properties: {
+          up: ['Authors', 'Content Creators'],
+          status: 'active',
+        },
+      };
+
+      const mixedRules: Rule[] = [
+        { criteria: 'property:up:Editors', path: 'editors' }, // Won't match
+        { criteria: 'property:status:active', path: 'active-files' }, // Should match
+        { criteria: 'tag:#work', path: 'work-folder' }, // Should also match
+      ];
+
+      const result = ruleMatcher.findMatchingRule(
+        listPropertyMetadata,
+        mixedRules
+      );
+      expect(result?.path).toBe('active-files'); // First regular rule should match
     });
   });
 

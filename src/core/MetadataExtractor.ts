@@ -134,4 +134,61 @@ export class MetadataExtractor {
 
     return tags;
   }
+
+  /**
+   * Parses a property value to extract individual list items
+   * Handles both single values and list values (arrays or comma-separated strings)
+   *
+   * @param value - The property value to parse
+   * @returns Array of individual values
+   */
+  public parseListProperty(value: any): string[] {
+    if (value === null || value === undefined) {
+      return [];
+    }
+
+    // If it's already an array, return it as strings
+    if (Array.isArray(value)) {
+      return value
+        .map(item => String(item).trim())
+        .filter(item => item.length > 0);
+    }
+
+    // If it's a string, try to parse it as comma-separated values
+    if (typeof value === 'string') {
+      // Handle both comma-separated and newline-separated values
+      const values = value
+        .split(/[,\n]/)
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+
+      return values;
+    }
+
+    // For other types, convert to string
+    return [String(value).trim()].filter(item => item.length > 0);
+  }
+
+  /**
+   * Checks if a property value represents a list (multiple values)
+   *
+   * @param value - The property value to check
+   * @returns True if the value represents multiple items
+   */
+  public isListProperty(value: any): boolean {
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    if (Array.isArray(value)) {
+      return value.length > 1;
+    }
+
+    if (typeof value === 'string') {
+      // Check if it contains separators (comma or newline)
+      return /[,\n]/.test(value) && value.split(/[,\n]/).length > 1;
+    }
+
+    return false;
+  }
 }

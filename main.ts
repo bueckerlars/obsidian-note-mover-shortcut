@@ -87,5 +87,36 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   async load_settings(): Promise<void> {
     const savedData = await this.loadData();
     this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData || {});
+
+    // Validate settings after loading to clean up any invalid data
+    this.validateSettings();
+  }
+
+  /**
+   * Validate settings to prevent data loss
+   */
+  private validateSettings(): void {
+    // Ensure arrays exist
+    if (!Array.isArray(this.settings.rules)) {
+      this.settings.rules = [];
+    }
+    if (!Array.isArray(this.settings.filter)) {
+      this.settings.filter = [];
+    }
+
+    // Remove any invalid rules (empty criteria or path)
+    this.settings.rules = this.settings.rules.filter(
+      rule =>
+        rule &&
+        rule.criteria &&
+        rule.path &&
+        rule.criteria.trim() !== '' &&
+        rule.path.trim() !== ''
+    );
+
+    // Remove any invalid filters (empty strings)
+    this.settings.filter = this.settings.filter.filter(
+      filter => filter && filter.trim() !== ''
+    );
   }
 }
