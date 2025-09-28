@@ -87,21 +87,28 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
     // Ensure arrays exist but don't remove empty rules during display
     this.ensureArraysExist();
 
+    // Create debounced display function for this display call
+    const debouncedDisplay = this.debounceManager.debounce(
+      'display',
+      () => this.display(),
+      150 // 150ms delay to prevent rapid refreshes
+    );
+
     // Update containerEl references for all sections
     this.periodicMovementSettings = new PeriodicMovementSettingsSection(
       this.plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
     this.filterSettings = new FilterSettingsSection(
       this.plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
     this.rulesSettings = new RulesSettingsSection(
       this.plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
     this.historySettings = new HistorySettingsSection(
       this.plugin,
@@ -110,7 +117,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
     this.importExportSettings = new ImportExportSettingsSection(
       this.plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
 
     this.periodicMovementSettings.addTriggerSettings();
