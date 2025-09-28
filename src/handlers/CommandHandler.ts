@@ -33,7 +33,11 @@ export class CommandHandler {
       id: 'show-history',
       name: 'Show history',
       callback: () => {
-        new HistoryModal(this.plugin.app, this.plugin.historyManager).open();
+        new HistoryModal(
+          this.plugin.app,
+          this.plugin.historyManager,
+          this.plugin
+        ).open();
       },
     });
 
@@ -98,25 +102,8 @@ export class CommandHandler {
             return;
           }
 
-          // Create filename filter
-          const filterValue = `fileName: ${fileName}`;
-
-          // Check if filter already exists
-          if (this.plugin.settings.filter.includes(filterValue)) {
-            NoticeManager.warning(
-              `File "${fileName}" is already in the blacklist.`
-            );
-            return;
-          }
-
-          // Add filter to settings
-          this.plugin.settings.filter.push(filterValue);
-          await this.plugin.save_settings();
-
-          // Update RuleManager
-          this.plugin.noteMover.updateRuleManager();
-
-          NoticeManager.success(`File "${fileName}" added to blacklist.`);
+          // Use centralized function
+          await this.plugin.noteMover.addFileToBlacklist(fileName);
         } catch (error) {
           handleError(error, 'Error adding file to blacklist', false);
           NoticeManager.error(

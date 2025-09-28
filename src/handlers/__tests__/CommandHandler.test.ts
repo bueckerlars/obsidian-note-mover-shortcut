@@ -59,6 +59,7 @@ describe('CommandHandler', () => {
         generateVaultMovePreview,
         generateActiveNotePreview,
         updateRuleManager: jest.fn(),
+        addFileToBlacklist: jest.fn(),
       },
       app: {},
       historyManager: {},
@@ -217,7 +218,8 @@ describe('CommandHandler', () => {
 
     expect(HistoryModal).toHaveBeenCalledWith(
       pluginMock.app,
-      pluginMock.historyManager
+      pluginMock.historyManager,
+      pluginMock
     );
     expect(mockHistoryModal.open).toHaveBeenCalled();
   });
@@ -270,9 +272,9 @@ describe('CommandHandler', () => {
       const editorCallback = addCommand.mock.calls[6][0].editorCallback;
       await editorCallback(mockEditor, mockView);
 
-      expect(pluginMock.settings.filter).toContain(`fileName: ${mockFileName}`);
-      expect(pluginMock.save_settings).toHaveBeenCalled();
-      expect(pluginMock.noteMover.updateRuleManager).toHaveBeenCalled();
+      expect(pluginMock.noteMover.addFileToBlacklist).toHaveBeenCalledWith(
+        mockFileName
+      );
     });
 
     it('shows warning when no file is active', async () => {
@@ -294,17 +296,25 @@ describe('CommandHandler', () => {
       const mockView = { file: { name: mockFileName } };
       const mockEditor = {};
 
-      // Pre-populate filter with the same file
-      pluginMock.settings.filter = [`fileName: ${mockFileName}`];
+      // Mock the addFileToBlacklist function to simulate already in blacklist
+      pluginMock.noteMover.addFileToBlacklist.mockImplementation(
+        async (fileName: string) => {
+          NoticeManager.warning(
+            `File "${fileName}" is already in the blacklist.`
+          );
+        }
+      );
 
       handler.setup();
       const editorCallback = addCommand.mock.calls[6][0].editorCallback;
       await editorCallback(mockEditor, mockView);
 
+      expect(pluginMock.noteMover.addFileToBlacklist).toHaveBeenCalledWith(
+        mockFileName
+      );
       expect(warningSpy).toHaveBeenCalledWith(
         `File "${mockFileName}" is already in the blacklist.`
       );
-      expect(pluginMock.settings.filter).toHaveLength(1); // Should not add duplicate
     });
 
     it('handles error when adding file to blacklist', async () => {
@@ -313,12 +323,18 @@ describe('CommandHandler', () => {
       const mockEditor = {};
       const errorMessage = 'Save failed';
 
-      pluginMock.save_settings.mockRejectedValue(new Error(errorMessage));
+      // Mock the addFileToBlacklist function to throw an error
+      pluginMock.noteMover.addFileToBlacklist.mockRejectedValue(
+        new Error(errorMessage)
+      );
 
       handler.setup();
       const editorCallback = addCommand.mock.calls[6][0].editorCallback;
       await editorCallback(mockEditor, mockView);
 
+      expect(pluginMock.noteMover.addFileToBlacklist).toHaveBeenCalledWith(
+        mockFileName
+      );
       expect(errorSpy).toHaveBeenCalledWith(
         expect.stringContaining('Error adding file to blacklist')
       );

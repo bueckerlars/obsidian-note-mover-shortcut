@@ -25,6 +25,34 @@ export class NoteMoverShortcut {
     this.ruleManager.setFilter(this.plugin.settings.filter);
   }
 
+  public async addFileToBlacklist(fileName: string): Promise<void> {
+    try {
+      // Create filename filter
+      const filterValue = `fileName: ${fileName}`;
+
+      // Check if filter already exists
+      if (this.plugin.settings.filter.includes(filterValue)) {
+        NoticeManager.warning(
+          `File "${fileName}" is already in the blacklist.`
+        );
+        return;
+      }
+
+      // Add filter to settings
+      this.plugin.settings.filter.push(filterValue);
+      await this.plugin.save_settings();
+
+      // Update RuleManager
+      this.updateRuleManager();
+
+      NoticeManager.success(`File "${fileName}" added to blacklist.`);
+    } catch (error) {
+      NoticeManager.error(
+        `Error adding file to blacklist: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
   async setup(): Promise<void> {
     // Periodic setup moved to TriggerEventHandler
   }
