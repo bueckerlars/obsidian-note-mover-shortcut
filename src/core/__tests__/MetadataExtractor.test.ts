@@ -225,4 +225,96 @@ describe('MetadataExtractor', () => {
       expect(Array.from(result)).toEqual(['#duplicate', '#unique']);
     });
   });
+
+  describe('parseListProperty', () => {
+    it('should parse array values correctly', () => {
+      expect(
+        metadataExtractor.parseListProperty(['Authors', 'Content Creators'])
+      ).toEqual(['Authors', 'Content Creators']);
+      expect(metadataExtractor.parseListProperty(['Single Item'])).toEqual([
+        'Single Item',
+      ]);
+      expect(metadataExtractor.parseListProperty([])).toEqual([]);
+    });
+
+    it('should parse comma-separated string values', () => {
+      expect(
+        metadataExtractor.parseListProperty('Authors, Content Creators')
+      ).toEqual(['Authors', 'Content Creators']);
+      expect(
+        metadataExtractor.parseListProperty('work, project, urgent')
+      ).toEqual(['work', 'project', 'urgent']);
+      expect(metadataExtractor.parseListProperty('Single Item')).toEqual([
+        'Single Item',
+      ]);
+    });
+
+    it('should parse newline-separated string values', () => {
+      expect(
+        metadataExtractor.parseListProperty('tech\nscience\nresearch')
+      ).toEqual(['tech', 'science', 'research']);
+      expect(
+        metadataExtractor.parseListProperty('Authors\nContent Creators')
+      ).toEqual(['Authors', 'Content Creators']);
+    });
+
+    it('should handle mixed separators', () => {
+      expect(
+        metadataExtractor.parseListProperty('tech, science\nresearch, art')
+      ).toEqual(['tech', 'science', 'research', 'art']);
+    });
+
+    it('should trim whitespace and filter empty values', () => {
+      expect(
+        metadataExtractor.parseListProperty(
+          '  Authors  ,  , Content Creators  ,  '
+        )
+      ).toEqual(['Authors', 'Content Creators']);
+      expect(
+        metadataExtractor.parseListProperty('\n  tech  \n  \n  science  \n')
+      ).toEqual(['tech', 'science']);
+    });
+
+    it('should handle null and undefined values', () => {
+      expect(metadataExtractor.parseListProperty(null)).toEqual([]);
+      expect(metadataExtractor.parseListProperty(undefined)).toEqual([]);
+    });
+
+    it('should convert other types to string', () => {
+      expect(metadataExtractor.parseListProperty(42)).toEqual(['42']);
+      expect(metadataExtractor.parseListProperty(true)).toEqual(['true']);
+      expect(metadataExtractor.parseListProperty({})).toEqual([
+        '[object Object]',
+      ]);
+    });
+  });
+
+  describe('isListProperty', () => {
+    it('should identify array list properties', () => {
+      expect(
+        metadataExtractor.isListProperty(['Authors', 'Content Creators'])
+      ).toBe(true);
+      expect(metadataExtractor.isListProperty(['Single Item'])).toBe(false);
+      expect(metadataExtractor.isListProperty([])).toBe(false);
+    });
+
+    it('should identify string list properties', () => {
+      expect(
+        metadataExtractor.isListProperty('Authors, Content Creators')
+      ).toBe(true);
+      expect(metadataExtractor.isListProperty('tech\nscience\nresearch')).toBe(
+        true
+      );
+      expect(metadataExtractor.isListProperty('Single Item')).toBe(false);
+      expect(metadataExtractor.isListProperty('')).toBe(false);
+    });
+
+    it('should not identify non-list properties', () => {
+      expect(metadataExtractor.isListProperty('Single String')).toBe(false);
+      expect(metadataExtractor.isListProperty(42)).toBe(false);
+      expect(metadataExtractor.isListProperty(true)).toBe(false);
+      expect(metadataExtractor.isListProperty(null)).toBe(false);
+      expect(metadataExtractor.isListProperty(undefined)).toBe(false);
+    });
+  });
 });

@@ -17,6 +17,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   public historyManager: HistoryManager;
   public updateManager: UpdateManager;
   public triggerHandler: TriggerEventHandler;
+  private settingTab: NoteMoverShortcutSettingsTab;
 
   async onload() {
     await this.load_settings();
@@ -33,7 +34,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       this.noteMover.moveFocusedNoteToDestination();
     });
 
-    this.addSettingTab(new NoteMoverShortcutSettingsTab(this));
+    this.settingTab = new NoteMoverShortcutSettingsTab(this);
+    this.addSettingTab(this.settingTab);
 
     // Initialize triggers
     this.triggerHandler.togglePeriodic();
@@ -49,6 +51,10 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   }
 
   onunload() {
+    // Cleanup settings tab debounce manager
+    if (this.settingTab) {
+      this.settingTab.cleanup();
+    }
     // Event listeners are automatically removed when the plugin is unloaded
   }
 
@@ -81,5 +87,36 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   async load_settings(): Promise<void> {
     const savedData = await this.loadData();
     this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData || {});
+
+    // Validate settings after loading to clean up any invalid data
+    this.validateSettings();
+  }
+
+  /**
+   * Validate settings to prevent data loss
+   */
+  private validateSettings(): void {
+    // Ensure arrays exist
+    if (!Array.isArray(this.settings.rules)) {
+      this.settings.rules = [];
+    }
+    if (!Array.isArray(this.settings.filter)) {
+      this.settings.filter = [];
+    }
+
+    // Remove any invalid rules (empty criteria or path)
+    this.settings.rules = this.settings.rules.filter(
+      rule =>
+        rule &&
+        rule.criteria &&
+        rule.path &&
+        rule.criteria.trim() !== '' &&
+        rule.path.trim() !== ''
+    );
+
+    // Remove any invalid filters (empty strings)
+    this.settings.filter = this.settings.filter.filter(
+      filter => filter && filter.trim() !== ''
+    );
   }
 }

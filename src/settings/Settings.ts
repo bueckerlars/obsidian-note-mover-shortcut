@@ -13,6 +13,7 @@ import {
   HistorySettingsSection,
   ImportExportSettingsSection,
 } from './sections';
+import { DebounceManager } from '../utils/DebounceManager';
 
 interface Rule {
   criteria: string; // Format: "type: value" (e.g. "tag: #project", "fileName: notes.md")
@@ -41,52 +42,76 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   private rulesSettings: RulesSettingsSection;
   private historySettings: HistorySettingsSection;
   private importExportSettings: ImportExportSettingsSection;
+  private debounceManager: DebounceManager;
 
   constructor(private plugin: NoteMoverShortcutPlugin) {
     super(plugin.app, plugin);
+
+    // Initialize debounce manager
+    this.debounceManager = new DebounceManager();
+
+    // Create debounced display function
+    const debouncedDisplay = this.debounceManager.debounce(
+      'display',
+      () => this.display(),
+      150 // 150ms delay to prevent rapid refreshes
+    );
 
     // Initialize section classes
     this.periodicMovementSettings = new PeriodicMovementSettingsSection(
       plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
     this.filterSettings = new FilterSettingsSection(
       plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
     this.rulesSettings = new RulesSettingsSection(
       plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
     this.historySettings = new HistorySettingsSection(plugin, this.containerEl);
     this.importExportSettings = new ImportExportSettingsSection(
       plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
   }
 
   display(): void {
     this.containerEl.empty();
 
+    // Clean up existing section instances before creating new ones
+    this.cleanupExistingSections();
+
+    // Ensure arrays exist but don't remove empty rules during display
+    this.ensureArraysExist();
+
+    // Create debounced display function for this display call
+    const debouncedDisplay = this.debounceManager.debounce(
+      'display',
+      () => this.display(),
+      150 // 150ms delay to prevent rapid refreshes
+    );
+
     // Update containerEl references for all sections
     this.periodicMovementSettings = new PeriodicMovementSettingsSection(
       this.plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
     this.filterSettings = new FilterSettingsSection(
       this.plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
     this.rulesSettings = new RulesSettingsSection(
       this.plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
     this.historySettings = new HistorySettingsSection(
       this.plugin,
@@ -95,7 +120,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
     this.importExportSettings = new ImportExportSettingsSection(
       this.plugin,
       this.containerEl,
-      () => this.display()
+      debouncedDisplay
     );
 
     this.periodicMovementSettings.addTriggerSettings();
@@ -109,5 +134,71 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
     this.historySettings.addHistorySettings();
 
     this.importExportSettings.addImportExportSettings();
+  }
+
+  /**
+   * Ensure arrays exist without removing empty rules during display
+   */
+  private ensureArraysExist(): void {
+    // Ensure rules array exists and is valid
+    if (!Array.isArray(this.plugin.settings.rules)) {
+      this.plugin.settings.rules = [];
+    }
+
+    // Ensure filter array exists and is valid
+    if (!Array.isArray(this.plugin.settings.filter)) {
+      this.plugin.settings.filter = [];
+    }
+  }
+
+  /**
+   * Validate settings to prevent data loss during rendering
+   * This method should only be called when explicitly validating settings
+   */
+  private validateSettings(): void {
+    // Ensure arrays exist first
+    this.ensureArraysExist();
+
+    // Remove any invalid rules (empty criteria or path)
+    this.plugin.settings.rules = this.plugin.settings.rules.filter(
+      rule =>
+        rule &&
+        rule.criteria &&
+        rule.path &&
+        rule.criteria.trim() !== '' &&
+        rule.path.trim() !== ''
+    );
+
+    // Remove any invalid filters (empty strings)
+    this.plugin.settings.filter = this.plugin.settings.filter.filter(
+      filter => filter && filter.trim() !== ''
+    );
+  }
+
+  /**
+   * Clean up existing section instances to prevent memory leaks
+   */
+  private cleanupExistingSections(): void {
+    if (
+      this.filterSettings &&
+      typeof this.filterSettings.cleanup === 'function'
+    ) {
+      this.filterSettings.cleanup();
+    }
+    if (
+      this.rulesSettings &&
+      typeof this.rulesSettings.cleanup === 'function'
+    ) {
+      this.rulesSettings.cleanup();
+    }
+    // Note: Other sections don't have AdvancedSuggest instances, so no cleanup needed
+  }
+
+  /**
+   * Cleanup method to cancel any pending debounced operations and clean up sections
+   */
+  cleanup(): void {
+    this.debounceManager.cancelAll();
+    this.cleanupExistingSections();
   }
 }

@@ -19,7 +19,7 @@ export class RuleManager {
     private defaultFolder: string
   ) {
     this.metadataExtractor = new MetadataExtractor(app);
-    this.ruleMatcher = new RuleMatcher();
+    this.ruleMatcher = new RuleMatcher(this.metadataExtractor);
   }
 
   public setRules(rules: Rule[]): void {

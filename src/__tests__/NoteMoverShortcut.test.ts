@@ -589,4 +589,20 @@ describe('NoteMoverShortcut', () => {
       expect(Notice).toHaveBeenCalled();
     });
   });
+
+  describe('setup method', () => {
+    it('should complete setup without errors', async () => {
+      await expect(noteMover.setup()).resolves.not.toThrow();
+    });
+  });
+
+  describe('updateRuleManager method', () => {
+    it('should update rule manager with current settings', () => {
+      const setRulesSpy = jest.spyOn(noteMover['ruleManager'], 'setRules');
+
+      noteMover.updateRuleManager();
+
+      expect(setRulesSpy).toHaveBeenCalledWith(plugin.settings.rules);
+    });
+  });
 });

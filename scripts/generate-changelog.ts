@@ -7,6 +7,9 @@ interface ChangelogEntry {
     features?: string[];
     bugFixes?: string[];
     improvements?: string[];
+    changes?: string[];
+    fixes?: string[];
+    performance?: string[];
   };
 }
 
@@ -16,7 +19,14 @@ function parseChangelog(content: string): ChangelogEntry[] {
 
   let currentVersion = '';
   let currentChanges: ChangelogEntry['changes'] = {};
-  let currentSection: 'features' | 'bugFixes' | 'improvements' | null = null;
+  let currentSection:
+    | 'features'
+    | 'bugFixes'
+    | 'improvements'
+    | 'changes'
+    | 'fixes'
+    | 'performance'
+    | null = null;
 
   for (const line of lines) {
     // Recognize version header (e.g. "## [0.2.1]" or "## [0.1.6]")
@@ -48,12 +58,24 @@ function parseChangelog(content: string): ChangelogEntry[] {
       currentChanges.bugFixes = [];
       continue;
     }
-    if (
-      line.startsWith('### Improvements') ||
-      line.startsWith('### Performance')
-    ) {
+    if (line.startsWith('### Improvements')) {
       currentSection = 'improvements';
       currentChanges.improvements = [];
+      continue;
+    }
+    if (line.startsWith('### Changes')) {
+      currentSection = 'changes';
+      currentChanges.changes = [];
+      continue;
+    }
+    if (line.startsWith('### Fixes')) {
+      currentSection = 'fixes';
+      currentChanges.fixes = [];
+      continue;
+    }
+    if (line.startsWith('### Performance')) {
+      currentSection = 'performance';
+      currentChanges.performance = [];
       continue;
     }
 
@@ -87,6 +109,9 @@ export interface ChangelogEntry {
     features?: string[];
     bugFixes?: string[];
     improvements?: string[];
+    changes?: string[];
+    fixes?: string[];
+    performance?: string[];
   };
 }
 

@@ -1,5 +1,6 @@
 import { FileMetadata } from '../types/Common';
 import { Rule } from '../types/Rule';
+import { MetadataExtractor } from './MetadataExtractor';
 
 /**
  * Handles all rule and filter matching logic for file processing
@@ -10,6 +11,12 @@ import { Rule } from '../types/Rule';
  * @since 0.4.0
  */
 export class RuleMatcher {
+  private metadataExtractor: MetadataExtractor;
+
+  constructor(metadataExtractor?: MetadataExtractor) {
+    this.metadataExtractor =
+      metadataExtractor || new MetadataExtractor({} as any);
+  }
   /**
    * Matches tags hierarchically with parent-child relationships
    *
@@ -77,6 +84,7 @@ export class RuleMatcher {
 
   /**
    * Matches frontmatter properties with flexible criteria
+   * Now supports list properties by checking individual values
    *
    * @param properties - Frontmatter properties object
    * @param criteria - "key" for existence or "key:value" for exact match
@@ -113,12 +121,31 @@ export class RuleMatcher {
         return false;
       }
 
+      // Check if this is a list property and handle accordingly
+      if (this.metadataExtractor.isListProperty(actualValue)) {
+        return this.matchListProperty(actualValue, expectedValue);
+      }
+
       // Convert both to strings for comparison to handle different types
       const actualValueStr = String(actualValue).toLowerCase();
       const expectedValueStr = expectedValue.toLowerCase();
 
       return actualValueStr === expectedValueStr;
     }
+  }
+
+  /**
+   * Matches individual values within a list property
+   *
+   * @param listValue - The list property value (array or comma-separated string)
+   * @param expectedValue - The value to match against
+   * @returns True if any item in the list matches the expected value
+   */
+  private matchListProperty(listValue: any, expectedValue: string): boolean {
+    const listItems = this.metadataExtractor.parseListProperty(listValue);
+    const expectedValueLower = expectedValue.toLowerCase();
+
+    return listItems.some(item => item.toLowerCase() === expectedValueLower);
   }
 
   /**
@@ -205,8 +232,10 @@ export class RuleMatcher {
 
   /**
    * Finds the first matching rule using specificity-based ordering
+   * Now supports list property hierarchy matching
    *
    * Rules are sorted by specificity (more specific tag rules first)
+   * For list properties, finds the highest priority match based on rule order
    *
    * @param metadata - File metadata object
    * @param rules - Array of rules to evaluate
@@ -215,6 +244,7 @@ export class RuleMatcher {
   public findMatchingRule(metadata: FileMetadata, rules: Rule[]): Rule | null {
     const sortedRules = this.sortRulesBySpecificity(rules);
 
+    // Check rules in order, respecting the original rule precedence
     for (const rule of sortedRules) {
       if (this.evaluateCriteria(metadata, rule.criteria)) {
         return rule;

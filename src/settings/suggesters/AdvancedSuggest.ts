@@ -28,9 +28,10 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   private propertyKeys: Set<string> = new Set();
   private propertyValues: Map<string, Set<string>> = new Map();
   private metadataExtractor: MetadataExtractor;
+  private refreshDataHandler: () => void;
 
   constructor(
-    app: App,
+    public app: App,
     private inputEl: HTMLInputElement
   ) {
     super(app, inputEl);
@@ -39,6 +40,12 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     this.loadFolders();
     this.loadFileNames();
     this.loadPropertyKeysAndValues();
+
+    // Create bound handler for cleanup
+    this.refreshDataHandler = () => this.refreshData();
+
+    // Listen for metadata changes to refresh suggestions
+    this.app.metadataCache.on('changed', this.refreshDataHandler);
   }
 
   private loadTags(): void {
@@ -53,6 +60,13 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   private loadFileNames(): void {
     const files = this.app.vault.getMarkdownFiles();
     this.fileNames = files.map(f => f.name);
+  }
+
+  private refreshData(): void {
+    this.loadTags();
+    this.loadFolders();
+    this.loadFileNames();
+    this.loadPropertyKeysAndValues();
   }
 
   private loadPropertyKeysAndValues(): void {
@@ -70,10 +84,21 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
               this.propertyValues.set(key, new Set());
             }
 
-            // Convert value to string and add to the set
+            // Handle different value types
             if (value !== null && value !== undefined) {
-              const valueStr = String(value);
-              this.propertyValues.get(key)!.add(valueStr);
+              // Check if this is a list property
+              if (this.metadataExtractor.isListProperty(value)) {
+                // Parse list property and add individual values
+                const listItems =
+                  this.metadataExtractor.parseListProperty(value);
+                listItems.forEach(item => {
+                  this.propertyValues.get(key)!.add(item);
+                });
+              } else {
+                // Regular single value
+                const valueStr = String(value);
+                this.propertyValues.get(key)!.add(valueStr);
+              }
             }
           }
         });
@@ -82,13 +107,17 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   }
 
   getSuggestions(query: string): string[] {
-    // Check if a valid type is selected (at the beginning of the query)
-    const typeMatch = SUGGEST_TYPES.find(t => query.startsWith(t.label));
+    // Check if a valid type is selected (at the beginning of the query) - case insensitive
+    const typeMatch = SUGGEST_TYPES.find(t =>
+      query.toLowerCase().startsWith(t.label.toLowerCase())
+    );
     if (!typeMatch || query.trim() === '') {
       this.selectedType = null;
       // Typ-Suggestions anzeigen
-      return SUGGEST_TYPES.filter(t =>
-        t.label.toLowerCase().includes(query.toLowerCase())
+      return SUGGEST_TYPES.filter(
+        t =>
+          query.trim() === '' ||
+          t.label.toLowerCase().includes(query.toLowerCase())
       ).map(t => t.label);
     } else {
       this.selectedType = typeMatch.value;
@@ -99,7 +128,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
       }
 
       // Type was selected, now provide specific suggestions
-      const q = query.replace(/^[^:]+:\s*/, '').toLowerCase();
+      const q = query.replace(/^[^:]+:\s*/i, '').toLowerCase();
       switch (this.selectedType) {
         case 'tag':
           return Array.from(this.tags)
@@ -143,13 +172,21 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     } else {
       // We have property:key:, now suggest values for this key
       const propertyKey = afterType.substring(0, colonIndex);
-      const valueQuery = afterType.substring(colonIndex + 1).toLowerCase();
+      const valueQuery = afterType
+        .substring(colonIndex + 1)
+        .trim()
+        .toLowerCase();
 
       const valuesForKey = this.propertyValues.get(propertyKey);
       if (valuesForKey) {
-        return Array.from(valuesForKey)
+        // Sort values alphabetically for better UX
+        const sortedValues = Array.from(valuesForKey).sort((a, b) =>
+          a.localeCompare(b)
+        );
+
+        return sortedValues
           .filter(value => value.toLowerCase().includes(valueQuery))
-          .map(value => `${typeLabel}${propertyKey}:${value}`);
+          .map(value => `${typeLabel}${propertyKey}: ${value}`);
       }
       return [];
     }
@@ -157,6 +194,14 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
 
   renderSuggestion(value: string, el: HTMLElement): void {
     el.setText(value);
+  }
+
+  /**
+   * Cleanup method to remove event listeners
+   * Should be called when the suggest is no longer needed
+   */
+  public destroy(): void {
+    this.app.metadataCache.off('changed', this.refreshDataHandler);
   }
 
   selectSuggestion(value: string): void {

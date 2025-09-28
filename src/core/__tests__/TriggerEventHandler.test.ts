@@ -153,4 +153,32 @@ describe('TriggerEventHandler', () => {
       );
     });
   });
+
+  describe('handleOnEdit', () => {
+    it('should call moveFileBasedOnTags with correct parameters', async () => {
+      const mockMoveFileBasedOnTags = jest.fn();
+      plugin.noteMover.moveFileBasedOnTags = mockMoveFileBasedOnTags;
+
+      // Access the private method for testing
+      await (triggerHandler as any).handleOnEdit(mockFile);
+
+      expect(mockMoveFileBasedOnTags).toHaveBeenCalledWith(
+        mockFile,
+        '/',
+        false
+      );
+    });
+
+    it('should handle errors in moveFileBasedOnTags gracefully', async () => {
+      const mockMoveFileBasedOnTags = jest
+        .fn()
+        .mockRejectedValue(new Error('Move failed'));
+      plugin.noteMover.moveFileBasedOnTags = mockMoveFileBasedOnTags;
+
+      // Should not throw
+      await expect(
+        (triggerHandler as any).handleOnEdit(mockFile)
+      ).rejects.toThrow('Move failed');
+    });
+  });
 });

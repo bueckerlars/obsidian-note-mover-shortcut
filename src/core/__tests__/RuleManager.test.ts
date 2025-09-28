@@ -38,6 +38,8 @@ describe('RuleManager', () => {
       extractFileMetadata: jest.fn(),
       extractBasicMetadata: jest.fn(),
       extractAllTags: jest.fn(),
+      parseListProperty: jest.fn(),
+      isListProperty: jest.fn(),
     } as unknown as jest.Mocked<MetadataExtractor>;
 
     // Mock the constructor
@@ -61,6 +63,32 @@ describe('RuleManager', () => {
     // Mock getAllTags to return default tags
     const mockGetAllTags = getAllTags as jest.MockedFunction<typeof getAllTags>;
     mockGetAllTags.mockReturnValue(['#tag1']);
+
+    // Set up default mock behavior for new methods
+    mockMetadataExtractor.parseListProperty.mockImplementation((value: any) => {
+      if (Array.isArray(value)) {
+        return value
+          .map(item => String(item).trim())
+          .filter(item => item.length > 0);
+      }
+      if (typeof value === 'string') {
+        return value
+          .split(/[,\n]/)
+          .map(item => item.trim())
+          .filter(item => item.length > 0);
+      }
+      return [String(value).trim()].filter(item => item.length > 0);
+    });
+
+    mockMetadataExtractor.isListProperty.mockImplementation((value: any) => {
+      if (Array.isArray(value)) {
+        return value.length > 1;
+      }
+      if (typeof value === 'string') {
+        return /[,\n]/.test(value) && value.split(/[,\n]/).length > 1;
+      }
+      return false;
+    });
   });
 
   it('should skip file if fileName filter matches (blacklist)', async () => {

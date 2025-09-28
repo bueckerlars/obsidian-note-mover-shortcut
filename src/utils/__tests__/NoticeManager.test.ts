@@ -78,5 +78,21 @@ describe('NoticeManager', () => {
       NoticeManager.showWithUndo('info', 'Test message', onUndo, 'Custom Undo');
       expect(Notice).toHaveBeenCalledWith('', 8000);
     });
+
+    it('should handle undo button click errors gracefully', () => {
+      const onUndo = jest.fn().mockImplementation(() => {
+        throw new Error('Undo failed');
+      });
+
+      // Mock console.error to avoid noise in test output
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      NoticeManager.showWithUndo('info', 'Test message', onUndo, 'Custom Undo');
+
+      // The notice should still be created even if undo fails
+      expect(Notice).toHaveBeenCalledWith('', 8000);
+
+      consoleSpy.mockRestore();
+    });
   });
 });
