@@ -31,7 +31,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   private refreshDataHandler: () => void;
 
   constructor(
-    app: App,
+    public app: App,
     private inputEl: HTMLInputElement
   ) {
     super(app, inputEl);
@@ -107,13 +107,17 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   }
 
   getSuggestions(query: string): string[] {
-    // Check if a valid type is selected (at the beginning of the query)
-    const typeMatch = SUGGEST_TYPES.find(t => query.startsWith(t.label));
+    // Check if a valid type is selected (at the beginning of the query) - case insensitive
+    const typeMatch = SUGGEST_TYPES.find(t =>
+      query.toLowerCase().startsWith(t.label.toLowerCase())
+    );
     if (!typeMatch || query.trim() === '') {
       this.selectedType = null;
       // Typ-Suggestions anzeigen
-      return SUGGEST_TYPES.filter(t =>
-        t.label.toLowerCase().includes(query.toLowerCase())
+      return SUGGEST_TYPES.filter(
+        t =>
+          query.trim() === '' ||
+          t.label.toLowerCase().includes(query.toLowerCase())
       ).map(t => t.label);
     } else {
       this.selectedType = typeMatch.value;
@@ -124,7 +128,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
       }
 
       // Type was selected, now provide specific suggestions
-      const q = query.replace(/^[^:]+:\s*/, '').toLowerCase();
+      const q = query.replace(/^[^:]+:\s*/i, '').toLowerCase();
       switch (this.selectedType) {
         case 'tag':
           return Array.from(this.tags)
@@ -168,7 +172,10 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     } else {
       // We have property:key:, now suggest values for this key
       const propertyKey = afterType.substring(0, colonIndex);
-      const valueQuery = afterType.substring(colonIndex + 1).toLowerCase();
+      const valueQuery = afterType
+        .substring(colonIndex + 1)
+        .trim()
+        .toLowerCase();
 
       const valuesForKey = this.propertyValues.get(propertyKey);
       if (valuesForKey) {
@@ -179,7 +186,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
 
         return sortedValues
           .filter(value => value.toLowerCase().includes(valueQuery))
-          .map(value => `${typeLabel}${propertyKey}:${value}`);
+          .map(value => `${typeLabel}${propertyKey}: ${value}`);
       }
       return [];
     }
