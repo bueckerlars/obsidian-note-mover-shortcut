@@ -52,12 +52,10 @@ describe('NoteMoverShortcut', () => {
     (getAllTags as jest.Mock).mockReturnValue(['#test']);
 
     // Default stub for showWithUndo that does not call onUndo
-    (NoticeManager.showWithUndo as any) = jest
-      .fn()
-      .mockReturnValue({
-        noticeEl: document.createElement('div'),
-        hide: jest.fn(),
-      });
+    (NoticeManager.showWithUndo as any) = jest.fn().mockReturnValue({
+      noticeEl: document.createElement('div'),
+      hide: jest.fn(),
+    });
 
     // Mock App
     mockApp = {
@@ -282,7 +280,7 @@ describe('NoteMoverShortcut', () => {
       );
     });
 
-    it('should handle errors during file move', async () => {
+    it('should return false and not throw on file move error', async () => {
       // Set up a rule that matches the mock file
       plugin.settings.settings.rules = [
         { criteria: 'tag: #test', path: 'test-folder' },
@@ -292,9 +290,11 @@ describe('NoteMoverShortcut', () => {
       mockApp.fileManager.renameFile = jest
         .fn()
         .mockRejectedValue(new Error('Move failed'));
-      await expect(
-        noteMover['moveFileBasedOnTags'](mockFile, 'default')
-      ).rejects.toThrow('Move failed');
+      const result = await noteMover['moveFileBasedOnTags'](
+        mockFile,
+        'default'
+      );
+      expect(result).toBe(false);
     });
 
     it('should create target folder if it does not exist', async () => {
@@ -680,6 +680,11 @@ describe('NoteMoverShortcut', () => {
     it('should create notice in moveAllFilesInVault', async () => {
       mockFile.path = 'test.md';
       mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
+      // Ensure a move actually happens and a notice is shown
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'dest' },
+      ];
+      noteMover.updateRuleManager();
 
       const infoSpy = jest.spyOn(NoticeManager, 'showWithUndo');
       await noteMover.moveAllFilesInVault();

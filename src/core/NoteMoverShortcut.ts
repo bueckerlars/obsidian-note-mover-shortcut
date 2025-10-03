@@ -115,7 +115,7 @@ export class NoteMoverShortcut {
       }
       return true;
     } catch (error) {
-      handleError(error, `Error moving file '${file.path}'`);
+      handleError(error, `Error moving file '${file.path}'`, false);
       return false;
     }
   }
@@ -178,8 +178,10 @@ export class NoteMoverShortcut {
       for (const file of files) {
         try {
           const moved = await this.moveFileBasedOnTags(file, '/');
-          // Maintain previous behavior for tests: count processed files
-          successCount++;
+          // Count only files that were actually moved (not skipped)
+          if (moved) {
+            successCount++;
+          }
         } catch (error) {
           errorCount++;
           const errorMessage =
