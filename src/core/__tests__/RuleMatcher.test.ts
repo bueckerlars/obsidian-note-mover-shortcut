@@ -476,14 +476,33 @@ describe('RuleMatcher', () => {
       expect(result).toBeNull();
     });
 
-    it('should respect rule priority based on specificity', () => {
-      const specificRules: Rule[] = [
+    it('should use user order as primary precedence and specificity as tiebreaker', () => {
+      // With user order priority, earlier matching rule wins even if less specific
+      const userOrderedRules: Rule[] = [
         { criteria: 'tag:#project', path: 'general-project' },
         { criteria: 'tag:#project/alpha', path: 'specific-project' },
       ];
 
-      const result = ruleMatcher.findMatchingRule(mockMetadata, specificRules);
-      expect(result?.path).toBe('specific-project'); // More specific rule should win
+      // mockMetadata contains '#project/alpha' which matches both
+      // Expect the first rule (general-project) to win because of user order
+      const resultOrder = ruleMatcher.findMatchingRule(
+        mockMetadata,
+        userOrderedRules
+      );
+      expect(resultOrder?.path).toBe('general-project');
+
+      // If two rules had the same user position (hypothetical tie), specificity would win.
+      // We simulate by reordering so both positions are distinct but we verify that when user order is reversed,
+      // the first one wins regardless of specificity.
+      const reversedRules: Rule[] = [
+        { criteria: 'tag:#project/alpha', path: 'specific-project' },
+        { criteria: 'tag:#project', path: 'general-project' },
+      ];
+      const resultReversed = ruleMatcher.findMatchingRule(
+        mockMetadata,
+        reversedRules
+      );
+      expect(resultReversed?.path).toBe('specific-project');
     });
 
     it('should handle list property hierarchy matching', () => {

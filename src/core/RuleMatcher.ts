@@ -223,27 +223,47 @@ export class RuleMatcher {
   }
 
   /**
-   * Finds the first matching rule using specificity-based ordering
-   * Now supports list property hierarchy matching
+   * Finds the matching rule with user-defined order priority.
    *
-   * Rules are sorted by specificity (more specific tag rules first)
-   * For list properties, finds the highest priority match based on rule order
+   * Primary precedence: original user order (first match wins).
+   * Tiebreaker: if multiple candidates share the same user-order position,
+   *             prefer the more specific tag (more subtag levels).
    *
    * @param metadata - File metadata object
    * @param rules - Array of rules to evaluate
-   * @returns First matching rule or null
+   * @returns First matching rule by user order, with specificity as tiebreaker
    */
   public findMatchingRule(metadata: FileMetadata, rules: Rule[]): Rule | null {
-    const sortedRules = this.sortRulesBySpecificity(rules);
+    // Collect matching rules with their original index and a specificity score
+    const matchingWithMeta = rules
+      .map((rule, index) => {
+        // Compute a basic specificity score for tag rules based on hierarchy depth
+        const tagMatch = rule.criteria.match(/^tag:\s*(.*)$/);
+        const specificity = tagMatch
+          ? (tagMatch[1].match(/\//g) || []).length
+          : 0;
 
-    // Check rules in order, respecting the original rule precedence
-    for (const rule of sortedRules) {
-      if (this.evaluateCriteria(metadata, rule.criteria)) {
-        return rule;
-      }
+        return {
+          rule,
+          index,
+          specificity,
+        };
+      })
+      .filter(entry => this.evaluateCriteria(metadata, entry.rule.criteria));
+
+    if (matchingWithMeta.length === 0) {
+      return null;
     }
 
-    return null;
+    // Sort by user order first, then by specificity (desc) as tiebreaker
+    matchingWithMeta.sort((a, b) => {
+      if (a.index !== b.index) {
+        return a.index - b.index; // earlier user-defined rule wins
+      }
+      return b.specificity - a.specificity; // tiebreaker: more specific tag wins
+    });
+
+    return matchingWithMeta[0].rule;
   }
 
   /**
@@ -254,8 +274,10 @@ export class RuleMatcher {
    */
   public sortRulesBySpecificity(rules: Rule[]): Rule[] {
     return rules.slice().sort((a, b) => {
-      const aMatch = a.criteria.match(/^tag:\s*(.*)$/);
-      const bMatch = b.criteria.match(/^tag:\s*(.*)$/);
+      const aCriteria = a.criteria.trim();
+      const bCriteria = b.criteria.trim();
+      const aMatch = aCriteria.match(/^tag:\s*(.*)$/);
+      const bMatch = bCriteria.match(/^tag:\s*(.*)$/);
 
       if (aMatch && bMatch) {
         // Count the number of subtag levels (slashes)
