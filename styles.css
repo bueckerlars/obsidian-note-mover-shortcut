@@ -655,3 +655,36 @@
 .notice-undo-button {
   margin-left: 10px;
 }
+
+/* ===== BADGE & UTILITY STYLES ===== */
+
+/* Generic badge style used in settings headings */
+.nms-badge {
+  margin-left: 8px;
+  padding: 0 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* Experimental badge modifier uses accent color border */
+.nms-badge--experimental {
+  border-color: var(--interactive-accent);
+}
+
+/* Visually hidden but interactive (for file inputs) */
+.nms-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  left: -9999px;
+}

@@ -21,14 +21,6 @@ export class IndexSettingsSection {
       text: 'Experimental',
     });
     experimentalBadge.classList.add('nms-badge', 'nms-badge--experimental');
-    // Minimal inline styles to render as a badge and provide spacing
-    experimentalBadge.style.marginLeft = '8px';
-    experimentalBadge.style.padding = '0 6px';
-    experimentalBadge.style.border = '1px solid var(--interactive-accent)';
-    experimentalBadge.style.borderRadius = '10px';
-    experimentalBadge.style.fontSize = '0.85em';
-    experimentalBadge.style.textTransform = 'uppercase';
-    experimentalBadge.style.opacity = '0.8';
 
     new Setting(containerEl)
       .setName('Enable Index Cache')

@@ -88,7 +88,7 @@ export class ImportExportSettingsSection {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.json';
-      input.style.display = 'none';
+      input.classList.add('nms-visually-hidden');
 
       // Add to DOM temporarily
       document.body.appendChild(input);
