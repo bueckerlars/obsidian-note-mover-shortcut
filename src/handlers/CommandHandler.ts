@@ -30,8 +30,8 @@ export class CommandHandler {
 
     // Rescan/rebuild index command (only when index feature is enabled)
     if (
-      (this.plugin as any).indexOrchestrator &&
-      !!(this.plugin.settings as any).settings?.indexing?.enableIndexCache
+      this.plugin.indexOrchestrator &&
+      !!this.plugin.settings.settings?.indexing?.enableIndexCache
     ) {
       this.plugin.addCommand({
         id: 'rescan-index',
@@ -39,15 +39,13 @@ export class CommandHandler {
         callback: async () => {
           try {
             NoticeManager.info('Starting index rescan...');
-            await (this.plugin as any).indexOrchestrator.ensureInitialized();
+            await this.plugin.indexOrchestrator.ensureInitialized();
             // full enqueue and process with optional content based on settings
-            (this.plugin as any).indexOrchestrator.enqueueAllMarkdownFiles();
-            const excerpt = (this.plugin.settings as any).settings?.indexing
-              ?.maxExcerptBytes as number | undefined;
+            this.plugin.indexOrchestrator.enqueueAllMarkdownFiles();
+            const excerpt =
+              this.plugin.settings.settings?.indexing?.maxExcerptBytes;
             const withContent = typeof excerpt === 'number' && excerpt > 0;
-            await (this.plugin as any).indexOrchestrator.processAllDirty(
-              withContent
-            );
+            await this.plugin.indexOrchestrator.processAllDirty(withContent);
             NoticeManager.success('Index rescan completed');
           } catch (error) {
             handleError(error, 'Error during index rescan', false);

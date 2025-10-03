@@ -23,12 +23,16 @@ export class VaultIndexCache {
     const settings = this.plugin.settings as PluginData;
     if (!settings.index) {
       settings.index = this.buildEmptyIndex();
-      await (this.plugin as any).save_settings?.();
+      if (typeof (this.plugin as any).save_settings === 'function') {
+        await (this.plugin as any).save_settings();
+      }
     }
   }
 
   public async persist(): Promise<void> {
-    await (this.plugin as any).save_settings?.();
+    if (typeof (this.plugin as any).save_settings === 'function') {
+      await (this.plugin as any).save_settings();
+    }
   }
 
   public get(path: string): IndexEntry | undefined {
@@ -67,7 +71,7 @@ export class VaultIndexCache {
   }
 
   public stats(): IndexStats {
-    return { ...(this.ensureIndex().stats as any) } as IndexStats;
+    return { ...this.ensureIndex().stats } as IndexStats;
   }
 
   private ensureIndex(): IndexData {

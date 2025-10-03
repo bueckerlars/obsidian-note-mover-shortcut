@@ -131,7 +131,7 @@ export class NoteMoverShortcut {
     try {
       await this.plugin.indexOrchestrator.ensureInitialized();
       // Only enqueue dirty files; if index is empty, enqueue all once
-      if ((this.plugin.settings as any).settings?.indexing?.enableIndexCache) {
+      if (this.plugin.settings.settings?.indexing?.enableIndexCache) {
         // Optional snapshot verification to catch missed events
         await this.plugin.indexOrchestrator.verifySnapshot();
         const hasAny =
@@ -147,8 +147,7 @@ export class NoteMoverShortcut {
 
     // Get files list; prefer index if enabled, else fallback to vault
     let files: TFile[] = [];
-    const useIndex = (this.plugin.settings as any).settings?.indexing
-      ?.enableIndexCache;
+    const useIndex = this.plugin.settings.settings?.indexing?.enableIndexCache;
     if (useIndex) {
       files = this.plugin.indexOrchestrator.getIndexedFiles();
       if (!files || files.length === 0) {

@@ -29,8 +29,12 @@ export class IndexSettingsSection {
         toggle
           .setValue(!!this.plugin.settings.settings.indexing?.enableIndexCache)
           .onChange(async v => {
-            const s = (this.plugin.settings as any).settings;
-            s.indexing = s.indexing || ({} as any);
+            const s = this.plugin.settings.settings;
+            s.indexing = s.indexing ?? {
+              enableIndexCache: v,
+              detectionMode: 'mtimeSize',
+              maxExcerptBytes: 0,
+            };
             s.indexing.enableIndexCache = v;
             await this.plugin.save_settings();
             this.onChange();
@@ -45,13 +49,16 @@ export class IndexSettingsSection {
           .addOption('mtimeSize', 'mtime + size (fast)')
           .addOption('hash', 'content hash (precise, slower)')
           .setValue(
-            ((this.plugin.settings as any).settings?.indexing
-              ?.detectionMode as any) || 'mtimeSize'
+            this.plugin.settings.settings.indexing?.detectionMode || 'mtimeSize'
           )
           .onChange(async v => {
-            const s = (this.plugin.settings as any).settings;
-            s.indexing = s.indexing || ({} as any);
-            s.indexing.detectionMode = v as any;
+            const s = this.plugin.settings.settings;
+            s.indexing = s.indexing ?? {
+              enableIndexCache: false,
+              detectionMode: 'mtimeSize',
+              maxExcerptBytes: 0,
+            };
+            s.indexing.detectionMode = v as 'mtimeSize' | 'hash';
             await this.plugin.save_settings();
             this.onChange();
           })
@@ -64,15 +71,16 @@ export class IndexSettingsSection {
         text
           .setPlaceholder('0')
           .setValue(
-            String(
-              ((this.plugin.settings as any).settings?.indexing
-                ?.maxExcerptBytes as any) ?? 0
-            )
+            String(this.plugin.settings.settings.indexing?.maxExcerptBytes ?? 0)
           )
           .onChange(async v => {
             const n = Math.max(0, Number(v) || 0);
-            const s = (this.plugin.settings as any).settings;
-            s.indexing = s.indexing || ({} as any);
+            const s = this.plugin.settings.settings;
+            s.indexing = s.indexing ?? {
+              enableIndexCache: false,
+              detectionMode: 'mtimeSize',
+              maxExcerptBytes: 0,
+            };
             s.indexing.maxExcerptBytes = n;
             await this.plugin.save_settings();
           })
