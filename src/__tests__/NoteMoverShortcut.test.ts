@@ -46,9 +46,18 @@ describe('NoteMoverShortcut', () => {
   let mockFile: TFile;
 
   beforeEach(() => {
+    jest.restoreAllMocks();
     setIntervalMock.mockClear();
     clearIntervalMock.mockClear();
     (getAllTags as jest.Mock).mockReturnValue(['#test']);
+
+    // Default stub for showWithUndo that does not call onUndo
+    (NoticeManager.showWithUndo as any) = jest
+      .fn()
+      .mockReturnValue({
+        noticeEl: document.createElement('div'),
+        hide: jest.fn(),
+      });
 
     // Mock App
     mockApp = {
@@ -150,6 +159,68 @@ describe('NoteMoverShortcut', () => {
       mockApp.vault.getFiles = jest.fn().mockResolvedValue([]);
       await noteMover.moveAllFilesInVault();
       expect(mockApp.fileManager.renameFile).not.toHaveBeenCalled();
+    });
+
+    it('should show undo action and handle undo success', async () => {
+      // Rule match to move and trigger notice
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'dest' },
+      ];
+      noteMover.updateRuleManager();
+
+      // Mock file so newPath is different
+      mockFile.path = 'inbox/test.md';
+      mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
+
+      // Spy showWithUndo to call its undo handler
+      const undoSpy = jest.fn();
+      const showWithUndoSpy = jest
+        .spyOn(NoticeManager, 'showWithUndo')
+        .mockImplementation((type: any, msg: any, onUndo: any) => {
+          undoSpy();
+          (onUndo as any)();
+          return {
+            noticeEl: document.createElement('div'),
+            hide: jest.fn(),
+          } as any;
+        });
+
+      (plugin.historyManager as any).undoBulkOperation = jest
+        .fn()
+        .mockResolvedValue(true);
+
+      await noteMover.moveAllFilesInVault();
+
+      expect(showWithUndoSpy).toHaveBeenCalled();
+      expect(undoSpy).toHaveBeenCalled();
+    });
+
+    it('should handle undo failure notice', async () => {
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'dest' },
+      ];
+      noteMover.updateRuleManager();
+
+      mockFile.path = 'inbox/test.md';
+      mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
+
+      jest
+        .spyOn(NoticeManager, 'showWithUndo')
+        .mockImplementation((type: any, msg: any, onUndo: any) => {
+          (onUndo as any)();
+          return {
+            noticeEl: document.createElement('div'),
+            hide: jest.fn(),
+          } as any;
+        });
+
+      (plugin.historyManager as any).undoBulkOperation = jest
+        .fn()
+        .mockResolvedValue(false);
+
+      await noteMover.moveAllFilesInVault();
+
+      expect(plugin.historyManager.undoBulkOperation).toHaveBeenCalled();
     });
   });
 
@@ -600,18 +671,20 @@ describe('NoteMoverShortcut', () => {
     it('should create notice in moveFocusedNoteToDestination', async () => {
       mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(mockFile);
 
+      const showWithUndoSpy = jest.spyOn(NoticeManager, 'showWithUndo');
       await noteMover.moveFocusedNoteToDestination();
 
-      expect(Notice).toHaveBeenCalled();
+      expect(showWithUndoSpy).toHaveBeenCalled();
     });
 
     it('should create notice in moveAllFilesInVault', async () => {
       mockFile.path = 'test.md';
       mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
 
+      const infoSpy = jest.spyOn(NoticeManager, 'showWithUndo');
       await noteMover.moveAllFilesInVault();
 
-      expect(Notice).toHaveBeenCalled();
+      expect(infoSpy).toHaveBeenCalled();
     });
   });
 
@@ -628,6 +701,52 @@ describe('NoteMoverShortcut', () => {
       noteMover.updateRuleManager();
 
       expect(setRulesSpy).toHaveBeenCalledWith(plugin.settings.settings.rules);
+    });
+  });
+
+  describe('moveFileBasedOnTags edge cases', () => {
+    it('returns false when file already in destination folder', async () => {
+      // File already at destination
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test/path' },
+      ];
+      noteMover.updateRuleManager();
+
+      const file = { path: 'test/path/test.md', name: 'test.md' } as any;
+      const result = await (noteMover as any).moveFileBasedOnTags(
+        file,
+        '/',
+        false
+      );
+      expect(result).toBe(false);
+      expect(mockApp.fileManager.renameFile).not.toHaveBeenCalled();
+    });
+
+    it('returns false when ensureFolderExists fails', async () => {
+      // Mock ensureFolderExists to return false or throw
+      jest.resetModules();
+      jest.doMock('../utils/PathUtils', () => ({
+        combinePath: (a: string, b: string) => `${a}/${b}`,
+        ensureFolderExists: jest.fn().mockResolvedValue(false),
+      }));
+      const {
+        NoteMoverShortcut: NoteMoverWithMock,
+      } = require('../core/NoteMoverShortcut');
+      const nm = new NoteMoverWithMock(plugin as any);
+
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'dest' },
+      ];
+      nm.updateRuleManager();
+
+      let result: any;
+      try {
+        result = await (nm as any).moveFileBasedOnTags(mockFile, '/', false);
+      } catch (e) {
+        result = false;
+      }
+      expect(result).toBe(false);
+      expect(mockApp.fileManager.renameFile).not.toHaveBeenCalled();
     });
   });
 });

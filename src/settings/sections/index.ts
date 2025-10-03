@@ -3,3 +3,4 @@ export { FilterSettingsSection } from './FilterSettingsSection';
 export { RulesSettingsSection } from './RulesSettingsSection';
 export { HistorySettingsSection } from './HistorySettingsSection';
 export { ImportExportSettingsSection } from './ImportExportSettingsSection';
+export { IndexSettingsSection } from './IndexSettingsSection';

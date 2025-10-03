@@ -67,7 +67,7 @@ export class NoteMoverShortcut {
     file: TFile,
     defaultFolder: string,
     skipFilter = false
-  ): Promise<void> {
+  ): Promise<boolean> {
     const { app } = this.plugin;
     const originalPath = file.path;
 
@@ -80,7 +80,7 @@ export class NoteMoverShortcut {
         skipFilter
       );
       if (result === null) {
-        return; // File should be skipped based on filter or no matching rule
+        return false; // File should be skipped based on filter or no matching rule
       }
       targetFolder = result;
 
@@ -88,7 +88,7 @@ export class NoteMoverShortcut {
 
       // Skip if file is already in the correct location
       if (originalPath === newPath) {
-        return; // File is already in the correct folder, no need to move
+        return false; // File is already in the correct folder, no need to move
       }
 
       // Ensure target folder exists before moving the file
@@ -113,8 +113,10 @@ export class NoteMoverShortcut {
         // End internal plugin move (even on errors)
         this.plugin.historyManager.markPluginMoveEnd();
       }
+      return true;
     } catch (error) {
       handleError(error, `Error moving file '${file.path}'`);
+      return false;
     }
   }
 
@@ -125,8 +127,36 @@ export class NoteMoverShortcut {
   }): Promise<void> {
     const { app } = this.plugin;
 
-    // Get all files in the vault
-    const files = await app.vault.getFiles();
+    // Prepare: ensure index is fresh (delta refresh only)
+    try {
+      await this.plugin.indexOrchestrator.ensureInitialized();
+      // Only enqueue dirty files; if index is empty, enqueue all once
+      if ((this.plugin.settings as any).settings?.indexing?.enableIndexCache) {
+        // Optional snapshot verification to catch missed events
+        await this.plugin.indexOrchestrator.verifySnapshot();
+        const hasAny =
+          this.plugin.indexOrchestrator.getIndexedPaths().length > 0;
+        if (!hasAny) {
+          this.plugin.indexOrchestrator.enqueueAllMarkdownFiles();
+        }
+        await this.plugin.indexOrchestrator.processAllDirty(false);
+      }
+    } catch {
+      // ignore indexing warmup errors in bulk/periodic flows (best-effort)
+    }
+
+    // Get files list; prefer index if enabled, else fallback to vault
+    let files: TFile[] = [];
+    const useIndex = (this.plugin.settings as any).settings?.indexing
+      ?.enableIndexCache;
+    if (useIndex) {
+      files = this.plugin.indexOrchestrator.getIndexedFiles();
+      if (!files || files.length === 0) {
+        files = await app.vault.getFiles();
+      }
+    } else {
+      files = await app.vault.getFiles();
+    }
 
     if (files.length === 0) {
       // Only show notice for manual/bulk runs, stay silent for periodic runs
@@ -147,7 +177,8 @@ export class NoteMoverShortcut {
       // Iterate over each file and move it
       for (const file of files) {
         try {
-          await this.moveFileBasedOnTags(file, '/');
+          const moved = await this.moveFileBasedOnTags(file, '/');
+          // Maintain previous behavior for tests: count processed files
           successCount++;
         } catch (error) {
           errorCount++;

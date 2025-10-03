@@ -28,6 +28,37 @@ export class CommandHandler {
       },
     });
 
+    // Rescan/rebuild index command (only when index feature is enabled)
+    if (
+      (this.plugin as any).indexOrchestrator &&
+      !!(this.plugin.settings as any).settings?.indexing?.enableIndexCache
+    ) {
+      this.plugin.addCommand({
+        id: 'rescan-index',
+        name: 'Rescan index (check all files)',
+        callback: async () => {
+          try {
+            NoticeManager.info('Starting index rescan...');
+            await (this.plugin as any).indexOrchestrator.ensureInitialized();
+            // full enqueue and process with optional content based on settings
+            (this.plugin as any).indexOrchestrator.enqueueAllMarkdownFiles();
+            const excerpt = (this.plugin.settings as any).settings?.indexing
+              ?.maxExcerptBytes as number | undefined;
+            const withContent = typeof excerpt === 'number' && excerpt > 0;
+            await (this.plugin as any).indexOrchestrator.processAllDirty(
+              withContent
+            );
+            NoticeManager.success('Index rescan completed');
+          } catch (error) {
+            handleError(error, 'Error during index rescan', false);
+            NoticeManager.error(
+              `Error during index rescan: ${error instanceof Error ? error.message : String(error)}`
+            );
+          }
+        },
+      });
+    }
+
     // History command
     this.plugin.addCommand({
       id: 'show-history',
