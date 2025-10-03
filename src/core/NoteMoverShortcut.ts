@@ -129,7 +129,8 @@ export class NoteMoverShortcut {
     const files = await app.vault.getFiles();
 
     if (files.length === 0) {
-      if (options.showNotifications) {
+      // Only show notice for manual/bulk runs, stay silent for periodic runs
+      if (options.showNotifications && options.operationType === 'bulk') {
         NoticeManager.info('No files found in vault');
       }
       return;
@@ -215,7 +216,7 @@ export class NoteMoverShortcut {
   async moveAllFilesInVaultPeriodic() {
     await this.moveAllFiles({
       createFolders: false,
-      showNotifications: false,
+      showNotifications: true,
       operationType: 'periodic',
     });
   }
