@@ -12,6 +12,7 @@
 ### Fixes
 
 - Fixed SettingsValidator to accept both deprecated and new settings data structure
+- Enabled notifications on periodic movements
 
 ## [0.4.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.5...0.4.6)
 
