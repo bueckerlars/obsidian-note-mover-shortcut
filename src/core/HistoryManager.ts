@@ -37,14 +37,27 @@ export class HistoryManager {
 
   private async saveHistory(): Promise<void> {
     // Update plugin settings with current history and bulk operations
-    if (!this.plugin.settings.history) {
-      (this.plugin.settings as any).history = {
-        history: [],
-        bulkOperations: [],
-      };
+    const settingsAny = this.plugin.settings as any;
+    const currentHistory = settingsAny.history;
+
+    if (
+      !currentHistory ||
+      typeof currentHistory !== 'object' ||
+      Array.isArray(currentHistory)
+    ) {
+      settingsAny.history = { history: [], bulkOperations: [] };
     }
-    (this.plugin.settings as any).history.history = this.history;
-    (this.plugin.settings as any).history.bulkOperations = this.bulkOperations;
+
+    // Ensure sub-structures exist and are arrays
+    if (!Array.isArray(settingsAny.history.history)) {
+      settingsAny.history.history = [];
+    }
+    if (!Array.isArray(settingsAny.history.bulkOperations)) {
+      settingsAny.history.bulkOperations = [];
+    }
+
+    settingsAny.history.history = this.history;
+    settingsAny.history.bulkOperations = this.bulkOperations;
     await (this.plugin as any).save_settings();
   }
 

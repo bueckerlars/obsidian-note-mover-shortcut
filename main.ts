@@ -81,12 +81,22 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   }
 
   async save_settings(): Promise<void> {
-    // Ensure history in settings is kept in sync
-    if (!this.settings.history) {
-      this.settings.history = {
-        history: [],
-        bulkOperations: [],
-      } as HistoryData;
+    // Ensure history in settings is kept in sync and robust against corruption
+    const settingsAny = this.settings as any;
+    const currentHistory = settingsAny.history;
+
+    if (
+      !currentHistory ||
+      typeof currentHistory !== 'object' ||
+      Array.isArray(currentHistory)
+    ) {
+      settingsAny.history = { history: [], bulkOperations: [] } as HistoryData;
+    }
+    if (!Array.isArray(settingsAny.history.history)) {
+      settingsAny.history.history = [];
+    }
+    if (!Array.isArray(settingsAny.history.bulkOperations)) {
+      settingsAny.history.bulkOperations = [];
     }
     await this.saveData(this.settings);
   }
