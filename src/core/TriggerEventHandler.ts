@@ -13,8 +13,9 @@ export class TriggerEventHandler {
       this.periodicIntervalId = null;
     }
 
-    if (this.plugin.settings.enablePeriodicMovement) {
-      const minutes = this.plugin.settings.periodicMovementInterval;
+    if (this.plugin.settings.settings.triggers.enablePeriodicMovement) {
+      const minutes =
+        this.plugin.settings.settings.triggers.periodicMovementInterval;
       this.periodicIntervalId = window.setInterval(
         async () => {
           await this.plugin.noteMover.moveAllFilesInVaultPeriodic();
@@ -31,7 +32,7 @@ export class TriggerEventHandler {
       this.onEditUnregister = null;
     }
 
-    if ((this.plugin.settings as any).enableOnEditTrigger) {
+    if (this.plugin.settings.settings.triggers.enableOnEditTrigger) {
       this.plugin.registerEvent(
         this.plugin.app.vault.on('modify', async file => {
           if (file instanceof TFile && file.extension === 'md') {

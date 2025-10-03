@@ -20,6 +20,9 @@ interface Rule {
   path: string;
 }
 
+/**
+ * @deprecated Use PluginData instead
+ */
 export interface NoteMoverShortcutSettings {
   enablePeriodicMovement: boolean;
   periodicMovementInterval: number;
@@ -140,13 +143,19 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
    */
   private ensureArraysExist(): void {
     // Ensure rules array exists and is valid
-    if (!Array.isArray(this.plugin.settings.rules)) {
-      this.plugin.settings.rules = [];
+    if (!Array.isArray(this.plugin.settings.settings?.rules)) {
+      (this.plugin.settings as any).settings =
+        this.plugin.settings.settings || ({} as any);
+      (this.plugin.settings.settings as any).rules = [];
     }
 
     // Ensure filter array exists and is valid
-    if (!Array.isArray(this.plugin.settings.filter)) {
-      this.plugin.settings.filter = [];
+    if (!Array.isArray(this.plugin.settings.settings?.filters?.filter)) {
+      (this.plugin.settings as any).settings =
+        this.plugin.settings.settings || ({} as any);
+      (this.plugin.settings.settings as any).filters =
+        this.plugin.settings.settings.filters || ({} as any);
+      (this.plugin.settings.settings.filters as any).filter = [];
     }
   }
 
@@ -159,19 +168,24 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
     this.ensureArraysExist();
 
     // Remove any invalid rules (empty criteria or path)
-    this.plugin.settings.rules = this.plugin.settings.rules.filter(
-      rule =>
-        rule &&
-        rule.criteria &&
-        rule.path &&
-        rule.criteria.trim() !== '' &&
-        rule.path.trim() !== ''
-    );
+    this.plugin.settings.settings.rules =
+      this.plugin.settings.settings.rules.filter(
+        (rule: any) =>
+          rule &&
+          rule.criteria &&
+          rule.path &&
+          rule.criteria.trim() !== '' &&
+          rule.path.trim() !== ''
+      );
 
     // Remove any invalid filters (empty strings)
-    this.plugin.settings.filter = this.plugin.settings.filter.filter(
-      filter => filter && filter.trim() !== ''
-    );
+    this.plugin.settings.settings.filters.filter =
+      this.plugin.settings.settings.filters.filter.filter(
+        (filter: any) =>
+          filter &&
+          typeof filter.value === 'string' &&
+          filter.value.trim() !== ''
+      );
   }
 
   /**

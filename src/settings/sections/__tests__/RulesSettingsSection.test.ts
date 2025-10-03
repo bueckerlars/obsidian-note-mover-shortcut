@@ -180,10 +180,20 @@ describe('RulesSettingsSection', () => {
         },
       },
       settings: {
-        rules: [
-          { criteria: 'tag: #work', path: '/work' },
-          { criteria: 'fileName: notes.md', path: '/notes' },
-        ],
+        settings: {
+          rules: [
+            { criteria: 'tag: #work', path: '/work' },
+            { criteria: 'fileName: notes.md', path: '/notes' },
+          ],
+          filters: { filter: [] },
+          triggers: {
+            enablePeriodicMovement: false,
+            periodicMovementInterval: 5,
+            enableOnEditTrigger: false,
+          },
+          retentionPolicy: { value: 30, unit: 'days' },
+        },
+        history: { history: [], bulkOperations: [] },
       },
       save_settings: jest.fn(),
       noteMover: {
@@ -223,7 +233,7 @@ describe('RulesSettingsSection', () => {
 
   describe('addRulesArray', () => {
     it('should handle empty rules array', () => {
-      mockPlugin.settings.rules = [];
+      mockPlugin.settings.settings.rules = [];
       rulesSettingsSection.addRulesArray();
 
       const containers = mockContainerEl.querySelectorAll('.rules-container');
@@ -233,51 +243,51 @@ describe('RulesSettingsSection', () => {
 
   describe('moveRule', () => {
     it('should move rule up', () => {
-      const originalRules = [...mockPlugin.settings.rules];
+      const originalRules = [...mockPlugin.settings.settings.rules];
       rulesSettingsSection.moveRule(1, -1);
 
-      expect(mockPlugin.settings.rules[0]).toBe(originalRules[1]);
-      expect(mockPlugin.settings.rules[1]).toBe(originalRules[0]);
+      expect(mockPlugin.settings.settings.rules[0]).toBe(originalRules[1]);
+      expect(mockPlugin.settings.settings.rules[1]).toBe(originalRules[0]);
     });
 
     it('should move rule down', () => {
-      const originalRules = [...mockPlugin.settings.rules];
+      const originalRules = [...mockPlugin.settings.settings.rules];
       rulesSettingsSection.moveRule(0, 1);
 
-      expect(mockPlugin.settings.rules[0]).toBe(originalRules[1]);
-      expect(mockPlugin.settings.rules[1]).toBe(originalRules[0]);
+      expect(mockPlugin.settings.settings.rules[0]).toBe(originalRules[1]);
+      expect(mockPlugin.settings.settings.rules[1]).toBe(originalRules[0]);
     });
 
     it('should not move rule beyond boundaries', () => {
-      const originalRules = [...mockPlugin.settings.rules];
+      const originalRules = [...mockPlugin.settings.settings.rules];
       rulesSettingsSection.moveRule(0, -1);
 
-      expect(mockPlugin.settings.rules).toEqual(originalRules);
+      expect(mockPlugin.settings.settings.rules).toEqual(originalRules);
     });
 
     it('should not move rule beyond upper boundary', () => {
-      const originalRules = [...mockPlugin.settings.rules];
+      const originalRules = [...mockPlugin.settings.settings.rules];
       rulesSettingsSection.moveRule(1, 1);
 
-      expect(mockPlugin.settings.rules).toEqual(originalRules);
+      expect(mockPlugin.settings.settings.rules).toEqual(originalRules);
     });
   });
 
   describe('private methods', () => {
     it('should handle reorderRules correctly', () => {
       // Test reorderRules method through moveRule
-      const originalRules = [...mockPlugin.settings.rules];
+      const originalRules = [...mockPlugin.settings.settings.rules];
       rulesSettingsSection.moveRule(1, -1);
 
-      expect(mockPlugin.settings.rules[0]).toBe(originalRules[1]);
-      expect(mockPlugin.settings.rules[1]).toBe(originalRules[0]);
+      expect(mockPlugin.settings.settings.rules[0]).toBe(originalRules[1]);
+      expect(mockPlugin.settings.settings.rules[1]).toBe(originalRules[0]);
     });
 
     it('should handle reorderRules with same index', () => {
-      const originalRules = [...mockPlugin.settings.rules];
+      const originalRules = [...mockPlugin.settings.settings.rules];
       rulesSettingsSection.moveRule(0, 0);
 
-      expect(mockPlugin.settings.rules).toEqual(originalRules);
+      expect(mockPlugin.settings.settings.rules).toEqual(originalRules);
     });
 
     it('should return app from getter', () => {
@@ -311,31 +321,31 @@ describe('RulesSettingsSection', () => {
 
   describe('reorderRules', () => {
     it('should reorder rules correctly', () => {
-      mockPlugin.settings.rules = [
+      mockPlugin.settings.settings.rules = [
         { criteria: 'tag: #work', path: '/work' },
         { criteria: 'fileName: notes.md', path: '/notes' },
         { criteria: 'content: important', path: '/important' },
       ];
-      const originalRules = [...mockPlugin.settings.rules];
+      const originalRules = [...mockPlugin.settings.settings.rules];
 
       // Test reorderRules through moveRule
       rulesSettingsSection.moveRule(0, 2);
 
-      expect(mockPlugin.settings.rules[0]).toBe(originalRules[2]);
-      expect(mockPlugin.settings.rules[2]).toBe(originalRules[0]);
+      expect(mockPlugin.settings.settings.rules[0]).toBe(originalRules[2]);
+      expect(mockPlugin.settings.settings.rules[2]).toBe(originalRules[0]);
     });
 
     it('should not reorder when fromIndex equals toIndex', () => {
-      mockPlugin.settings.rules = [
+      mockPlugin.settings.settings.rules = [
         { criteria: 'tag: #work', path: '/work' },
         { criteria: 'fileName: notes.md', path: '/notes' },
       ];
-      const originalRules = [...mockPlugin.settings.rules];
+      const originalRules = [...mockPlugin.settings.settings.rules];
 
       // Test through moveRule with same index
       rulesSettingsSection.moveRule(0, 0);
 
-      expect(mockPlugin.settings.rules).toEqual(originalRules);
+      expect(mockPlugin.settings.settings.rules).toEqual(originalRules);
     });
   });
 

@@ -80,14 +80,18 @@ describe('NoteMoverShortcut', () => {
     plugin = {
       app: mockApp,
       settings: {
-        inboxLocation: 'inbox',
-        destination: 'notes',
-        enableRules: false,
-        enablePeriodicMovement: false,
-        periodicMovementInterval: 5,
-        rules: [],
-        filter: [],
-      },
+        settings: {
+          triggers: {
+            enablePeriodicMovement: false,
+            periodicMovementInterval: 5,
+            enableOnEditTrigger: false,
+          },
+          filters: { filter: [] },
+          rules: [],
+          retentionPolicy: { value: 30, unit: 'days' },
+        },
+        history: { history: [], bulkOperations: [] },
+      } as any,
       historyManager: {
         addEntry: jest.fn(),
         undoLastMove: jest.fn().mockResolvedValue(true),
@@ -103,7 +107,7 @@ describe('NoteMoverShortcut', () => {
 
   describe('setup', () => {
     it('should complete setup without errors', () => {
-      plugin.settings.enablePeriodicMovement = false;
+      plugin.settings.settings.triggers.enablePeriodicMovement = false;
       expect(() => noteMover.setup()).not.toThrow();
     });
   });
@@ -117,7 +121,9 @@ describe('NoteMoverShortcut', () => {
 
     it('should move file to destination when file is open and rule matches', async () => {
       // Set up a rule that matches the mock file
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test-folder' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test-folder' },
+      ];
       noteMover.updateRuleManager();
 
       mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(mockFile);
@@ -130,7 +136,9 @@ describe('NoteMoverShortcut', () => {
   describe('moveAllFilesInVault', () => {
     it('should move all files in vault that match rules', async () => {
       // Set up a rule that matches the mock file
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test-folder' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test-folder' },
+      ];
       noteMover.updateRuleManager();
 
       mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
@@ -154,7 +162,7 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should skip file if tag is in blacklist', async () => {
-      plugin.settings.filter = ['tag: #test'];
+      plugin.settings.settings.filters.filter = [{ value: 'tag: #test' }];
       // destination setting removed
       noteMover.updateRuleManager();
       await noteMover['moveFileBasedOnTags'](mockFile, 'default');
@@ -162,7 +170,7 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should skip file if tag is not in whitelist', async () => {
-      plugin.settings.filter = ['tag: #other'];
+      plugin.settings.settings.filters.filter = [{ value: 'tag: #other' }];
       // destination setting removed
       noteMover.updateRuleManager();
       await noteMover['moveFileBasedOnTags'](mockFile, 'default');
@@ -170,7 +178,9 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should move file to rule path if tag matches', async () => {
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'custom/path' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'custom/path' },
+      ];
       // destination setting removed
       noteMover.updateRuleManager();
       await noteMover['moveFileBasedOnTags'](mockFile, 'default');
@@ -181,7 +191,7 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should skip file if no rules match (only files with rules are moved)', async () => {
-      plugin.settings.rules = [
+      plugin.settings.settings.rules = [
         { criteria: 'tag: #other', path: 'custom/path' },
       ];
       noteMover.updateRuleManager();
@@ -190,7 +200,9 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should move file to rule path when rule matches', async () => {
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'custom/path' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'custom/path' },
+      ];
       noteMover.updateRuleManager();
       await noteMover['moveFileBasedOnTags'](mockFile, 'default');
       expect(mockApp.fileManager.renameFile).toHaveBeenCalledWith(
@@ -201,7 +213,9 @@ describe('NoteMoverShortcut', () => {
 
     it('should handle errors during file move', async () => {
       // Set up a rule that matches the mock file
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test-folder' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test-folder' },
+      ];
       noteMover.updateRuleManager();
 
       mockApp.fileManager.renameFile = jest
@@ -214,7 +228,7 @@ describe('NoteMoverShortcut', () => {
 
     it('should create target folder if it does not exist', async () => {
       mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(false);
-      plugin.settings.rules = [
+      plugin.settings.settings.rules = [
         { criteria: 'tag: #test', path: 'new/folder/path' },
       ];
       // destination setting removed
@@ -236,7 +250,7 @@ describe('NoteMoverShortcut', () => {
 
     it('should not create target folder if it already exists', async () => {
       mockApp.vault.adapter.exists = jest.fn().mockResolvedValue(true);
-      plugin.settings.rules = [
+      plugin.settings.settings.rules = [
         { criteria: 'tag: #test', path: 'existing/folder' },
       ];
       // destination setting removed
@@ -255,7 +269,7 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should not try to create root folder', async () => {
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: '/' }];
+      plugin.settings.settings.rules = [{ criteria: 'tag: #test', path: '/' }];
       // destination setting removed
       noteMover.updateRuleManager();
 
@@ -270,7 +284,7 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should not try to create empty folder', async () => {
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: '' }];
+      plugin.settings.settings.rules = [{ criteria: 'tag: #test', path: '' }];
       // destination setting removed
       noteMover.updateRuleManager();
 
@@ -376,14 +390,20 @@ describe('NoteMoverShortcut', () => {
   describe('updateRuleManager', () => {
     it('should update rule manager when rules are enabled', () => {
       // Rules are always enabled now
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test' }];
-      plugin.settings.filter = ['tag: #block'];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test' },
+      ];
+      plugin.settings.settings.filters.filter = [{ value: 'tag: #block' }];
 
       const mockRuleManager = {
         setRules: jest.fn(),
         setFilter: jest.fn(),
         setOnlyMoveNotesWithRules: jest.fn(),
-      };
+        findMatchingRule: jest
+          .fn()
+          .mockReturnValue({ criteria: 'tag: #test', path: 'test' }),
+        moveFileBasedOnTags: jest.fn().mockResolvedValue('test'),
+      } as any;
       noteMover['ruleManager'] = mockRuleManager as any;
 
       noteMover.updateRuleManager();
@@ -395,23 +415,29 @@ describe('NoteMoverShortcut', () => {
     });
 
     it('should always update rule manager with current settings', () => {
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test/path' }];
-      plugin.settings.filter = ['tag: #filter'];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test/path' },
+      ];
+      plugin.settings.settings.filters.filter = [{ value: 'tag: #filter' }];
 
       const mockRuleManager = {
         setRules: jest.fn(),
         setFilter: jest.fn(),
         setOnlyMoveNotesWithRules: jest.fn(),
-      };
+        findMatchingRule: jest
+          .fn()
+          .mockReturnValue({ criteria: 'tag: #test', path: 'test/path' }),
+        moveFileBasedOnTags: jest.fn().mockResolvedValue('test/path'),
+      } as any;
       noteMover['ruleManager'] = mockRuleManager as any;
 
       noteMover.updateRuleManager();
 
       expect(mockRuleManager.setRules).toHaveBeenCalledWith(
-        plugin.settings.rules
+        plugin.settings.settings.rules
       );
       expect(mockRuleManager.setFilter).toHaveBeenCalledWith(
-        plugin.settings.filter
+        plugin.settings.settings.filters.filter.map(f => f.value)
       );
     });
   });
@@ -419,7 +445,9 @@ describe('NoteMoverShortcut', () => {
   describe('moveFocusedNoteToDestination error handling', () => {
     it('should handle error in moveFocusedNoteToDestination', async () => {
       // Set up a rule that matches the mock file
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test-folder' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test-folder' },
+      ];
       noteMover.updateRuleManager();
 
       mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(mockFile);
@@ -437,7 +465,9 @@ describe('NoteMoverShortcut', () => {
   describe('moveAllFilesInVault error handling', () => {
     it('should handle error when moving individual file', async () => {
       // Set up a rule that matches the mock file
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test-folder' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test-folder' },
+      ];
       noteMover.updateRuleManager();
 
       mockFile.path = 'file.md';
@@ -456,7 +486,9 @@ describe('NoteMoverShortcut', () => {
   describe('moveAllFilesInVaultPeriodic', () => {
     it('should move all files during periodic operations', async () => {
       // Set up a rule that matches the mock file
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test-folder' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test-folder' },
+      ];
       noteMover.updateRuleManager();
 
       mockApp.vault.getFiles = jest.fn().mockResolvedValue([mockFile]);
@@ -503,21 +535,25 @@ describe('NoteMoverShortcut', () => {
 
   describe('updateRuleManager', () => {
     it('should update rule manager with current settings', () => {
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test/path' }];
-      plugin.settings.filter = ['tag: #filter'];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test/path' },
+      ];
+      plugin.settings.settings.filters.filter = [{ value: 'tag: #filter' }];
 
       noteMover.updateRuleManager();
 
       // This test verifies the method runs without error
       // The actual rule manager functionality is tested separately
-      expect(plugin.settings.rules).toHaveLength(1);
+      expect(plugin.settings.settings.rules).toHaveLength(1);
     });
   });
 
   describe('Error Scenarios', () => {
     it('should handle file manager errors in moveFocusedNoteToDestination', async () => {
       // Set up a rule that matches the mock file
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test-folder' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test-folder' },
+      ];
       noteMover.updateRuleManager();
 
       mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(mockFile);
@@ -532,7 +568,9 @@ describe('NoteMoverShortcut', () => {
 
     it('should handle errors during bulk operations gracefully', async () => {
       // Set up a rule that matches the mock files
-      plugin.settings.rules = [{ criteria: 'tag: #test', path: 'test-folder' }];
+      plugin.settings.settings.rules = [
+        { criteria: 'tag: #test', path: 'test-folder' },
+      ];
       noteMover.updateRuleManager();
 
       mockApp.fileManager.renameFile = jest
@@ -589,7 +627,7 @@ describe('NoteMoverShortcut', () => {
 
       noteMover.updateRuleManager();
 
-      expect(setRulesSpy).toHaveBeenCalledWith(plugin.settings.rules);
+      expect(setRulesSpy).toHaveBeenCalledWith(plugin.settings.settings.rules);
     });
   });
 });

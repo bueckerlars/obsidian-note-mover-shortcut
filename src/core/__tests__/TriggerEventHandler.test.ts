@@ -29,10 +29,18 @@ describe('TriggerEventHandler', () => {
     // Mock Plugin
     plugin = {
       settings: {
-        enablePeriodicMovement: false,
-        periodicMovementInterval: 5,
-        enableOnEditTrigger: false,
-      },
+        settings: {
+          triggers: {
+            enablePeriodicMovement: false,
+            periodicMovementInterval: 5,
+            enableOnEditTrigger: false,
+          },
+          filters: { filter: [] },
+          rules: [],
+          retentionPolicy: { value: 30, unit: 'days' },
+        },
+        history: { history: [], bulkOperations: [] },
+      } as any,
       noteMover: {
         moveAllFilesInVaultPeriodic: jest.fn(),
         moveFileBasedOnTags: jest.fn(),
@@ -63,8 +71,8 @@ describe('TriggerEventHandler', () => {
     });
 
     it('should start new interval if periodic movement is enabled', () => {
-      plugin.settings.enablePeriodicMovement = true;
-      plugin.settings.periodicMovementInterval = 10;
+      plugin.settings.settings.triggers.enablePeriodicMovement = true;
+      plugin.settings.settings.triggers.periodicMovementInterval = 10;
 
       triggerHandler.togglePeriodic();
 
@@ -74,7 +82,7 @@ describe('TriggerEventHandler', () => {
     });
 
     it('should not start interval if periodic movement is disabled', () => {
-      plugin.settings.enablePeriodicMovement = false;
+      plugin.settings.settings.triggers.enablePeriodicMovement = false;
 
       triggerHandler.togglePeriodic();
 
@@ -83,8 +91,8 @@ describe('TriggerEventHandler', () => {
     });
 
     it('should call moveAllFilesInVaultPeriodic when interval fires', async () => {
-      plugin.settings.enablePeriodicMovement = true;
-      plugin.settings.periodicMovementInterval = 1; // 1 minute
+      plugin.settings.settings.triggers.enablePeriodicMovement = true;
+      plugin.settings.settings.triggers.periodicMovementInterval = 1; // 1 minute
 
       triggerHandler.togglePeriodic();
 
@@ -113,7 +121,7 @@ describe('TriggerEventHandler', () => {
     });
 
     it('should register new listener if on-edit trigger is enabled', () => {
-      (plugin.settings as any).enableOnEditTrigger = true;
+      plugin.settings.settings.triggers.enableOnEditTrigger = true as any;
       plugin.registerEvent = jest.fn();
 
       triggerHandler.toggleOnEditListener();
@@ -123,7 +131,7 @@ describe('TriggerEventHandler', () => {
     });
 
     it('should not register listener if on-edit trigger is disabled', () => {
-      (plugin.settings as any).enableOnEditTrigger = false;
+      plugin.settings.settings.triggers.enableOnEditTrigger = false as any;
 
       triggerHandler.toggleOnEditListener();
 
@@ -132,7 +140,7 @@ describe('TriggerEventHandler', () => {
     });
 
     it('should register event listener when on-edit trigger is enabled', () => {
-      (plugin.settings as any).enableOnEditTrigger = true;
+      plugin.settings.settings.triggers.enableOnEditTrigger = true as any;
 
       triggerHandler.toggleOnEditListener();
 
@@ -141,7 +149,7 @@ describe('TriggerEventHandler', () => {
     });
 
     it('should handle file modification events correctly', () => {
-      (plugin.settings as any).enableOnEditTrigger = true;
+      plugin.settings.settings.triggers.enableOnEditTrigger = true as any;
 
       triggerHandler.toggleOnEditListener();
 

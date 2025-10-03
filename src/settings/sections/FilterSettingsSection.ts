@@ -32,7 +32,7 @@ export class FilterSettingsSection {
         .setButtonText('Add new filter')
         .setCta()
         .onClick(async () => {
-          this.plugin.settings.filter.push('');
+          this.plugin.settings.settings.filters.filter.push({ value: '' });
           await this.plugin.save_settings();
           // Update RuleManager
           this.plugin.noteMover.updateRuleManager();
@@ -53,7 +53,7 @@ export class FilterSettingsSection {
     // Setup drag & drop manager
     this.setupDragDropManager(filtersContainer);
 
-    this.plugin.settings.filter.forEach((filter, index) => {
+    this.plugin.settings.settings.filters.filter.forEach((filter, index) => {
       const s = new Setting(filtersContainer)
         .addSearch(cb => {
           // AdvancedSuggest instead of TagSuggest
@@ -61,13 +61,15 @@ export class FilterSettingsSection {
           // Track the instance for cleanup
           this.advancedSuggestInstances.push(advancedSuggest);
           cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER)
-            .setValue(filter || '')
+            .setValue((filter?.value as string) || '')
             .onChange(async value => {
               // Don't save empty filters
               if (!value || value.trim() === '') {
-                this.plugin.settings.filter[index] = '';
+                this.plugin.settings.settings.filters.filter[index] = {
+                  value: '',
+                };
               } else {
-                this.plugin.settings.filter[index] = value;
+                this.plugin.settings.settings.filters.filter[index] = { value };
               }
               await this.plugin.save_settings();
               // Update RuleManager
@@ -78,7 +80,7 @@ export class FilterSettingsSection {
         })
         .addExtraButton(btn =>
           btn.setIcon('cross').onClick(async () => {
-            this.plugin.settings.filter.splice(index, 1);
+            this.plugin.settings.settings.filters.filter.splice(index, 1);
             await this.plugin.save_settings();
             // Update RuleManager
             this.plugin.noteMover.updateRuleManager();
@@ -93,17 +95,9 @@ export class FilterSettingsSection {
   }
 
   moveFilter(index: number, direction: number) {
-    const newIndex = Math.max(
-      0,
-      Math.min(this.plugin.settings.filter.length - 1, index + direction)
-    );
-    [
-      this.plugin.settings.filter[index],
-      this.plugin.settings.filter[newIndex],
-    ] = [
-      this.plugin.settings.filter[newIndex],
-      this.plugin.settings.filter[index],
-    ];
+    const list = this.plugin.settings.settings.filters.filter;
+    const newIndex = Math.max(0, Math.min(list.length - 1, index + direction));
+    [list[index], list[newIndex]] = [list[newIndex], list[index]];
     this.plugin.save_settings();
     this.refreshDisplay();
   }
@@ -143,7 +137,7 @@ export class FilterSettingsSection {
   private reorderFilters(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
 
-    const filters = this.plugin.settings.filter;
+    const filters = this.plugin.settings.settings.filters.filter;
     const [movedFilter] = filters.splice(fromIndex, 1);
     filters.splice(toIndex, 0, movedFilter);
 

@@ -21,8 +21,10 @@ export class NoteMoverShortcut {
 
   public updateRuleManager(): void {
     // Always update rules and filters (no toggle check)
-    this.ruleManager.setRules(this.plugin.settings.rules);
-    this.ruleManager.setFilter(this.plugin.settings.filter);
+    this.ruleManager.setRules(this.plugin.settings.settings.rules);
+    this.ruleManager.setFilter(
+      this.plugin.settings.settings.filters.filter.map(f => f.value)
+    );
   }
 
   public async addFileToBlacklist(fileName: string): Promise<void> {
@@ -31,7 +33,11 @@ export class NoteMoverShortcut {
       const filterValue = `fileName: ${fileName}`;
 
       // Check if filter already exists
-      if (this.plugin.settings.filter.includes(filterValue)) {
+      if (
+        this.plugin.settings.settings.filters.filter.some(
+          f => f.value === filterValue
+        )
+      ) {
         NoticeManager.warning(
           `File "${fileName}" is already in the blacklist.`
         );
@@ -39,7 +45,7 @@ export class NoteMoverShortcut {
       }
 
       // Add filter to settings
-      this.plugin.settings.filter.push(filterValue);
+      this.plugin.settings.settings.filters.filter.push({ value: filterValue });
       await this.plugin.save_settings();
 
       // Update RuleManager

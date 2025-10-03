@@ -1,5 +1,6 @@
 import { NoteMoverShortcutSettings } from '../settings/Settings';
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
+import { PluginData } from '../types/PluginData';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -30,52 +31,103 @@ export class SettingsValidator {
       return result;
     }
 
-    // Validate required string fields
-    const requiredStringFields = ['destination', 'inboxLocation'];
-    for (const field of requiredStringFields) {
-      if (!this.validateStringField(settings[field], field, result)) {
+    // Detect and validate by shape
+    if (this.looksLikePluginData(settings)) {
+      return this.validatePluginData(settings as PluginData);
+    }
+
+    // Otherwise treat as legacy NoteMoverShortcutSettings
+    return this.validateLegacySettings(settings);
+  }
+
+  /**
+   * Quick shape check for new PluginData export/import format
+   */
+  private static looksLikePluginData(
+    value: any
+  ): value is PluginData | { settings: any } {
+    if (!value || typeof value !== 'object') return false;
+    if (
+      'settings' in value &&
+      value.settings &&
+      typeof value.settings === 'object'
+    ) {
+      // ensure at least one of the new sub-keys exists
+      const s = value.settings;
+      return (
+        ('triggers' in s && typeof s.triggers === 'object') ||
+        ('filters' in s && typeof s.filters === 'object') ||
+        Array.isArray(s.rules)
+      );
+    }
+    return false;
+  }
+
+  /**
+   * Validate legacy NoteMoverShortcutSettings
+   */
+  private static validateLegacySettings(settings: any): ValidationResult {
+    const result: ValidationResult = {
+      isValid: true,
+      errors: [],
+      warnings: [],
+    };
+
+    // Legacy required string fields no longer exist; treat them as optional if present
+    const legacyOptionalStringFields = ['destination', 'inboxLocation'];
+    for (const field of legacyOptionalStringFields) {
+      if (!this.validateStringField(settings[field], field, result, false)) {
         result.isValid = false;
       }
     }
 
     // Validate boolean fields
-    const booleanFields = [
+    // Validate boolean fields (legacy names may be absent)
+    const booleanFieldsOptional = [
       'enablePeriodicMovement',
       'enableOnEditTrigger',
       'enableFilter',
       'enableRules',
     ];
-    for (const field of booleanFields) {
-      if (!this.validateBooleanField(settings[field], field, result)) {
+    for (const field of booleanFieldsOptional) {
+      if (!this.validateBooleanField(settings[field], field, result, false)) {
         result.isValid = false;
       }
     }
 
     // Validate periodicMovementInterval
     if (
+      settings.periodicMovementInterval !== undefined &&
+      settings.periodicMovementInterval !== null &&
       !this.validateIntervalField(settings.periodicMovementInterval, result)
     ) {
       result.isValid = false;
     }
 
     // Validate filter array
-    if (!this.validateFilterArray(settings.filter, result)) {
+    if (
+      settings.filter !== undefined &&
+      settings.filter !== null &&
+      !this.validateFilterArray(settings.filter, result)
+    ) {
       result.isValid = false;
     }
 
     // Validate rules array
-    if (!this.validateRulesArray(settings.rules, result)) {
+    if (
+      settings.rules !== undefined &&
+      settings.rules !== null &&
+      !this.validateRulesArray(settings.rules, result)
+    ) {
       result.isValid = false;
     }
 
-    // Validate optional history array
+    // Optional arrays
     if (settings.history !== undefined) {
       if (!this.validateHistoryArray(settings.history, result)) {
         result.warnings.push('History data is invalid and will be ignored');
       }
     }
-
-    // Validate optional bulkOperations array
     if (settings.bulkOperations !== undefined) {
       if (!this.validateBulkOperationsArray(settings.bulkOperations, result)) {
         result.warnings.push(
@@ -84,11 +136,124 @@ export class SettingsValidator {
       }
     }
 
-    // Validate optional lastSeenVersion
+    // Optional lastSeenVersion
     if (settings.lastSeenVersion !== undefined) {
       if (
         !this.validateStringField(
           settings.lastSeenVersion,
+          'lastSeenVersion',
+          result,
+          false
+        )
+      ) {
+        result.warnings.push(
+          'Last seen version is invalid and will be ignored'
+        );
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Validate new PluginData import/export shape
+   */
+  private static validatePluginData(data: any): ValidationResult {
+    const result: ValidationResult = {
+      isValid: true,
+      errors: [],
+      warnings: [],
+    };
+
+    const settings = data.settings;
+    if (!settings || typeof settings !== 'object') {
+      result.errors.push('Field "settings" is required and must be an object');
+      result.isValid = false;
+      return result;
+    }
+
+    // triggers
+    if (!settings.triggers || typeof settings.triggers !== 'object') {
+      result.errors.push(
+        'Field "settings.triggers" is required and must be an object'
+      );
+      result.isValid = false;
+    } else {
+      const t = settings.triggers;
+      if (
+        !this.validateBooleanField(
+          t.enablePeriodicMovement,
+          'settings.triggers.enablePeriodicMovement',
+          result
+        )
+      ) {
+        result.isValid = false;
+      }
+      if (!this.validateIntervalField(t.periodicMovementInterval, result)) {
+        result.isValid = false;
+      }
+      if (
+        !this.validateBooleanField(
+          t.enableOnEditTrigger,
+          'settings.triggers.enableOnEditTrigger',
+          result
+        )
+      ) {
+        result.isValid = false;
+      }
+    }
+
+    // filters
+    if (!settings.filters || typeof settings.filters !== 'object') {
+      result.errors.push(
+        'Field "settings.filters" is required and must be an object'
+      );
+      result.isValid = false;
+    } else {
+      const f = settings.filters;
+      if (!Array.isArray(f.filter)) {
+        result.errors.push('Field "settings.filters.filter" must be an array');
+        result.isValid = false;
+      } else {
+        for (let i = 0; i < f.filter.length; i++) {
+          if (
+            !f.filter[i] ||
+            typeof f.filter[i] !== 'object' ||
+            typeof f.filter[i].value !== 'string'
+          ) {
+            result.errors.push(
+              `Filter item at index ${i} must be an object with string 'value'`
+            );
+            result.isValid = false;
+            break;
+          }
+        }
+      }
+    }
+
+    // rules
+    if (!this.validateRulesArray(settings.rules, result)) {
+      result.isValid = false;
+    }
+
+    // retention policy (optional but recommended)
+    if (settings.retentionPolicy !== undefined) {
+      const rp = settings.retentionPolicy;
+      if (
+        !rp ||
+        typeof rp !== 'object' ||
+        typeof rp.value !== 'number' ||
+        (rp.unit !== 'days' && rp.unit !== 'weeks' && rp.unit !== 'months')
+      ) {
+        result.warnings.push('Retention policy is invalid and will be ignored');
+      }
+    }
+
+    // lastSeenVersion optional at root
+    if (data.lastSeenVersion !== undefined) {
+      if (
+        !this.validateStringField(
+          data.lastSeenVersion,
           'lastSeenVersion',
           result,
           false
@@ -131,14 +296,15 @@ export class SettingsValidator {
   private static validateBooleanField(
     value: any,
     fieldName: string,
-    result: ValidationResult
+    result: ValidationResult,
+    required = true
   ): boolean {
-    if (value === undefined || value === null) {
+    if (required && (value === undefined || value === null)) {
       result.errors.push(`Field '${fieldName}' is required`);
       return false;
     }
 
-    if (typeof value !== 'boolean') {
+    if (value !== undefined && value !== null && typeof value !== 'boolean') {
       result.errors.push(`Field '${fieldName}' must be a boolean`);
       return false;
     }
@@ -333,6 +499,7 @@ export class SettingsValidator {
       'filter',
       'enableRules',
       'rules',
+      'retentionPolicy',
       'lastSeenVersion',
     ];
 

@@ -138,7 +138,17 @@ describe('FilterSettingsSection', () => {
         },
       },
       settings: {
-        filter: ['filter1', 'filter2'],
+        settings: {
+          filters: { filter: [{ value: 'filter1' }, { value: 'filter2' }] },
+          triggers: {
+            enablePeriodicMovement: false,
+            periodicMovementInterval: 5,
+            enableOnEditTrigger: false,
+          },
+          rules: [],
+          retentionPolicy: { value: 30, unit: 'days' },
+        },
+        history: { history: [], bulkOperations: [] },
       },
       save_settings: jest.fn(),
       noteMover: {
@@ -182,7 +192,7 @@ describe('FilterSettingsSection', () => {
 
   describe('addPeriodicMovementFilterArray', () => {
     it('should handle empty filter array', () => {
-      mockPlugin.settings.filter = [];
+      mockPlugin.settings.settings.filters.filter = [];
       filterSettingsSection.addPeriodicMovementFilterArray();
 
       const containers = mockContainerEl.querySelectorAll('.filters-container');
@@ -192,51 +202,75 @@ describe('FilterSettingsSection', () => {
 
   describe('moveFilter', () => {
     it('should move filter up', () => {
-      const originalFilters = [...mockPlugin.settings.filter];
+      const originalFilters = [
+        ...mockPlugin.settings.settings.filters.filter.map((f: any) => f.value),
+      ];
       filterSettingsSection.moveFilter(1, -1);
-
-      expect(mockPlugin.settings.filter[0]).toBe(originalFilters[1]);
-      expect(mockPlugin.settings.filter[1]).toBe(originalFilters[0]);
+      expect(mockPlugin.settings.settings.filters.filter[0].value).toBe(
+        originalFilters[1]
+      );
+      expect(mockPlugin.settings.settings.filters.filter[1].value).toBe(
+        originalFilters[0]
+      );
     });
 
     it('should move filter down', () => {
-      const originalFilters = [...mockPlugin.settings.filter];
+      const originalFilters = [
+        ...mockPlugin.settings.settings.filters.filter.map((f: any) => f.value),
+      ];
       filterSettingsSection.moveFilter(0, 1);
-
-      expect(mockPlugin.settings.filter[0]).toBe(originalFilters[1]);
-      expect(mockPlugin.settings.filter[1]).toBe(originalFilters[0]);
+      expect(mockPlugin.settings.settings.filters.filter[0].value).toBe(
+        originalFilters[1]
+      );
+      expect(mockPlugin.settings.settings.filters.filter[1].value).toBe(
+        originalFilters[0]
+      );
     });
 
     it('should not move filter beyond boundaries', () => {
-      const originalFilters = [...mockPlugin.settings.filter];
+      const originalFilters = [
+        ...mockPlugin.settings.settings.filters.filter.map((f: any) => f.value),
+      ];
       filterSettingsSection.moveFilter(0, -1);
-
-      expect(mockPlugin.settings.filter).toEqual(originalFilters);
+      expect(
+        mockPlugin.settings.settings.filters.filter.map((f: any) => f.value)
+      ).toEqual(originalFilters);
     });
 
     it('should not move filter beyond upper boundary', () => {
-      const originalFilters = [...mockPlugin.settings.filter];
+      const originalFilters = [
+        ...mockPlugin.settings.settings.filters.filter.map((f: any) => f.value),
+      ];
       filterSettingsSection.moveFilter(1, 1);
-
-      expect(mockPlugin.settings.filter).toEqual(originalFilters);
+      expect(
+        mockPlugin.settings.settings.filters.filter.map((f: any) => f.value)
+      ).toEqual(originalFilters);
     });
   });
 
   describe('private methods', () => {
     it('should handle reorderFilters correctly', () => {
       // Test reorderFilters method through moveFilter
-      const originalFilters = [...mockPlugin.settings.filter];
+      const originalFilters = [
+        ...mockPlugin.settings.settings.filters.filter.map((f: any) => f.value),
+      ];
       filterSettingsSection.moveFilter(1, -1);
-
-      expect(mockPlugin.settings.filter[0]).toBe(originalFilters[1]);
-      expect(mockPlugin.settings.filter[1]).toBe(originalFilters[0]);
+      expect(mockPlugin.settings.settings.filters.filter[0].value).toBe(
+        originalFilters[1]
+      );
+      expect(mockPlugin.settings.settings.filters.filter[1].value).toBe(
+        originalFilters[0]
+      );
     });
 
     it('should handle reorderFilters with same index', () => {
-      const originalFilters = [...mockPlugin.settings.filter];
+      const originalFilters = [
+        ...mockPlugin.settings.settings.filters.filter.map((f: any) => f.value),
+      ];
       filterSettingsSection.moveFilter(0, 0);
-
-      expect(mockPlugin.settings.filter).toEqual(originalFilters);
+      expect(
+        mockPlugin.settings.settings.filters.filter.map((f: any) => f.value)
+      ).toEqual(originalFilters);
     });
 
     it('should return app from getter', () => {
@@ -289,24 +323,41 @@ describe('FilterSettingsSection', () => {
 
   describe('reorderFilters', () => {
     it('should reorder filters correctly', () => {
-      mockPlugin.settings.filter = ['filter1', 'filter2', 'filter3'];
-      const originalFilters = [...mockPlugin.settings.filter];
+      mockPlugin.settings.settings.filters.filter = [
+        { value: 'filter1' },
+        { value: 'filter2' },
+        { value: 'filter3' },
+      ];
+      const originalFilters = [
+        ...mockPlugin.settings.settings.filters.filter.map((f: any) => f.value),
+      ];
 
       // Test reorderFilters through moveFilter
       filterSettingsSection.moveFilter(0, 2);
 
-      expect(mockPlugin.settings.filter[0]).toBe(originalFilters[2]);
-      expect(mockPlugin.settings.filter[2]).toBe(originalFilters[0]);
+      expect(mockPlugin.settings.settings.filters.filter[0].value).toBe(
+        originalFilters[2]
+      );
+      expect(mockPlugin.settings.settings.filters.filter[2].value).toBe(
+        originalFilters[0]
+      );
     });
 
     it('should not reorder when fromIndex equals toIndex', () => {
-      mockPlugin.settings.filter = ['filter1', 'filter2'];
-      const originalFilters = [...mockPlugin.settings.filter];
+      mockPlugin.settings.settings.filters.filter = [
+        { value: 'filter1' },
+        { value: 'filter2' },
+      ];
+      const originalFilters = [
+        ...mockPlugin.settings.settings.filters.filter.map((f: any) => f.value),
+      ];
 
       // Test through moveFilter with same index
       filterSettingsSection.moveFilter(0, 0);
 
-      expect(mockPlugin.settings.filter).toEqual(originalFilters);
+      expect(
+        mockPlugin.settings.settings.filters.filter.map((f: any) => f.value)
+      ).toEqual(originalFilters);
     });
   });
 

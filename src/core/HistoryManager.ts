@@ -21,15 +21,15 @@ export class HistoryManager {
   constructor(private plugin: NoteMoverShortcutPlugin) {}
 
   public loadHistoryFromSettings(): void {
-    if (Array.isArray(this.plugin.settings.history)) {
-      this.history = this.plugin.settings.history;
+    const historyData = this.plugin.settings.history;
+    if (historyData && Array.isArray(historyData.history)) {
+      this.history = historyData.history;
     } else {
       this.history = [];
     }
 
-    // Load bulk operations from settings if available
-    if (Array.isArray(this.plugin.settings.bulkOperations)) {
-      this.bulkOperations = this.plugin.settings.bulkOperations;
+    if (historyData && Array.isArray(historyData.bulkOperations)) {
+      this.bulkOperations = historyData.bulkOperations;
     } else {
       this.bulkOperations = [];
     }
@@ -37,8 +37,27 @@ export class HistoryManager {
 
   private async saveHistory(): Promise<void> {
     // Update plugin settings with current history and bulk operations
-    (this.plugin.settings as any).history = this.history;
-    (this.plugin.settings as any).bulkOperations = this.bulkOperations;
+    const settingsAny = this.plugin.settings as any;
+    const currentHistory = settingsAny.history;
+
+    if (
+      !currentHistory ||
+      typeof currentHistory !== 'object' ||
+      Array.isArray(currentHistory)
+    ) {
+      settingsAny.history = { history: [], bulkOperations: [] };
+    }
+
+    // Ensure sub-structures exist and are arrays
+    if (!Array.isArray(settingsAny.history.history)) {
+      settingsAny.history.history = [];
+    }
+    if (!Array.isArray(settingsAny.history.bulkOperations)) {
+      settingsAny.history.bulkOperations = [];
+    }
+
+    settingsAny.history.history = this.history;
+    settingsAny.history.bulkOperations = this.bulkOperations;
     await (this.plugin as any).save_settings();
   }
 
@@ -219,7 +238,7 @@ export class HistoryManager {
    */
   public async cleanupOldEntries(): Promise<void> {
     const retentionPolicy =
-      this.plugin.settings.retentionPolicy ||
+      (this.plugin.settings.settings?.retentionPolicy as RetentionPolicy) ||
       HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY;
     const cutoffTime = this.calculateRetentionCutoffTime(retentionPolicy);
 
