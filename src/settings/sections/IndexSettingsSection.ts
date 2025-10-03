@@ -11,7 +11,24 @@ export class IndexSettingsSection {
   public addIndexSettings(): void {
     const { containerEl } = this;
 
-    new Setting(containerEl).setName('Index & Performance').setHeading();
+    const heading = new Setting(containerEl)
+      .setName('Index & Performance')
+      .setHeading();
+    heading.setDesc(
+      'Experimental feature: The index cache is under active development and may cause unexpected behavior. Use with caution and disable it if issues occur.'
+    );
+    const experimentalBadge = heading.nameEl.createEl('span', {
+      text: 'Experimental',
+    });
+    experimentalBadge.classList.add('nms-badge', 'nms-badge--experimental');
+    // Minimal inline styles to render as a badge and provide spacing
+    experimentalBadge.style.marginLeft = '8px';
+    experimentalBadge.style.padding = '0 6px';
+    experimentalBadge.style.border = '1px solid var(--interactive-accent)';
+    experimentalBadge.style.borderRadius = '10px';
+    experimentalBadge.style.fontSize = '0.85em';
+    experimentalBadge.style.textTransform = 'uppercase';
+    experimentalBadge.style.opacity = '0.8';
 
     new Setting(containerEl)
       .setName('Enable Index Cache')
