@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.7](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.6...0.4.7)
+
+### Features
+
+### Changes
+
+- Marked NoteMoverSettings interface as deprecated
+- Refactoring to use the new PluginData interface
+
+### Fixes
+
+- Fixed SettingsValidator to accept both deprecated and new settings data structure
+
 ## [0.4.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.5...0.4.6)
 
 ### Features

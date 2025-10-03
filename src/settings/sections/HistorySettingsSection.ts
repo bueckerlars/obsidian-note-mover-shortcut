@@ -42,13 +42,13 @@ export class HistorySettingsSection {
 
   private addRetentionPolicySettings(): void {
     // Initialize retention policy if not set
-    if (!this.plugin.settings.retentionPolicy) {
-      this.plugin.settings.retentionPolicy = {
+    if (!this.plugin.settings.settings.retentionPolicy) {
+      this.plugin.settings.settings.retentionPolicy = {
         ...HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
-      };
+      } as RetentionPolicy;
     }
 
-    const retentionPolicy = this.plugin.settings.retentionPolicy;
+    const retentionPolicy = this.plugin.settings.settings.retentionPolicy;
 
     // Retention Policy Section - Single line with value input and unit dropdown
     new Setting(this.containerEl)
@@ -61,7 +61,7 @@ export class HistorySettingsSection {
           .onChange(async (value: string) => {
             const numValue = parseInt(value);
             if (!isNaN(numValue) && numValue > 0) {
-              this.plugin.settings.retentionPolicy!.value = numValue;
+              this.plugin.settings.settings.retentionPolicy!.value = numValue;
               await (this.plugin as any).save_settings();
             }
           })
@@ -79,7 +79,7 @@ export class HistorySettingsSection {
           )
           .setValue(retentionPolicy.unit)
           .onChange(async (value: string) => {
-            this.plugin.settings.retentionPolicy!.unit = value as
+            this.plugin.settings.settings.retentionPolicy!.unit = value as
               | 'days'
               | 'weeks'
               | 'months';

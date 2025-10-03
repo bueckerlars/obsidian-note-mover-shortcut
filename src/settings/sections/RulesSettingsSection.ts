@@ -37,7 +37,7 @@ export class RulesSettingsSection {
         .setButtonText('Add new rule')
         .setCta()
         .onClick(async () => {
-          this.plugin.settings.rules.push({ criteria: '', path: '' });
+          this.plugin.settings.settings.rules.push({ criteria: '', path: '' });
           await this.plugin.save_settings();
           // Update RuleManager
           this.plugin.noteMover.updateRuleManager();
@@ -58,7 +58,7 @@ export class RulesSettingsSection {
     // Setup drag & drop manager
     this.setupDragDropManager(rulesContainer);
 
-    this.plugin.settings.rules.forEach((rule, index) => {
+    this.plugin.settings.settings.rules.forEach((rule, index) => {
       const s = new Setting(rulesContainer)
         .addSearch(cb => {
           // AdvancedSuggest instead of TagSuggest
@@ -70,7 +70,9 @@ export class RulesSettingsSection {
             .onChange(async value => {
               if (
                 value &&
-                this.plugin.settings.rules.some(rule => rule.criteria === value)
+                this.plugin.settings.settings.rules.some(
+                  rule => rule.criteria === value
+                )
               ) {
                 handleError(
                   createError(
@@ -83,7 +85,7 @@ export class RulesSettingsSection {
               }
 
               // Save Setting
-              this.plugin.settings.rules[index].criteria = value;
+              this.plugin.settings.settings.rules[index].criteria = value;
               await this.plugin.save_settings();
               // Update RuleManager
               this.plugin.noteMover.updateRuleManager();
@@ -96,7 +98,7 @@ export class RulesSettingsSection {
           cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.PATH)
             .setValue(rule.path)
             .onChange(async value => {
-              this.plugin.settings.rules[index].path = value;
+              this.plugin.settings.settings.rules[index].path = value;
               await this.plugin.save_settings();
             });
           // @ts-ignore
@@ -104,7 +106,7 @@ export class RulesSettingsSection {
         })
         .addExtraButton(btn =>
           btn.setIcon('cross').onClick(async () => {
-            this.plugin.settings.rules.splice(index, 1);
+            this.plugin.settings.settings.rules.splice(index, 1);
             await this.plugin.save_settings();
             // Update RuleManager
             this.plugin.noteMover.updateRuleManager();
@@ -119,12 +121,9 @@ export class RulesSettingsSection {
   }
 
   moveRule(index: number, direction: number) {
-    const newIndex = Math.max(
-      0,
-      Math.min(this.plugin.settings.rules.length - 1, index + direction)
-    );
-    [this.plugin.settings.rules[index], this.plugin.settings.rules[newIndex]] =
-      [this.plugin.settings.rules[newIndex], this.plugin.settings.rules[index]];
+    const rules = this.plugin.settings.settings.rules;
+    const newIndex = Math.max(0, Math.min(rules.length - 1, index + direction));
+    [rules[index], rules[newIndex]] = [rules[newIndex], rules[index]];
     this.plugin.save_settings();
     this.refreshDisplay();
   }
@@ -164,7 +163,7 @@ export class RulesSettingsSection {
   private reorderRules(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
 
-    const rules = this.plugin.settings.rules;
+    const rules = this.plugin.settings.settings.rules;
     const [movedRule] = rules.splice(fromIndex, 1);
     rules.splice(toIndex, 0, movedRule);
 

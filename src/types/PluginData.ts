@@ -1,6 +1,9 @@
 import { BulkOperation, HistoryEntry, RetentionPolicy } from './HistoryEntry';
 import { Rule } from './Rule';
 
+/**
+ * @since 0.4.7
+ */
 export interface PluginData {
   settings: SettingsData;
   history: HistoryData;

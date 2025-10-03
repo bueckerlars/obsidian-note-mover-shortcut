@@ -1,17 +1,20 @@
 import { Plugin, TFile } from 'obsidian';
 import { NoteMoverShortcut } from 'src/core/NoteMoverShortcut';
 import { CommandHandler } from 'src/handlers/CommandHandler';
-import {
-  DEFAULT_SETTINGS,
-  NoteMoverShortcutSettings,
-  NoteMoverShortcutSettingsTab,
-} from 'src/settings/Settings';
+import { NoteMoverShortcutSettingsTab } from 'src/settings/Settings';
 import { HistoryManager } from 'src/core/HistoryManager';
 import { TriggerEventHandler } from 'src/core/TriggerEventHandler';
 import { UpdateManager } from 'src/core/UpdateManager';
+import {
+  PluginData,
+  SettingsData,
+  HistoryData,
+  Filter,
+} from 'src/types/PluginData';
+import { SETTINGS_CONSTANTS } from 'src/config/constants';
 
 export default class NoteMoverShortcutPlugin extends Plugin {
-  public settings: NoteMoverShortcutSettings;
+  public settings: PluginData;
   public noteMover: NoteMoverShortcut;
   public command_handler: CommandHandler;
   public historyManager: HistoryManager;
@@ -78,15 +81,28 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   }
 
   async save_settings(): Promise<void> {
-    (this.settings as any).history = this.historyManager
-      ? this.historyManager.getHistory()
-      : [];
+    // Ensure history in settings is kept in sync
+    if (!this.settings.history) {
+      this.settings.history = {
+        history: [],
+        bulkOperations: [],
+      } as HistoryData;
+    }
     await this.saveData(this.settings);
   }
 
   async load_settings(): Promise<void> {
-    const savedData = await this.loadData();
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData || {});
+    const savedData: any = await this.loadData();
+
+    if (this.isPluginData(savedData)) {
+      // Already in new format
+      this.settings = savedData as PluginData;
+    } else {
+      // Migrate from old NoteMoverShortcutSettings format
+      await this.backupLegacyDataJson();
+      this.settings = this.migrateFromLegacy(savedData || {});
+      await this.save_settings();
+    }
 
     // Validate settings after loading to clean up any invalid data
     this.validateSettings();
@@ -96,27 +112,137 @@ export default class NoteMoverShortcutPlugin extends Plugin {
    * Validate settings to prevent data loss
    */
   private validateSettings(): void {
-    // Ensure arrays exist
-    if (!Array.isArray(this.settings.rules)) {
-      this.settings.rules = [];
+    // Ensure nested structures exist
+    if (!this.settings.settings) {
+      this.settings.settings = this.buildDefaultSettingsData();
     }
-    if (!Array.isArray(this.settings.filter)) {
-      this.settings.filter = [];
+    if (!this.settings.history) {
+      this.settings.history = {
+        history: [],
+        bulkOperations: [],
+      } as HistoryData;
+    }
+
+    // Ensure rules array exists
+    if (!Array.isArray(this.settings.settings.rules)) {
+      this.settings.settings.rules = [];
+    }
+    // Ensure filters array exists
+    if (!this.settings.settings.filters) {
+      this.settings.settings.filters = { filter: [] };
+    }
+    if (!Array.isArray(this.settings.settings.filters.filter)) {
+      this.settings.settings.filters.filter = [];
     }
 
     // Remove any invalid rules (empty criteria or path)
-    this.settings.rules = this.settings.rules.filter(
+    this.settings.settings.rules = this.settings.settings.rules.filter(
       rule =>
         rule &&
-        rule.criteria &&
-        rule.path &&
-        rule.criteria.trim() !== '' &&
-        rule.path.trim() !== ''
+        (rule as any).criteria &&
+        (rule as any).path &&
+        (rule as any).criteria.trim() !== '' &&
+        (rule as any).path.trim() !== ''
     );
 
     // Remove any invalid filters (empty strings)
-    this.settings.filter = this.settings.filter.filter(
-      filter => filter && filter.trim() !== ''
+    this.settings.settings.filters.filter =
+      this.settings.settings.filters.filter.filter(
+        f => f && typeof f.value === 'string' && f.value.trim() !== ''
+      );
+  }
+
+  private isPluginData(data: any): data is PluginData {
+    return (
+      data &&
+      typeof data === 'object' &&
+      'settings' in data &&
+      data.settings &&
+      'history' in data &&
+      data.history
     );
+  }
+
+  private buildDefaultSettingsData(): SettingsData {
+    const defaults = SETTINGS_CONSTANTS.DEFAULT_SETTINGS as any;
+    return {
+      triggers: {
+        enablePeriodicMovement: !!defaults.enablePeriodicMovement,
+        periodicMovementInterval: defaults.periodicMovementInterval ?? 5,
+        enableOnEditTrigger: !!defaults.enableOnEditTrigger,
+      },
+      filters: {
+        filter: Array.isArray(defaults.filter)
+          ? (defaults.filter as string[]).map(v => ({ value: v }) as Filter)
+          : [],
+      },
+      rules: Array.isArray(defaults.rules) ? defaults.rules : [],
+      retentionPolicy: defaults.retentionPolicy,
+    } as SettingsData;
+  }
+
+  private migrateFromLegacy(legacy: any): PluginData {
+    const defaults = SETTINGS_CONSTANTS.DEFAULT_SETTINGS as any;
+
+    const enablePeriodicMovement =
+      legacy?.enablePeriodicMovement ??
+      defaults.enablePeriodicMovement ??
+      false;
+    const periodicMovementInterval =
+      legacy?.periodicMovementInterval ??
+      defaults.periodicMovementInterval ??
+      5;
+    const enableOnEditTrigger =
+      legacy?.enableOnEditTrigger ?? defaults.enableOnEditTrigger ?? false;
+    const retentionPolicy = legacy?.retentionPolicy ?? defaults.retentionPolicy;
+
+    const rules = Array.isArray(legacy?.rules) ? legacy.rules : [];
+    const filterValues: string[] = Array.isArray(legacy?.filter)
+      ? legacy.filter
+      : [];
+    const filters: Filter[] = filterValues
+      .filter(v => typeof v === 'string')
+      .map(v => ({ value: v }));
+
+    const historyArray = Array.isArray(legacy?.history) ? legacy.history : [];
+    const bulkOps = Array.isArray(legacy?.bulkOperations)
+      ? legacy.bulkOperations
+      : [];
+
+    const data: PluginData = {
+      settings: {
+        triggers: {
+          enablePeriodicMovement,
+          periodicMovementInterval,
+          enableOnEditTrigger,
+        },
+        filters: { filter: filters },
+        rules,
+        retentionPolicy,
+      },
+      history: {
+        history: historyArray,
+        bulkOperations: bulkOps,
+      },
+      lastSeenVersion: legacy?.lastSeenVersion,
+    };
+
+    return data;
+  }
+
+  private async backupLegacyDataJson(): Promise<void> {
+    try {
+      const configDir = (this.app.vault as any).configDir || '.obsidian';
+      const adapter: any = this.app.vault.adapter as any;
+      const dataPath = `${configDir}/plugins/${this.manifest.id}/data.json`;
+      const exists = await adapter.exists?.(dataPath);
+      if (!exists) return;
+      const iso = new Date().toISOString().replace(/[:.]/g, '-');
+      const backupPath = `${configDir}/plugins/${this.manifest.id}/data.backup.${iso}.json`;
+      const content = await adapter.read(dataPath);
+      await adapter.write(backupPath, content);
+    } catch (e) {
+      // Best-effort backup; ignore errors
+    }
   }
 }

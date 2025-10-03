@@ -12,7 +12,7 @@ describe('HistoryManager', () => {
 
   beforeEach(() => {
     mockHistory = [];
-    mockSettings = { history: mockHistory };
+    mockSettings = { history: { history: mockHistory, bulkOperations: [] } };
     mockFile = {
       path: 'test/path.md',
       name: 'test.md',
@@ -20,7 +20,7 @@ describe('HistoryManager', () => {
     mockPlugin = {
       settings: mockSettings,
       save_settings: jest.fn().mockImplementation(() => {
-        mockSettings.history = mockHistory;
+        mockSettings.history.history = mockHistory;
         return Promise.resolve();
       }),
       app: {
@@ -580,7 +580,10 @@ describe('HistoryManager', () => {
         operationType: 'single',
       };
 
-      mockPlugin.settings.history = [mockHistoryEntry];
+      mockPlugin.settings.history = {
+        history: [mockHistoryEntry],
+        bulkOperations: [],
+      } as any;
       historyManager.loadHistoryFromSettings();
 
       const history = historyManager.getHistory();
@@ -589,7 +592,7 @@ describe('HistoryManager', () => {
     });
 
     it('should initialize empty history when settings.history is not an array', () => {
-      mockPlugin.settings.history = null;
+      mockPlugin.settings.history = null as any;
       historyManager.loadHistoryFromSettings();
 
       const history = historyManager.getHistory();
@@ -605,7 +608,10 @@ describe('HistoryManager', () => {
         totalFiles: 0,
       };
 
-      mockPlugin.settings.bulkOperations = [mockBulkOp];
+      mockPlugin.settings.history = {
+        history: [],
+        bulkOperations: [mockBulkOp],
+      } as any;
       historyManager.loadHistoryFromSettings();
 
       const bulkOps = historyManager.getBulkOperations();
@@ -614,7 +620,10 @@ describe('HistoryManager', () => {
     });
 
     it('should initialize empty bulk operations when settings.bulkOperations is not an array', () => {
-      mockPlugin.settings.bulkOperations = null;
+      mockPlugin.settings.history = {
+        history: [],
+        bulkOperations: null,
+      } as any;
       historyManager.loadHistoryFromSettings();
 
       const bulkOps = historyManager.getBulkOperations();

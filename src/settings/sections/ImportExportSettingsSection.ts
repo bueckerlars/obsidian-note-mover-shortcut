@@ -45,12 +45,11 @@ export class ImportExportSettingsSection {
 
   private async exportSettings(): Promise<void> {
     try {
-      // Create a clean copy of settings for export, excluding history
-      const settingsToExport = { ...this.plugin.settings };
-
-      // Remove history-related fields from export
-      delete settingsToExport.history;
-      delete settingsToExport.bulkOperations;
+      // Build export object without history
+      const settingsToExport = {
+        settings: this.plugin.settings.settings,
+        lastSeenVersion: this.plugin.settings.lastSeenVersion,
+      };
 
       // Convert to JSON string with proper formatting
       const jsonString = JSON.stringify(settingsToExport, null, 2);
@@ -152,15 +151,86 @@ export class ImportExportSettingsSection {
       });
 
       if (confirmed) {
-        // Sanitize and apply settings
-        const sanitizedSettings =
-          SettingsValidator.sanitizeSettings(importedSettings);
+        const current = this.plugin.settings;
 
-        // Merge with current settings (preserve some fields if needed)
-        this.plugin.settings = {
-          ...this.plugin.settings,
-          ...sanitizedSettings,
-        };
+        // If imported in new PluginData shape, apply directly
+        if (
+          importedSettings &&
+          typeof importedSettings === 'object' &&
+          importedSettings.settings &&
+          typeof importedSettings.settings === 'object'
+        ) {
+          const s = importedSettings.settings;
+
+          if (s.triggers && typeof s.triggers === 'object') {
+            if (s.triggers.enablePeriodicMovement !== undefined) {
+              current.settings.triggers.enablePeriodicMovement =
+                !!s.triggers.enablePeriodicMovement;
+            }
+            if (s.triggers.periodicMovementInterval !== undefined) {
+              current.settings.triggers.periodicMovementInterval = Number(
+                s.triggers.periodicMovementInterval
+              );
+            }
+            if (s.triggers.enableOnEditTrigger !== undefined) {
+              current.settings.triggers.enableOnEditTrigger =
+                !!s.triggers.enableOnEditTrigger;
+            }
+          }
+
+          if (s.filters && typeof s.filters === 'object') {
+            const arr = Array.isArray(s.filters.filter) ? s.filters.filter : [];
+            current.settings.filters.filter = arr
+              .filter((f: any) => f && typeof f.value === 'string')
+              .map((f: any) => ({ value: String(f.value) }));
+          }
+
+          if (Array.isArray(s.rules)) {
+            current.settings.rules = s.rules;
+          }
+
+          if (s.retentionPolicy) {
+            current.settings.retentionPolicy = s.retentionPolicy;
+          }
+
+          if (importedSettings.lastSeenVersion !== undefined) {
+            current.lastSeenVersion = importedSettings.lastSeenVersion;
+          }
+        } else {
+          // Legacy import path: sanitize and map into new structure
+          const sanitizedSettings = SettingsValidator.sanitizeSettings(
+            importedSettings
+          ) as any;
+
+          if (sanitizedSettings.enablePeriodicMovement !== undefined) {
+            current.settings.triggers.enablePeriodicMovement =
+              !!sanitizedSettings.enablePeriodicMovement;
+          }
+          if (sanitizedSettings.periodicMovementInterval !== undefined) {
+            current.settings.triggers.periodicMovementInterval = Number(
+              sanitizedSettings.periodicMovementInterval
+            );
+          }
+          if (sanitizedSettings.enableOnEditTrigger !== undefined) {
+            current.settings.triggers.enableOnEditTrigger =
+              !!sanitizedSettings.enableOnEditTrigger;
+          }
+          if (Array.isArray(sanitizedSettings.filter)) {
+            current.settings.filters.filter = sanitizedSettings.filter
+              .filter((v: any) => typeof v === 'string')
+              .map((v: string) => ({ value: v }));
+          }
+          if (Array.isArray(sanitizedSettings.rules)) {
+            current.settings.rules = sanitizedSettings.rules;
+          }
+          if (sanitizedSettings.retentionPolicy) {
+            current.settings.retentionPolicy =
+              sanitizedSettings.retentionPolicy;
+          }
+          if (sanitizedSettings.lastSeenVersion !== undefined) {
+            current.lastSeenVersion = sanitizedSettings.lastSeenVersion;
+          }
+        }
 
         // Save settings
         await this.plugin.save_settings();
