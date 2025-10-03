@@ -12,6 +12,7 @@ import {
   RulesSettingsSection,
   HistorySettingsSection,
   ImportExportSettingsSection,
+  IndexSettingsSection,
 } from './sections';
 import { DebounceManager } from '../utils/DebounceManager';
 
@@ -44,6 +45,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   private rulesSettings: RulesSettingsSection;
   private historySettings: HistorySettingsSection;
   private importExportSettings: ImportExportSettingsSection;
+  private indexSettings: any;
   private debounceManager: DebounceManager;
 
   constructor(private plugin: NoteMoverShortcutPlugin) {
@@ -81,6 +83,13 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
       this.containerEl,
       debouncedDisplay
     );
+    if (IndexSettingsSection) {
+      this.indexSettings = new (IndexSettingsSection as any)(
+        plugin,
+        this.containerEl,
+        debouncedDisplay
+      );
+    }
   }
 
   display(): void {
@@ -124,6 +133,13 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
       this.containerEl,
       debouncedDisplay
     );
+    if (IndexSettingsSection) {
+      this.indexSettings = new (IndexSettingsSection as any)(
+        this.plugin,
+        this.containerEl,
+        debouncedDisplay
+      );
+    }
 
     this.periodicMovementSettings.addTriggerSettings();
 
@@ -136,6 +152,13 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
     this.historySettings.addHistorySettings();
 
     this.importExportSettings.addImportExportSettings();
+
+    if (
+      this.indexSettings &&
+      typeof this.indexSettings.addIndexSettings === 'function'
+    ) {
+      this.indexSettings.addIndexSettings();
+    }
   }
 
   /**

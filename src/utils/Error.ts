@@ -40,3 +40,17 @@ export function handleError(
     throw error instanceof Error ? error : new Error(errorMessage);
   }
 }
+
+export const enum ErrorBehavior {
+  Throw = 'Throw',
+  Swallow = 'Swallow',
+}
+
+export function handleErrorWithBehavior(
+  error: unknown,
+  context: string | undefined,
+  behavior: ErrorBehavior
+): void {
+  const shouldThrow = behavior === ErrorBehavior.Throw;
+  handleError(error, context, shouldThrow);
+}

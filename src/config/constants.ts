@@ -52,6 +52,12 @@ export const SETTINGS_CONSTANTS = {
     filter: [] as string[],
     rules: [] as any[],
     retentionPolicy: HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
+    // Indexing defaults
+    indexing: {
+      enableIndexCache: true,
+      detectionMode: 'mtimeSize' as const,
+      maxExcerptBytes: 0, // disabled by default in v1
+    },
   },
 
   PLACEHOLDER_TEXTS: {

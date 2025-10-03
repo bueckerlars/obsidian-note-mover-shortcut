@@ -66,9 +66,7 @@ describe('CommandHandler', () => {
       updateManager: {
         showUpdateModal,
       },
-      settings: {
-        filter: [],
-      },
+      settings: { settings: {} },
       save_settings: jest.fn(),
     };
     handler = new CommandHandler(pluginMock);
@@ -288,7 +286,6 @@ describe('CommandHandler', () => {
       expect(warningSpy).toHaveBeenCalledWith(
         'No active file to add to blacklist.'
       );
-      expect(pluginMock.settings.filter).toHaveLength(0);
     });
 
     it('shows warning when file is already in blacklist', async () => {
@@ -339,5 +336,61 @@ describe('CommandHandler', () => {
         expect.stringContaining('Error adding file to blacklist')
       );
     });
+  });
+
+  it('registers rescan-index when index cache is enabled and runs successfully', async () => {
+    pluginMock.settings.settings = {
+      indexing: { enableIndexCache: true, maxExcerptBytes: 0 },
+    };
+    pluginMock.indexOrchestrator = {
+      ensureInitialized: jest.fn(),
+      enqueueAllMarkdownFiles: jest.fn(),
+      processAllDirty: jest.fn(),
+    };
+    handler = new CommandHandler(pluginMock);
+
+    handler.setup();
+
+    // rescan-index should be the 8th command now
+    const rescanCall = addCommand.mock.calls.find(
+      call => call[0].id === 'rescan-index'
+    );
+    expect(rescanCall).toBeDefined();
+    await rescanCall[0].callback();
+    expect(pluginMock.indexOrchestrator.ensureInitialized).toHaveBeenCalled();
+    expect(
+      pluginMock.indexOrchestrator.enqueueAllMarkdownFiles
+    ).toHaveBeenCalled();
+    expect(pluginMock.indexOrchestrator.processAllDirty).toHaveBeenCalledWith(
+      false
+    );
+  });
+
+  it('rescan-index uses content when maxExcerptBytes > 0 and handles errors', async () => {
+    const errorSpyLocal = jest.spyOn(
+      require('../../utils/NoticeManager').NoticeManager,
+      'error'
+    );
+    pluginMock.settings.settings = {
+      indexing: { enableIndexCache: true, maxExcerptBytes: 1024 },
+    };
+    const ensureInitialized = jest.fn();
+    const enqueueAllMarkdownFiles = jest.fn();
+    const processAllDirty = jest.fn().mockRejectedValue(new Error('Boom'));
+    pluginMock.indexOrchestrator = {
+      ensureInitialized,
+      enqueueAllMarkdownFiles,
+      processAllDirty,
+    };
+    handler = new CommandHandler(pluginMock);
+
+    handler.setup();
+    const rescanCall = addCommand.mock.calls.find(
+      call => call[0].id === 'rescan-index'
+    );
+    expect(rescanCall).toBeDefined();
+    await rescanCall[0].callback();
+    expect(processAllDirty).toHaveBeenCalledWith(true);
+    expect(errorSpyLocal).toHaveBeenCalled();
   });
 });

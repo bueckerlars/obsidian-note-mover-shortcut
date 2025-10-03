@@ -59,7 +59,11 @@ jest.mock('obsidian', () => ({
         }),
       };
       callback(button);
-      return button;
+      return {
+        ...button,
+        settingEl: document.createElement('div'),
+        infoEl: { remove: jest.fn() },
+      } as any;
     }),
     addSearch: jest.fn().mockImplementation(callback => {
       const search: any = {
@@ -93,9 +97,15 @@ jest.mock('obsidian', () => ({
             _onClick: null,
           };
           btnCallback(button);
-          return button;
+          return {
+            ...button,
+            settingEl: document.createElement('div'),
+            infoEl: { remove: jest.fn() },
+          } as any;
         }),
-      };
+        settingEl: document.createElement('div'),
+        infoEl: { remove: jest.fn() },
+      } as any;
     }),
     addExtraButton: jest.fn().mockImplementation(callback => {
       const button: any = {
@@ -108,13 +118,20 @@ jest.mock('obsidian', () => ({
         _onClick: null,
       };
       callback(button);
-      return button;
+      return {
+        ...button,
+        settingEl: document.createElement('div'),
+        infoEl: { remove: jest.fn() },
+      } as any;
     }),
     settingEl: document.createElement('div'),
     infoEl: {
       remove: jest.fn(),
     },
   })),
+  Notice: jest
+    .fn()
+    .mockImplementation(() => ({ noticeEl: document.createElement('div') })),
 }));
 
 describe('FilterSettingsSection', () => {
@@ -197,6 +214,206 @@ describe('FilterSettingsSection', () => {
 
       const containers = mockContainerEl.querySelectorAll('.filters-container');
       expect(containers.length).toBe(1);
+    });
+
+    it('should wire onChange and persist empty and non-empty values', async () => {
+      mockPlugin.settings.settings.filters.filter = [{ value: 'x' }];
+      // avoid DOM insertBefore by stubbing
+      (filterSettingsSection as any).addDragHandle = jest.fn();
+      filterSettingsSection.addPeriodicMovementFilterArray();
+
+      const { Setting } = require('obsidian');
+      const originalImpl = (Setting as jest.Mock).getMockImplementation();
+
+      (Setting as jest.Mock).mockImplementation(() => {
+        const api: any = {
+          setName: jest.fn().mockReturnThis(),
+          setHeading: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addSearch: jest.fn().mockImplementation(cb => {
+            const search: any = {
+              setPlaceholder: jest.fn().mockReturnThis(),
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn().mockImplementation(handler => {
+                search._onChange = handler;
+                return search;
+              }),
+              inputEl: document.createElement('input'),
+              containerEl: {
+                addClass: jest.fn(),
+                classList: {
+                  add: jest.fn(),
+                  remove: jest.fn(),
+                  contains: jest.fn(),
+                },
+              },
+              _onChange: null,
+            };
+            cb(search);
+            api._search = search;
+            return {
+              addExtraButton: jest.fn().mockImplementation(btnCb => {
+                const b: any = {
+                  setIcon: jest.fn().mockReturnThis(),
+                  onClick: jest.fn().mockImplementation(h => {
+                    b._onClick = h;
+                    return b;
+                  }),
+                  _onClick: null,
+                };
+                btnCb(b);
+                api._extra = b;
+                return {
+                  ...b,
+                  settingEl: document.createElement('div'),
+                  infoEl: { remove: jest.fn() },
+                } as any;
+              }),
+              settingEl: document.createElement('div'),
+              infoEl: { remove: jest.fn() },
+            } as any;
+          }),
+          addButton: jest.fn().mockImplementation(cb => {
+            const b: any = {
+              setButtonText: jest.fn().mockReturnThis(),
+              setCta: jest.fn().mockReturnThis(),
+              onClick: jest.fn().mockImplementation(h => {
+                b._onClick = h;
+                return b;
+              }),
+              _onClick: null,
+            };
+            cb(b);
+            api._addBtn = b;
+            return b;
+          }),
+          addExtraButton: jest.fn().mockReturnThis(),
+          settingEl: document.createElement('div'),
+          infoEl: { remove: jest.fn() },
+        };
+        return api;
+      });
+
+      filterSettingsSection = new FilterSettingsSection(
+        mockPlugin,
+        mockContainerEl,
+        mockRefreshDisplay
+      );
+      (filterSettingsSection as any).addDragHandle = jest.fn();
+      filterSettingsSection.addPeriodicMovementFilterArray();
+
+      const lastSettingInstance: any = (
+        require('obsidian').Setting as any
+      ).mock.results.pop().value;
+      const searchInstance = lastSettingInstance._search;
+
+      await searchInstance._onChange('newVal');
+      expect(mockPlugin.save_settings).toHaveBeenCalled();
+      expect(mockPlugin.noteMover.updateRuleManager).toHaveBeenCalled();
+      expect(mockPlugin.settings.settings.filters.filter[0]).toEqual({
+        value: 'newVal',
+      });
+
+      await searchInstance._onChange('   ');
+      expect(mockPlugin.settings.settings.filters.filter[0]).toEqual({
+        value: '',
+      });
+
+      // restore original Setting impl
+      (Setting as jest.Mock).mockImplementation(originalImpl as any);
+    });
+
+    it('should handle extra button click to remove filter and refresh', async () => {
+      mockPlugin.settings.settings.filters.filter = [{ value: 'a' }];
+      (filterSettingsSection as any).addDragHandle = jest.fn();
+
+      const { Setting } = require('obsidian');
+      const originalImpl = (Setting as jest.Mock).getMockImplementation();
+      (Setting as jest.Mock).mockImplementation(() => {
+        const api: any = {
+          addSearch: jest.fn().mockImplementation(cb => {
+            const search: any = {
+              setPlaceholder: jest.fn().mockReturnThis(),
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn().mockReturnThis(),
+              inputEl: document.createElement('input'),
+              containerEl: {
+                addClass: jest.fn(),
+                classList: {
+                  add: jest.fn(),
+                  remove: jest.fn(),
+                  contains: jest.fn(),
+                },
+              },
+            };
+            cb(search);
+            return {
+              addExtraButton: jest.fn().mockImplementation(btnCb => {
+                const b: any = {
+                  setIcon: jest.fn().mockReturnThis(),
+                  onClick: jest.fn().mockImplementation(h => {
+                    b._onClick = h;
+                    return b;
+                  }),
+                  _onClick: null,
+                };
+                btnCb(b);
+                api._extra = b;
+                return {
+                  ...b,
+                  settingEl: document.createElement('div'),
+                  infoEl: { remove: jest.fn() },
+                } as any;
+              }),
+              settingEl: document.createElement('div'),
+              infoEl: { remove: jest.fn() },
+            } as any;
+          }),
+          settingEl: document.createElement('div'),
+          infoEl: { remove: jest.fn() },
+        };
+        return api;
+      });
+
+      filterSettingsSection = new FilterSettingsSection(
+        mockPlugin,
+        mockContainerEl,
+        mockRefreshDisplay
+      );
+      (filterSettingsSection as any).addDragHandle = jest.fn();
+      filterSettingsSection.addPeriodicMovementFilterArray();
+
+      const lastSettingInstance: any = (
+        require('obsidian').Setting as any
+      ).mock.results.pop().value;
+      await lastSettingInstance._extra._onClick();
+
+      expect(mockPlugin.save_settings).toHaveBeenCalled();
+      expect(mockPlugin.noteMover.updateRuleManager).toHaveBeenCalled();
+      expect(mockRefreshDisplay).toHaveBeenCalled();
+      expect(mockPlugin.settings.settings.filters.filter.length).toBe(0);
+
+      (Setting as jest.Mock).mockImplementation(originalImpl as any);
+    });
+
+    it('should wire DragDropManager onReorder and onSave', async () => {
+      const { DragDropManager } = require('../../../utils/DragDropManager');
+      (filterSettingsSection as any).addDragHandle = jest.fn();
+      filterSettingsSection.addPeriodicMovementFilterArray();
+      const calls = (DragDropManager as jest.Mock).mock.calls;
+      const options = calls[calls.length - 1][1];
+
+      mockPlugin.settings.settings.filters.filter = [
+        { value: 'a' },
+        { value: 'b' },
+      ];
+      options.onReorder(0, 1);
+      expect(mockPlugin.settings.settings.filters.filter[0].value).toBe('b');
+
+      await options.onSave();
+      expect(mockPlugin.save_settings).toHaveBeenCalled();
+      expect(mockPlugin.noteMover.updateRuleManager).toHaveBeenCalled();
+      expect(mockRefreshDisplay).toHaveBeenCalled();
     });
   });
 
@@ -402,6 +619,67 @@ describe('FilterSettingsSection', () => {
       filterSettingsSection.cleanup();
 
       expect(destroySpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('addFilterSettings actions', () => {
+    it('should add new filter via button click', async () => {
+      const { Setting } = require('obsidian');
+      const originalImpl = (Setting as jest.Mock).getMockImplementation();
+      (Setting as jest.Mock).mockImplementation(() => {
+        const api: any = {
+          setName: jest.fn().mockReturnThis(),
+          setHeading: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addButton: jest.fn().mockImplementation(cb => {
+            const b: any = {
+              setButtonText: jest.fn().mockReturnThis(),
+              setCta: jest.fn().mockReturnThis(),
+              onClick: jest.fn().mockImplementation(h => {
+                b._onClick = h;
+                return b;
+              }),
+              _onClick: null,
+            };
+            cb(b);
+            api._btn = b;
+            return {
+              ...b,
+              settingEl: document.createElement('div'),
+              infoEl: { remove: jest.fn() },
+            } as any;
+          }),
+          addSearch: jest.fn().mockReturnThis(),
+          settingEl: document.createElement('div'),
+          infoEl: { remove: jest.fn() },
+        };
+        return api;
+      });
+
+      filterSettingsSection = new FilterSettingsSection(
+        mockPlugin,
+        mockContainerEl,
+        mockRefreshDisplay
+      );
+      // avoid addPeriodicMovementFilterArray behavior here to focus button
+      const originalArray =
+        filterSettingsSection.addPeriodicMovementFilterArray;
+      filterSettingsSection.addPeriodicMovementFilterArray = jest.fn();
+      filterSettingsSection.addFilterSettings();
+      await (require('obsidian').Setting as any).mock.results
+        .pop()
+        .value._btn._onClick();
+
+      expect(mockPlugin.settings.settings.filters.filter.at(-1)).toEqual({
+        value: '',
+      });
+      expect(mockPlugin.save_settings).toHaveBeenCalled();
+      expect(mockPlugin.noteMover.updateRuleManager).toHaveBeenCalled();
+      expect(mockRefreshDisplay).toHaveBeenCalled();
+
+      // restore
+      filterSettingsSection.addPeriodicMovementFilterArray = originalArray;
+      (Setting as jest.Mock).mockImplementation(originalImpl as any);
     });
   });
 });

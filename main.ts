@@ -5,6 +5,7 @@ import { NoteMoverShortcutSettingsTab } from 'src/settings/Settings';
 import { HistoryManager } from 'src/core/HistoryManager';
 import { TriggerEventHandler } from 'src/core/TriggerEventHandler';
 import { UpdateManager } from 'src/core/UpdateManager';
+import { IndexOrchestrator } from 'src/core/IndexOrchestrator';
 import {
   PluginData,
   SettingsData,
@@ -20,6 +21,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   public historyManager: HistoryManager;
   public updateManager: UpdateManager;
   public triggerHandler: TriggerEventHandler;
+  public indexOrchestrator: IndexOrchestrator;
+  private statusBarItemEl: HTMLElement | null = null;
   private settingTab: NoteMoverShortcutSettingsTab;
 
   async onload() {
@@ -28,6 +31,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     this.historyManager = new HistoryManager(this);
     this.historyManager.loadHistoryFromSettings();
     this.updateManager = new UpdateManager(this);
+    this.indexOrchestrator = new IndexOrchestrator(this);
     this.noteMover = new NoteMoverShortcut(this);
     this.triggerHandler = new TriggerEventHandler(this);
     this.command_handler = new CommandHandler(this);
@@ -43,6 +47,25 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     // Initialize triggers
     this.triggerHandler.togglePeriodic();
     this.triggerHandler.toggleOnEditListener();
+
+    // Initialize index (non-blocking)
+    try {
+      await this.indexOrchestrator.ensureInitialized();
+      // Optional snapshot verification if enabled later; keep lightweight now
+      // await this.indexOrchestrator.verifySnapshot();
+      // Setup status bar per Obsidian docs
+      this.statusBarItemEl = this.addStatusBarItem();
+      this.indexOrchestrator.registerStatusCallback(status => {
+        if (!this.statusBarItemEl) return;
+        const text =
+          status.state === 'processing'
+            ? `NoteMover: indexing (${status.dirty})`
+            : `NoteMover: idle`;
+        this.statusBarItemEl.setText(text);
+      });
+    } catch (e) {
+      // Best-effort; index remains optional
+    }
 
     // Event listener for automatic history creation during manual file operations
     this.setupVaultEventListeners();
@@ -75,6 +98,52 @@ export default class NoteMoverShortcutPlugin extends Plugin {
             file.path,
             file.name
           );
+          // Keep index updated on renames
+          try {
+            this.indexOrchestrator.queueDirty(file.path);
+          } catch {
+            // ignore indexing errors on rename events (best-effort)
+          }
+        }
+      })
+    );
+
+    // Monitor file modifications to mark dirty
+    this.registerEvent(
+      this.app.vault.on('modify', file => {
+        if (file instanceof TFile && file.extension === 'md') {
+          try {
+            this.indexOrchestrator.queueDirty(file.path);
+          } catch {
+            // ignore indexing errors on modify events (best-effort)
+          }
+        }
+      })
+    );
+
+    // Monitor file creations
+    this.registerEvent(
+      this.app.vault.on('create', file => {
+        if (file instanceof TFile && file.extension === 'md') {
+          try {
+            this.indexOrchestrator.queueDirty(file.path);
+          } catch {
+            // ignore indexing errors on create events (best-effort)
+          }
+        }
+      })
+    );
+
+    // Monitor file deletions
+    this.registerEvent(
+      this.app.vault.on('delete', file => {
+        if (file instanceof TFile && file.extension === 'md') {
+          try {
+            // Deletion: remove from index directly via orchestrator
+            this.indexOrchestrator.deletePath(file.path);
+          } catch {
+            // ignore indexing errors on delete events (best-effort)
+          }
         }
       })
     );
