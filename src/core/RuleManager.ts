@@ -29,6 +29,16 @@ export class RuleManager {
     this.filter = filter;
   }
 
+  /**
+   * Processes a single file against rules and filters
+   *
+   * This method evaluates ONLY the specified file against the configured
+   * rules and filters. It does NOT scan the entire vault.
+   *
+   * @param file - The specific TFile to evaluate
+   * @param skipFilter - Whether to skip filter evaluation
+   * @returns Target folder path if rule matches, null otherwise
+   */
   public async moveFileBasedOnTags(
     file: TFile,
     skipFilter = false

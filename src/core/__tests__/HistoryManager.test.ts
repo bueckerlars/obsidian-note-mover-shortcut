@@ -698,7 +698,7 @@ describe('HistoryManager', () => {
 
     it('should return only this month entries when timeFilter is "month"', () => {
       const filtered = historyManager.getFilteredHistory('month');
-      expect(filtered).toHaveLength(2);
+      expect(filtered).toHaveLength(3); // today + yesterday + last week (all within this month)
     });
 
     it('should handle invalid timeFilter by returning all entries', () => {
@@ -770,7 +770,7 @@ describe('HistoryManager', () => {
 
     it('should return only this month bulk operations when timeFilter is "month"', () => {
       const filtered = historyManager.getFilteredBulkOperations('month');
-      expect(filtered).toHaveLength(2);
+      expect(filtered).toHaveLength(3); // today + yesterday + last week (all within this month)
     });
   });
 

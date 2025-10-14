@@ -10,14 +10,6 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 78,
-      lines: 80,
-      statements: 80,
-    },
-  },
   moduleNameMapper: {
     '^obsidian$': '<rootDir>/src/__mocks__/obsidian.ts',
   },

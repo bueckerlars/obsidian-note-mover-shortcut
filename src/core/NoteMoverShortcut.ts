@@ -63,6 +63,16 @@ export class NoteMoverShortcut {
     // Periodic setup moved to TriggerEventHandler
   }
 
+  /**
+   * Moves a single file based on its tags and rules
+   *
+   * This method processes ONLY the specified file, not the entire vault.
+   * It's optimized for single-file operations like onEdit triggers.
+   *
+   * @param file - The specific TFile to process and potentially move
+   * @param defaultFolder - Default folder if no rule matches
+   * @param skipFilter - Whether to skip filter evaluation
+   */
   public async moveFileBasedOnTags(
     file: TFile,
     defaultFolder: string,
