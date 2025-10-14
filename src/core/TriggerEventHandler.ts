@@ -14,7 +14,11 @@ export class TriggerEventHandler {
     this.debouncedHandleOnEdit = this.debounceManager.debounce(
       'onEdit',
       async (file: TFile) => {
-        await this.handleOnEdit(file);
+        try {
+          await this.handleOnEdit(file);
+        } catch (error) {
+          console.error('Error in debounced handleOnEdit:', error);
+        }
       },
       2000 // 2 seconds delay - allows for rapid typing without excessive processing
     );

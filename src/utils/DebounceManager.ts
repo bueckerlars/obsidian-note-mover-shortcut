@@ -2,7 +2,7 @@
  * Utility class for debouncing function calls to prevent excessive execution
  */
 export class DebounceManager {
-  private timeouts: Map<string, NodeJS.Timeout> = new Map();
+  private timeouts: Map<string, number> = new Map();
 
   /**
    * Debounce a function call with a specified delay
@@ -26,7 +26,7 @@ export class DebounceManager {
       const timeout = setTimeout(() => {
         func(...args);
         this.timeouts.delete(key);
-      }, delay);
+      }, delay) as unknown as number;
 
       this.timeouts.set(key, timeout);
     }) as T;
