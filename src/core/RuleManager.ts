@@ -7,6 +7,10 @@ import { combinePath } from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
 import { RuleMatcher } from './RuleMatcher';
 
+/**
+ * RuleManager for Rule V1 system
+ * @deprecated This class uses the legacy Rule V1 format. Will be replaced by RuleV2 system in future versions.
+ */
 export class RuleManager {
   private rules: Rule[] = [];
   private filter: string[] = [];

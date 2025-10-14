@@ -8,6 +8,9 @@ export interface ValidationResult {
   warnings: string[];
 }
 
+/**
+ * @deprecated Use RuleV2 from '../types/RuleV2' instead. This will be removed in a future version.
+ */
 export interface Rule {
   criteria: string;
   path: string;
@@ -234,6 +237,13 @@ export class SettingsValidator {
     // rules
     if (!this.validateRulesArray(settings.rules, result)) {
       result.isValid = false;
+    }
+
+    // RuleV2 validation (in settings)
+    if (settings.rulesV2 !== undefined) {
+      if (!this.validateRulesV2Array(settings.rulesV2, result)) {
+        result.isValid = false;
+      }
     }
 
     // retention policy (optional but recommended)
@@ -519,5 +529,238 @@ export class SettingsValidator {
     }
 
     return sanitized;
+  }
+
+  /**
+   * Validates RuleV2 array with regex pre-compilation
+   * @param rulesV2 - Array of RuleV2 objects to validate
+   * @param result - ValidationResult to accumulate errors/warnings
+   * @returns true if validation passes, false otherwise
+   */
+  static validateRulesV2Array(rulesV2: any, result: ValidationResult): boolean {
+    if (!rulesV2) {
+      // rulesV2 is optional, so missing is OK
+      return true;
+    }
+
+    if (!Array.isArray(rulesV2)) {
+      result.errors.push('Field "rulesV2" must be an array');
+      return false;
+    }
+
+    for (let i = 0; i < rulesV2.length; i++) {
+      if (!this.validateRuleV2(rulesV2[i], i, result)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Validates a single RuleV2 object
+   * @param rule - RuleV2 object to validate
+   * @param index - Index in the array for error messages
+   * @param result - ValidationResult to accumulate errors/warnings
+   * @returns true if validation passes, false otherwise
+   */
+  private static validateRuleV2(
+    rule: any,
+    index: number,
+    result: ValidationResult
+  ): boolean {
+    if (!rule || typeof rule !== 'object') {
+      result.errors.push(`RuleV2 at index ${index} must be an object`);
+      return false;
+    }
+
+    // Validate name
+    if (
+      !this.validateStringField(rule.name, `rulesV2[${index}].name`, result)
+    ) {
+      return false;
+    }
+
+    // Validate destination
+    if (
+      !this.validateStringField(
+        rule.destination,
+        `rulesV2[${index}].destination`,
+        result
+      )
+    ) {
+      return false;
+    }
+
+    // Validate aggregation
+    if (!rule.aggregation || typeof rule.aggregation !== 'string') {
+      result.errors.push(
+        `RuleV2 at index ${index}: 'aggregation' is required and must be a string`
+      );
+      return false;
+    }
+    if (!['all', 'any', 'none'].includes(rule.aggregation)) {
+      result.errors.push(
+        `RuleV2 at index ${index}: 'aggregation' must be one of: 'all', 'any', 'none'`
+      );
+      return false;
+    }
+
+    // Validate active
+    if (typeof rule.active !== 'boolean') {
+      result.errors.push(
+        `RuleV2 at index ${index}: 'active' is required and must be a boolean`
+      );
+      return false;
+    }
+
+    // Validate triggers array
+    if (!Array.isArray(rule.triggers)) {
+      result.errors.push(
+        `RuleV2 at index ${index}: 'triggers' is required and must be an array`
+      );
+      return false;
+    }
+
+    // Triggers array must not be empty
+    if (rule.triggers.length === 0) {
+      result.errors.push(
+        `RuleV2 at index ${index}: 'triggers' array cannot be empty`
+      );
+      return false;
+    }
+
+    // Validate each trigger
+    for (let j = 0; j < rule.triggers.length; j++) {
+      if (!this.validateTrigger(rule.triggers[j], index, j, result)) {
+        return false;
+      }
+    }
+
+    // Pre-compile regex patterns
+    this.compileRegexInRuleV2(rule, index, result);
+
+    return true;
+  }
+
+  /**
+   * Validates a single Trigger object
+   * @param trigger - Trigger object to validate
+   * @param ruleIndex - Rule index for error messages
+   * @param triggerIndex - Trigger index for error messages
+   * @param result - ValidationResult to accumulate errors/warnings
+   * @returns true if validation passes, false otherwise
+   */
+  private static validateTrigger(
+    trigger: any,
+    ruleIndex: number,
+    triggerIndex: number,
+    result: ValidationResult
+  ): boolean {
+    const path = `rulesV2[${ruleIndex}].triggers[${triggerIndex}]`;
+
+    if (!trigger || typeof trigger !== 'object') {
+      result.errors.push(`${path} must be an object`);
+      return false;
+    }
+
+    // Validate criteriaType
+    const validCriteriaTypes = [
+      'tag',
+      'fileName',
+      'folder',
+      'created_at',
+      'modified_at',
+      'extension',
+      'links',
+      'embeds',
+      'properties',
+      'headings',
+    ];
+    if (!trigger.criteriaType || typeof trigger.criteriaType !== 'string') {
+      result.errors.push(
+        `${path}.criteriaType is required and must be a string`
+      );
+      return false;
+    }
+    if (!validCriteriaTypes.includes(trigger.criteriaType)) {
+      result.errors.push(
+        `${path}.criteriaType must be one of: ${validCriteriaTypes.join(', ')}`
+      );
+      return false;
+    }
+
+    // Validate ruleType
+    const validRuleTypes = [
+      'is',
+      'is not',
+      'contains',
+      'starts with',
+      'ends with',
+      'match regex',
+      'does not contain',
+      'does not starts with',
+      'does not ends with',
+      'does not match regex',
+    ];
+    if (!trigger.ruleType || typeof trigger.ruleType !== 'string') {
+      result.errors.push(`${path}.ruleType is required and must be a string`);
+      return false;
+    }
+    if (!validRuleTypes.includes(trigger.ruleType)) {
+      result.errors.push(
+        `${path}.ruleType must be one of: ${validRuleTypes.join(', ')}`
+      );
+      return false;
+    }
+
+    // Validate value
+    if (!this.validateStringField(trigger.value, `${path}.value`, result)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Pre-compiles regex patterns in a RuleV2 and marks the rule inactive if regex is invalid
+   * @param rule - RuleV2 object to check for regex patterns
+   * @param index - Rule index for error messages
+   * @param result - ValidationResult to accumulate errors/warnings
+   */
+  private static compileRegexInRuleV2(
+    rule: any,
+    index: number,
+    result: ValidationResult
+  ): void {
+    let hasInvalidRegex = false;
+
+    for (let j = 0; j < rule.triggers.length; j++) {
+      const trigger = rule.triggers[j];
+      if (
+        trigger.ruleType === 'match regex' ||
+        trigger.ruleType === 'does not match regex'
+      ) {
+        try {
+          // Try to compile the regex
+          new RegExp(trigger.value);
+        } catch (error) {
+          hasInvalidRegex = true;
+          const errorMsg =
+            error instanceof Error ? error.message : 'Unknown error';
+          result.errors.push(
+            `RuleV2 at index ${index}, trigger ${j}: Invalid regex pattern '${trigger.value}': ${errorMsg}`
+          );
+        }
+      }
+    }
+
+    // If any regex is invalid, mark the rule as inactive
+    if (hasInvalidRegex) {
+      rule.active = false;
+      result.warnings.push(
+        `RuleV2 at index ${index} has been set to inactive due to invalid regex pattern(s)`
+      );
+    }
   }
 }

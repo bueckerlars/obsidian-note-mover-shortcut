@@ -5,6 +5,8 @@ import { AdvancedSuggest } from '../suggesters/AdvancedSuggest';
 import { createError, handleError } from '../../utils/Error';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { DragDropManager } from '../../utils/DragDropManager';
+import { RuleEditorModal } from '../../modals/RuleEditorModal';
+import { RuleV2 } from '../../types/RuleV2';
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -26,12 +28,40 @@ export class RulesSettingsSection {
       'Criteria can be tags, filenames, paths, content, properties, or dates. If multiple rules match, the first one will be applied.'
     );
 
+    new Setting(this.containerEl).setDesc(descUseRules);
+
+    // Feature flag toggle for Rule V2
+    const ruleV2Desc = document.createDocumentFragment();
+    ruleV2Desc.append(
+      'Enable the new Rule V2 system (beta). This provides more flexible rule matching with multiple conditions and logical operators.',
+      document.createElement('br'),
+      '⚠️ Beta feature: Rule V2 replaces the existing rule system when enabled. Your existing rules will be migrated automatically.'
+    );
+
     new Setting(this.containerEl)
-      .setName('Rules description')
-      .setDesc(descUseRules);
+      .setName('Enable Rule-V2 (beta)')
+      .setDesc(ruleV2Desc)
+      .addToggle(toggle =>
+        toggle
+          .setValue(this.plugin.settings.settings.enableRuleV2 ?? false)
+          .onChange(async value => {
+            this.plugin.settings.settings.enableRuleV2 = value;
+            await this.plugin.save_settings();
+            this.refreshDisplay();
+          })
+      );
   }
 
   addAddRuleButtonSetting(): void {
+    // Check if RuleV2 is enabled
+    if (this.plugin.settings.settings.enableRuleV2) {
+      this.addAddRuleV2ButtonSetting();
+    } else {
+      this.addAddRuleV1ButtonSetting();
+    }
+  }
+
+  private addAddRuleV1ButtonSetting(): void {
     new Setting(this.containerEl).addButton(btn =>
       btn
         .setButtonText('Add new rule')
@@ -46,7 +76,27 @@ export class RulesSettingsSection {
     );
   }
 
+  private addAddRuleV2ButtonSetting(): void {
+    new Setting(this.containerEl).addButton(btn =>
+      btn
+        .setButtonText('+ Add Rule')
+        .setCta()
+        .onClick(() => {
+          this.openRuleEditorModal(null);
+        })
+    );
+  }
+
   addRulesArray(): void {
+    // Check if RuleV2 is enabled
+    if (this.plugin.settings.settings.enableRuleV2) {
+      this.addRulesV2Array();
+    } else {
+      this.addRulesV1Array();
+    }
+  }
+
+  private addRulesV1Array(): void {
     // Clean up existing AdvancedSuggest instances before creating new ones
     this.cleanupAdvancedSuggestInstances();
 
@@ -193,5 +243,190 @@ export class RulesSettingsSection {
       this.dragDropManager.destroy();
       this.dragDropManager = null;
     }
+  }
+
+  /**
+   * Renders RuleV2 list UI
+   */
+  private addRulesV2Array(): void {
+    // Ensure rulesV2 array exists
+    if (!this.plugin.settings.settings.rulesV2) {
+      this.plugin.settings.settings.rulesV2 = [];
+    }
+
+    // Create a container for rules with drag & drop
+    const rulesContainer = document.createElement('div');
+    rulesContainer.className = 'rules-v2-container';
+    this.containerEl.appendChild(rulesContainer);
+
+    // Setup drag & drop manager for V2 rules
+    this.setupDragDropManagerV2(rulesContainer);
+
+    this.plugin.settings.settings.rulesV2.forEach((rule, index) => {
+      const s = new Setting(rulesContainer);
+
+      // Remove default info element
+      s.infoEl.remove();
+
+      // Create custom layout container
+      const customContainer = s.settingEl.createDiv({
+        cls: 'rule-v2-custom-container',
+      });
+
+      // Rule name display (left side)
+      const nameEl = customContainer.createDiv({ cls: 'rule-v2-name' });
+      nameEl.textContent = rule.name || 'Unnamed Rule';
+
+      // Actions container (right side)
+      const actionsContainer = customContainer.createDiv({
+        cls: 'rule-v2-actions',
+      });
+
+      // Add delete button to actions container
+      s.addExtraButton(btn =>
+        btn
+          .setIcon('trash')
+          .setTooltip('Delete rule')
+          .onClick(async () => {
+            // Show confirmation dialog
+            const confirmed = confirm(
+              `Are you sure you want to delete the rule "${rule.name}"?\n\nThis action cannot be undone.`
+            );
+            if (confirmed) {
+              this.plugin.settings.settings.rulesV2!.splice(index, 1);
+              await this.plugin.save_settings();
+              this.refreshDisplay();
+            }
+          })
+      );
+
+      // Add edit button to actions container
+      s.addExtraButton(btn =>
+        btn
+          .setIcon('pencil')
+          .setTooltip('Edit rule')
+          .onClick(() => {
+            this.openRuleEditorModal(index);
+          })
+      );
+
+      // Add active toggle to actions container
+      s.addToggle(toggle =>
+        toggle
+          .setValue(rule.active)
+          .setTooltip(rule.active ? 'Rule is active' : 'Rule is inactive')
+          .onChange(async value => {
+            this.plugin.settings.settings.rulesV2![index].active = value;
+            await this.plugin.save_settings();
+          })
+      );
+
+      // Move controls to actions container
+      const controlEl = s.settingEl.querySelector('.setting-item-control');
+      if (controlEl) {
+        actionsContainer.appendChild(controlEl);
+      }
+
+      // Add drag handle to actions container (rightmost position)
+      const handleContainer = actionsContainer.createDiv({
+        cls: 'drag-handle-container',
+      });
+      const handle = DragDropManager.createDragHandle();
+      handleContainer.appendChild(handle);
+    });
+  }
+
+  /**
+   * Setup drag & drop manager for RuleV2
+   */
+  private setupDragDropManagerV2(container: HTMLElement): void {
+    // Clean up existing manager
+    if (this.dragDropManager) {
+      this.dragDropManager.destroy();
+    }
+
+    this.dragDropManager = new DragDropManager(container, {
+      onReorder: (fromIndex: number, toIndex: number) => {
+        this.reorderRulesV2(fromIndex, toIndex);
+      },
+      onSave: async () => {
+        await this.plugin.save_settings();
+        this.refreshDisplay();
+      },
+      itemSelector: '.setting-item',
+      handleSelector: '.drag-handle',
+    });
+  }
+
+  /**
+   * Reorder RuleV2 rules
+   */
+  private reorderRulesV2(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex || !this.plugin.settings.settings.rulesV2) return;
+
+    const rules = this.plugin.settings.settings.rulesV2;
+    const [movedRule] = rules.splice(fromIndex, 1);
+    rules.splice(toIndex, 0, movedRule);
+  }
+
+  /**
+   * Open RuleEditorModal for creating or editing a rule
+   * @param ruleIndex - Index of rule to edit, or null to create new rule
+   */
+  private openRuleEditorModal(ruleIndex: number | null): void {
+    const isEditMode = ruleIndex !== null;
+    let rule: RuleV2;
+
+    if (isEditMode) {
+      // Edit mode: clone existing rule
+      rule = JSON.parse(
+        JSON.stringify(this.plugin.settings.settings.rulesV2![ruleIndex])
+      );
+    } else {
+      // Create mode: new rule
+      rule = {
+        name: 'New Rule',
+        destination: '',
+        aggregation: 'all',
+        triggers: [
+          {
+            criteriaType: 'tag',
+            ruleType: 'contains',
+            value: '',
+          },
+        ],
+        active: true,
+      };
+    }
+
+    const modal = new RuleEditorModal(this.app, {
+      rule,
+      isEditMode,
+      onSave: async (updatedRule: RuleV2) => {
+        if (!this.plugin.settings.settings.rulesV2) {
+          this.plugin.settings.settings.rulesV2 = [];
+        }
+
+        if (isEditMode) {
+          // Update existing rule
+          this.plugin.settings.settings.rulesV2[ruleIndex!] = updatedRule;
+        } else {
+          // Add new rule
+          this.plugin.settings.settings.rulesV2.push(updatedRule);
+        }
+
+        await this.plugin.save_settings();
+        this.refreshDisplay();
+      },
+      onDelete: isEditMode
+        ? async () => {
+            this.plugin.settings.settings.rulesV2!.splice(ruleIndex!, 1);
+            await this.plugin.save_settings();
+            this.refreshDisplay();
+          }
+        : undefined,
+    });
+
+    modal.open();
   }
 }

@@ -12,6 +12,8 @@ import {
   Filter,
 } from 'src/types/PluginData';
 import { SETTINGS_CONSTANTS } from 'src/config/constants';
+import { SettingsValidator } from 'src/utils/SettingsValidator';
+import { RuleMigrationService } from 'src/core/RuleMigrationService';
 
 export default class NoteMoverShortcutPlugin extends Plugin {
   public settings: PluginData;
@@ -115,13 +117,13 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     }
 
     // Validate settings after loading to clean up any invalid data
-    this.validateSettings();
+    await this.validateSettings();
   }
 
   /**
    * Validate settings to prevent data loss
    */
-  private validateSettings(): void {
+  private async validateSettings(): Promise<void> {
     // Ensure nested structures exist
     if (!this.settings.settings) {
       this.settings.settings = this.buildDefaultSettingsData();
@@ -145,6 +147,21 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       this.settings.settings.filters.filter = [];
     }
 
+    // Ensure RuleV2 feature flag exists
+    if (this.settings.settings.enableRuleV2 === undefined) {
+      this.settings.settings.enableRuleV2 = false;
+    }
+
+    // Ensure RuleV2 array exists
+    if (!Array.isArray(this.settings.settings.rulesV2)) {
+      this.settings.settings.rulesV2 = [];
+    }
+
+    // Ensure schemaVersion exists
+    if (this.settings.schemaVersion === undefined) {
+      this.settings.schemaVersion = 1;
+    }
+
     // Remove any invalid rules (empty criteria or path)
     this.settings.settings.rules = this.settings.settings.rules.filter(
       rule =>
@@ -160,6 +177,51 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       this.settings.settings.filters.filter.filter(
         f => f && typeof f.value === 'string' && f.value.trim() !== ''
       );
+
+    // Migrate V1 rules to V2 if feature flag is enabled and migration is needed
+    if (this.settings.settings.enableRuleV2) {
+      if (
+        RuleMigrationService.shouldMigrate(
+          this.settings.settings.rules,
+          this.settings.settings.rulesV2
+        )
+      ) {
+        console.log('Migrating Rule V1 to Rule V2...');
+        this.settings.settings.rulesV2 = RuleMigrationService.migrateRules(
+          this.settings.settings.rules
+        );
+        console.log(
+          `Migrated ${this.settings.settings.rulesV2.length} rules to V2 format`
+        );
+        // Save migrated rules
+        await this.save_settings();
+      }
+    }
+
+    // Validate RuleV2 with regex pre-compilation
+    if (
+      this.settings.settings.rulesV2 &&
+      this.settings.settings.rulesV2.length > 0
+    ) {
+      const validationResult = {
+        isValid: true,
+        errors: [],
+        warnings: [],
+      };
+
+      SettingsValidator.validateRulesV2Array(
+        this.settings.settings.rulesV2,
+        validationResult
+      );
+
+      // Log any validation errors or warnings
+      if (validationResult.errors.length > 0) {
+        console.error('RuleV2 validation errors:', validationResult.errors);
+      }
+      if (validationResult.warnings.length > 0) {
+        console.warn('RuleV2 validation warnings:', validationResult.warnings);
+      }
+    }
   }
 
   private isPluginData(data: any): data is PluginData {
@@ -188,6 +250,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       },
       rules: Array.isArray(defaults.rules) ? defaults.rules : [],
       retentionPolicy: defaults.retentionPolicy,
+      enableRuleV2: false,
+      rulesV2: [],
     } as SettingsData;
   }
 
@@ -229,12 +293,14 @@ export default class NoteMoverShortcutPlugin extends Plugin {
         filters: { filter: filters },
         rules,
         retentionPolicy,
+        enableRuleV2: false,
       },
       history: {
         history: historyArray,
         bulkOperations: bulkOps,
       },
       lastSeenVersion: legacy?.lastSeenVersion,
+      schemaVersion: 1,
     };
 
     return data;

@@ -5,6 +5,7 @@ import { NoticeManager } from 'src/utils/NoticeManager';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SettingsValidator } from 'src/utils/SettingsValidator';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
+import { RuleMigrationService } from 'src/core/RuleMigrationService';
 
 export class ImportExportSettingsSection {
   constructor(
@@ -46,10 +47,15 @@ export class ImportExportSettingsSection {
   private async exportSettings(): Promise<void> {
     try {
       // Build export object without history
-      const settingsToExport = {
+      const settingsToExport: any = {
         settings: this.plugin.settings.settings,
         lastSeenVersion: this.plugin.settings.lastSeenVersion,
       };
+
+      // schemaVersion is at root level
+      if (this.plugin.settings.schemaVersion) {
+        settingsToExport.schemaVersion = this.plugin.settings.schemaVersion;
+      }
 
       // Convert to JSON string with proper formatting
       const jsonString = JSON.stringify(settingsToExport, null, 2);
@@ -196,6 +202,21 @@ export class ImportExportSettingsSection {
           if (importedSettings.lastSeenVersion !== undefined) {
             current.lastSeenVersion = importedSettings.lastSeenVersion;
           }
+
+          // Import schemaVersion if present
+          if (importedSettings.schemaVersion !== undefined) {
+            current.schemaVersion = importedSettings.schemaVersion;
+          }
+
+          // Import enableRuleV2 flag if present
+          if (s.enableRuleV2 !== undefined) {
+            current.settings.enableRuleV2 = !!s.enableRuleV2;
+          }
+
+          // Import RuleV2 if present
+          if (s.rulesV2 !== undefined) {
+            current.settings.rulesV2 = s.rulesV2;
+          }
         } else {
           // Legacy import path: sanitize and map into new structure
           const sanitizedSettings = SettingsValidator.sanitizeSettings(
@@ -229,6 +250,24 @@ export class ImportExportSettingsSection {
           }
           if (sanitizedSettings.lastSeenVersion !== undefined) {
             current.lastSeenVersion = sanitizedSettings.lastSeenVersion;
+          }
+        }
+
+        // Migrate V1 rules to V2 if feature flag is enabled
+        if (current.settings.enableRuleV2) {
+          if (
+            RuleMigrationService.shouldMigrate(
+              current.settings.rules,
+              current.settings.rulesV2
+            )
+          ) {
+            console.log('Migrating imported Rule V1 to Rule V2...');
+            current.settings.rulesV2 = RuleMigrationService.migrateRules(
+              current.settings.rules
+            );
+            console.log(
+              `Migrated ${current.settings.rulesV2.length} imported rules to V2 format`
+            );
           }
         }
 

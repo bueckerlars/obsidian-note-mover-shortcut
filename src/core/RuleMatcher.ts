@@ -9,6 +9,7 @@ import { MetadataExtractor } from './MetadataExtractor';
  * Provides centralized matching for tags, properties, and rule evaluation.
  *
  * @since 0.4.0
+ * @deprecated This class uses the legacy Rule V1 format. Will be replaced by RuleV2 matching system in future versions.
  */
 export class RuleMatcher {
   private metadataExtractor: MetadataExtractor;
