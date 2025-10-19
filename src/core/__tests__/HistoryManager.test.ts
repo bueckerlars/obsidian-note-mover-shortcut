@@ -694,7 +694,7 @@ describe('HistoryManager', () => {
 
     it('should return only this week entries when timeFilter is "week"', () => {
       const filtered = historyManager.getFilteredHistory('week');
-      expect(filtered).toHaveLength(2); // today + yesterday
+      expect(filtered).toHaveLength(3); // today + yesterday + 3 days ago (all within this week)
     });
 
     it('should return only this month entries when timeFilter is "month"', () => {
@@ -767,7 +767,7 @@ describe('HistoryManager', () => {
 
     it('should return only this week bulk operations when timeFilter is "week"', () => {
       const filtered = historyManager.getFilteredBulkOperations('week');
-      expect(filtered).toHaveLength(2);
+      expect(filtered).toHaveLength(3); // today + yesterday + 3 days ago (all within this week)
     });
 
     it('should return only this month bulk operations when timeFilter is "month"', () => {
