@@ -60,6 +60,10 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     if (this.settingTab) {
       this.settingTab.cleanup();
     }
+    // Cleanup trigger handler debounce manager
+    if (this.triggerHandler) {
+      this.triggerHandler.cleanup();
+    }
     // Event listeners are automatically removed when the plugin is unloaded
   }
 

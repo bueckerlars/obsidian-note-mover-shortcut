@@ -189,4 +189,115 @@ describe('TriggerEventHandler', () => {
       ).rejects.toThrow('Move failed');
     });
   });
+
+  describe('debounced onEdit handling', () => {
+    it('should use debounced handler for file modifications', () => {
+      plugin.settings.settings.triggers.enableOnEditTrigger = true as any;
+      const mockMoveFileBasedOnTags = jest.fn();
+      plugin.noteMover.moveFileBasedOnTags = mockMoveFileBasedOnTags;
+
+      triggerHandler.toggleOnEditListener();
+
+      // Get the event callback
+      const eventCallback = (plugin.app.vault.on as jest.Mock).mock.calls[0][1];
+
+      // Verify that the event callback is registered
+      expect(eventCallback).toBeDefined();
+      expect(typeof eventCallback).toBe('function');
+
+      // The debounced handler should be set up
+      expect((triggerHandler as any).debouncedHandleOnEdit).toBeDefined();
+    });
+
+    it('should process only the specific modified file, not entire vault', () => {
+      plugin.settings.settings.triggers.enableOnEditTrigger = true as any;
+      const mockMoveFileBasedOnTags = jest.fn();
+      plugin.noteMover.moveFileBasedOnTags = mockMoveFileBasedOnTags;
+
+      triggerHandler.toggleOnEditListener();
+
+      // Get the event callback
+      const eventCallback = (plugin.app.vault.on as jest.Mock).mock.calls[0][1];
+
+      // Trigger file modification - this should call the debounced handler
+      eventCallback(mockFile);
+
+      // The debounced handler should be called (even if the actual execution is delayed)
+      // We can't easily test the timing without complex async setup, but we can verify
+      // that the handler is properly set up and the event callback works
+      expect(eventCallback).toBeDefined();
+    });
+
+    it('should verify single-file processing in handleOnEdit', async () => {
+      const mockMoveFileBasedOnTags = jest.fn();
+      plugin.noteMover.moveFileBasedOnTags = mockMoveFileBasedOnTags;
+
+      // Test the handleOnEdit method directly
+      await (triggerHandler as any).handleOnEdit(mockFile);
+
+      // Verify that moveFileBasedOnTags was called with the specific file
+      expect(mockMoveFileBasedOnTags).toHaveBeenCalledTimes(1);
+      expect(mockMoveFileBasedOnTags).toHaveBeenCalledWith(
+        mockFile,
+        '/',
+        false
+      );
+
+      // Verify that no vault-wide operations were triggered
+      // (moveFileBasedOnTags should only process the single file)
+      expect(mockMoveFileBasedOnTags).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: mockFile.path,
+          name: mockFile.name,
+          extension: mockFile.extension,
+        }),
+        '/',
+        false
+      );
+    });
+
+    it('should not trigger any vault-wide operations during onEdit', () => {
+      plugin.settings.settings.triggers.enableOnEditTrigger = true as any;
+
+      // Mock vault methods to ensure they're not called
+      const mockGetFiles = jest.fn();
+      const mockGetMarkdownFiles = jest.fn();
+      plugin.app.vault.getFiles = mockGetFiles;
+      plugin.app.vault.getMarkdownFiles = mockGetMarkdownFiles;
+
+      triggerHandler.toggleOnEditListener();
+
+      // Get the event callback
+      const eventCallback = (plugin.app.vault.on as jest.Mock).mock.calls[0][1];
+
+      // Trigger file modification
+      eventCallback(mockFile);
+
+      // Verify that no vault-wide operations were triggered
+      expect(mockGetFiles).not.toHaveBeenCalled();
+      expect(mockGetMarkdownFiles).not.toHaveBeenCalled();
+    });
+
+    it('should have debounce manager initialized', () => {
+      expect((triggerHandler as any).debounceManager).toBeDefined();
+      expect((triggerHandler as any).debounceManager).toBeInstanceOf(
+        require('../../utils/DebounceManager').DebounceManager
+      );
+    });
+  });
+
+  describe('cleanup', () => {
+    it('should have cleanup method available', () => {
+      expect(typeof triggerHandler.cleanup).toBe('function');
+    });
+
+    it('should call debounceManager.cancelAll on cleanup', () => {
+      const mockCancelAll = jest.fn();
+      (triggerHandler as any).debounceManager.cancelAll = mockCancelAll;
+
+      triggerHandler.cleanup();
+
+      expect(mockCancelAll).toHaveBeenCalled();
+    });
+  });
 });

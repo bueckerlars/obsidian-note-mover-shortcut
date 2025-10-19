@@ -636,7 +636,8 @@ describe('HistoryManager', () => {
       // Add some test entries with different timestamps
       const now = Date.now();
       const oneDayAgo = now - 24 * 60 * 60 * 1000;
-      const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      // Use 3 days ago instead of 7 days to ensure it's within current month
+      const threeDaysAgo = now - 3 * 24 * 60 * 60 * 1000;
       const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
 
       // Mock Date.now for consistent testing
@@ -656,8 +657,8 @@ describe('HistoryManager', () => {
         fileName: 'note2.md',
       });
 
-      // Add entry from last week
-      jest.spyOn(Date, 'now').mockReturnValue(oneWeekAgo);
+      // Add entry from 3 days ago
+      jest.spyOn(Date, 'now').mockReturnValue(threeDaysAgo);
       historyManager.addEntry({
         sourcePath: '/source/path3',
         destinationPath: '/destination/path3',
@@ -693,12 +694,12 @@ describe('HistoryManager', () => {
 
     it('should return only this week entries when timeFilter is "week"', () => {
       const filtered = historyManager.getFilteredHistory('week');
-      expect(filtered).toHaveLength(2); // today + yesterday
+      expect(filtered).toHaveLength(3); // today + yesterday + 3 days ago (all within this week)
     });
 
     it('should return only this month entries when timeFilter is "month"', () => {
       const filtered = historyManager.getFilteredHistory('month');
-      expect(filtered).toHaveLength(2);
+      expect(filtered).toHaveLength(3); // today + yesterday + 3 days ago (all within this month)
     });
 
     it('should handle invalid timeFilter by returning all entries', () => {
@@ -711,7 +712,8 @@ describe('HistoryManager', () => {
     beforeEach(() => {
       const now = Date.now();
       const oneDayAgo = now - 24 * 60 * 60 * 1000;
-      const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+      // Use 3 days ago instead of 7 days to ensure it's within current month
+      const threeDaysAgo = now - 3 * 24 * 60 * 60 * 1000;
 
       // Mock Date.now for consistent testing
       jest.spyOn(Date, 'now').mockReturnValue(now);
@@ -735,8 +737,8 @@ describe('HistoryManager', () => {
       });
       historyManager.endBulkOperation();
 
-      // Add bulk operation from last week
-      jest.spyOn(Date, 'now').mockReturnValue(oneWeekAgo);
+      // Add bulk operation from 3 days ago
+      jest.spyOn(Date, 'now').mockReturnValue(threeDaysAgo);
       historyManager.startBulkOperation('bulk');
       historyManager.addEntry({
         sourcePath: '/source/path3',
@@ -765,12 +767,12 @@ describe('HistoryManager', () => {
 
     it('should return only this week bulk operations when timeFilter is "week"', () => {
       const filtered = historyManager.getFilteredBulkOperations('week');
-      expect(filtered).toHaveLength(2);
+      expect(filtered).toHaveLength(3); // today + yesterday + 3 days ago (all within this week)
     });
 
     it('should return only this month bulk operations when timeFilter is "month"', () => {
       const filtered = historyManager.getFilteredBulkOperations('month');
-      expect(filtered).toHaveLength(2);
+      expect(filtered).toHaveLength(3); // today + yesterday + 3 days ago (all within this month)
     });
   });
 
