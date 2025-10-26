@@ -863,6 +863,24 @@
   margin-top: 2px;
 }
 
+/* Property Value Suggestions */
+.property-value-suggestion {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+}
+
+.property-value-text {
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.property-value-type {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 /* Property Name Field - Expand when no value field */
 .rule-property-name {
   flex: 1;

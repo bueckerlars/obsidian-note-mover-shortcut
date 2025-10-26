@@ -10,6 +10,7 @@ import {
 import { FolderSuggest } from '../settings/suggesters/FolderSuggest';
 import { TagSuggest } from '../settings/suggesters/TagSuggest';
 import { PropertySuggest } from '../settings/suggesters/PropertySuggest';
+import { PropertyValueSuggest } from '../settings/suggesters/PropertyValueSuggest';
 import { DragDropManager } from '../utils/DragDropManager';
 import {
   getOperatorsForCriteriaType,
@@ -314,6 +315,18 @@ export class RuleEditorModal extends BaseModal {
         new TagSuggest(this.app, valueInput);
       } else if (trigger.criteriaType === 'folder') {
         new FolderSuggest(this.app, valueInput);
+      } else if (
+        trigger.criteriaType === 'properties' &&
+        trigger.propertyName &&
+        trigger.propertyType
+      ) {
+        // PropertyValueSuggest für Properties mit bekanntem Typ
+        new PropertyValueSuggest(
+          this.app,
+          valueInput,
+          trigger.propertyName,
+          trigger.propertyType
+        );
       }
     }
 
