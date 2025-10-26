@@ -351,6 +351,7 @@ export class RulesSettingsSection {
       },
       onSave: async () => {
         await this.plugin.save_settings();
+        this.plugin.noteMover.updateRuleManager();
         this.refreshDisplay();
       },
       itemSelector: '.setting-item',
