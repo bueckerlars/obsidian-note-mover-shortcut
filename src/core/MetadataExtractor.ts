@@ -191,4 +191,71 @@ export class MetadataExtractor {
 
     return false;
   }
+
+  /**
+   * Extracts complete metadata from a file for RuleV2 system
+   * Includes additional fields: extension, links, embeds, headings
+   *
+   * @param file - TFile to extract metadata from
+   * @returns Complete FileMetadata with V2 fields
+   */
+  public async extractFileMetadataV2(file: TFile): Promise<FileMetadata> {
+    try {
+      // Get base metadata using existing method
+      const baseMetadata = await this.extractFileMetadata(file);
+
+      // Extract additional V2-specific metadata
+      const fileCache = this.app.metadataCache.getFileCache(file);
+
+      // Extension from file name
+      const extension = file.extension || '';
+
+      // Links from metadata cache
+      const links: string[] = [];
+      if (fileCache?.links) {
+        fileCache.links.forEach(link => {
+          if (link.link && typeof link.link === 'string') {
+            links.push(link.link);
+          }
+        });
+      }
+
+      // Embeds from metadata cache
+      const embeds: string[] = [];
+      if (fileCache?.embeds) {
+        fileCache.embeds.forEach(embed => {
+          if (embed.link && typeof embed.link === 'string') {
+            embeds.push(embed.link);
+          }
+        });
+      }
+
+      // Headings from metadata cache
+      const headings: string[] = [];
+      if (fileCache?.headings) {
+        fileCache.headings.forEach(heading => {
+          if (heading.heading && typeof heading.heading === 'string') {
+            headings.push(heading.heading);
+          }
+        });
+      }
+
+      return {
+        ...baseMetadata,
+        extension,
+        links,
+        embeds,
+        headings,
+      };
+    } catch (error) {
+      handleError(
+        error,
+        `Error extracting V2 metadata for file '${file.path}'`,
+        false
+      );
+
+      // Return base metadata on error
+      return await this.extractFileMetadata(file);
+    }
+  }
 }
