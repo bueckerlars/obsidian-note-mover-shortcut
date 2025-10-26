@@ -254,8 +254,15 @@ export class MetadataExtractor {
         false
       );
 
-      // Return base metadata on error
-      return await this.extractFileMetadata(file);
+      // Return base metadata with V2-specific fields populated with default values
+      const baseMetadata = await this.extractFileMetadata(file);
+      return {
+        ...baseMetadata,
+        extension: '',
+        links: [],
+        embeds: [],
+        headings: [],
+      };
     }
   }
 }
