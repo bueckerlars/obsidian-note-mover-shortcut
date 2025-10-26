@@ -1,5 +1,6 @@
 import { App, AbstractInputSuggest } from 'obsidian';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
+import { inferPropertyTypeFromSamples } from '../../utils/OperatorMapping';
 
 export type PropertyType = 'text' | 'number' | 'checkbox' | 'date' | 'list';
 
@@ -34,88 +35,33 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
     this.properties.clear();
     const files = this.app.vault.getMarkdownFiles();
 
+    // First pass: collect all property values
+    const propertyValues = new Map<string, any[]>();
+
     files.forEach(file => {
       const cachedMetadata = this.app.metadataCache.getFileCache(file);
       if (cachedMetadata?.frontmatter) {
         Object.entries(cachedMetadata.frontmatter).forEach(([key, value]) => {
           // Skip Obsidian internal properties
           if (!key.startsWith('position') && key !== 'tags') {
-            if (!this.properties.has(key)) {
-              // First time seeing this property, determine its type
-              const propertyType = this.inferPropertyType(value);
-              this.properties.set(key, {
-                name: key,
-                type: propertyType,
-                exampleValue: this.getExampleValue(value),
-              });
-            } else {
-              // Update type if we find a more specific type
-              const existingInfo = this.properties.get(key)!;
-              const newType = this.inferPropertyType(value);
-              if (this.isMoreSpecificType(existingInfo.type, newType)) {
-                existingInfo.type = newType;
-                existingInfo.exampleValue = this.getExampleValue(value);
-              }
+            if (!propertyValues.has(key)) {
+              propertyValues.set(key, []);
             }
+            propertyValues.get(key)!.push(value);
           }
         });
       }
     });
-  }
 
-  private inferPropertyType(value: any): PropertyType {
-    if (value === null || value === undefined) {
-      return 'text'; // Default fallback
-    }
-
-    // Check for boolean/checkbox
-    if (typeof value === 'boolean') {
-      return 'checkbox';
-    }
-
-    // Check for number
-    if (typeof value === 'number') {
-      return 'number';
-    }
-
-    // Check for date (ISO string or date-like string)
-    if (typeof value === 'string') {
-      // Check if it's a date string
-      if (this.isDateString(value)) {
-        return 'date';
-      }
-
-      // Check if it's a list (comma-separated or array-like)
-      if (this.metadataExtractor.isListProperty(value)) {
-        return 'list';
-      }
-    }
-
-    // Check for array (list)
-    if (Array.isArray(value)) {
-      return 'list';
-    }
-
-    // Default to text
-    return 'text';
-  }
-
-  private isDateString(value: string): boolean {
-    // Check for ISO date format
-    if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
-      const date = new Date(value);
-      return !isNaN(date.getTime());
-    }
-
-    // Check for other common date formats
-    if (
-      /^\d{1,2}\/\d{1,2}\/\d{4}/.test(value) ||
-      /^\d{1,2}\.\d{1,2}\.\d{4}/.test(value)
-    ) {
-      return true;
-    }
-
-    return false;
+    // Second pass: determine types and create property info
+    propertyValues.forEach((values, key) => {
+      const propertyType = inferPropertyTypeFromSamples(values);
+      this.properties.set(key, {
+        name: key,
+        type: propertyType,
+        exampleValue: this.getExampleValue(values[0]), // Use first value as example
+      });
+    });
   }
 
   private isMoreSpecificType(

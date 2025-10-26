@@ -285,16 +285,74 @@ export function getPropertyTypeFromVault(
   propertyName: string
 ): 'text' | 'number' | 'checkbox' | 'date' | 'list' | null {
   const files = app.vault.getMarkdownFiles();
+  const valueSamples: any[] = [];
 
+  // Collect samples of the property value from multiple files
   for (const file of files) {
     const cache = app.metadataCache.getFileCache(file);
-    if (cache?.frontmatter?.[propertyName]) {
-      const value = cache.frontmatter[propertyName];
-      return inferPropertyTypeFromValue(value);
+    if (cache?.frontmatter?.[propertyName] !== undefined) {
+      valueSamples.push(cache.frontmatter[propertyName]);
     }
   }
 
-  return null;
+  if (valueSamples.length === 0) {
+    return null;
+  }
+
+  // Analyze all samples to determine the most likely type
+  return inferPropertyTypeFromSamples(valueSamples);
+}
+
+/**
+ * Infers property type from multiple value samples
+ * @param samples - Array of value samples to analyze
+ * @returns Inferred property type
+ */
+export function inferPropertyTypeFromSamples(
+  samples: any[]
+): 'text' | 'number' | 'checkbox' | 'date' | 'list' {
+  const typeCounts = {
+    text: 0,
+    number: 0,
+    checkbox: 0,
+    date: 0,
+    list: 0,
+  };
+
+  // Analyze each sample
+  for (const sample of samples) {
+    const inferredType = inferPropertyTypeFromValue(sample);
+    typeCounts[inferredType]++;
+  }
+
+  // Find the most common type
+  let maxCount = 0;
+  let mostCommonType: 'text' | 'number' | 'checkbox' | 'date' | 'list' = 'text';
+
+  for (const [type, count] of Object.entries(typeCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      mostCommonType = type as 'text' | 'number' | 'checkbox' | 'date' | 'list';
+    }
+  }
+
+  // Special handling for mixed types
+  if (maxCount === 0) {
+    return 'text'; // Fallback
+  }
+
+  // If we have a clear majority (more than 50%), use that type
+  if (maxCount > samples.length / 2) {
+    return mostCommonType;
+  }
+
+  // For mixed types, prefer more specific types over text
+  if (typeCounts.list > 0) return 'list';
+  if (typeCounts.date > 0) return 'date';
+  if (typeCounts.number > 0) return 'number';
+  if (typeCounts.checkbox > 0) return 'checkbox';
+
+  return 'text';
 }
 
 /**
@@ -302,7 +360,7 @@ export function getPropertyTypeFromVault(
  * @param value - The value to analyze
  * @returns Inferred property type
  */
-function inferPropertyTypeFromValue(
+export function inferPropertyTypeFromValue(
   value: any
 ): 'text' | 'number' | 'checkbox' | 'date' | 'list' {
   if (value === null || value === undefined) {
@@ -319,11 +377,26 @@ function inferPropertyTypeFromValue(
     return 'number';
   }
 
-  // Check for date (ISO string or date-like string)
+  // Check for array (list) - this should be checked before string
+  if (Array.isArray(value)) {
+    return 'list';
+  }
+
+  // Check for string values
   if (typeof value === 'string') {
-    // Check if it's a date string
+    // Check if it's a date string (prioritize date detection)
     if (isDateString(value)) {
       return 'date';
+    }
+
+    // Check if it's a number string
+    if (isNumberString(value)) {
+      return 'number';
+    }
+
+    // Check if it's a boolean string
+    if (isBooleanString(value)) {
+      return 'checkbox';
     }
 
     // Check if it's a list (comma-separated or array-like)
@@ -332,13 +405,45 @@ function inferPropertyTypeFromValue(
     }
   }
 
-  // Check for array (list)
-  if (Array.isArray(value)) {
-    return 'list';
-  }
-
   // Default to text
   return 'text';
+}
+
+/**
+ * Checks if a string represents a number
+ * @param value - String to check
+ * @returns true if string appears to be a number
+ */
+function isNumberString(value: string): boolean {
+  // Remove whitespace
+  const trimmed = value.trim();
+
+  // Check if it's a valid number (including decimals and negative numbers)
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+    const num = parseFloat(trimmed);
+    return !isNaN(num) && isFinite(num);
+  }
+
+  return false;
+}
+
+/**
+ * Checks if a string represents a boolean
+ * @param value - String to check
+ * @returns true if string appears to be a boolean
+ */
+function isBooleanString(value: string): boolean {
+  const trimmed = value.trim().toLowerCase();
+  return (
+    trimmed === 'true' ||
+    trimmed === 'false' ||
+    trimmed === 'yes' ||
+    trimmed === 'no' ||
+    trimmed === 'on' ||
+    trimmed === 'off' ||
+    trimmed === '1' ||
+    trimmed === '0'
+  );
 }
 
 /**
@@ -347,18 +452,42 @@ function inferPropertyTypeFromValue(
  * @returns true if string appears to be a date
  */
 function isDateString(value: string): boolean {
-  // Check for ISO date format
-  if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
-    const date = new Date(value);
+  const trimmed = value.trim();
+
+  // Check for ISO date format (YYYY-MM-DD)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const date = new Date(trimmed);
+    return !isNaN(date.getTime()) && date.toISOString().startsWith(trimmed);
+  }
+
+  // Check for ISO datetime format (YYYY-MM-DDTHH:mm:ss)
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(trimmed)) {
+    const date = new Date(trimmed);
     return !isNaN(date.getTime());
   }
 
   // Check for other common date formats
   if (
-    /^\d{1,2}\/\d{1,2}\/\d{4}/.test(value) ||
-    /^\d{1,2}\.\d{1,2}\.\d{4}/.test(value)
+    /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed) ||
+    /^\d{1,2}\.\d{1,2}\.\d{4}$/.test(trimmed) ||
+    /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(trimmed) ||
+    /^\d{1,2}\/\d{1,2}\/\d{2}$/.test(trimmed) ||
+    /^\d{1,2}\.\d{1,2}\.\d{2}$/.test(trimmed)
   ) {
-    return true;
+    // Try different parsing approaches for ambiguous formats
+    const date1 = new Date(trimmed);
+    const date2 = new Date(
+      trimmed.replace(/(\d{1,2})\/(\d{1,2})\/(\d{4})/, '$3-$2-$1')
+    ); // DD/MM/YYYY -> YYYY-MM-DD
+    const date3 = new Date(
+      trimmed.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/, '$3-$2-$1')
+    ); // DD.MM.YYYY -> YYYY-MM-DD
+
+    return (
+      !isNaN(date1.getTime()) ||
+      !isNaN(date2.getTime()) ||
+      !isNaN(date3.getTime())
+    );
   }
 
   return false;
@@ -375,13 +504,26 @@ function isListProperty(value: any): boolean {
   }
 
   if (typeof value === 'string') {
-    // Check for comma-separated values
-    if (value.includes(',') && value.split(',').length > 1) {
+    const trimmed = value.trim();
+
+    // Check for comma-separated values (must have at least 2 items)
+    if (trimmed.includes(',')) {
+      const parts = trimmed
+        .split(',')
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
+      if (parts.length > 1) {
+        return true;
+      }
+    }
+
+    // Check for YAML array-like string representation
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
       return true;
     }
 
-    // Check for array-like string representation
-    if (value.startsWith('[') && value.endsWith(']')) {
+    // Check for YAML list format (lines starting with -)
+    if (trimmed.includes('\n-') || trimmed.startsWith('-')) {
       return true;
     }
   }
