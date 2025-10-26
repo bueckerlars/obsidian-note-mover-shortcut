@@ -489,20 +489,24 @@ export class RuleEditorModal extends BaseModal {
     // Validate each trigger
     for (let i = 0; i < this.workingRule.triggers.length; i++) {
       const trigger = this.workingRule.triggers[i];
-      if (!trigger.value || trigger.value.trim() === '') {
-        alert(`Condition ${i + 1}: Value cannot be empty.`);
-        return false;
-      }
 
-      // Validate regex if applicable
-      if (isRegexOperator(trigger.operator)) {
-        try {
-          new RegExp(trigger.value);
-        } catch (e) {
-          alert(
-            `Condition ${i + 1}: Invalid regex pattern: ${e instanceof Error ? e.message : 'Unknown error'}`
-          );
+      // Only validate value if the operator requires one
+      if (operatorRequiresValue(trigger.operator)) {
+        if (!trigger.value || trigger.value.trim() === '') {
+          alert(`Condition ${i + 1}: Value cannot be empty.`);
           return false;
+        }
+
+        // Validate regex if applicable
+        if (isRegexOperator(trigger.operator)) {
+          try {
+            new RegExp(trigger.value);
+          } catch (e) {
+            alert(
+              `Condition ${i + 1}: Invalid regex pattern: ${e instanceof Error ? e.message : 'Unknown error'}`
+            );
+            return false;
+          }
         }
       }
     }
