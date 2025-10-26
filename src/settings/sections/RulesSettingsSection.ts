@@ -391,7 +391,7 @@ export class RulesSettingsSection {
         triggers: [
           {
             criteriaType: 'tag',
-            ruleType: 'contains',
+            operator: 'includes item',
             value: '',
           },
         ],

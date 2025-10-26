@@ -5,11 +5,21 @@ import {
   Trigger,
   AggregationType,
   CriteriaType,
-  RuleType,
+  Operator,
 } from '../types/RuleV2';
 import { FolderSuggest } from '../settings/suggesters/FolderSuggest';
 import { TagSuggest } from '../settings/suggesters/TagSuggest';
+import { PropertySuggest } from '../settings/suggesters/PropertySuggest';
 import { DragDropManager } from '../utils/DragDropManager';
+import {
+  getOperatorsForCriteriaType,
+  getOperatorsForPropertyType,
+  getDefaultOperatorForCriteriaType,
+  getAvailablePropertyTypes,
+  isRegexOperator,
+  operatorRequiresValue,
+  getPropertyTypeFromVault,
+} from '../utils/OperatorMapping';
 
 interface RuleEditorModalOptions {
   rule: RuleV2;
@@ -157,7 +167,7 @@ export class RuleEditorModal extends BaseModal {
       btn.setButtonText('+ Add Condition').onClick(() => {
         this.workingRule.triggers.push({
           criteriaType: 'tag',
-          ruleType: 'contains',
+          operator: 'includes item',
           value: '',
         });
         this.renderTriggers();
@@ -202,7 +212,7 @@ export class RuleEditorModal extends BaseModal {
       if (this.workingRule.triggers.length === 0) {
         this.workingRule.triggers.push({
           criteriaType: 'tag',
-          ruleType: 'contains',
+          operator: 'includes item',
           value: '',
         });
       }
@@ -236,56 +246,120 @@ export class RuleEditorModal extends BaseModal {
     });
     criteriaTypeSelect.onchange = () => {
       trigger.criteriaType = criteriaTypeSelect.value as CriteriaType;
-    };
-
-    // RuleType Dropdown
-    const ruleTypeSelect = row.createEl('select', {
-      cls: 'dropdown rule-rule-type',
-    });
-    const ruleTypes: RuleType[] = [
-      'is',
-      'is not',
-      'contains',
-      'starts with',
-      'ends with',
-      'match regex',
-      'does not contain',
-      'does not starts with',
-      'does not ends with',
-      'does not match regex',
-    ];
-    ruleTypes.forEach(rt => {
-      const option = ruleTypeSelect.createEl('option', { value: rt, text: rt });
-      if (trigger.ruleType === rt) {
-        option.selected = true;
+      // Reset operator to default for new criteria type
+      trigger.operator = getDefaultOperatorForCriteriaType(
+        trigger.criteriaType
+      );
+      // Clear property fields if not properties criteria
+      if (trigger.criteriaType !== 'properties') {
+        delete trigger.propertyName;
+        delete trigger.propertyType;
       }
-    });
-    ruleTypeSelect.onchange = () => {
-      trigger.ruleType = ruleTypeSelect.value as RuleType;
+      this.renderTriggers(); // Re-render to update operator dropdown
     };
 
-    // Value Input (with contextual suggester)
-    const valueInput = row.createEl('input', {
-      type: 'text',
-      cls: 'rule-trigger-value',
-      placeholder: 'Value',
-      value: trigger.value,
+    // Operator Dropdown (dynamically populated based on criteriaType)
+    const operatorSelect = row.createEl('select', {
+      cls: 'dropdown rule-operator',
     });
-    valueInput.oninput = () => {
-      trigger.value = valueInput.value;
-    };
+    this.populateOperatorDropdown(operatorSelect, trigger);
 
-    // Add suggesters based on criteriaType
-    if (trigger.criteriaType === 'tag') {
-      new TagSuggest(this.app, valueInput);
-    } else if (trigger.criteriaType === 'folder') {
-      new FolderSuggest(this.app, valueInput);
+    // Property-specific fields (only shown for properties criteria)
+    let propertyNameInput: HTMLInputElement | null = null;
+
+    if (trigger.criteriaType === 'properties') {
+      // Property Name Input mit Suggester
+      propertyNameInput = row.createEl('input', {
+        type: 'text',
+        cls: 'rule-property-name',
+        placeholder: 'Property Name',
+        value: trigger.propertyName || '',
+      });
+
+      // PropertySuggest hinzufügen
+      new PropertySuggest(this.app, propertyNameInput);
+
+      propertyNameInput.oninput = () => {
+        trigger.propertyName = propertyNameInput!.value;
+
+        // Automatische Typ-Erkennung
+        const detectedType = getPropertyTypeFromVault(
+          this.app,
+          trigger.propertyName
+        );
+        if (detectedType) {
+          trigger.propertyType = detectedType;
+          this.renderTriggers(); // Re-render für Operator-Update
+        }
+      };
+
+      // KEIN Property Type Dropdown mehr - wird automatisch erkannt
+    }
+
+    // Value Input (nur wenn Operator einen Wert benötigt)
+    let valueInput: HTMLInputElement | null = null;
+    if (operatorRequiresValue(trigger.operator)) {
+      valueInput = row.createEl('input', {
+        type: 'text',
+        cls: 'rule-trigger-value',
+        placeholder: 'Value',
+        value: trigger.value,
+      });
+      valueInput.oninput = () => {
+        trigger.value = valueInput!.value;
+      };
+
+      // Add suggesters based on criteriaType
+      if (trigger.criteriaType === 'tag') {
+        new TagSuggest(this.app, valueInput);
+      } else if (trigger.criteriaType === 'folder') {
+        new FolderSuggest(this.app, valueInput);
+      }
+    }
+
+    // Add CSS class to row based on whether value field is present
+    if (!operatorRequiresValue(trigger.operator)) {
+      row.addClass('no-value-field');
     }
 
     // Drag handle (right side)
     const handleContainer = row.createDiv({ cls: 'drag-handle-container' });
     const handle = DragDropManager.createDragHandle();
     handleContainer.appendChild(handle);
+  }
+
+  /**
+   * Populates the operator dropdown based on the trigger's criteria type and property type
+   */
+  private populateOperatorDropdown(
+    select: HTMLSelectElement,
+    trigger: Trigger
+  ): void {
+    select.empty();
+
+    let operators: Operator[];
+
+    if (trigger.criteriaType === 'properties' && trigger.propertyType) {
+      operators = getOperatorsForPropertyType(trigger.propertyType);
+    } else {
+      operators = getOperatorsForCriteriaType(trigger.criteriaType);
+    }
+
+    operators.forEach(op => {
+      const option = select.createEl('option', {
+        value: op,
+        text: op,
+      });
+      if (trigger.operator === op) {
+        option.selected = true;
+      }
+    });
+
+    select.onchange = () => {
+      trigger.operator = select.value as Operator;
+      // Re-render to show/hide value field based on operator
+      this.renderTriggers();
+    };
   }
 
   private setupTriggersDragDrop(): void {
@@ -408,10 +482,7 @@ export class RuleEditorModal extends BaseModal {
       }
 
       // Validate regex if applicable
-      if (
-        trigger.ruleType === 'match regex' ||
-        trigger.ruleType === 'does not match regex'
-      ) {
+      if (isRegexOperator(trigger.operator)) {
         try {
           new RegExp(trigger.value);
         } catch (e) {

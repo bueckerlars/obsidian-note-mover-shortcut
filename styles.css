@@ -845,6 +845,36 @@
   gap: 8px;
 }
 
+/* Property Suggestions */
+.property-suggestion {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+}
+
+.property-name {
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.property-meta {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Property Name Field - Expand when no value field */
+.rule-property-name {
+  flex: 1;
+  min-width: 0;
+}
+
+/* When no value field is present, property name should fill available space */
+.rule-trigger-row.no-value-field .rule-property-name {
+  flex: 1;
+  width: 100%;
+}
+
 /* ===== NOTICE STYLES ===== */
 
 /* Undo Button Styles */

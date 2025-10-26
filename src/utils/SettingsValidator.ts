@@ -1,6 +1,15 @@
 import { NoteMoverShortcutSettings } from '../settings/Settings';
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import { PluginData } from '../types/PluginData';
+import { RuleV2, Trigger, CriteriaType, Operator } from '../types/RuleV2';
+import {
+  getOperatorsForCriteriaType,
+  getOperatorsForPropertyType,
+  isOperatorValidForCriteriaType,
+  isOperatorValidForPropertyType,
+  isRegexOperator,
+  operatorRequiresValue,
+} from './OperatorMapping';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -665,7 +674,7 @@ export class SettingsValidator {
     }
 
     // Validate criteriaType
-    const validCriteriaTypes = [
+    const validCriteriaTypes: CriteriaType[] = [
       'tag',
       'fileName',
       'folder',
@@ -690,33 +699,71 @@ export class SettingsValidator {
       return false;
     }
 
-    // Validate ruleType
-    const validRuleTypes = [
-      'is',
-      'is not',
-      'contains',
-      'starts with',
-      'ends with',
-      'match regex',
-      'does not contain',
-      'does not starts with',
-      'does not ends with',
-      'does not match regex',
-    ];
-    if (!trigger.ruleType || typeof trigger.ruleType !== 'string') {
-      result.errors.push(`${path}.ruleType is required and must be a string`);
+    // Validate operator (replaces ruleType)
+    if (!trigger.operator || typeof trigger.operator !== 'string') {
+      result.errors.push(`${path}.operator is required and must be a string`);
       return false;
     }
-    if (!validRuleTypes.includes(trigger.ruleType)) {
+
+    // Check if operator is valid for the criteria type
+    if (
+      !isOperatorValidForCriteriaType(trigger.operator, trigger.criteriaType)
+    ) {
+      const validOperators = getOperatorsForCriteriaType(trigger.criteriaType);
       result.errors.push(
-        `${path}.ruleType must be one of: ${validRuleTypes.join(', ')}`
+        `${path}.operator '${trigger.operator}' is not valid for criteriaType '${trigger.criteriaType}'. Valid operators: ${validOperators.join(', ')}`
       );
       return false;
     }
 
-    // Validate value
-    if (!this.validateStringField(trigger.value, `${path}.value`, result)) {
-      return false;
+    // Special validation for properties criteria
+    if (trigger.criteriaType === 'properties') {
+      // Validate propertyName
+      if (!trigger.propertyName || typeof trigger.propertyName !== 'string') {
+        result.errors.push(
+          `${path}.propertyName is required for properties criteria and must be a string`
+        );
+        return false;
+      }
+
+      // PropertyType ist optional - wird automatisch erkannt
+      // Aber wenn vorhanden, muss es valide sein
+      if (trigger.propertyType) {
+        const validPropertyTypes = [
+          'text',
+          'number',
+          'checkbox',
+          'date',
+          'list',
+        ];
+        if (!validPropertyTypes.includes(trigger.propertyType)) {
+          result.errors.push(
+            `${path}.propertyType must be one of: ${validPropertyTypes.join(', ')}`
+          );
+          return false;
+        }
+      }
+
+      // Validate operator against property type
+      if (
+        trigger.propertyType &&
+        !isOperatorValidForPropertyType(trigger.operator, trigger.propertyType)
+      ) {
+        const validOperators = getOperatorsForPropertyType(
+          trigger.propertyType
+        );
+        result.errors.push(
+          `${path}.operator '${trigger.operator}' is not valid for propertyType '${trigger.propertyType}'. Valid operators: ${validOperators.join(', ')}`
+        );
+        return false;
+      }
+    }
+
+    // Validate value (nur wenn Operator einen Wert benötigt)
+    if (operatorRequiresValue(trigger.operator)) {
+      if (!this.validateStringField(trigger.value, `${path}.value`, result)) {
+        return false;
+      }
     }
 
     return true;
@@ -737,10 +784,7 @@ export class SettingsValidator {
 
     for (let j = 0; j < rule.triggers.length; j++) {
       const trigger = rule.triggers[j];
-      if (
-        trigger.ruleType === 'match regex' ||
-        trigger.ruleType === 'does not match regex'
-      ) {
+      if (isRegexOperator(trigger.operator)) {
         try {
           // Try to compile the regex
           new RegExp(trigger.value);

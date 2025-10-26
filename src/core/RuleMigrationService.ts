@@ -1,5 +1,6 @@
 import { Rule } from '../types/Rule';
-import { RuleV2, Trigger, CriteriaType, RuleType } from '../types/RuleV2';
+import { RuleV2, Trigger, CriteriaType, Operator } from '../types/RuleV2';
+import { getDefaultOperatorForCriteriaType } from '../utils/OperatorMapping';
 
 /**
  * Service for migrating Rule V1 to Rule V2 format
@@ -43,7 +44,7 @@ export class RuleMigrationService {
         triggers: [
           {
             criteriaType: 'tag',
-            ruleType: 'contains',
+            operator: 'includes item',
             value: '',
           },
         ],
@@ -66,7 +67,7 @@ export class RuleMigrationService {
         triggers: [
           {
             criteriaType: 'tag',
-            ruleType: 'contains',
+            operator: 'includes item',
             value: '',
           },
         ],
@@ -92,20 +93,20 @@ export class RuleMigrationService {
    */
   private static mapV1ToV2Trigger(type: string, value: string): Trigger | null {
     let criteriaType: CriteriaType;
-    let ruleType: RuleType = 'contains'; // Default for most V1 rules
+    let operator: Operator;
 
     switch (type) {
       case 'tag':
         criteriaType = 'tag';
-        ruleType = 'contains';
+        operator = 'includes item'; // More appropriate for list-based criteria
         break;
       case 'fileName':
         criteriaType = 'fileName';
-        ruleType = 'contains';
+        operator = 'contains';
         break;
       case 'path':
         criteriaType = 'folder';
-        ruleType = 'starts with';
+        operator = 'starts with';
         break;
       case 'content':
         // V1 "content" is not directly supported in V2
@@ -113,27 +114,45 @@ export class RuleMigrationService {
         return null;
       case 'created_at':
         criteriaType = 'created_at';
-        ruleType = 'starts with'; // V1 used startsWith for dates
+        operator = 'date is'; // More appropriate for date criteria
         break;
       case 'updated_at':
         criteriaType = 'modified_at';
-        ruleType = 'starts with'; // V1 used startsWith for dates
+        operator = 'date is'; // More appropriate for date criteria
         break;
       case 'property':
         criteriaType = 'properties';
-        // V1 property format: "key=value" or just "key"
-        // V2 expects just the value to match
-        ruleType = 'contains';
+        operator = 'has any value'; // Default for property existence check
         break;
       default:
         return null;
     }
 
-    return {
+    const trigger: Trigger = {
       criteriaType,
-      ruleType,
+      operator,
       value,
     };
+
+    // Add property-specific fields for properties criteria
+    if (criteriaType === 'properties') {
+      // Try to extract property name from V1 format
+      const colonIndex = value.indexOf(':');
+      if (colonIndex !== -1) {
+        trigger.propertyName = value.substring(0, colonIndex).trim();
+        trigger.value = value.substring(colonIndex + 1).trim();
+        trigger.propertyType = 'text'; // Default to text type
+        trigger.operator = 'contains'; // Change to text-based operator for value matching
+      } else {
+        // No colon found, treat as property existence check
+        trigger.propertyName = value;
+        trigger.value = '';
+        trigger.propertyType = 'text';
+        trigger.operator = 'has any value';
+      }
+    }
+
+    return trigger;
   }
 
   /**
