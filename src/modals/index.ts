@@ -5,3 +5,4 @@ export type { ConfirmModalOptions } from './ConfirmModal';
 export { HistoryModal } from './HistoryModal';
 export { PreviewModal } from './PreviewModal';
 export { UpdateModal } from './UpdateModal';
+export { RuleEditorModal } from './RuleEditorModal';

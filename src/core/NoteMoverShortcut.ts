@@ -1,6 +1,7 @@
 import { TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
 import { RuleManager } from './RuleManager';
+import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
 import NoteMoverShortcutPlugin from 'main';
@@ -13,18 +14,31 @@ import {
 
 export class NoteMoverShortcut {
   private ruleManager: RuleManager;
+  private ruleManagerV2: RuleManagerV2;
 
   constructor(private plugin: NoteMoverShortcutPlugin) {
     this.ruleManager = new RuleManager(plugin.app, '/');
+    this.ruleManagerV2 = new RuleManagerV2(plugin.app, '/');
     this.updateRuleManager();
   }
 
   public updateRuleManager(): void {
-    // Always update rules and filters (no toggle check)
+    // Update V1 rule manager
     this.ruleManager.setRules(this.plugin.settings.settings.rules);
     this.ruleManager.setFilter(
       this.plugin.settings.settings.filters.filter.map(f => f.value)
     );
+
+    // Update V2 rule manager if enabled
+    if (
+      this.plugin.settings.settings.enableRuleV2 &&
+      this.plugin.settings.settings.rulesV2
+    ) {
+      this.ruleManagerV2.setRules(this.plugin.settings.settings.rulesV2);
+      this.ruleManagerV2.setFilter(
+        this.plugin.settings.settings.filters.filter.map(f => f.value)
+      );
+    }
   }
 
   public async addFileToBlacklist(fileName: string): Promise<void> {
@@ -85,10 +99,18 @@ export class NoteMoverShortcut {
       let targetFolder = defaultFolder;
 
       // Always use rules and filters (no toggle check)
-      const result = await this.ruleManager.moveFileBasedOnTags(
-        file,
-        skipFilter
-      );
+      let result: string | null = null;
+
+      // Choose rule manager based on feature flag
+      if (
+        this.plugin.settings.settings.enableRuleV2 &&
+        this.plugin.settings.settings.rulesV2
+      ) {
+        result = await this.ruleManagerV2.moveFileBasedOnTags(file, skipFilter);
+      } else {
+        result = await this.ruleManager.moveFileBasedOnTags(file, skipFilter);
+      }
+
       if (result === null) {
         return; // File should be skipped based on filter or no matching rule
       }
@@ -290,12 +312,23 @@ export class NoteMoverShortcut {
     // Get all files in the vault
     const files = await app.vault.getFiles();
 
-    // Generate preview using RuleManager
-    return await this.ruleManager.generateMovePreview(
-      files,
-      true, // Rules are always enabled
-      true // Filter is always enabled
-    );
+    // Choose rule manager based on feature flag
+    if (
+      this.plugin.settings.settings.enableRuleV2 &&
+      this.plugin.settings.settings.rulesV2
+    ) {
+      return await this.ruleManagerV2.generateMovePreview(
+        files,
+        true, // Rules are always enabled
+        true // Filter is always enabled
+      );
+    } else {
+      return await this.ruleManager.generateMovePreview(
+        files,
+        true, // Rules are always enabled
+        true // Filter is always enabled
+      );
+    }
   }
 
   /**
@@ -309,11 +342,22 @@ export class NoteMoverShortcut {
       return null;
     }
 
-    // Generate preview for single file
-    return await this.ruleManager.generateMovePreview(
-      [activeFile],
-      true, // Rules are always enabled
-      true // Filter is always enabled
-    );
+    // Choose rule manager based on feature flag
+    if (
+      this.plugin.settings.settings.enableRuleV2 &&
+      this.plugin.settings.settings.rulesV2
+    ) {
+      return await this.ruleManagerV2.generateMovePreview(
+        [activeFile],
+        true, // Rules are always enabled
+        true // Filter is always enabled
+      );
+    } else {
+      return await this.ruleManager.generateMovePreview(
+        [activeFile],
+        true, // Rules are always enabled
+        true // Filter is always enabled
+      );
+    }
   }
 }

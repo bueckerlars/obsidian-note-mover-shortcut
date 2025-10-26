@@ -22,4 +22,9 @@ export interface FileMetadata {
   fileContent: string;
   createdAt: Date | null;
   updatedAt: Date | null;
+  // RuleV2 specific fields (optional for backward compatibility)
+  extension?: string;
+  links?: string[];
+  embeds?: string[];
+  headings?: string[];
 }

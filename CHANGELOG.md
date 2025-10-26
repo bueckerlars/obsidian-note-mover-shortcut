@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.5.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.7...0.5.0)
+
+### Features
+
+- **RuleV2 System (Beta)**: Complete rewrite of the rule matching system with advanced trigger-based logic
+  - **New Criteria Types**: Support for `fileName`, `folder`, `extension`, `links`, `embeds`, `headings`, `properties`, `created_at`, `modified_at`
+  - **Advanced Operators**: Type-specific operators for text, list, date, and property matching
+    - Text operators: `is`, `contains`, `starts with`, `ends with`, `match regex`
+    - List operators: `includes item`, `all are`, `any contain`, `count is`, etc.
+    - Date operators: `is before/after`, `date is today`, `is under X days ago`, component matching
+    - Property operators: Runtime type-checking with support for text, number, checkbox, date, and list properties
+  - **Aggregation Logic**: Support for `all`, `any`, and `none` aggregation modes across multiple triggers
+  - **Feature Flag**: Toggle between RuleV1 and RuleV2 systems via `enableRuleV2` setting
+  - **Backward Compatibility**: RuleV1 system remains fully functional when RuleV2 is disabled
+  - **Performance Optimizations**: Regex caching, efficient metadata extraction, and optimized matching algorithms
+
+### Changes
+
+- **Metadata Extraction**: Enhanced `MetadataExtractor` with V2-specific fields (`extension`, `links`, `embeds`, `headings`)
+- **Rule Management**: New `RuleManagerV2` class with advanced preview and validation capabilities
+- **Type Safety**: Full TypeScript type safety with CriteriaType-to-Operator mapping
+- **Error Handling**: Graceful handling of invalid regex patterns and malformed data
+
 ## [0.4.7](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.6...0.4.7)
 
 ### Features

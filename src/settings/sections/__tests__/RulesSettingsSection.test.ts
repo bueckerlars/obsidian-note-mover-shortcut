@@ -14,6 +14,13 @@ jest.mock('../../suggesters/FolderSuggest', () => ({
   })),
 }));
 
+// Mock PropertySuggest
+jest.mock('../../suggesters/PropertySuggest', () => ({
+  PropertySuggest: jest.fn().mockImplementation(() => ({
+    destroy: jest.fn(),
+  })),
+}));
+
 // Mock DragDropManager
 jest.mock('../../../utils/DragDropManager', () => ({
   DragDropManager: jest.fn().mockImplementation(() => ({
@@ -31,10 +38,25 @@ DragDropManager.createDragHandle = jest
 
 // Mock Obsidian Setting
 jest.mock('obsidian', () => ({
+  Modal: jest.fn().mockImplementation(() => ({
+    open: jest.fn(),
+    close: jest.fn(),
+  })),
+  AbstractInputSuggest: jest.fn().mockImplementation(() => ({
+    close: jest.fn(),
+  })),
   Setting: jest.fn().mockImplementation(() => ({
     setName: jest.fn().mockReturnThis(),
     setHeading: jest.fn().mockReturnThis(),
     setDesc: jest.fn().mockReturnThis(),
+    addToggle: jest.fn().mockImplementation(callback => {
+      const toggle: any = {
+        setValue: jest.fn().mockReturnThis(),
+        onChange: jest.fn().mockReturnThis(),
+      };
+      callback(toggle);
+      return toggle;
+    }),
     addDropdown: jest.fn().mockImplementation(callback => {
       const dropdown: any = {
         addOption: jest.fn().mockReturnThis(),

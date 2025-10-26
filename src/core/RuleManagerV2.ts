@@ -1,34 +1,52 @@
 import { App, TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
-import { Rule } from '../types/Rule';
+import { RuleV2 } from '../types/RuleV2';
 import { PreviewEntry, MovePreview } from '../types/MovePreview';
 import { createError, handleError } from '../utils/Error';
 import { combinePath } from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
+import { RuleMatcherV2 } from './RuleMatcherV2';
 import { RuleMatcher } from './RuleMatcher';
 
 /**
- * RuleManager for Rule V1 system
- * @deprecated This class uses the legacy Rule V1 format. Will be replaced by RuleV2 system in future versions.
+ * RuleManager for Rule V2 system
+ *
+ * Provides rule-based file movement using the new Trigger-based system
+ * with aggregation support and type-safe operator evaluation.
+ *
+ * @since 0.5.0
  */
-export class RuleManager {
-  private rules: Rule[] = [];
-  private filter: string[] = [];
+export class RuleManagerV2 {
+  private rules: RuleV2[] = [];
+  private filter: string[] = []; // Filter remain V1-compatible
   private metadataExtractor: MetadataExtractor;
-  private ruleMatcher: RuleMatcher;
+  private ruleMatcherV2: RuleMatcherV2;
+  private ruleMatcherV1: RuleMatcher; // For filter evaluation
 
   constructor(
     private app: App,
     private defaultFolder: string
   ) {
     this.metadataExtractor = new MetadataExtractor(app);
-    this.ruleMatcher = new RuleMatcher(this.metadataExtractor);
+    this.ruleMatcherV2 = new RuleMatcherV2(this.metadataExtractor);
+    this.ruleMatcherV1 = new RuleMatcher(this.metadataExtractor);
   }
 
-  public setRules(rules: Rule[]): void {
+  /**
+   * Sets the rules for this manager
+   *
+   * @param rules - Array of RuleV2 rules
+   */
+  public setRules(rules: RuleV2[]): void {
     this.rules = rules;
   }
 
+  /**
+   * Sets the filter for this manager
+   * Filter logic remains V1-compatible
+   *
+   * @param filter - Array of filter criteria strings
+   */
   public setFilter(filter: string[]): void {
     this.filter = filter;
   }
@@ -48,24 +66,25 @@ export class RuleManager {
     skipFilter = false
   ): Promise<string | null> {
     try {
-      // Extract metadata
-      const metadata = await this.metadataExtractor.extractFileMetadata(file);
+      // Extract V2 metadata
+      const metadata = await this.metadataExtractor.extractFileMetadataV2(file);
 
-      // Check if file should be skipped based on filter
+      // Check if file should be skipped based on filter (using V1 logic)
       if (
         !skipFilter &&
-        !this.ruleMatcher.evaluateFilter(metadata, this.filter)
+        !this.ruleMatcherV1.evaluateFilter(metadata, this.filter)
       ) {
         return null; // File is blocked by filter
       }
 
-      // Find matching rule
-      const matchingRule = this.ruleMatcher.findMatchingRule(
+      // Find matching rule using V2 logic
+      const matchingRule = this.ruleMatcherV2.findMatchingRule(
         metadata,
         this.rules
       );
+
       if (matchingRule) {
-        return matchingRule.path;
+        return matchingRule.destination;
       }
 
       // No rule matched - skip the file since only notes with rules should be moved
@@ -73,7 +92,7 @@ export class RuleManager {
     } catch (error) {
       handleError(
         error,
-        `Error processing rules for file '${file.path}'`,
+        `Error processing V2 rules for file '${file.path}'`,
         false
       );
       return null;
@@ -82,19 +101,23 @@ export class RuleManager {
 
   /**
    * Generates preview information for a single file without actually moving it
+   *
+   * @param file - TFile to generate preview for
+   * @param skipFilter - Whether to skip filter evaluation
+   * @returns PreviewEntry with move information
    */
   public async generatePreviewForFile(
     file: TFile,
     skipFilter = false
   ): Promise<PreviewEntry> {
     try {
-      // Extract metadata
-      const metadata = await this.metadataExtractor.extractFileMetadata(file);
+      // Extract V2 metadata
+      const metadata = await this.metadataExtractor.extractFileMetadataV2(file);
       const { tags, fileName, filePath } = metadata;
 
-      // Check filters first
+      // Check filters first (using V1 logic)
       if (!skipFilter) {
-        const filterDetails = this.ruleMatcher.getFilterMatchDetails(
+        const filterDetails = this.ruleMatcherV1.getFilterMatchDetails(
           metadata,
           this.filter
         );
@@ -111,24 +134,25 @@ export class RuleManager {
         }
       }
 
-      // Check rules for matches
-      const matchingRule = this.ruleMatcher.findMatchingRule(
+      // Check rules for matches using V2 logic
+      const matchingRule = this.ruleMatcherV2.findMatchingRule(
         metadata,
         this.rules
       );
+
       if (matchingRule) {
         // Calculate the full target path
-        const fullTargetPath = combinePath(matchingRule.path, fileName);
+        const fullTargetPath = combinePath(matchingRule.destination, fileName);
 
         // Check if file is already in the correct location
         if (filePath === fullTargetPath) {
           return {
             fileName,
             currentPath: filePath,
-            targetPath: matchingRule.path,
+            targetPath: matchingRule.destination,
             willBeMoved: false,
             blockReason: 'File is already in the correct folder',
-            matchedRule: matchingRule.criteria,
+            matchedRule: matchingRule.name,
             tags,
           };
         }
@@ -136,9 +160,9 @@ export class RuleManager {
         return {
           fileName,
           currentPath: filePath,
-          targetPath: matchingRule.path,
+          targetPath: matchingRule.destination,
           willBeMoved: true,
-          matchedRule: matchingRule.criteria,
+          matchedRule: matchingRule.name,
           tags,
         };
       }
@@ -155,7 +179,7 @@ export class RuleManager {
     } catch (error) {
       handleError(
         error,
-        `Error generating preview for file '${file.path}'`,
+        `Error generating V2 preview for file '${file.path}'`,
         false
       );
       return {
@@ -171,6 +195,11 @@ export class RuleManager {
 
   /**
    * Generates a complete move preview for multiple files
+   *
+   * @param files - Array of TFiles to preview
+   * @param enableRules - Whether to enable rule evaluation
+   * @param enableFilter - Whether to enable filter evaluation
+   * @returns MovePreview with all move information
    */
   public async generateMovePreview(
     files: TFile[],
@@ -195,5 +224,52 @@ export class RuleManager {
         isFilterWhitelist: false, // Always blacklist mode
       },
     };
+  }
+
+  /**
+   * Gets the number of active rules
+   *
+   * @returns Number of active rules
+   */
+  public getActiveRuleCount(): number {
+    return this.rules.filter(rule => rule.active).length;
+  }
+
+  /**
+   * Gets the number of total rules
+   *
+   * @returns Number of total rules
+   */
+  public getTotalRuleCount(): number {
+    return this.rules.length;
+  }
+
+  /**
+   * Validates that all rules have valid triggers
+   *
+   * @returns Array of validation errors
+   */
+  public validateRules(): string[] {
+    const errors: string[] = [];
+
+    for (let i = 0; i < this.rules.length; i++) {
+      const rule = this.rules[i];
+
+      if (rule.active && rule.triggers.length === 0) {
+        errors.push(
+          `Rule "${rule.name}" (index ${i}) is active but has no triggers`
+        );
+      }
+
+      if (!rule.name || rule.name.trim() === '') {
+        errors.push(`Rule at index ${i} has no name`);
+      }
+
+      if (!rule.destination || rule.destination.trim() === '') {
+        errors.push(`Rule "${rule.name}" has no destination`);
+      }
+    }
+
+    return errors;
   }
 }

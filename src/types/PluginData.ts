@@ -1,5 +1,6 @@
 import { BulkOperation, HistoryEntry, RetentionPolicy } from './HistoryEntry';
 import { Rule } from './Rule';
+import { RuleV2 } from './RuleV2';
 
 /**
  * @since 0.4.7
@@ -8,6 +9,7 @@ export interface PluginData {
   settings: SettingsData;
   history: HistoryData;
   lastSeenVersion?: string;
+  schemaVersion?: number;
 }
 
 export interface SettingsData {
@@ -15,6 +17,8 @@ export interface SettingsData {
   filters: FilterSettings;
   rules: Rule[];
   retentionPolicy: RetentionPolicy;
+  enableRuleV2?: boolean;
+  rulesV2?: RuleV2[];
 }
 
 export interface HistoryData {
