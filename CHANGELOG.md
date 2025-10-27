@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.0...0.5.1)
+
+### Features
+
+- Improved UI responsiveness [#48](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/48)
+
 ## [0.5.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.4.7...0.5.0)
 
 ### Features
