@@ -102,6 +102,21 @@
   margin-top: 24px;
 }
 
+/* Update Modal Footer - Centered links, right-aligned button */
+.note-mover-update-modal .modal-footer {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.note-mover-update-modal .update-modal-links {
+  flex: 1;
+  text-align: center;
+}
+
+.note-mover-update-modal .modal-button-container {
+  flex-shrink: 0;
+}
+
 /* Common List Styles */
 .modal-list {
   display: flex;
@@ -694,6 +709,17 @@
 
 /* ===== RULE EDITOR MODAL STYLES ===== */
 
+/* Rule Editor - Full width inputs */
+.rule-editor-modal .setting-item-control {
+  flex: 1;
+  margin-left: 0;
+}
+
+.rule-editor-modal .setting-item-control input[type="text"],
+.rule-editor-modal .setting-item-control .search-input-container {
+  width: 100%;
+}
+
 .rule-editor-separator {
   margin: 20px 0;
   border: none;
@@ -898,4 +924,410 @@
 /* Undo Button Styles */
 .notice-undo-button {
   margin-left: 10px;
+}
+
+/* ===== MOBILE RESPONSIVE STYLES ===== */
+
+/* Mobile breakpoint: tablets and phones in portrait */
+@media (max-width: 768px) {
+  /* Modal Size Adjustments */
+  .modal-size-small,
+  .modal-size-medium,
+  .modal-size-large {
+    width: 100vw !important;
+    max-width: 95vw !important;
+    min-width: unset !important;
+  }
+
+  /* Modal Title Adjustments */
+  .modal-title-container {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .modal-title {
+    font-size: 1.4em;
+  }
+
+  .modal-title-icon {
+    font-size: 1.6em;
+  }
+
+  .modal-subtitle {
+    font-size: 1em;
+    margin-bottom: 16px;
+  }
+
+  /* Button Container - Stack vertically on mobile */
+  .modal-button-container {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .modal-button-container .setting-item-control button {
+    width: 100% !important;
+    min-height: 44px;
+    font-size: 1em;
+  }
+
+  /* Modal Section Adjustments */
+  .modal-section {
+    margin-bottom: 20px;
+  }
+
+  .modal-section-header h3 {
+    font-size: 1.1em;
+  }
+
+  /* Info Row Adjustments */
+  .modal-info-row {
+    gap: 12px;
+    font-size: 0.85em;
+  }
+
+  /* History Modal Adjustments */
+  .history-entry {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .history-entry-content {
+    width: 100%;
+  }
+
+  .history-entry-info {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .history-entry-paths {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .setting-item-control {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .setting-item-control button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+
+  /* Bulk Operations Mobile Adjustments */
+  .history-entry.bulk-operation {
+    padding: 12px 16px;
+  }
+
+  .bulk-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* Rule Editor Modal - Stack footer buttons */
+  .rule-editor-footer {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rule-editor-footer-left,
+  .rule-editor-footer-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .rule-editor-footer-left button,
+  .rule-editor-footer-right button {
+    min-height: 44px;
+    width: 100%;
+  }
+
+  /* Rule Aggregation Buttons - Stack on mobile */
+  .rule-aggregation-buttons {
+    flex-wrap: wrap;
+  }
+
+  .rule-aggregation-button {
+    flex: 1 1 30%;
+    min-width: 80px;
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 0.95em;
+  }
+
+  /* Trigger Row - Stack elements vertically */
+  .rule-trigger-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .rule-trigger-row .drag-handle-container {
+    order: -1;
+    align-self: flex-end;
+    margin-bottom: 4px;
+  }
+
+  .rule-trigger-delete-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+
+  .rule-criteria-type,
+  .rule-rule-type,
+  .rule-trigger-value {
+    width: 100%;
+    min-width: unset;
+    min-height: 44px;
+    padding: 10px;
+  }
+
+  .rule-property-name {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px;
+  }
+
+  /* Preview Modal Paths - Allow wrapping */
+  .preview-item-paths {
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.8em;
+  }
+
+  .preview-item-main {
+    margin-bottom: 12px;
+  }
+
+  .preview-item-details {
+    gap: 6px;
+    font-size: 0.85em;
+  }
+
+  .rule-label,
+  .block-reason-label,
+  .filter-label,
+  .tags-label {
+    min-width: unset;
+    width: auto;
+  }
+
+  /* Preview Item - Adjust layout */
+  .modal-list-item.preview-item-success,
+  .modal-list-item.preview-item-blocked {
+    padding: 12px;
+  }
+
+  /* Update Modal - Keep footer horizontal on mobile */
+  .note-mover-update-modal .modal-footer {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 16px;
+  }
+
+  .note-mover-update-modal .update-modal-links {
+    flex: 1;
+  }
+
+  .note-mover-update-modal .modal-button-container {
+    flex-direction: row !important;
+    width: auto !important;
+    flex-shrink: 0;
+  }
+
+  .note-mover-update-modal .modal-button-container .setting-item-control {
+    margin: 0 !important;
+  }
+
+  .note-mover-update-modal .modal-button-container button {
+    width: auto !important;
+    min-width: 100px;
+    padding: 8px 16px;
+  }
+
+  /* Time Filter Container Mobile */
+  .time-filter-container .setting-item-control {
+    width: 100%;
+    margin-right: 0;
+    margin-top: 8px;
+  }
+
+  .time-filter-container .setting-item-name {
+    width: 100%;
+  }
+
+  /* Setting items with drag handles - Adjust for mobile */
+  .setting-item.with-drag-handle {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .setting-item.with-drag-handle .setting-item-info {
+    width: 100%;
+  }
+
+  .setting-item.with-drag-handle .setting-item-control {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  .drag-handle {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+    border-radius: 6px;
+  }
+
+  /* Rule V2 Mobile Layout */
+  .rule-v2-custom-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .rule-v2-name {
+    width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    font-size: 1em;
+  }
+
+  .rule-v2-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rule-v2-actions .setting-item-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rule-v2-actions button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Empty state adjustments */
+  .modal-empty {
+    padding: 32px 16px;
+    font-size: 1em;
+  }
+
+  /* Info box mobile adjustments */
+  .modal-info-box {
+    padding: 10px 12px;
+  }
+
+  /* Confirm modal button adjustments */
+  .confirm-modal .modal-button-container button {
+    min-width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* Small mobile breakpoint: phones */
+@media (max-width: 480px) {
+  /* Modal Title - Smaller font for very small screens */
+  .modal-title {
+    font-size: 1.2em;
+  }
+
+  .modal-title-icon {
+    font-size: 1.4em;
+  }
+
+  .modal-subtitle {
+    font-size: 0.9em;
+  }
+
+  /* History entries - More compact padding */
+  .history-entry {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .history-entry.bulk-operation {
+    padding: 10px 12px;
+  }
+
+  /* Rule trigger rows - Even more compact */
+  .rule-trigger-row {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  /* Smaller inputs but still touch-friendly */
+  .rule-criteria-type,
+  .rule-rule-type,
+  .rule-trigger-value,
+  .rule-property-name {
+    font-size: 0.95em;
+    padding: 8px;
+  }
+
+  /* Aggregation buttons - Full width on very small screens */
+  .rule-aggregation-button {
+    flex: 1 1 100%;
+    min-width: unset;
+  }
+
+  /* Footer buttons - Full width */
+  .rule-editor-footer-left button,
+  .rule-editor-footer-right button {
+    font-size: 0.95em;
+  }
+
+  /* Preview paths - Smaller font to fit more */
+  .preview-item-paths {
+    font-size: 0.75em;
+  }
+
+  /* Modal list items - More compact */
+  .modal-list-item {
+    padding: 12px;
+  }
+
+  /* Section headers - Smaller */
+  .modal-section-header h3 {
+    font-size: 1em;
+  }
+
+  .rule-conditions-title {
+    font-size: 1em;
+  }
+
+  /* Changelog - Smaller font */
+  .changelog-version-title {
+    font-size: 1.1em;
+  }
+
+  .changelog-section-title {
+    font-size: 0.95em;
+  }
+
+  .changelog-list {
+    font-size: 0.9em;
+  }
+
+  /* Confirm modal message - Smaller font */
+  .confirm-modal-message {
+    font-size: 0.95em;
+  }
+
+  /* Smaller button fonts to fit better */
+  button {
+    font-size: 0.95em;
+  }
 }
