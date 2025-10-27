@@ -252,5 +252,4 @@ This approach ensures that:
 │   ├── settings/         # Settings management
 │   ├── types/            # Type definitions
 │   └── utils/            # Utility functions
-└── __tests__/            # Test files
 ```

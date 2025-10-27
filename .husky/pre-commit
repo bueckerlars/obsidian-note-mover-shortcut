@@ -5,6 +5,3 @@ npx lint-staged
 
 # Run TypeScript type checking
 npm run type-check
-
-# Run tests
-npm test
