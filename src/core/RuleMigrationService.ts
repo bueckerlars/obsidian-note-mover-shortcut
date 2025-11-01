@@ -1,5 +1,11 @@
 import { Rule } from '../types/Rule';
-import { RuleV2, Trigger, CriteriaType, Operator } from '../types/RuleV2';
+import {
+  RuleV2,
+  Trigger,
+  CriteriaType,
+  Operator,
+  TextOperator,
+} from '../types/RuleV2';
 import { getDefaultOperatorForCriteriaType } from '../utils/OperatorMapping';
 
 /**
@@ -201,5 +207,185 @@ export class RuleMigrationService {
       rulesV1.length > 0 &&
       (!rulesV2 || rulesV2.length === 0)
     );
+  }
+
+  /**
+   * Migrates RuleV2 triggers from old format (ruleType) to new format (operator)
+   * This handles legacy data that uses "ruleType" instead of "operator"
+   * @param rulesV2 - Array of RuleV2 objects to migrate
+   * @returns True if any migration was performed
+   */
+  public static migrateRuleV2Triggers(rulesV2: RuleV2[]): boolean {
+    if (!Array.isArray(rulesV2)) {
+      return false;
+    }
+
+    let migrated = false;
+
+    for (const rule of rulesV2) {
+      if (!rule.triggers || !Array.isArray(rule.triggers)) {
+        continue;
+      }
+
+      for (const trigger of rule.triggers) {
+        // Check if trigger has ruleType instead of operator (legacy format)
+        if ((trigger as any).ruleType && !trigger.operator) {
+          const ruleType = (trigger as any).ruleType;
+
+          // Map ruleType to operator based on criteriaType
+          const operator = this.mapRuleTypeToOperator(
+            ruleType,
+            trigger.criteriaType
+          );
+
+          if (operator) {
+            trigger.operator = operator;
+            delete (trigger as any).ruleType;
+            migrated = true;
+          }
+        }
+      }
+    }
+
+    return migrated;
+  }
+
+  /**
+   * Maps legacy ruleType values to operator values
+   * @param ruleType - Legacy ruleType value (e.g., "contains")
+   * @param criteriaType - The criteria type to help determine correct operator
+   * @returns Correct operator value or null if mapping not possible
+   */
+  private static mapRuleTypeToOperator(
+    ruleType: string,
+    criteriaType: CriteriaType
+  ): Operator | null {
+    // For tag/list-based criteria types, "contains" maps to "includes item"
+    if (
+      criteriaType === 'tag' ||
+      criteriaType === 'links' ||
+      criteriaType === 'embeds'
+    ) {
+      switch (ruleType) {
+        case 'contains':
+          return 'includes item';
+        case 'does not contain':
+          return 'does not include item';
+        default:
+          // Try to find a matching operator by name
+          return this.findMatchingOperator(ruleType, criteriaType);
+      }
+    }
+
+    // For text-based criteria types, try direct mapping or find matching operator
+    if (
+      criteriaType === 'fileName' ||
+      criteriaType === 'folder' ||
+      criteriaType === 'extension' ||
+      criteriaType === 'headings'
+    ) {
+      // Direct mapping for common text operators
+      const textOperatorMap: Record<string, TextOperator> = {
+        contains: 'contains',
+        'does not contain': 'does not contain',
+        'starts with': 'starts with',
+        'ends with': 'ends with',
+        is: 'is',
+        'is not': 'is not',
+      };
+
+      if (textOperatorMap[ruleType]) {
+        return textOperatorMap[ruleType];
+      }
+
+      return this.findMatchingOperator(ruleType, criteriaType);
+    }
+
+    // For properties, use default mapping
+    if (criteriaType === 'properties') {
+      if (ruleType === 'contains') {
+        return 'contains';
+      }
+      return 'has any value'; // Default fallback
+    }
+
+    // For dates, try to find matching operator
+    if (criteriaType === 'created_at' || criteriaType === 'modified_at') {
+      return this.findMatchingOperator(ruleType, criteriaType);
+    }
+
+    // Fallback: try to find matching operator
+    return this.findMatchingOperator(ruleType, criteriaType);
+  }
+
+  /**
+   * Finds a matching operator for a ruleType by checking if it exists in valid operators
+   * @param ruleType - Legacy ruleType value
+   * @param criteriaType - The criteria type
+   * @returns Matching operator or default operator for criteria type
+   */
+  private static findMatchingOperator(
+    ruleType: string,
+    criteriaType: CriteriaType
+  ): Operator {
+    // Get default operator as fallback
+    const defaultOperator = getDefaultOperatorForCriteriaType(criteriaType);
+
+    // List of all possible operators to check
+    const allOperators: Operator[] = [
+      // Text operators
+      'is',
+      'is not',
+      'contains',
+      'does not contain',
+      'starts with',
+      'does not starts with',
+      'ends with',
+      'does not ends with',
+      'match regex',
+      'does not match regex',
+      // List operators
+      'includes item',
+      'does not include item',
+      'all are',
+      'all start with',
+      'all end with',
+      'all match regex',
+      'any contain',
+      'any end with',
+      'any match regex',
+      'none contain',
+      'none start with',
+      'none end with',
+      'count is',
+      'count is not',
+      'count is less than',
+      'count is more than',
+      // Date operators
+      'date is',
+      'date is not',
+      'date is today',
+      'date is not today',
+      'date is before',
+      'date is after',
+      'is before',
+      'is after',
+      // Property operators
+      'has any value',
+      'has no value',
+      'property is present',
+      'property is missing',
+      'equals',
+      'does not equal',
+      'is less than',
+      'is more than',
+    ];
+
+    // Check if ruleType matches any operator (case-insensitive)
+    const matchingOperator = allOperators.find(
+      op => op.toLowerCase() === ruleType.toLowerCase()
+    );
+
+    return matchingOperator || defaultOperator;
   }
 }
