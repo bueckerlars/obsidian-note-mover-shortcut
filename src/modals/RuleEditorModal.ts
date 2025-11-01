@@ -8,6 +8,7 @@ import {
   Operator,
 } from '../types/RuleV2';
 import { FolderSuggest } from '../settings/suggesters/FolderSuggest';
+import { AdvancedSuggest } from '../settings/suggesters/AdvancedSuggest';
 import { TagSuggest } from '../settings/suggesters/TagSuggest';
 import { PropertySuggest } from '../settings/suggesters/PropertySuggest';
 import { PropertyValueSuggest } from '../settings/suggesters/PropertyValueSuggest';
@@ -150,7 +151,7 @@ export class RuleEditorModal extends BaseModal {
     destinationSetting.settingEl.addClass('destination-setting');
 
     destinationSetting.addSearch(cb => {
-      new FolderSuggest(this.app, cb.inputEl);
+      new AdvancedSuggest(this.app, cb.inputEl, { destinationMode: true });
       cb.setPlaceholder('Example: folder1/folder2 or folder1/{{status}}')
         .setValue(this.workingRule.destination)
         .onChange(value => {

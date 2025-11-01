@@ -29,13 +29,16 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   private propertyValues: Map<string, Set<string>> = new Map();
   private metadataExtractor: MetadataExtractor;
   private refreshDataHandler: () => void;
+  private isDestinationMode = false;
 
   constructor(
     public app: App,
-    private inputEl: HTMLInputElement
+    private inputEl: HTMLInputElement,
+    options?: { destinationMode?: boolean }
   ) {
     super(app, inputEl);
     this.metadataExtractor = new MetadataExtractor(app);
+    this.isDestinationMode = options?.destinationMode ?? false;
     this.loadTags();
     this.loadFolders();
     this.loadFileNames();
@@ -106,7 +109,104 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     });
   }
 
+  /**
+   * Detects if the cursor is inside template syntax {{...}}
+   * Returns information about the template context if cursor is within braces
+   */
+  private detectTemplateContext(
+    query: string,
+    cursorPos: number
+  ): {
+    isInTemplate: boolean;
+    templateContent: string;
+    templateStart: number;
+    templateEnd: number;
+  } {
+    // Default return value
+    const defaultReturn = {
+      isInTemplate: false,
+      templateContent: '',
+      templateStart: -1,
+      templateEnd: -1,
+    };
+
+    if (cursorPos < 0 || cursorPos > query.length) {
+      return defaultReturn;
+    }
+
+    // Find all {{...}} patterns in the query
+    const templatePattern = /\{\{([^}]*)\}\}/g;
+    let match;
+    const templates: Array<{
+      start: number;
+      end: number;
+      content: string;
+      contentStart: number;
+      contentEnd: number;
+    }> = [];
+
+    while ((match = templatePattern.exec(query)) !== null) {
+      const fullMatchStart = match.index;
+      const fullMatchEnd = match.index + match[0].length;
+      const contentStart = fullMatchStart + 2; // After {{
+      const contentEnd = fullMatchEnd - 2; // Before }}
+
+      templates.push({
+        start: fullMatchStart,
+        end: fullMatchEnd,
+        content: match[1],
+        contentStart,
+        contentEnd,
+      });
+    }
+
+    // Check if cursor is within any template
+    for (const template of templates) {
+      // Cursor must be between {{ and }} (not on the braces themselves)
+      if (cursorPos > template.start && cursorPos < template.end) {
+        return {
+          isInTemplate: true,
+          templateContent: template.content,
+          templateStart: template.start,
+          templateEnd: template.end,
+        };
+      }
+    }
+
+    return defaultReturn;
+  }
+
   getSuggestions(query: string): string[] {
+    // Get cursor position to detect template context
+    const cursorPos = this.inputEl.selectionStart ?? query.length;
+
+    // Check if cursor is inside template syntax {{...}}
+    const templateContext = this.detectTemplateContext(query, cursorPos);
+
+    if (templateContext.isInTemplate) {
+      // We're inside a template, suggest property names
+      const queryInsideTemplate = templateContext.templateContent.toLowerCase();
+      return Array.from(this.propertyKeys)
+        .filter(key => key.toLowerCase().includes(queryInsideTemplate))
+        .map(key => key);
+    }
+
+    // If in destination mode and no type match, suggest folders
+    if (this.isDestinationMode) {
+      const typeMatch = SUGGEST_TYPES.find(t =>
+        query.toLowerCase().startsWith(t.label.toLowerCase())
+      );
+      if (!typeMatch) {
+        // No type match in destination mode, suggest folders
+        const lowerCaseQuery = query.toLowerCase();
+        return this.folders
+          .map(f => f.path)
+          .filter(path => path.toLowerCase().includes(lowerCaseQuery))
+          .slice(0, 50); // Limit folder suggestions
+      }
+    }
+
+    // Normal criteria suggestions logic
     // Check if a valid type is selected (at the beginning of the query) - case insensitive
     const typeMatch = SUGGEST_TYPES.find(t =>
       query.toLowerCase().startsWith(t.label.toLowerCase())
@@ -205,6 +305,45 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   }
 
   selectSuggestion(value: string): void {
+    // Get current cursor position and query
+    const currentQuery = this.inputEl.value;
+    const cursorPos = this.inputEl.selectionStart ?? currentQuery.length;
+
+    // Check if we're selecting a template suggestion (property name inside {{...}})
+    const templateContext = this.detectTemplateContext(currentQuery, cursorPos);
+
+    if (templateContext.isInTemplate) {
+      // We're inside a template, replace only the content between {{ and }}
+      const beforeTemplate = currentQuery.substring(
+        0,
+        templateContext.templateStart
+      );
+      const afterTemplate = currentQuery.substring(templateContext.templateEnd);
+      const newValue = `${beforeTemplate}{{${value}}}${afterTemplate}`;
+
+      this.inputEl.value = newValue;
+      // Set cursor position after the closing }}
+      const newCursorPos = templateContext.templateStart + 2 + value.length + 2;
+      this.inputEl.setSelectionRange(newCursorPos, newCursorPos);
+      this.inputEl.trigger('input');
+      this.close();
+      return;
+    }
+
+    // Handle folder selection in destination mode
+    if (this.isDestinationMode) {
+      const typeMatch = SUGGEST_TYPES.find(t =>
+        currentQuery.toLowerCase().startsWith(t.label.toLowerCase())
+      );
+      if (!typeMatch) {
+        // This is a folder suggestion in destination mode
+        this.inputEl.value = value;
+        this.inputEl.trigger('input');
+        this.close();
+        return;
+      }
+    }
+
     // If a type was selected, set the field to the type and allow further suggestions
     const typeMatch = SUGGEST_TYPES.find(t => value === t.label);
     if (typeMatch) {
