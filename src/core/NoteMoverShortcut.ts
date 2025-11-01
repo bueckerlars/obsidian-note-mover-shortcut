@@ -23,19 +23,20 @@ export class NoteMoverShortcut {
   }
 
   public updateRuleManager(): void {
-    // Update V1 rule manager
-    this.ruleManager.setRules(this.plugin.settings.settings.rules);
-    this.ruleManager.setFilter(
-      this.plugin.settings.settings.filters.filter.map(f => f.value)
-    );
-
-    // Update V2 rule manager if enabled
-    if (
-      this.plugin.settings.settings.enableRuleV2 &&
-      this.plugin.settings.settings.rulesV2
-    ) {
-      this.ruleManagerV2.setRules(this.plugin.settings.settings.rulesV2);
+    // Choose which rule manager to use based on feature flag
+    if (this.plugin.settings.settings.enableRuleV2 === true) {
+      // Use RuleV2 - always update, even if rulesV2 is empty or undefined
+      const rulesV2 = Array.isArray(this.plugin.settings.settings.rulesV2)
+        ? this.plugin.settings.settings.rulesV2
+        : [];
+      this.ruleManagerV2.setRules(rulesV2);
       this.ruleManagerV2.setFilter(
+        this.plugin.settings.settings.filters.filter.map(f => f.value)
+      );
+    } else {
+      // Use RuleV1 (deprecated)
+      this.ruleManager.setRules(this.plugin.settings.settings.rules);
+      this.ruleManager.setFilter(
         this.plugin.settings.settings.filters.filter.map(f => f.value)
       );
     }
@@ -102,10 +103,7 @@ export class NoteMoverShortcut {
       let result: string | null = null;
 
       // Choose rule manager based on feature flag
-      if (
-        this.plugin.settings.settings.enableRuleV2 &&
-        this.plugin.settings.settings.rulesV2
-      ) {
+      if (this.plugin.settings.settings.enableRuleV2 === true) {
         result = await this.ruleManagerV2.moveFileBasedOnTags(file, skipFilter);
       } else {
         result = await this.ruleManager.moveFileBasedOnTags(file, skipFilter);
@@ -313,10 +311,7 @@ export class NoteMoverShortcut {
     const files = await app.vault.getFiles();
 
     // Choose rule manager based on feature flag
-    if (
-      this.plugin.settings.settings.enableRuleV2 &&
-      this.plugin.settings.settings.rulesV2
-    ) {
+    if (this.plugin.settings.settings.enableRuleV2 === true) {
       return await this.ruleManagerV2.generateMovePreview(
         files,
         true, // Rules are always enabled
@@ -343,10 +338,7 @@ export class NoteMoverShortcut {
     }
 
     // Choose rule manager based on feature flag
-    if (
-      this.plugin.settings.settings.enableRuleV2 &&
-      this.plugin.settings.settings.rulesV2
-    ) {
+    if (this.plugin.settings.settings.enableRuleV2 === true) {
       return await this.ruleManagerV2.generateMovePreview(
         [activeFile],
         true, // Rules are always enabled
