@@ -7,6 +7,8 @@ import { combinePath } from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
 import { RuleMatcherV2 } from './RuleMatcherV2';
 import { RuleMatcher } from './RuleMatcher';
+import { TemplateEngine } from '../utils/TemplateEngine';
+import { FileMetadata } from '../types/Common';
 
 /**
  * RuleManager for Rule V2 system
@@ -22,6 +24,7 @@ export class RuleManagerV2 {
   private metadataExtractor: MetadataExtractor;
   private ruleMatcherV2: RuleMatcherV2;
   private ruleMatcherV1: RuleMatcher; // For filter evaluation
+  private enableTemplateRules = false; // Feature flag for template rules
 
   constructor(
     private app: App,
@@ -49,6 +52,15 @@ export class RuleManagerV2 {
    */
   public setFilter(filter: string[]): void {
     this.filter = filter;
+  }
+
+  /**
+   * Sets the template rules feature flag
+   *
+   * @param enabled - Whether template rules are enabled
+   */
+  public setEnableTemplateRules(enabled: boolean): void {
+    this.enableTemplateRules = enabled;
   }
 
   /**
@@ -84,7 +96,10 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
-        return matchingRule.destination;
+        return this.resolveTemplateDestination(
+          matchingRule.destination,
+          metadata
+        );
       }
 
       // No rule matched - skip the file since only notes with rules should be moved
@@ -141,15 +156,21 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
+        // Resolve template destination if enabled
+        const resolvedDestination = this.resolveTemplateDestination(
+          matchingRule.destination,
+          metadata
+        );
+
         // Calculate the full target path
-        const fullTargetPath = combinePath(matchingRule.destination, fileName);
+        const fullTargetPath = combinePath(resolvedDestination, fileName);
 
         // Check if file is already in the correct location
         if (filePath === fullTargetPath) {
           return {
             fileName,
             currentPath: filePath,
-            targetPath: matchingRule.destination,
+            targetPath: resolvedDestination,
             willBeMoved: false,
             blockReason: 'File is already in the correct folder',
             matchedRule: matchingRule.name,
@@ -160,7 +181,7 @@ export class RuleManagerV2 {
         return {
           fileName,
           currentPath: filePath,
-          targetPath: matchingRule.destination,
+          targetPath: resolvedDestination,
           willBeMoved: true,
           matchedRule: matchingRule.name,
           tags,
@@ -268,8 +289,43 @@ export class RuleManagerV2 {
       if (!rule.destination || rule.destination.trim() === '') {
         errors.push(`Rule "${rule.name}" has no destination`);
       }
+
+      // Warn if template syntax is found but feature is not enabled
+      if (
+        !this.enableTemplateRules &&
+        TemplateEngine.hasTemplateSyntax(rule.destination)
+      ) {
+        errors.push(
+          `Rule "${rule.name}" contains template syntax but Template Rules feature is not enabled`
+        );
+      }
     }
 
     return errors;
+  }
+
+  /**
+   * Resolves template destination by replacing template placeholders with actual property values
+   *
+   * @param destination - Destination path (may contain template syntax)
+   * @param metadata - File metadata for property substitution
+   * @returns Resolved destination path
+   */
+  private resolveTemplateDestination(
+    destination: string,
+    metadata: FileMetadata
+  ): string {
+    // If template rules are not enabled, return destination as-is
+    if (!this.enableTemplateRules) {
+      return destination;
+    }
+
+    // Check if destination contains template syntax
+    if (!TemplateEngine.hasTemplateSyntax(destination)) {
+      return destination;
+    }
+
+    // Render template with property values
+    return TemplateEngine.renderTemplate(destination, metadata);
   }
 }

@@ -720,6 +720,30 @@
   width: 100%;
 }
 
+/* Destination input - Make it wider and more readable */
+.rule-editor-modal .setting-item-control .search-input-container input {
+  width: 100% !important;
+  min-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Destination setting item - Stack vertically for better readability */
+.rule-editor-modal .setting-item.destination-setting {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.rule-editor-modal .setting-item.destination-setting .setting-item-info {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.rule-editor-modal .setting-item.destination-setting .setting-item-control {
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+}
+
 .rule-editor-separator {
   margin: 20px 0;
   border: none;

@@ -19,6 +19,7 @@ export interface SettingsData {
   retentionPolicy: RetentionPolicy;
   enableRuleV2?: boolean;
   rulesV2?: RuleV2[];
+  enableTemplateRules?: boolean;
 }
 
 export interface HistoryData {

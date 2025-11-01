@@ -156,6 +156,11 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       this.settings.settings.enableRuleV2 = false;
     }
 
+    // Ensure Template Rules feature flag exists
+    if (this.settings.settings.enableTemplateRules === undefined) {
+      this.settings.settings.enableTemplateRules = false;
+    }
+
     // Ensure RuleV2 array exists
     if (!Array.isArray(this.settings.settings.rulesV2)) {
       this.settings.settings.rulesV2 = [];

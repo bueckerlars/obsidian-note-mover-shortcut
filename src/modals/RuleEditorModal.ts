@@ -183,12 +183,27 @@ export class RuleEditorModal extends BaseModal {
 
   private createDestinationInput(container: HTMLElement): void {
     const isMobile = MobileUtils.isMobile();
+    
+    // Create description with template syntax info
+    const desc = document.createDocumentFragment();
+    desc.append(
+      'Folder where files matching this rule will be moved',
+      document.createElement('br'),
+      'You can use template syntax: {{propertyName}} or {{getPropertyValue:propertyName}} to insert property values dynamically.',
+      document.createElement('br'),
+      'Example: /Personal/Tasks/{{status}} will become /Personal/Tasks/In progress'
+    );
+
     const setting = new Setting(container)
       .setName('Destination')
-      .setDesc('Folder where files matching this rule will be moved')
+      .setDesc(desc)
       .addSearch(cb => {
         new FolderSuggest(this.app, cb.inputEl);
-        cb.setPlaceholder('Example: folder1/folder2')
+        cb.setPlaceholder(
+          isMobile
+            ? 'Example: folder1/folder2 or folder1/{{status}}'
+            : 'Example: folder1/folder2 or folder1/{{status}}'
+        )
           .setValue(this.workingRule.destination)
           .onChange(value => {
             this.workingRule.destination = value;
@@ -196,6 +211,9 @@ export class RuleEditorModal extends BaseModal {
         // Make search input wider
         cb.inputEl.style.width = '100%';
       });
+
+    // Add CSS class to the setting item for better styling
+    setting.settingEl.addClass('destination-setting');
 
     // Mobile: Remove or hide the search icon that overlaps with text
     if (isMobile) {

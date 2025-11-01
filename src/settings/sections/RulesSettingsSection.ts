@@ -47,10 +47,41 @@ export class RulesSettingsSection {
           .setValue(this.plugin.settings.settings.enableRuleV2 ?? false)
           .onChange(async value => {
             this.plugin.settings.settings.enableRuleV2 = value;
+            // Disable Template Rules if RuleV2 is disabled
+            if (!value) {
+              this.plugin.settings.settings.enableTemplateRules = false;
+            }
             await this.plugin.save_settings();
             this.refreshDisplay();
           })
       );
+
+    // Feature flag toggle for Template Rules (only when RuleV2 is enabled)
+    if (this.plugin.settings.settings.enableRuleV2) {
+      const templateRulesDesc = document.createDocumentFragment();
+      templateRulesDesc.append(
+        'Enable template syntax in rule destinations (beta). Use {{propertyName}} or {{getPropertyValue:propertyName}} to dynamically insert property values into folder paths.',
+        document.createElement('br'),
+        'Example: /Personal/Tasks/{{status}} will become /Personal/Tasks/In progress',
+        document.createElement('br'),
+        '⚠️ Beta feature: Requires Rule V2 to be enabled.'
+      );
+
+      new Setting(this.containerEl)
+        .setName('Enable Template Rules (beta)')
+        .setDesc(templateRulesDesc)
+        .addToggle(toggle =>
+          toggle
+            .setValue(
+              this.plugin.settings.settings.enableTemplateRules ?? false
+            )
+            .onChange(async value => {
+              this.plugin.settings.settings.enableTemplateRules = value;
+              await this.plugin.save_settings();
+              this.refreshDisplay();
+            })
+        );
+    }
   }
 
   addAddRuleButtonSetting(): void {
