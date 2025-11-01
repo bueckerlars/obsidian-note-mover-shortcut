@@ -38,6 +38,10 @@ export class NoteMoverShortcut {
       this.ruleManagerV2.setFilter(
         this.plugin.settings.settings.filters.filter.map(f => f.value)
       );
+      // Set template rules feature flag
+      this.ruleManagerV2.setEnableTemplateRules(
+        this.plugin.settings.settings.enableTemplateRules ?? false
+      );
     }
   }
 
