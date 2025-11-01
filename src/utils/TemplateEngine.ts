@@ -29,24 +29,37 @@ export class TemplateEngine {
     // Pattern to match {{propertyName}} or {{getPropertyValue:propertyName}}
     const templatePattern = /\{\{(?:getPropertyValue:)?([^}]+)\}\}/g;
 
-    let result = destination;
-    let match;
+    // Use replace() with callback to replace all template placeholders
+    // This ensures all occurrences are replaced, not just the first one
+    const result = destination.replace(
+      templatePattern,
+      (fullMatch: string, propertyName: string) => {
+        const trimmedPropertyName = propertyName.trim();
+        const replacement = this.getPropertyValue(
+          trimmedPropertyName,
+          metadata
+        );
 
-    // Replace all template placeholders
-    while ((match = templatePattern.exec(destination)) !== null) {
-      const fullMatch = match[0]; // e.g., "{{status}}" or "{{getPropertyValue:status}}"
-      const propertyName = match[1].trim(); // e.g., "status"
+        // Debug logging (can be removed in production if needed)
+        if (replacement === '') {
+          console.warn(
+            `[TemplateEngine] Property "${trimmedPropertyName}" not found in metadata. Available properties:`,
+            metadata.properties ? Object.keys(metadata.properties) : 'none'
+          );
+        } else {
+          console.debug(
+            `[TemplateEngine] Replacing "${fullMatch}" with "${replacement}" for property "${trimmedPropertyName}"`
+          );
+        }
 
-      const replacement = this.getPropertyValue(propertyName, metadata);
-
-      // Replace the placeholder with the actual value
-      result = result.replace(fullMatch, replacement);
-    }
+        // If replacement is empty and property was not found, return empty string
+        // This prevents template syntax from appearing in the final path
+        return replacement;
+      }
+    );
 
     // Clean up path: remove double slashes and trailing slashes
-    result = this.cleanPath(result);
-
-    return result;
+    return this.cleanPath(result);
   }
 
   /**
