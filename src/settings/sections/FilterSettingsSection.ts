@@ -3,6 +3,7 @@ import { App, Setting } from 'obsidian';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { AdvancedSuggest } from '../suggesters/AdvancedSuggest';
+import { MobileUtils } from '../../utils/MobileUtils';
 
 export class FilterSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -27,7 +28,8 @@ export class FilterSettingsSection {
 
     this.addPeriodicMovementFilterArray();
 
-    new Setting(this.containerEl).addButton(btn =>
+    const isMobile = MobileUtils.isMobile();
+    const addFilterSetting = new Setting(this.containerEl).addButton(btn =>
       btn
         .setButtonText('Add new filter')
         .setCta()
@@ -39,15 +41,31 @@ export class FilterSettingsSection {
           this.refreshDisplay();
         })
     );
+
+    // Add mobile optimization classes
+    if (isMobile) {
+      addFilterSetting.settingEl.addClass('mobile-optimized');
+      const controlEl = addFilterSetting.settingEl.querySelector(
+        '.setting-item-control'
+      );
+      if (controlEl) {
+        (controlEl as HTMLElement).addClass('mobile-button-control');
+      }
+    }
   }
 
   addPeriodicMovementFilterArray(): void {
     // Clean up existing AdvancedSuggest instances before creating new ones
     this.cleanupAdvancedSuggestInstances();
 
+    const isMobile = MobileUtils.isMobile();
+
     // Create a container for filters with drag & drop
     const filtersContainer = document.createElement('div');
     filtersContainer.className = 'filters-container';
+    if (isMobile) {
+      filtersContainer.addClass('mobile-filters-container');
+    }
     this.containerEl.appendChild(filtersContainer);
 
     // Setup drag & drop manager
@@ -91,6 +109,19 @@ export class FilterSettingsSection {
       // Add drag handle to the setting
       this.addDragHandle(s.settingEl, index);
       s.infoEl.remove();
+
+      // Add mobile optimization classes
+      if (isMobile) {
+        s.settingEl.addClass('mobile-filter-item');
+        const controlEl = s.settingEl.querySelector('.setting-item-control');
+        if (controlEl) {
+          (controlEl as HTMLElement).addClass('mobile-filter-controls');
+        }
+        const inputEl = s.settingEl.querySelector('input[type="search"]');
+        if (inputEl) {
+          (inputEl as HTMLElement).addClass('mobile-filter-input');
+        }
+      }
     });
   }
 
