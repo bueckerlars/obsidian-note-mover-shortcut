@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.1...0.5.2)
+
+### Features
+
+- **Conflict Resolution**: Prevent file overwriting when target file already exists [#25](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/25)
+  - Files with conflicts are automatically skipped during move operations
+  - Warning notices are displayed for skipped files
+  - Batch operations show summary of moved, skipped, and failed files
+  - Works for both RuleV1 and RuleV2 systems
+
 ## [0.5.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.0...0.5.1)
 
 ### Features
