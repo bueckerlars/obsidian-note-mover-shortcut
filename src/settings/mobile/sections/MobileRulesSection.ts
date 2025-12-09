@@ -105,17 +105,51 @@ export class MobileRulesSection {
     }
   }
 
+  private moveRuleV2(index: number, direction: number): void {
+    const rulesV2 = this.plugin.settings.settings.rulesV2;
+    if (!rulesV2 || rulesV2.length === 0) return;
+
+    const newIndex = Math.max(
+      0,
+      Math.min(rulesV2.length - 1, index + direction)
+    );
+    if (newIndex === index) return;
+
+    [rulesV2[index], rulesV2[newIndex]] = [rulesV2[newIndex], rulesV2[index]];
+    this.plugin.save_settings();
+    this.plugin.noteMover.updateRuleManager();
+    if (this.refreshDisplay) {
+      this.refreshDisplay();
+    }
+  }
+
+  private moveRuleV1(index: number, direction: number): void {
+    const rules = this.plugin.settings.settings.rules;
+    if (!rules || rules.length === 0) return;
+
+    const newIndex = Math.max(0, Math.min(rules.length - 1, index + direction));
+    if (newIndex === index) return;
+
+    [rules[index], rules[newIndex]] = [rules[newIndex], rules[index]];
+    this.plugin.save_settings();
+    this.plugin.noteMover.updateRuleManager();
+    if (this.refreshDisplay) {
+      this.refreshDisplay();
+    }
+  }
+
   private renderRulesV2(container: HTMLElement): void {
     if (!this.plugin.settings.settings.rulesV2) {
       this.plugin.settings.settings.rulesV2 = [];
     }
 
     this.ruleItems = [];
+    const rulesV2 = this.plugin.settings.settings.rulesV2;
 
-    this.plugin.settings.settings.rulesV2.forEach((rule, index) => {
+    rulesV2.forEach((rule, index) => {
       const ruleItem = new MobileRuleItemV2(container, rule, {
         onToggle: async active => {
-          this.plugin.settings.settings.rulesV2![index].active = active;
+          rulesV2[index].active = active;
           await this.plugin.save_settings();
         },
         onEdit: () => {
@@ -126,7 +160,7 @@ export class MobileRulesSection {
             `Delete rule "${rule.name}"?\n\nThis cannot be undone.`
           );
           if (confirmed) {
-            this.plugin.settings.settings.rulesV2!.splice(index, 1);
+            rulesV2.splice(index, 1);
             await this.plugin.save_settings();
             this.plugin.noteMover.updateRuleManager();
             if (this.refreshDisplay) {
@@ -134,6 +168,18 @@ export class MobileRulesSection {
             }
           }
         },
+        onMoveUp: async () => {
+          if (index > 0) {
+            this.moveRuleV2(index, -1);
+          }
+        },
+        onMoveDown: async () => {
+          if (index < rulesV2.length - 1) {
+            this.moveRuleV2(index, 1);
+          }
+        },
+        canMoveUp: index > 0,
+        canMoveDown: index < rulesV2.length - 1,
       });
 
       this.ruleItems.push(ruleItem);
@@ -142,15 +188,14 @@ export class MobileRulesSection {
 
   private renderRulesV1(container: HTMLElement): void {
     this.ruleItems = [];
+    const rules = this.plugin.settings.settings.rules;
 
-    this.plugin.settings.settings.rules.forEach((rule, index) => {
+    rules.forEach((rule, index) => {
       const ruleItem = new MobileRuleItemV1(container, rule, {
         onCriteriaChange: async value => {
           if (
             value &&
-            this.plugin.settings.settings.rules.some(
-              (r, i) => i !== index && r.criteria === value
-            )
+            rules.some((r, i) => i !== index && r.criteria === value)
           ) {
             handleError(
               createError(
@@ -162,22 +207,34 @@ export class MobileRulesSection {
             return;
           }
 
-          this.plugin.settings.settings.rules[index].criteria = value;
+          rules[index].criteria = value;
           await this.plugin.save_settings();
           this.plugin.noteMover.updateRuleManager();
         },
         onPathChange: async value => {
-          this.plugin.settings.settings.rules[index].path = value;
+          rules[index].path = value;
           await this.plugin.save_settings();
         },
         onDelete: async () => {
-          this.plugin.settings.settings.rules.splice(index, 1);
+          rules.splice(index, 1);
           await this.plugin.save_settings();
           this.plugin.noteMover.updateRuleManager();
           if (this.refreshDisplay) {
             this.refreshDisplay();
           }
         },
+        onMoveUp: async () => {
+          if (index > 0) {
+            this.moveRuleV1(index, -1);
+          }
+        },
+        onMoveDown: async () => {
+          if (index < rules.length - 1) {
+            this.moveRuleV1(index, 1);
+          }
+        },
+        canMoveUp: index > 0,
+        canMoveDown: index < rules.length - 1,
       });
 
       // Add AdvancedSuggest for criteria input

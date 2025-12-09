@@ -1366,6 +1366,52 @@
   font-size: 16px; /* Prevents zoom on iOS */
 }
 
+/* Mobile move buttons */
+.mobile-move-buttons-container {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.mobile-move-button {
+  flex: 1;
+  min-height: 48px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.mobile-move-button:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+.mobile-move-button:active {
+  background: var(--background-modifier-active);
+  transform: scale(0.98);
+}
+
+.mobile-move-button svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.mobile-move-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Mobile rules container */
 .mobile-rules-container .rule-v2-custom-container.mobile-rule-container {
   flex-direction: column;

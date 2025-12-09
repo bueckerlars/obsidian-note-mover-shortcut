@@ -5,6 +5,10 @@ export interface MobileRuleItemCallbacks {
   onToggle?: (active: boolean) => void | Promise<void>;
   onEdit?: () => void;
   onDelete?: () => void | Promise<void>;
+  onMoveUp?: () => void | Promise<void>;
+  onMoveDown?: () => void | Promise<void>;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }
 
 /**
@@ -17,6 +21,9 @@ export class MobileRuleItemV2 {
   private toggleEl: HTMLElement;
   private toggleInput: HTMLInputElement;
   private actionsEl: HTMLElement;
+  private moveButtonsContainer: HTMLElement;
+  private moveUpButton: HTMLButtonElement;
+  private moveDownButton: HTMLButtonElement;
   private editButton: HTMLButtonElement;
   private deleteButton: HTMLButtonElement;
 
@@ -64,6 +71,63 @@ export class MobileRuleItemV2 {
 
     // Create actions row
     this.actionsEl = this.cardEl.createDiv({ cls: 'mobile-rule-actions' });
+
+    // Create move buttons container
+    this.moveButtonsContainer = this.actionsEl.createDiv({
+      cls: 'mobile-move-buttons-container',
+    });
+    this.moveButtonsContainer.style.display = 'flex';
+    this.moveButtonsContainer.style.gap = '8px';
+    this.moveButtonsContainer.style.marginBottom = '8px';
+    this.moveButtonsContainer.style.width = '100%';
+
+    // Move Up button
+    this.moveUpButton = this.moveButtonsContainer.createEl('button', {
+      cls: 'mobile-move-button mobile-move-up-button',
+    });
+    this.moveUpButton.style.flex = '1';
+    this.moveUpButton.style.minHeight = '48px';
+    this.moveUpButton.style.display = 'flex';
+    this.moveUpButton.style.alignItems = 'center';
+    this.moveUpButton.style.justifyContent = 'center';
+    this.moveUpButton.style.border =
+      '1px solid var(--background-modifier-border)';
+    this.moveUpButton.style.borderRadius = '6px';
+    this.moveUpButton.style.background = 'var(--background-primary)';
+    this.moveUpButton.style.cursor = 'pointer';
+    this.moveUpButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+    this.moveUpButton.addEventListener('click', async () => {
+      if (callbacks.onMoveUp) {
+        await callbacks.onMoveUp();
+      }
+    });
+    if (callbacks.canMoveUp === false) {
+      this.moveUpButton.style.display = 'none';
+    }
+
+    // Move Down button
+    this.moveDownButton = this.moveButtonsContainer.createEl('button', {
+      cls: 'mobile-move-button mobile-move-down-button',
+    });
+    this.moveDownButton.style.flex = '1';
+    this.moveDownButton.style.minHeight = '48px';
+    this.moveDownButton.style.display = 'flex';
+    this.moveDownButton.style.alignItems = 'center';
+    this.moveDownButton.style.justifyContent = 'center';
+    this.moveDownButton.style.border =
+      '1px solid var(--background-modifier-border)';
+    this.moveDownButton.style.borderRadius = '6px';
+    this.moveDownButton.style.background = 'var(--background-primary)';
+    this.moveDownButton.style.cursor = 'pointer';
+    this.moveDownButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+    this.moveDownButton.addEventListener('click', async () => {
+      if (callbacks.onMoveDown) {
+        await callbacks.onMoveDown();
+      }
+    });
+    if (callbacks.canMoveDown === false) {
+      this.moveDownButton.style.display = 'none';
+    }
 
     // Edit button
     this.editButton = this.actionsEl.createEl('button', {
@@ -122,6 +186,9 @@ export class MobileRuleItemV1 {
   private cardEl: HTMLElement;
   private criteriaInput: HTMLInputElement;
   private pathInput: HTMLInputElement;
+  private moveButtonsContainer: HTMLElement;
+  private moveUpButton: HTMLButtonElement;
+  private moveDownButton: HTMLButtonElement;
   private deleteButton: HTMLButtonElement;
 
   constructor(
@@ -131,6 +198,10 @@ export class MobileRuleItemV1 {
       onCriteriaChange?: (value: string) => void | Promise<void>;
       onPathChange?: (value: string) => void | Promise<void>;
       onDelete?: () => void | Promise<void>;
+      onMoveUp?: () => void | Promise<void>;
+      onMoveDown?: () => void | Promise<void>;
+      canMoveUp?: boolean;
+      canMoveDown?: boolean;
     }
   ) {
     // Create card
@@ -190,6 +261,63 @@ export class MobileRuleItemV1 {
           await callbacks.onPathChange(this.pathInput.value);
         }
       });
+    }
+
+    // Create move buttons container
+    this.moveButtonsContainer = this.cardEl.createDiv({
+      cls: 'mobile-move-buttons-container',
+    });
+    this.moveButtonsContainer.style.display = 'flex';
+    this.moveButtonsContainer.style.gap = '8px';
+    this.moveButtonsContainer.style.marginBottom = '12px';
+    this.moveButtonsContainer.style.width = '100%';
+
+    // Move Up button
+    this.moveUpButton = this.moveButtonsContainer.createEl('button', {
+      cls: 'mobile-move-button mobile-move-up-button',
+    });
+    this.moveUpButton.style.flex = '1';
+    this.moveUpButton.style.minHeight = '48px';
+    this.moveUpButton.style.display = 'flex';
+    this.moveUpButton.style.alignItems = 'center';
+    this.moveUpButton.style.justifyContent = 'center';
+    this.moveUpButton.style.border =
+      '1px solid var(--background-modifier-border)';
+    this.moveUpButton.style.borderRadius = '6px';
+    this.moveUpButton.style.background = 'var(--background-primary)';
+    this.moveUpButton.style.cursor = 'pointer';
+    this.moveUpButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+    this.moveUpButton.addEventListener('click', async () => {
+      if (callbacks.onMoveUp) {
+        await callbacks.onMoveUp();
+      }
+    });
+    if (callbacks.canMoveUp === false) {
+      this.moveUpButton.style.display = 'none';
+    }
+
+    // Move Down button
+    this.moveDownButton = this.moveButtonsContainer.createEl('button', {
+      cls: 'mobile-move-button mobile-move-down-button',
+    });
+    this.moveDownButton.style.flex = '1';
+    this.moveDownButton.style.minHeight = '48px';
+    this.moveDownButton.style.display = 'flex';
+    this.moveDownButton.style.alignItems = 'center';
+    this.moveDownButton.style.justifyContent = 'center';
+    this.moveDownButton.style.border =
+      '1px solid var(--background-modifier-border)';
+    this.moveDownButton.style.borderRadius = '6px';
+    this.moveDownButton.style.background = 'var(--background-primary)';
+    this.moveDownButton.style.cursor = 'pointer';
+    this.moveDownButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+    this.moveDownButton.addEventListener('click', async () => {
+      if (callbacks.onMoveDown) {
+        await callbacks.onMoveDown();
+      }
+    });
+    if (callbacks.canMoveDown === false) {
+      this.moveDownButton.style.display = 'none';
     }
 
     // Delete button

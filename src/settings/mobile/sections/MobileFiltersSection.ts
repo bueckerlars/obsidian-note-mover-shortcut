@@ -74,12 +74,31 @@ export class MobileFiltersSection {
     );
   }
 
+  private moveFilter(index: number, direction: number): void {
+    const filters = this.plugin.settings.settings.filters.filter;
+    if (!filters || filters.length === 0) return;
+
+    const newIndex = Math.max(
+      0,
+      Math.min(filters.length - 1, index + direction)
+    );
+    if (newIndex === index) return;
+
+    [filters[index], filters[newIndex]] = [filters[newIndex], filters[index]];
+    this.plugin.save_settings();
+    this.plugin.noteMover.updateRuleManager();
+    if (this.refreshDisplay) {
+      this.refreshDisplay();
+    }
+  }
+
   private renderFilters(container: HTMLElement): void {
     // Clean up existing inputs
     this.filterInputs = [];
     container.empty();
 
-    this.plugin.settings.settings.filters.filter.forEach((filter, index) => {
+    const filters = this.plugin.settings.settings.filters.filter;
+    filters.forEach((filter, index) => {
       // Create filter card
       const filterCard = container.createDiv({ cls: 'mobile-filter-card' });
       filterCard.style.padding = '12px';
@@ -119,14 +138,65 @@ export class MobileFiltersSection {
       // Input change handler
       input.addEventListener('input', async () => {
         if (!input.value || input.value.trim() === '') {
-          this.plugin.settings.settings.filters.filter[index] = { value: '' };
+          filters[index] = { value: '' };
         } else {
-          this.plugin.settings.settings.filters.filter[index] = {
+          filters[index] = {
             value: input.value,
           };
         }
         await this.plugin.save_settings();
         this.plugin.noteMover.updateRuleManager();
+      });
+
+      // Create move buttons container
+      const moveButtonsContainer = filterCard.createDiv({
+        cls: 'mobile-move-buttons-container',
+      });
+      moveButtonsContainer.style.display = 'flex';
+      moveButtonsContainer.style.gap = '8px';
+      moveButtonsContainer.style.marginBottom = '12px';
+      moveButtonsContainer.style.width = '100%';
+
+      // Move Up button
+      const moveUpButton = moveButtonsContainer.createEl('button', {
+        cls: 'mobile-move-button mobile-move-up-button',
+      });
+      moveUpButton.style.flex = '1';
+      moveUpButton.style.minHeight = '48px';
+      moveUpButton.style.display = index > 0 ? 'flex' : 'none';
+      moveUpButton.style.alignItems = 'center';
+      moveUpButton.style.justifyContent = 'center';
+      moveUpButton.style.border = '1px solid var(--background-modifier-border)';
+      moveUpButton.style.borderRadius = '6px';
+      moveUpButton.style.background = 'var(--background-primary)';
+      moveUpButton.style.cursor = 'pointer';
+      moveUpButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+      moveUpButton.addEventListener('click', async () => {
+        if (index > 0) {
+          this.moveFilter(index, -1);
+        }
+      });
+
+      // Move Down button
+      const moveDownButton = moveButtonsContainer.createEl('button', {
+        cls: 'mobile-move-button mobile-move-down-button',
+      });
+      moveDownButton.style.flex = '1';
+      moveDownButton.style.minHeight = '48px';
+      moveDownButton.style.display =
+        index < filters.length - 1 ? 'flex' : 'none';
+      moveDownButton.style.alignItems = 'center';
+      moveDownButton.style.justifyContent = 'center';
+      moveDownButton.style.border =
+        '1px solid var(--background-modifier-border)';
+      moveDownButton.style.borderRadius = '6px';
+      moveDownButton.style.background = 'var(--background-primary)';
+      moveDownButton.style.cursor = 'pointer';
+      moveDownButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+      moveDownButton.addEventListener('click', async () => {
+        if (index < filters.length - 1) {
+          this.moveFilter(index, 1);
+        }
       });
 
       // Delete button
@@ -145,7 +215,7 @@ export class MobileFiltersSection {
       deleteButton.style.fontWeight = '500';
 
       deleteButton.addEventListener('click', async () => {
-        this.plugin.settings.settings.filters.filter.splice(index, 1);
+        filters.splice(index, 1);
         await this.plugin.save_settings();
         this.plugin.noteMover.updateRuleManager();
         if (this.refreshDisplay) {
