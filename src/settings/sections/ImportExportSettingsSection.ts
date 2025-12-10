@@ -6,6 +6,7 @@ import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SettingsValidator } from 'src/utils/SettingsValidator';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { RuleMigrationService } from 'src/core/RuleMigrationService';
+import { MobileUtils } from '../../utils/MobileUtils';
 
 export class ImportExportSettingsSection {
   constructor(
@@ -15,10 +16,11 @@ export class ImportExportSettingsSection {
   ) {}
 
   addImportExportSettings(): void {
+    const isMobile = MobileUtils.isMobile();
     new Setting(this.containerEl).setName('Import/Export').setHeading();
 
     // Export Settings Button
-    new Setting(this.containerEl)
+    const exportSetting = new Setting(this.containerEl)
       .setName('Export settings')
       .setDesc('Export your current settings as a JSON file')
       .addButton(btn =>
@@ -30,8 +32,19 @@ export class ImportExportSettingsSection {
           })
       );
 
+    // Add mobile optimization classes
+    if (isMobile) {
+      exportSetting.settingEl.addClass('mobile-optimized');
+      const controlEl = exportSetting.settingEl.querySelector(
+        '.setting-item-control'
+      );
+      if (controlEl) {
+        (controlEl as HTMLElement).addClass('mobile-button-control');
+      }
+    }
+
     // Import Settings Button
-    new Setting(this.containerEl)
+    const importSetting = new Setting(this.containerEl)
       .setName('Import settings')
       .setDesc('Import settings from a JSON file')
       .addButton(btn =>
@@ -42,6 +55,17 @@ export class ImportExportSettingsSection {
             await this.importSettings();
           })
       );
+
+    // Add mobile optimization classes
+    if (isMobile) {
+      importSetting.settingEl.addClass('mobile-optimized');
+      const controlEl = importSetting.settingEl.querySelector(
+        '.setting-item-control'
+      );
+      if (controlEl) {
+        (controlEl as HTMLElement).addClass('mobile-button-control');
+      }
+    }
   }
 
   private async exportSettings(): Promise<void> {

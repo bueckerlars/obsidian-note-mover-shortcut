@@ -1,4 +1,5 @@
 import { Modal, App, Setting, ButtonComponent } from 'obsidian';
+import { MobileUtils } from '../utils/MobileUtils';
 
 export type ModalSize = 'small' | 'medium' | 'large';
 
@@ -27,10 +28,45 @@ export abstract class BaseModal extends Modal {
     const { contentEl } = this;
     this.clearContent();
     this.addCssClass();
+    this.addMobileClasses();
     this.setModalSize();
     this.createTitle();
     this.createContent();
     this.setupAutoFocus();
+    this.resetScrollPosition();
+  }
+
+  /**
+   * Reset scroll position to top when modal opens
+   */
+  protected resetScrollPosition(): void {
+    // Multiple attempts to ensure scroll is reset after DOM is fully rendered
+    const resetScroll = () => {
+      if (this.contentEl) {
+        this.contentEl.scrollTop = 0;
+      }
+      const modalContainer = this.contentEl?.parentElement;
+      if (modalContainer) {
+        modalContainer.scrollTop = 0;
+        // Also try scrolling the modal's parent if it exists
+        const modalParent = modalContainer.parentElement;
+        if (modalParent) {
+          modalParent.scrollTop = 0;
+        }
+      }
+    };
+
+    // Immediate reset
+    resetScroll();
+
+    // Reset after animation frame
+    requestAnimationFrame(() => {
+      resetScroll();
+      // Also reset after a short delay to catch any late rendering
+      setTimeout(() => {
+        resetScroll();
+      }, 50);
+    });
   }
 
   onClose() {
@@ -56,6 +92,17 @@ export abstract class BaseModal extends Modal {
   }
 
   /**
+   * Add mobile-specific CSS classes to modal container and content
+   */
+  protected addMobileClasses(): void {
+    const modalContainer = this.contentEl.parentElement;
+    if (modalContainer) {
+      MobileUtils.addMobileClass(modalContainer);
+      MobileUtils.addMobileClass(this.contentEl);
+    }
+  }
+
+  /**
    * Set modal size based on options using CSS classes
    */
   protected setModalSize(): void {
@@ -67,8 +114,13 @@ export abstract class BaseModal extends Modal {
         'modal-size-medium',
         'modal-size-large'
       );
-      // Add the appropriate size class
-      modalContainer.classList.add(`modal-size-${this.options.size}`);
+      // On mobile, use full-width layout regardless of size option
+      if (MobileUtils.isMobile()) {
+        modalContainer.classList.add('modal-size-mobile');
+      } else {
+        // Add the appropriate size class for desktop
+        modalContainer.classList.add(`modal-size-${this.options.size}`);
+      }
     }
   }
 
@@ -112,6 +164,8 @@ export abstract class BaseModal extends Modal {
       ) as HTMLElement;
       if (focusElement && typeof focusElement.focus === 'function') {
         focusElement.focus();
+        // Reset scroll after focus, as focus can cause scrolling
+        this.resetScrollPosition();
       }
     }, 10);
   }

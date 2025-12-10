@@ -1,5 +1,6 @@
 import { Setting, App, ButtonComponent } from 'obsidian';
 import { BaseModal, BaseModalOptions } from './BaseModal';
+import { MobileUtils } from '../utils/MobileUtils';
 
 interface ChangelogEntry {
   version: string;
@@ -54,8 +55,11 @@ export class UpdateModal extends BaseModal {
     }
 
     // Changelog Content
+    const isMobile = MobileUtils.isMobile();
     const changelogContainer = contentEl.createEl('div', {
-      cls: 'changelog-container',
+      cls: isMobile
+        ? 'changelog-container changelog-container-mobile'
+        : 'changelog-container',
     });
 
     if (this.changelogEntries.length === 0) {
@@ -68,37 +72,73 @@ export class UpdateModal extends BaseModal {
     }
 
     // Footer with links and button
-    const footerContainer = contentEl.createEl('div', { cls: 'modal-footer' });
+    const footerContainer = contentEl.createEl('div', {
+      cls: isMobile ? 'modal-footer modal-footer-mobile' : 'modal-footer',
+    });
 
     // GitHub Link
     const linkContainer = footerContainer.createEl('div', {
-      cls: 'update-modal-links',
+      cls: isMobile
+        ? 'update-modal-links update-modal-links-mobile'
+        : 'update-modal-links',
     });
     const githubLink = linkContainer.createEl('a', {
       text: 'View full changelog on GitHub',
       href: 'https://github.com/bueckerlars/obsidian-note-mover-shortcut/releases',
-      cls: 'update-modal-github-link',
+      cls: isMobile
+        ? 'update-modal-github-link update-modal-github-link-mobile'
+        : 'update-modal-github-link',
     });
     githubLink.setAttribute('target', '_blank');
 
+    // Mobile: Make link larger and more touch-friendly
+    if (isMobile) {
+      githubLink.style.minHeight = '48px';
+      githubLink.style.display = 'flex';
+      githubLink.style.alignItems = 'center';
+      githubLink.style.justifyContent = 'center';
+      githubLink.style.padding = '12px';
+    }
+
     // Close button
-    const buttonContainer = this.createButtonContainer(footerContainer);
-    this.createButton(
-      buttonContainer,
-      'Close',
-      () => {
-        this.close();
-      },
-      {
-        isPrimary: true,
+    if (isMobile) {
+      // Mobile: Full-width button
+      const closeSetting = new Setting(footerContainer).addButton(btn => {
+        btn
+          .setButtonText('Close')
+          .setCta()
+          .onClick(() => {
+            this.close();
+          });
+      });
+      const closeBtn = closeSetting.settingEl.querySelector('button');
+      if (closeBtn) {
+        closeBtn.style.width = '100%';
+        closeBtn.style.minHeight = '48px';
       }
-    );
+    } else {
+      // Desktop: Original layout
+      const buttonContainer = this.createButtonContainer(footerContainer);
+      this.createButton(
+        buttonContainer,
+        'Close',
+        () => {
+          this.close();
+        },
+        {
+          isPrimary: true,
+        }
+      );
+    }
   }
 
   private renderChangelog(container: HTMLElement) {
+    const isMobile = MobileUtils.isMobile();
     this.changelogEntries.forEach(entry => {
       const versionContainer = container.createEl('div', {
-        cls: 'changelog-version',
+        cls: isMobile
+          ? 'changelog-version changelog-version-mobile'
+          : 'changelog-version',
       });
 
       versionContainer.createEl('h3', {

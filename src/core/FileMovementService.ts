@@ -70,6 +70,28 @@ export class FileMovementService {
   }
 
   /**
+   * Checks if a target path already has a file (conflict check)
+   *
+   * @param file - The file to be moved
+   * @param targetPath - The target path to check
+   * @returns True if a conflict exists (different file at target location)
+   */
+  public checkTargetConflict(file: TFile, targetPath: string): boolean {
+    // Skip if file is already at target location
+    if (file.path === targetPath) {
+      return false;
+    }
+
+    // Check if target file already exists
+    const existingFile = this.app.vault.getAbstractFileByPath(targetPath);
+    if (existingFile && existingFile.path !== file.path) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Performs file move with error handling and tracking
    *
    * Handles folder creation, plugin move tracking, history, and notifications
@@ -98,6 +120,16 @@ export class FileMovementService {
       // Skip if file is already in the correct location
       if (file.path === targetPath) {
         return true; // File is already in the correct location, no need to move
+      }
+
+      // Check if target file already exists (conflict)
+      if (this.checkTargetConflict(file, targetPath)) {
+        if (showNotifications) {
+          NoticeManager.warning(
+            `Skipped '${file.name}': File already exists at target location`
+          );
+        }
+        return false;
       }
 
       // Ensure target folder exists
@@ -271,7 +303,12 @@ export class FileMovementService {
         currentFile: string
       ) => void;
     } = {}
-  ): Promise<{ successful: number; failed: number; errors: string[] }> {
+  ): Promise<{
+    successful: number;
+    failed: number;
+    skipped: number;
+    errors: string[];
+  }> {
     const {
       trackInHistory = true,
       showNotifications = false,
@@ -281,6 +318,7 @@ export class FileMovementService {
     const results = {
       successful: 0,
       failed: 0,
+      skipped: 0,
       errors: [] as string[],
     };
 
@@ -289,6 +327,22 @@ export class FileMovementService {
 
       if (onProgress) {
         onProgress(i, operations.length, operation.file.name);
+      }
+
+      // Check for conflicts before attempting move
+      const hasConflict = this.checkTargetConflict(
+        operation.file,
+        operation.targetPath
+      );
+
+      if (hasConflict) {
+        results.skipped++;
+        if (showNotifications) {
+          NoticeManager.warning(
+            `Skipped '${operation.file.name}': File already exists at target location`
+          );
+        }
+        continue;
       }
 
       const success = await this.moveFile(
@@ -310,14 +364,22 @@ export class FileMovementService {
     }
 
     if (showNotifications) {
-      if (results.failed === 0) {
+      if (results.failed === 0 && results.skipped === 0) {
         NoticeManager.success(
           `Successfully moved ${results.successful} files!`
         );
       } else {
-        NoticeManager.warning(
-          `Moved ${results.successful} files with ${results.failed} errors.`
-        );
+        const parts: string[] = [];
+        if (results.successful > 0) {
+          parts.push(`moved ${results.successful}`);
+        }
+        if (results.skipped > 0) {
+          parts.push(`skipped ${results.skipped}`);
+        }
+        if (results.failed > 0) {
+          parts.push(`${results.failed} errors`);
+        }
+        NoticeManager.warning(`Batch operation: ${parts.join(', ')} file(s).`);
       }
     }
 

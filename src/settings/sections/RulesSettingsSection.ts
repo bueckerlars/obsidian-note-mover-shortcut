@@ -7,6 +7,7 @@ import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { RuleEditorModal } from '../../modals/RuleEditorModal';
 import { RuleV2 } from '../../types/RuleV2';
+import { MobileUtils } from '../../utils/MobileUtils';
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -100,9 +101,14 @@ export class RulesSettingsSection {
     // Clean up existing AdvancedSuggest instances before creating new ones
     this.cleanupAdvancedSuggestInstances();
 
+    const isMobile = MobileUtils.isMobile();
+
     // Create a container for rules with drag & drop
     const rulesContainer = document.createElement('div');
     rulesContainer.className = 'rules-container';
+    if (isMobile) {
+      rulesContainer.addClass('mobile-rules-container');
+    }
     this.containerEl.appendChild(rulesContainer);
 
     // Setup drag & drop manager
@@ -167,6 +173,15 @@ export class RulesSettingsSection {
       // Add drag handle to the setting
       this.addDragHandle(s.settingEl, index);
       s.infoEl.remove();
+
+      // Add mobile optimization classes
+      if (isMobile) {
+        s.settingEl.addClass('mobile-rule-item');
+        const controlEl = s.settingEl.querySelector('.setting-item-control');
+        if (controlEl) {
+          (controlEl as HTMLElement).addClass('mobile-rule-controls');
+        }
+      }
     });
   }
 
@@ -254,9 +269,14 @@ export class RulesSettingsSection {
       this.plugin.settings.settings.rulesV2 = [];
     }
 
+    const isMobile = MobileUtils.isMobile();
+
     // Create a container for rules with drag & drop
     const rulesContainer = document.createElement('div');
     rulesContainer.className = 'rules-v2-container';
+    if (isMobile) {
+      rulesContainer.addClass('mobile-rules-container');
+    }
     this.containerEl.appendChild(rulesContainer);
 
     // Setup drag & drop manager for V2 rules
@@ -273,6 +293,11 @@ export class RulesSettingsSection {
         cls: 'rule-v2-custom-container',
       });
 
+      // Add mobile class if on mobile
+      if (isMobile) {
+        customContainer.addClass('mobile-rule-container');
+      }
+
       // Rule name display (left side)
       const nameEl = customContainer.createDiv({ cls: 'rule-v2-name' });
       nameEl.textContent = rule.name || 'Unnamed Rule';
@@ -281,6 +306,11 @@ export class RulesSettingsSection {
       const actionsContainer = customContainer.createDiv({
         cls: 'rule-v2-actions',
       });
+
+      // Add mobile class if on mobile
+      if (isMobile) {
+        actionsContainer.addClass('mobile-rule-actions');
+      }
 
       // Add delete button to actions container
       s.addExtraButton(btn =>

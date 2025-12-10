@@ -200,6 +200,22 @@ export default class NoteMoverShortcutPlugin extends Plugin {
         // Save migrated rules
         await this.save_settings();
       }
+
+      // Migrate RuleV2 triggers from ruleType to operator format (legacy data)
+      if (
+        this.settings.settings.rulesV2 &&
+        this.settings.settings.rulesV2.length > 0
+      ) {
+        const migrated = RuleMigrationService.migrateRuleV2Triggers(
+          this.settings.settings.rulesV2
+        );
+        if (migrated) {
+          console.log(
+            'Migrated RuleV2 triggers from ruleType to operator format'
+          );
+          await this.save_settings();
+        }
+      }
     }
 
     // Validate RuleV2 with regex pre-compilation

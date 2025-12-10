@@ -7,6 +7,7 @@ import {
   SETTINGS_CONSTANTS,
 } from '../config/constants';
 import { BaseModal, BaseModalOptions } from './BaseModal';
+import { MobileUtils } from '../utils/MobileUtils';
 import NoteMoverShortcutPlugin from 'main';
 
 export class HistoryModal extends BaseModal {
@@ -77,11 +78,14 @@ export class HistoryModal extends BaseModal {
   }
 
   private createTimeFilterDropdown(container: HTMLElement): void {
+    const isMobile = MobileUtils.isMobile();
     const filterContainer = container.createEl('div', {
-      cls: 'time-filter-container',
+      cls: isMobile
+        ? 'time-filter-container time-filter-container-mobile'
+        : 'time-filter-container',
     });
 
-    new Setting(filterContainer)
+    const setting = new Setting(filterContainer)
       .setName(SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_LABEL)
       .addDropdown(dropdown => {
         dropdown
@@ -94,6 +98,13 @@ export class HistoryModal extends BaseModal {
             this.currentTimeFilter = value as TimeFilter;
             this.refreshContent();
           });
+
+        // Mobile: Make dropdown larger
+        if (isMobile) {
+          const selectEl = dropdown.selectEl;
+          selectEl.style.minHeight = '48px';
+          selectEl.style.fontSize = '16px';
+        }
       });
   }
 
@@ -107,8 +118,11 @@ export class HistoryModal extends BaseModal {
     container: HTMLElement,
     bulkOp: BulkOperation
   ) {
+    const isMobile = MobileUtils.isMobile();
     const bulkEntryEl = container.createEl('div', {
-      cls: 'history-entry bulk-operation',
+      cls: isMobile
+        ? 'history-entry bulk-operation history-entry-mobile'
+        : 'history-entry bulk-operation',
     });
 
     const headerEl = bulkEntryEl.createEl('div', { cls: 'bulk-header' });
@@ -162,64 +176,126 @@ export class HistoryModal extends BaseModal {
       });
 
       // Individual buttons for each file
-      new Setting(fileEl)
-        .addButton(button => {
-          button
-            .setIcon('file-text')
-            .setTooltip(`Open ${entry.fileName}`)
-            .onClick(() => {
-              // Try to open the file at its current location (destination path)
-              const file = this.app.vault.getAbstractFileByPath(
-                entry.destinationPath
-              );
-              if (file && file instanceof TFile) {
-                this.app.workspace.getLeaf().openFile(file);
-                this.close(); // Close the modal after opening the file
-              } else {
-                // If file not found at destination, try source path
-                const sourceFile = this.app.vault.getAbstractFileByPath(
-                  entry.sourcePath
-                );
-                if (sourceFile && sourceFile instanceof TFile) {
-                  this.app.workspace.getLeaf().openFile(sourceFile);
-                  this.close(); // Close the modal after opening the file
-                } else {
-                  NoticeManager.error(`Could not find file ${entry.fileName}`, {
-                    duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
-                  });
-                }
-              }
-            });
-        })
-        .addButton(button => {
-          button
-            .setIcon('undo')
-            .setTooltip(`Undo move for ${entry.fileName}`)
-            .onClick(async () => {
-              const success = await this.historyManager.undoEntry(entry.id);
-              if (success) {
-                this.onOpen(); // Refresh the modal
-              } else {
-                // Show error message
-                NoticeManager.error(
-                  `Could not undo move for ${entry.fileName}. File may have been moved or deleted.`,
-                  { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
-                );
-              }
-            });
-        })
-        .addButton(button => {
-          button
-            .setIcon('ban')
-            .setTooltip(`Add ${entry.fileName} to blacklist`)
-            .onClick(async () => {
-              await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
-            });
+      const isMobile = MobileUtils.isMobile();
+      if (isMobile) {
+        // Mobile: Stack buttons vertically
+        const buttonsContainer = fileEl.createDiv({
+          cls: 'history-entry-buttons-mobile',
         });
+
+        // Open button
+        const openBtn = buttonsContainer.createEl('button', {
+          cls: 'history-entry-button-mobile',
+          text: 'Open',
+        });
+        openBtn.onclick = () => {
+          const file = this.app.vault.getAbstractFileByPath(
+            entry.destinationPath
+          );
+          if (file && file instanceof TFile) {
+            this.app.workspace.getLeaf().openFile(file);
+            this.close();
+          } else {
+            const sourceFile = this.app.vault.getAbstractFileByPath(
+              entry.sourcePath
+            );
+            if (sourceFile && sourceFile instanceof TFile) {
+              this.app.workspace.getLeaf().openFile(sourceFile);
+              this.close();
+            } else {
+              NoticeManager.error(`Could not find file ${entry.fileName}`, {
+                duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
+              });
+            }
+          }
+        };
+
+        // Undo button
+        const undoBtn = buttonsContainer.createEl('button', {
+          cls: 'history-entry-button-mobile',
+          text: 'Undo',
+        });
+        undoBtn.onclick = async () => {
+          const success = await this.historyManager.undoEntry(entry.id);
+          if (success) {
+            this.onOpen();
+          } else {
+            NoticeManager.error(
+              `Could not undo move for ${entry.fileName}. File may have been moved or deleted.`,
+              { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+            );
+          }
+        };
+
+        // Blacklist button
+        const blacklistBtn = buttonsContainer.createEl('button', {
+          cls: 'history-entry-button-mobile history-entry-button-warning',
+          text: 'Add to Blacklist',
+        });
+        blacklistBtn.onclick = async () => {
+          await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
+        };
+      } else {
+        // Desktop: Original horizontal layout
+        new Setting(fileEl)
+          .addButton(button => {
+            button
+              .setIcon('file-text')
+              .setTooltip(`Open ${entry.fileName}`)
+              .onClick(() => {
+                const file = this.app.vault.getAbstractFileByPath(
+                  entry.destinationPath
+                );
+                if (file && file instanceof TFile) {
+                  this.app.workspace.getLeaf().openFile(file);
+                  this.close();
+                } else {
+                  const sourceFile = this.app.vault.getAbstractFileByPath(
+                    entry.sourcePath
+                  );
+                  if (sourceFile && sourceFile instanceof TFile) {
+                    this.app.workspace.getLeaf().openFile(sourceFile);
+                    this.close();
+                  } else {
+                    NoticeManager.error(
+                      `Could not find file ${entry.fileName}`,
+                      {
+                        duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
+                      }
+                    );
+                  }
+                }
+              });
+          })
+          .addButton(button => {
+            button
+              .setIcon('undo')
+              .setTooltip(`Undo move for ${entry.fileName}`)
+              .onClick(async () => {
+                const success = await this.historyManager.undoEntry(entry.id);
+                if (success) {
+                  this.onOpen();
+                } else {
+                  NoticeManager.error(
+                    `Could not undo move for ${entry.fileName}. File may have been moved or deleted.`,
+                    { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+                  );
+                }
+              });
+          })
+          .addButton(button => {
+            button
+              .setIcon('ban')
+              .setTooltip(`Add ${entry.fileName} to blacklist`)
+              .onClick(async () => {
+                await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
+              });
+          });
+      }
     });
 
     // Bulk undo button
-    new Setting(bulkEntryEl).addButton(button => {
+    const bulkUndoSetting = new Setting(bulkEntryEl).addButton(button => {
       button
         .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL)
         .setIcon('undo')
@@ -229,9 +305,8 @@ export class HistoryModal extends BaseModal {
             bulkOp.id
           );
           if (success) {
-            this.onOpen(); // Refresh the modal
+            this.onOpen();
           } else {
-            // Show error message
             NoticeManager.warning(
               'Some files could not be moved back. Check console for details.',
               { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
@@ -239,11 +314,23 @@ export class HistoryModal extends BaseModal {
           }
         });
     });
+
+    // Mobile: Make button full-width
+    if (MobileUtils.isMobile()) {
+      const buttonEl = bulkUndoSetting.settingEl.querySelector('button');
+      if (buttonEl) {
+        buttonEl.style.width = '100%';
+        buttonEl.style.minHeight = '48px';
+      }
+    }
   }
 
   private createSingleEntry(container: HTMLElement, entry: HistoryEntry) {
+    const isMobile = MobileUtils.isMobile();
     const entryEl = container.createEl('div', {
-      cls: 'history-entry single-operation',
+      cls: isMobile
+        ? 'history-entry single-operation history-entry-mobile'
+        : 'history-entry single-operation',
     });
 
     const contentEl = entryEl.createEl('div', { cls: 'history-entry-content' });
@@ -260,54 +347,108 @@ export class HistoryModal extends BaseModal {
       text: `${entry.sourcePath} → ${entry.destinationPath}`,
     });
 
-    new Setting(entryEl)
-      .addButton(button => {
-        button
-          .setIcon('file-text')
-          .setTooltip(`Open ${entry.fileName}`)
-          .onClick(() => {
-            // Try to open the file at its current location (destination path)
-            const file = this.app.vault.getAbstractFileByPath(
-              entry.destinationPath
-            );
-            if (file && file instanceof TFile) {
-              this.app.workspace.getLeaf().openFile(file);
-              this.close(); // Close the modal after opening the file
-            } else {
-              // If file not found at destination, try source path
-              const sourceFile = this.app.vault.getAbstractFileByPath(
-                entry.sourcePath
-              );
-              if (sourceFile && sourceFile instanceof TFile) {
-                this.app.workspace.getLeaf().openFile(sourceFile);
-                this.close(); // Close the modal after opening the file
-              } else {
-                NoticeManager.error(`Could not find file ${entry.fileName}`, {
-                  duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
-                });
-              }
-            }
-          });
-      })
-      .addButton(button => {
-        button
-          .setIcon('undo')
-          .setTooltip('Undo')
-          .onClick(async () => {
-            const success = await this.historyManager.undoEntry(entry.id);
-            if (success) {
-              this.onOpen();
-            }
-          });
-      })
-      .addButton(button => {
-        button
-          .setIcon('ban')
-          .setTooltip(`Add ${entry.fileName} to blacklist`)
-          .onClick(async () => {
-            await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
-          });
+    if (isMobile) {
+      // Mobile: Stack buttons vertically
+      const buttonsContainer = entryEl.createDiv({
+        cls: 'history-entry-buttons-mobile',
       });
+
+      // Open button
+      const openBtn = buttonsContainer.createEl('button', {
+        cls: 'history-entry-button-mobile',
+        text: 'Open',
+      });
+      openBtn.onclick = () => {
+        const file = this.app.vault.getAbstractFileByPath(
+          entry.destinationPath
+        );
+        if (file && file instanceof TFile) {
+          this.app.workspace.getLeaf().openFile(file);
+          this.close();
+        } else {
+          const sourceFile = this.app.vault.getAbstractFileByPath(
+            entry.sourcePath
+          );
+          if (sourceFile && sourceFile instanceof TFile) {
+            this.app.workspace.getLeaf().openFile(sourceFile);
+            this.close();
+          } else {
+            NoticeManager.error(`Could not find file ${entry.fileName}`, {
+              duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
+            });
+          }
+        }
+      };
+
+      // Undo button
+      const undoBtn = buttonsContainer.createEl('button', {
+        cls: 'history-entry-button-mobile',
+        text: 'Undo',
+      });
+      undoBtn.onclick = async () => {
+        const success = await this.historyManager.undoEntry(entry.id);
+        if (success) {
+          this.onOpen();
+        }
+      };
+
+      // Blacklist button
+      const blacklistBtn = buttonsContainer.createEl('button', {
+        cls: 'history-entry-button-mobile history-entry-button-warning',
+        text: 'Add to Blacklist',
+      });
+      blacklistBtn.onclick = async () => {
+        await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
+      };
+    } else {
+      // Desktop: Original horizontal layout
+      new Setting(entryEl)
+        .addButton(button => {
+          button
+            .setIcon('file-text')
+            .setTooltip(`Open ${entry.fileName}`)
+            .onClick(() => {
+              const file = this.app.vault.getAbstractFileByPath(
+                entry.destinationPath
+              );
+              if (file && file instanceof TFile) {
+                this.app.workspace.getLeaf().openFile(file);
+                this.close();
+              } else {
+                const sourceFile = this.app.vault.getAbstractFileByPath(
+                  entry.sourcePath
+                );
+                if (sourceFile && sourceFile instanceof TFile) {
+                  this.app.workspace.getLeaf().openFile(sourceFile);
+                  this.close();
+                } else {
+                  NoticeManager.error(`Could not find file ${entry.fileName}`, {
+                    duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
+                  });
+                }
+              }
+            });
+        })
+        .addButton(button => {
+          button
+            .setIcon('undo')
+            .setTooltip('Undo')
+            .onClick(async () => {
+              const success = await this.historyManager.undoEntry(entry.id);
+              if (success) {
+                this.onOpen();
+              }
+            });
+        })
+        .addButton(button => {
+          button
+            .setIcon('ban')
+            .setTooltip(`Add ${entry.fileName} to blacklist`)
+            .onClick(async () => {
+              await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
+            });
+        });
+    }
   }
 
   onClose() {
