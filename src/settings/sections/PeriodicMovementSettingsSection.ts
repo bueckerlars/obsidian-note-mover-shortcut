@@ -2,6 +2,7 @@ import NoteMoverShortcutPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { createError, handleError } from 'src/utils/Error';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
+import { MobileUtils } from '../../utils/MobileUtils';
 
 export class TriggerSettingsSection {
   constructor(
@@ -11,10 +12,11 @@ export class TriggerSettingsSection {
   ) {}
 
   addTriggerSettings(): void {
+    const isMobile = MobileUtils.isMobile();
     new Setting(this.containerEl).setName('Triggers').setHeading();
 
     // On Edit Trigger Toggle
-    new Setting(this.containerEl)
+    const onEditSetting = new Setting(this.containerEl)
       .setName('Enable on-edit trigger')
       .setDesc(
         'Automatically check and move the edited note when a file is modified'
@@ -35,8 +37,19 @@ export class TriggerSettingsSection {
           })
       );
 
+    // Add mobile optimization classes
+    if (isMobile) {
+      onEditSetting.settingEl.addClass('mobile-optimized');
+      const controlEl = onEditSetting.settingEl.querySelector(
+        '.setting-item-control'
+      );
+      if (controlEl) {
+        (controlEl as HTMLElement).addClass('mobile-toggle-control');
+      }
+    }
+
     // Periodic Movement Toggle
-    new Setting(this.containerEl)
+    const periodicSetting = new Setting(this.containerEl)
       .setName('Enable periodic movement')
       .setDesc('Enable the periodic movement of notes')
       .addToggle(toggle =>
@@ -56,8 +69,19 @@ export class TriggerSettingsSection {
           })
       );
 
+    // Add mobile optimization classes
+    if (isMobile) {
+      periodicSetting.settingEl.addClass('mobile-optimized');
+      const controlEl = periodicSetting.settingEl.querySelector(
+        '.setting-item-control'
+      );
+      if (controlEl) {
+        (controlEl as HTMLElement).addClass('mobile-toggle-control');
+      }
+    }
+
     if (this.plugin.settings.settings.triggers.enablePeriodicMovement) {
-      new Setting(this.containerEl)
+      const intervalSetting = new Setting(this.containerEl)
         .setName('Periodic movement interval')
         .setDesc(
           'Set the interval for the periodic movement of notes in minutes'
@@ -94,6 +118,22 @@ export class TriggerSettingsSection {
               (this.plugin as any).triggerHandler?.togglePeriodic();
             })
         );
+
+      // Add mobile optimization classes
+      if (isMobile) {
+        intervalSetting.settingEl.addClass('mobile-optimized');
+        const controlEl = intervalSetting.settingEl.querySelector(
+          '.setting-item-control'
+        );
+        if (controlEl) {
+          (controlEl as HTMLElement).addClass('mobile-input-control');
+        }
+        const inputEl =
+          intervalSetting.settingEl.querySelector('input[type="text"]');
+        if (inputEl) {
+          (inputEl as HTMLElement).addClass('mobile-text-input');
+        }
+      }
     }
   }
 

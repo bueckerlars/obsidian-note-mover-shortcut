@@ -2,6 +2,7 @@ import { Setting, App, TFile, Notice } from 'obsidian';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import NoteMoverShortcutPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
+import { MobileUtils } from '../utils/MobileUtils';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class PreviewModal extends BaseModal {
@@ -59,19 +60,26 @@ export class PreviewModal extends BaseModal {
     container: HTMLElement,
     entries: PreviewEntry[]
   ) {
+    const isMobile = MobileUtils.isMobile();
     const section = this.createSection(
       container,
-      'preview-section preview-section-success'
+      isMobile
+        ? 'preview-section preview-section-success preview-section-mobile'
+        : 'preview-section preview-section-success'
     );
 
     const header = section.createEl('div', { cls: 'modal-section-header' });
     header.innerHTML = `<h3>✅ Files to be moved (${entries.length})</h3>`;
 
-    const list = section.createEl('div', { cls: 'modal-list' });
+    const list = section.createEl('div', {
+      cls: isMobile ? 'modal-list modal-list-mobile' : 'modal-list',
+    });
 
     entries.forEach(entry => {
       const item = list.createEl('div', {
-        cls: 'modal-list-item preview-item-success',
+        cls: isMobile
+          ? 'modal-list-item preview-item-success preview-item-mobile'
+          : 'modal-list-item preview-item-success',
       });
 
       const mainInfo = item.createEl('div', { cls: 'preview-item-main' });
@@ -80,14 +88,42 @@ export class PreviewModal extends BaseModal {
       });
       fileName.textContent = entry.fileName;
 
-      const pathInfo = mainInfo.createEl('div', { cls: 'preview-item-paths' });
-      pathInfo.innerHTML = `
-                <span class="current-path">${entry.currentPath}</span>
-                <span class="arrow">→</span>
-                <span class="target-path">${entry.targetPath}</span>
-            `;
+      const pathInfo = mainInfo.createEl('div', {
+        cls: isMobile
+          ? 'preview-item-paths preview-item-paths-mobile'
+          : 'preview-item-paths',
+      });
 
-      const details = item.createEl('div', { cls: 'preview-item-details' });
+      if (isMobile) {
+        // Mobile: Stack paths vertically
+        const currentPathEl = pathInfo.createEl('div', {
+          cls: 'preview-path-mobile preview-path-current',
+        });
+        currentPathEl.textContent = entry.currentPath;
+
+        const arrowEl = pathInfo.createEl('div', {
+          cls: 'preview-arrow-mobile',
+        });
+        arrowEl.textContent = '↓';
+
+        const targetPathEl = pathInfo.createEl('div', {
+          cls: 'preview-path-mobile preview-path-target',
+        });
+        targetPathEl.textContent = entry.targetPath;
+      } else {
+        // Desktop: Horizontal layout
+        pathInfo.innerHTML = `
+          <span class="current-path">${entry.currentPath}</span>
+          <span class="arrow">→</span>
+          <span class="target-path">${entry.targetPath}</span>
+        `;
+      }
+
+      const details = item.createEl('div', {
+        cls: isMobile
+          ? 'preview-item-details preview-item-details-mobile'
+          : 'preview-item-details',
+      });
 
       if (entry.matchedRule) {
         const rule = details.createEl('div', { cls: 'preview-item-rule' });
@@ -104,27 +140,65 @@ export class PreviewModal extends BaseModal {
   // createBlockedMovesSection removed - only files that will be moved are shown
 
   private createActionButtons(container: HTMLElement) {
-    const footer = container.createEl('div', { cls: 'modal-footer' });
+    const isMobile = MobileUtils.isMobile();
+    const footer = container.createEl('div', {
+      cls: isMobile ? 'modal-footer modal-footer-mobile' : 'modal-footer',
+    });
 
     const buttonContainer = this.createButtonContainer(footer);
 
-    // Cancel button
-    this.createButton(buttonContainer, 'Cancel', () => {
-      this.close();
-    });
-
-    // Execute moves button (only if there are moves to execute)
-    if (this.movePreview.successfulMoves.length > 0) {
-      this.createButton(
-        buttonContainer,
-        `Move ${this.movePreview.successfulMoves.length} files`,
-        () => {
-          this.executeMoves();
-        },
-        {
-          isPrimary: true,
+    if (isMobile) {
+      // Mobile: Stack buttons vertically
+      // Execute moves button (only if there are moves to execute)
+      if (this.movePreview.successfulMoves.length > 0) {
+        const executeSetting = new Setting(buttonContainer).addButton(btn => {
+          btn
+            .setButtonText(
+              `Move ${this.movePreview.successfulMoves.length} files`
+            )
+            .setCta()
+            .onClick(() => {
+              this.executeMoves();
+            });
+        });
+        const executeBtn = executeSetting.settingEl.querySelector('button');
+        if (executeBtn) {
+          executeBtn.style.width = '100%';
+          executeBtn.style.minHeight = '48px';
         }
-      );
+      }
+
+      // Cancel button
+      const cancelSetting = new Setting(buttonContainer).addButton(btn => {
+        btn.setButtonText('Cancel').onClick(() => {
+          this.close();
+        });
+      });
+      const cancelBtn = cancelSetting.settingEl.querySelector('button');
+      if (cancelBtn) {
+        cancelBtn.style.width = '100%';
+        cancelBtn.style.minHeight = '48px';
+      }
+    } else {
+      // Desktop: Original horizontal layout
+      // Cancel button
+      this.createButton(buttonContainer, 'Cancel', () => {
+        this.close();
+      });
+
+      // Execute moves button (only if there are moves to execute)
+      if (this.movePreview.successfulMoves.length > 0) {
+        this.createButton(
+          buttonContainer,
+          `Move ${this.movePreview.successfulMoves.length} files`,
+          () => {
+            this.executeMoves();
+          },
+          {
+            isPrimary: true,
+          }
+        );
+      }
     }
   }
 
