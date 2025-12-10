@@ -1,6 +1,6 @@
 {
   "name": "obsidian-note-mover-shortcut",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Quickly and easily move notes to a predefined folder. Perfect for organizing your notes.",
   "main": "main.js",
   "scripts": {
