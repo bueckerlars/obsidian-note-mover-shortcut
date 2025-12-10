@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.1...0.5.2)
+
+### Features
+
+- Enhanced mobile UI responsiveness with optimized layouts for all modals
+  - Mobile-specific button layouts with vertical stacking and full-width buttons
+  - Improved touch targets with minimum 48px height for better usability
+  - Mobile-optimized preview modal with vertical path display
+  - Enhanced history modal with mobile-friendly button layouts
+  - Mobile-specific styling for confirm, update, and rule editor modals
+
+### Improvements
+
+- Added automatic scroll position reset when modals open
+- Implemented mobile detection utilities for consistent mobile experience
+- Enhanced modal sizing with mobile-specific full-width layout
+- Improved accessibility with larger touch targets and better spacing on mobile devices
+
 ## [0.5.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.0...0.5.1)
 
 ### Features

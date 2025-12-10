@@ -1904,3 +1904,831 @@
     font-size: 0.95em;
   }
 }
+
+/* ===== MOBILE MODAL STYLES ===== */
+
+/* Base Modal Mobile Styles */
+.is-mobile .modal-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  max-height: 100vh !important;
+  height: 100vh !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.is-mobile .modal-container.modal-size-mobile {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.is-mobile .modal-content {
+  padding: 20px 16px !important;
+  max-height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.is-mobile .rule-editor-modal .modal-content {
+  padding: 20px 16px !important;
+}
+
+/* Ensure proper horizontal padding for all modal content */
+.is-mobile .rule-editor-modal > * {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.is-mobile .rule-editor-modal .setting-item,
+.is-mobile .rule-editor-modal .rule-conditions-section,
+.is-mobile .rule-editor-modal .rule-editor-footer,
+.is-mobile .rule-editor-modal hr {
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+}
+
+/* Rule Editor Modal Mobile Styles */
+.is-mobile .rule-editor-modal {
+  padding: 16px 0 !important;
+}
+
+.is-mobile .rule-editor-modal .setting-item {
+  margin-bottom: 20px;
+  padding: 0;
+}
+
+/* Separator styling for mobile */
+.is-mobile .rule-editor-separator {
+  margin: 24px 0;
+  border: none;
+  border-top: 2px solid var(--background-modifier-border);
+  opacity: 0.5;
+}
+
+/* Name Setting Mobile */
+.is-mobile .rule-name-mobile {
+  margin-bottom: 20px;
+}
+
+.is-mobile .rule-name-mobile .setting-item-control input[type="text"] {
+  width: 100% !important;
+}
+
+/* Active Toggle Setting Mobile - Horizontal layout with toggle next to text */
+.is-mobile .rule-active-toggle-mobile {
+  margin-bottom: 20px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 12px;
+}
+
+.is-mobile .rule-active-toggle-mobile .setting-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  order: 1;
+}
+
+.is-mobile .rule-active-toggle-mobile .setting-item-name {
+  font-weight: 600;
+  font-size: 0.95em;
+  margin-bottom: 4px !important;
+  width: auto !important;
+}
+
+.is-mobile .rule-active-toggle-mobile .setting-item-description {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-top: 0;
+  margin-bottom: 0;
+  width: auto !important;
+  line-height: 1.4;
+}
+
+.is-mobile .rule-active-toggle-mobile .setting-item-control {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: auto !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  flex-shrink: 0;
+  order: 2;
+}
+
+.is-mobile .rule-active-toggle-mobile .checkbox-container {
+  min-height: 32px !important;
+  height: 32px !important;
+  min-width: 52px !important;
+  max-width: 52px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+/* Ensure toggle switch itself is properly sized - Obsidian uses .checkbox class */
+.is-mobile .rule-active-toggle-mobile .checkbox-container .checkbox {
+  width: 52px !important;
+  height: 32px !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+
+/* Override any Obsidian styles that might affect toggle positioning */
+.is-mobile .rule-active-toggle-mobile .setting-item-control {
+  margin-right: 0 !important;
+}
+
+/* Destination Input Mobile - Hide search icon */
+.is-mobile .rule-destination-mobile .search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.is-mobile .rule-destination-mobile .search-input-container::before,
+.is-mobile .rule-destination-mobile .search-input-container::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Hide any icons on the left side of the search input */
+.is-mobile .rule-destination-mobile .search-input-container > svg:not(.search-input-clear-button svg),
+.is-mobile .rule-destination-mobile .search-input-container > .clickable-icon:not(.search-input-clear-button),
+.is-mobile .rule-destination-mobile .search-input-container > [class*="icon"]:not(.search-input-clear-button),
+.is-mobile .rule-destination-mobile .search-input-container > *:not(input):not(.search-input-clear-button) {
+  display: none !important;
+}
+
+.is-mobile .rule-destination-mobile .search-input-container input {
+  padding-left: 16px !important;
+  padding-right: 40px !important;
+  background-image: none !important;
+  background-position: unset !important;
+  flex: 1;
+}
+
+.is-mobile .rule-destination-mobile .search-input-container .search-input-clear-button {
+  right: 12px !important;
+  left: auto !important;
+  position: absolute !important;
+  z-index: 10;
+}
+
+/* Match Conditions Section Mobile */
+.is-mobile .rule-editor-modal .setting-item-name {
+  font-weight: 600;
+  font-size: 0.95em;
+  margin-bottom: 8px;
+}
+
+.is-mobile .rule-editor-modal .setting-item-description {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-top: 4px;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.is-mobile .rule-editor-modal .setting-item {
+  padding: 0;
+}
+
+.is-mobile .rule-editor-modal .setting-item-name {
+  font-weight: 600;
+  font-size: 0.95em;
+  margin-bottom: 8px;
+}
+
+.is-mobile .rule-editor-modal .setting-item-control input[type="text"],
+.is-mobile .rule-editor-modal .setting-item-control .search-input-container input {
+  min-height: 52px;
+  font-size: 16px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+  transition: border-color 0.2s ease;
+}
+
+.is-mobile .rule-editor-modal .setting-item-control input[type="text"]:focus,
+.is-mobile .rule-editor-modal .setting-item-control .search-input-container input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
+}
+
+/* Apply horizontal padding to headings/titles inside modal */
+.is-mobile .rule-editor-modal .modal-title,
+.is-mobile .rule-editor-modal .modal-title-container {
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+}
+
+/* Ensure section containers respect horizontal padding */
+.is-mobile .rule-editor-modal .rule-conditions-section,
+.is-mobile .rule-editor-modal .rule-editor-footer {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Mobile Aggregation Buttons */
+.is-mobile .rule-aggregation-buttons-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.is-mobile .rule-aggregation-buttons-mobile .rule-aggregation-button {
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.is-mobile .rule-aggregation-buttons-mobile .rule-aggregation-button:active {
+  transform: scale(0.98);
+}
+
+/* Mobile Trigger Rows - Card-based layout */
+.is-mobile .rule-trigger-row-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--background-modifier-border);
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.is-mobile .rule-trigger-mobile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.is-mobile .rule-trigger-move-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.is-mobile .rule-trigger-move-btn {
+  min-width: 52px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  cursor: pointer;
+  color: var(--text-normal);
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.is-mobile .rule-trigger-move-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: var(--background-secondary);
+}
+
+.is-mobile .rule-trigger-move-btn:not(:disabled):active {
+  background: var(--background-modifier-hover);
+  transform: scale(0.95);
+}
+
+.is-mobile .rule-trigger-delete-btn-mobile {
+  min-width: 52px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--background-modifier-error);
+  border-radius: 8px;
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.is-mobile .rule-trigger-delete-btn-mobile:active {
+  opacity: 0.8;
+  transform: scale(0.95);
+}
+
+.is-mobile .rule-trigger-fields-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Field Labels */
+.is-mobile .rule-trigger-field-label {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.is-mobile .rule-trigger-fields-mobile select,
+.is-mobile .rule-trigger-fields-mobile input {
+  width: 100%;
+  min-height: 52px;
+  font-size: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.is-mobile .rule-trigger-fields-mobile select:focus,
+.is-mobile .rule-trigger-fields-mobile input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
+}
+
+/* Dropdown styling with indicator */
+.is-mobile .rule-trigger-fields-mobile select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 12px;
+  padding-right: 40px;
+}
+
+.is-mobile .rule-trigger-fields-mobile .mobile-input {
+  width: 100% !important;
+  min-height: 52px !important;
+  font-size: 16px !important;
+}
+
+.is-mobile .rule-conditions-section {
+  margin: 24px 0;
+}
+
+.is-mobile .rule-conditions-title {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-normal);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+/* Add Condition Button Mobile */
+.is-mobile .rule-add-condition-mobile {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.is-mobile .rule-add-condition-mobile .setting-item-control {
+  width: 100%;
+}
+
+.is-mobile .rule-add-condition-mobile button {
+  background: var(--background-primary) !important;
+  border: 2px solid var(--interactive-accent) !important;
+  color: var(--interactive-accent) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.is-mobile .rule-add-condition-mobile button:active {
+  background: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+  transform: scale(0.98);
+}
+
+.is-mobile .rule-editor-footer-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 2px solid var(--background-modifier-border);
+}
+
+.is-mobile .rule-editor-footer-mobile .setting-item {
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+.is-mobile .rule-editor-footer-mobile .setting-item button {
+  width: 100%;
+  min-height: 52px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.is-mobile .rule-editor-footer-mobile .setting-item button:active {
+  transform: scale(0.98);
+}
+
+/* History Modal Mobile Styles */
+.is-mobile .note-mover-history-modal {
+  padding: 16px 0 !important;
+}
+
+.is-mobile .time-filter-container-mobile {
+  margin-bottom: 16px;
+}
+
+.is-mobile .time-filter-container-mobile .setting-item-control select {
+  min-height: 48px;
+  font-size: 16px;
+  width: 100%;
+}
+
+.is-mobile .history-entry-mobile {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+  gap: 12px;
+}
+
+.is-mobile .history-entry-content {
+  width: 100%;
+  overflow: visible;
+}
+
+.is-mobile .history-entry-info {
+  font-size: 1em;
+  margin-bottom: 8px;
+  word-break: break-word;
+  overflow: visible;
+  white-space: normal;
+}
+
+.is-mobile .history-entry-paths {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  word-break: break-word;
+  line-height: 1.4;
+  overflow: visible;
+  white-space: normal;
+}
+
+.is-mobile .history-entry-buttons-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.is-mobile .history-entry-button-mobile {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.is-mobile .history-entry-button-mobile:active {
+  opacity: 0.8;
+}
+
+.is-mobile .history-entry-button-warning {
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  border-color: var(--background-modifier-error);
+}
+
+.is-mobile .bulk-operation {
+  margin-bottom: 16px;
+}
+
+.is-mobile .bulk-header {
+  margin-bottom: 12px;
+}
+
+.is-mobile .bulk-operation-info {
+  font-size: 1em;
+  margin-bottom: 8px;
+  overflow: visible;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.is-mobile .bulk-details {
+  margin-top: 12px;
+}
+
+.is-mobile .bulk-details summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 6px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.is-mobile .bulk-files-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.is-mobile .bulk-file-entry {
+  padding: 12px;
+  background: var(--background-primary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+/* Preview Modal Mobile Styles */
+.is-mobile .note-mover-preview-modal {
+  padding: 16px 0 !important;
+}
+
+.is-mobile .preview-section-mobile {
+  margin-bottom: 16px;
+}
+
+.is-mobile .modal-list-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.is-mobile .preview-item-mobile {
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+  margin-bottom: 0;
+}
+
+.is-mobile .preview-item-filename {
+  font-size: 1em;
+  font-weight: 600;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.is-mobile .preview-item-paths-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.is-mobile .preview-path-mobile {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.is-mobile .preview-path-current {
+  color: var(--text-normal);
+}
+
+.is-mobile .preview-arrow-mobile {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1.2em;
+  margin: 4px 0;
+}
+
+.is-mobile .preview-item-details-mobile {
+  font-size: 0.9em;
+  margin-top: 8px;
+}
+
+.is-mobile .modal-footer-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.is-mobile .modal-footer-mobile .setting-item {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.is-mobile .modal-footer-mobile .setting-item button {
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+}
+
+/* Update Modal Mobile Styles */
+.is-mobile .note-mover-update-modal {
+  padding: 16px 0 !important;
+}
+
+.is-mobile .changelog-container-mobile {
+  margin-bottom: 16px;
+}
+
+.is-mobile .changelog-version-mobile {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.is-mobile .changelog-version-title {
+  font-size: 1.1em;
+  margin-bottom: 12px;
+}
+
+.is-mobile .changelog-section {
+  margin-bottom: 12px;
+}
+
+.is-mobile .changelog-section-title {
+  font-size: 1em;
+  margin-bottom: 8px;
+}
+
+.is-mobile .changelog-list {
+  font-size: 0.95em;
+  line-height: 1.6;
+  padding-left: 20px;
+}
+
+.is-mobile .update-modal-links-mobile {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.is-mobile .update-modal-github-link-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.is-mobile .update-modal-github-link-mobile:active {
+  opacity: 0.8;
+}
+
+.is-mobile .update-modal-footer-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.is-mobile .update-modal-footer-mobile .setting-item {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.is-mobile .update-modal-footer-mobile .setting-item button {
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+}
+
+/* Confirm Modal Mobile Styles */
+.is-mobile .confirm-modal {
+  padding: 16px 0 !important;
+}
+
+.is-mobile .confirm-modal-message-mobile {
+  font-size: 1em;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  word-break: break-word;
+}
+
+.is-mobile .confirm-modal .setting-item {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.is-mobile .confirm-modal .setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.is-mobile .confirm-modal .setting-item button {
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+}
+
+/* Mobile Modal General Improvements */
+.is-mobile .modal-title {
+  font-size: 1.3em;
+  margin-bottom: 12px;
+}
+
+.is-mobile .modal-subtitle {
+  font-size: 0.95em;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.is-mobile .modal-section-header h3 {
+  font-size: 1.1em;
+  margin-bottom: 12px;
+}
+
+/* Optimize for large vertical aspect ratios */
+@media (max-height: 800px) and (orientation: portrait) {
+  .is-mobile .modal-content {
+    padding: 16px 12px !important;
+  }
+
+  .is-mobile .rule-editor-modal .modal-content {
+    padding: 16px 12px !important;
+  }
+
+  .is-mobile .modal-title {
+    font-size: 1.2em;
+    margin-bottom: 8px;
+  }
+
+  .is-mobile .modal-subtitle {
+    font-size: 0.9em;
+    margin-bottom: 12px;
+  }
+
+  .is-mobile .history-entry-mobile,
+  .is-mobile .preview-item-mobile,
+  .is-mobile .rule-trigger-row-mobile {
+    padding: 12px;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+
+  .is-mobile .changelog-version-mobile {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .is-mobile .rule-trigger-fields-mobile {
+    gap: 12px;
+  }
+
+  .is-mobile .rule-editor-footer-mobile {
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+}
