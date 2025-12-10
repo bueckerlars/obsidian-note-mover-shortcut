@@ -4,6 +4,11 @@
 
 ### Features
 
+- **Conflict Resolution**: Prevent file overwriting when target file already exists [#25](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/25)
+  - Files with conflicts are automatically skipped during move operations
+  - Warning notices are displayed for skipped files
+  - Batch operations show summary of moved, skipped, and failed files
+  - Works for both RuleV1 and RuleV2 systems
 - Enhanced mobile UI responsiveness with optimized layouts for all modals
   - Mobile-specific button layouts with vertical stacking and full-width buttons
   - Improved touch targets with minimum 48px height for better usability
