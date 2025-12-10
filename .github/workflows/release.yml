@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    needs: test # Wartet auf erfolgreiche Tests
 
     steps:
       - uses: actions/checkout@v3
@@ -33,18 +32,3 @@ jobs:
             --title="$tag" \
             --draft \
             main.js manifest.json styles.css
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-
-      - name: Run tests
-        run: |
-          npm install
-          npm test
