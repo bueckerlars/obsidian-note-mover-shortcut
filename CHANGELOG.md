@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.2...0.5.3)
+
+### Fixes
+
+- Fixed RuleV2 toggle on mobile not updating the active rule manager
+  - When toggling RuleV2 on mobile, the code now properly calls `updateRuleManager()` to initialize the correct rule manager
+  - Prevents file movement operations from using an uninitialized rule manager after toggling the feature flag
+
 ## [0.5.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.1...0.5.2)
 
 ### Features

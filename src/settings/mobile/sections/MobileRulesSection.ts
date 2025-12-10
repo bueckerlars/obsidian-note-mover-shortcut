@@ -62,6 +62,8 @@ export class MobileRulesSection {
       async value => {
         this.plugin.settings.settings.enableRuleV2 = value;
         await this.plugin.save_settings();
+        // Update the active rule manager based on the feature flag
+        this.plugin.noteMover.updateRuleManager();
         // Re-render to show correct rule list
         if (this.refreshDisplay) {
           this.refreshDisplay();
