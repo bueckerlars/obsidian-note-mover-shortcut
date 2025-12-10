@@ -12,6 +12,7 @@ import { TagSuggest } from '../settings/suggesters/TagSuggest';
 import { PropertySuggest } from '../settings/suggesters/PropertySuggest';
 import { PropertyValueSuggest } from '../settings/suggesters/PropertyValueSuggest';
 import { DragDropManager } from '../utils/DragDropManager';
+import { MobileUtils } from '../utils/MobileUtils';
 import {
   getOperatorsForCriteriaType,
   getOperatorsForPropertyType,
@@ -40,6 +41,7 @@ export class RuleEditorModal extends BaseModal {
       title: 'Rule Editor',
       size: 'large',
       cssClass: 'rule-editor-modal',
+      autoFocus: false, // Disable auto focus to prevent scroll issues on mobile
     });
     this.ruleOptions = options;
     // Create a working copy of the rule
@@ -72,40 +74,87 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createNameAndActiveRow(container: HTMLElement): void {
-    const setting = new Setting(container)
-      .setName('Name')
-      .addText(text =>
+    const isMobile = MobileUtils.isMobile();
+
+    if (isMobile) {
+      // Mobile: Separate Name and Active into two distinct settings
+      // Name setting
+      const nameSetting = new Setting(container).setName('Name').addText(text =>
         text
           .setPlaceholder('Enter rule name')
           .setValue(this.workingRule.name)
           .onChange(value => {
             this.workingRule.name = value;
           })
-      )
-      .addToggle(toggle =>
-        toggle
-          .setValue(this.workingRule.active)
-          .setTooltip(
-            this.workingRule.active ? 'Rule is active' : 'Rule is inactive'
-          )
-          .onChange(value => {
-            this.workingRule.active = value;
-            toggle.setTooltip(value ? 'Rule is active' : 'Rule is inactive');
-          })
       );
 
-    // Make text input wider
-    const textInput = setting.controlEl.querySelector('input[type="text"]');
-    if (textInput) {
-      (textInput as HTMLElement).style.width = '100%';
+      nameSetting.settingEl.addClass('rule-name-mobile');
+      const textInput =
+        nameSetting.controlEl.querySelector('input[type="text"]');
+      if (textInput) {
+        (textInput as HTMLElement).style.width = '100%';
+        (textInput as HTMLElement).style.minHeight = '52px';
+        (textInput as HTMLElement).style.fontSize = '16px';
+        (textInput as HTMLElement).style.padding = '14px 16px';
+      }
+
+      // Active toggle setting
+      const activeSetting = new Setting(container)
+        .setName('Active')
+        .setDesc('Enable or disable this rule')
+        .addToggle(toggle =>
+          toggle
+            .setValue(this.workingRule.active)
+            .setTooltip(
+              this.workingRule.active ? 'Rule is active' : 'Rule is inactive'
+            )
+            .onChange(value => {
+              this.workingRule.active = value;
+              toggle.setTooltip(value ? 'Rule is active' : 'Rule is inactive');
+            })
+        );
+
+      activeSetting.settingEl.addClass('rule-active-toggle-mobile');
+    } else {
+      // Desktop: Original layout
+      const setting = new Setting(container)
+        .setName('Name')
+        .addText(text =>
+          text
+            .setPlaceholder('Enter rule name')
+            .setValue(this.workingRule.name)
+            .onChange(value => {
+              this.workingRule.name = value;
+            })
+        )
+        .addToggle(toggle =>
+          toggle
+            .setValue(this.workingRule.active)
+            .setTooltip(
+              this.workingRule.active ? 'Rule is active' : 'Rule is inactive'
+            )
+            .onChange(value => {
+              this.workingRule.active = value;
+              toggle.setTooltip(value ? 'Rule is active' : 'Rule is inactive');
+            })
+        );
+
+      // Make text input wider
+      const textInput = setting.controlEl.querySelector('input[type="text"]');
+      if (textInput) {
+        (textInput as HTMLElement).style.width = '100%';
+      }
     }
   }
 
   private createMatchConditionsSelector(container: HTMLElement): void {
+    const isMobile = MobileUtils.isMobile();
     const setting = new Setting(container).setName('Match Conditions');
 
     const buttonContainer = setting.controlEl.createDiv({
-      cls: 'rule-aggregation-buttons',
+      cls: isMobile
+        ? 'rule-aggregation-buttons rule-aggregation-buttons-mobile'
+        : 'rule-aggregation-buttons',
     });
 
     const aggregations: AggregationType[] = ['all', 'any', 'none'];
@@ -133,7 +182,8 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createDestinationInput(container: HTMLElement): void {
-    new Setting(container)
+    const isMobile = MobileUtils.isMobile();
+    const setting = new Setting(container)
       .setName('Destination')
       .setDesc('Folder where files matching this rule will be moved')
       .addSearch(cb => {
@@ -146,6 +196,45 @@ export class RuleEditorModal extends BaseModal {
         // Make search input wider
         cb.inputEl.style.width = '100%';
       });
+
+    // Mobile: Remove or hide the search icon that overlaps with text
+    if (isMobile) {
+      setting.settingEl.addClass('rule-destination-mobile');
+      // Use setTimeout to ensure the search container is fully rendered
+      setTimeout(() => {
+        const searchContainer = setting.controlEl.querySelector(
+          '.search-input-container'
+        ) as HTMLElement | null;
+        if (searchContainer) {
+          // Hide all non-input, non-clear elements (search icons, wrappers)
+          Array.from(searchContainer.children).forEach(child => {
+            const childEl = child as HTMLElement;
+            if (
+              childEl.tagName !== 'INPUT' &&
+              !childEl.classList.contains('search-input-clear-button')
+            ) {
+              childEl.style.display = 'none';
+            }
+          });
+
+          // Extra pass: hide nested icons inside non-clear elements
+          const extraIcons = searchContainer.querySelectorAll(
+            'svg:not(.search-input-clear-button svg), .search-icon, .clickable-icon'
+          );
+          extraIcons.forEach(icon => {
+            (icon as HTMLElement).style.display = 'none';
+          });
+
+          // Ensure input padding and remove background images
+          const input = searchContainer.querySelector('input');
+          if (input) {
+            input.style.backgroundImage = 'none';
+            input.style.paddingLeft = '16px';
+            input.style.paddingRight = '40px';
+          }
+        }
+      }, 0);
+    }
   }
 
   private createConditionsSection(container: HTMLElement): void {
@@ -164,7 +253,8 @@ export class RuleEditorModal extends BaseModal {
     this.renderTriggers();
 
     // Add Condition Button
-    new Setting(section).addButton(btn =>
+    const isMobile = MobileUtils.isMobile();
+    const addButtonSetting = new Setting(section).addButton(btn =>
       btn.setButtonText('+ Add Condition').onClick(() => {
         this.workingRule.triggers.push({
           criteriaType: 'tag',
@@ -174,6 +264,18 @@ export class RuleEditorModal extends BaseModal {
         this.renderTriggers();
       })
     );
+
+    // Mobile: Make button full-width and add mobile class
+    if (isMobile) {
+      addButtonSetting.settingEl.addClass('rule-add-condition-mobile');
+      const buttonEl = addButtonSetting.settingEl.querySelector('button');
+      if (buttonEl) {
+        buttonEl.style.width = '100%';
+        buttonEl.style.minHeight = '48px';
+        buttonEl.style.fontSize = '16px';
+        buttonEl.style.fontWeight = '500';
+      }
+    }
   }
 
   private renderTriggers(): void {
@@ -191,8 +293,10 @@ export class RuleEditorModal extends BaseModal {
       this.createTriggerRow(this.triggersContainer!, trigger, index);
     });
 
-    // Setup drag & drop for triggers (always, even with single trigger for better UX)
-    this.setupTriggersDragDrop();
+    // Setup drag & drop for triggers only on desktop
+    if (!MobileUtils.isMobile()) {
+      this.setupTriggersDragDrop();
+    }
   }
 
   private createTriggerRow(
@@ -200,28 +304,100 @@ export class RuleEditorModal extends BaseModal {
     trigger: Trigger,
     index: number
   ): void {
+    const isMobile = MobileUtils.isMobile();
     const row = container.createDiv({ cls: 'rule-trigger-row' });
 
-    // Delete button (left side)
-    const deleteBtn = row.createEl('button', {
-      cls: 'rule-trigger-delete-btn clickable-icon',
-    });
-    deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-    deleteBtn.onclick = () => {
-      this.workingRule.triggers.splice(index, 1);
-      // Prevent saving with empty triggers
-      if (this.workingRule.triggers.length === 0) {
-        this.workingRule.triggers.push({
-          criteriaType: 'tag',
-          operator: 'includes item',
-          value: '',
-        });
-      }
-      this.renderTriggers();
-    };
+    if (isMobile) {
+      row.addClass('rule-trigger-row-mobile');
+    }
+
+    // Mobile: Create header with move buttons and delete button
+    if (isMobile) {
+      const mobileHeader = row.createDiv({ cls: 'rule-trigger-mobile-header' });
+
+      // Move buttons container
+      const moveButtonsContainer = mobileHeader.createDiv({
+        cls: 'rule-trigger-move-buttons',
+      });
+
+      // Move Up button
+      const moveUpBtn = moveButtonsContainer.createEl('button', {
+        cls: 'rule-trigger-move-btn rule-trigger-move-up',
+      });
+      moveUpBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+      moveUpBtn.disabled = index === 0;
+      moveUpBtn.onclick = () => {
+        if (index > 0) {
+          const [movedTrigger] = this.workingRule.triggers.splice(index, 1);
+          this.workingRule.triggers.splice(index - 1, 0, movedTrigger);
+          this.renderTriggers();
+        }
+      };
+
+      // Move Down button
+      const moveDownBtn = moveButtonsContainer.createEl('button', {
+        cls: 'rule-trigger-move-btn rule-trigger-move-down',
+      });
+      moveDownBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+      moveDownBtn.disabled = index === this.workingRule.triggers.length - 1;
+      moveDownBtn.onclick = () => {
+        if (index < this.workingRule.triggers.length - 1) {
+          const [movedTrigger] = this.workingRule.triggers.splice(index, 1);
+          this.workingRule.triggers.splice(index + 1, 0, movedTrigger);
+          this.renderTriggers();
+        }
+      };
+
+      // Delete button
+      const deleteBtn = mobileHeader.createEl('button', {
+        cls: 'rule-trigger-delete-btn-mobile',
+      });
+      deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+      deleteBtn.onclick = () => {
+        this.workingRule.triggers.splice(index, 1);
+        // Prevent saving with empty triggers
+        if (this.workingRule.triggers.length === 0) {
+          this.workingRule.triggers.push({
+            criteriaType: 'tag',
+            operator: 'includes item',
+            value: '',
+          });
+        }
+        this.renderTriggers();
+      };
+    } else {
+      // Desktop: Delete button (left side)
+      const deleteBtn = row.createEl('button', {
+        cls: 'rule-trigger-delete-btn clickable-icon',
+      });
+      deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+      deleteBtn.onclick = () => {
+        this.workingRule.triggers.splice(index, 1);
+        // Prevent saving with empty triggers
+        if (this.workingRule.triggers.length === 0) {
+          this.workingRule.triggers.push({
+            criteriaType: 'tag',
+            operator: 'includes item',
+            value: '',
+          });
+        }
+        this.renderTriggers();
+      };
+    }
+
+    // Mobile: Create fields container for vertical layout
+    const fieldsContainer = isMobile
+      ? row.createDiv({ cls: 'rule-trigger-fields-mobile' })
+      : row;
 
     // CriteriaType Dropdown
-    const criteriaTypeSelect = row.createEl('select', {
+    if (isMobile) {
+      const criteriaLabel = fieldsContainer.createDiv({
+        cls: 'rule-trigger-field-label',
+        text: 'Criteria Type',
+      });
+    }
+    const criteriaTypeSelect = fieldsContainer.createEl('select', {
       cls: 'dropdown rule-criteria-type',
     });
     const criteriaTypes: CriteriaType[] = [
@@ -260,7 +436,13 @@ export class RuleEditorModal extends BaseModal {
     };
 
     // Operator Dropdown (dynamically populated based on criteriaType)
-    const operatorSelect = row.createEl('select', {
+    if (isMobile) {
+      const operatorLabel = fieldsContainer.createDiv({
+        cls: 'rule-trigger-field-label',
+        text: 'Operator',
+      });
+    }
+    const operatorSelect = fieldsContainer.createEl('select', {
       cls: 'dropdown rule-operator',
     });
     this.populateOperatorDropdown(operatorSelect, trigger);
@@ -270,7 +452,13 @@ export class RuleEditorModal extends BaseModal {
 
     if (trigger.criteriaType === 'properties') {
       // Property Name Input mit Suggester
-      propertyNameInput = row.createEl('input', {
+      if (isMobile) {
+        const propertyLabel = fieldsContainer.createDiv({
+          cls: 'rule-trigger-field-label',
+          text: 'Property Name',
+        });
+      }
+      propertyNameInput = fieldsContainer.createEl('input', {
         type: 'text',
         cls: 'rule-property-name',
         placeholder: 'Property Name',
@@ -300,10 +488,16 @@ export class RuleEditorModal extends BaseModal {
     // Value Input (nur wenn Operator einen Wert benötigt)
     let valueInput: HTMLInputElement | null = null;
     if (operatorRequiresValue(trigger.operator)) {
-      valueInput = row.createEl('input', {
+      if (isMobile) {
+        const valueLabel = fieldsContainer.createDiv({
+          cls: 'rule-trigger-field-label',
+          text: trigger.criteriaType === 'tag' ? 'Tag' : 'Value',
+        });
+      }
+      valueInput = fieldsContainer.createEl('input', {
         type: 'text',
         cls: 'rule-trigger-value',
-        placeholder: 'Value',
+        placeholder: trigger.criteriaType === 'tag' ? '#tag' : 'Value',
         value: trigger.value,
       });
       valueInput.oninput = () => {
@@ -335,10 +529,24 @@ export class RuleEditorModal extends BaseModal {
       row.addClass('no-value-field');
     }
 
-    // Drag handle (right side)
-    const handleContainer = row.createDiv({ cls: 'drag-handle-container' });
-    const handle = DragDropManager.createDragHandle();
-    handleContainer.appendChild(handle);
+    // Mobile: Add mobile-specific classes to inputs/selects for styling
+    if (isMobile) {
+      criteriaTypeSelect.addClass('mobile-input');
+      operatorSelect.addClass('mobile-input');
+      if (propertyNameInput) {
+        propertyNameInput.addClass('mobile-input');
+      }
+      if (valueInput) {
+        valueInput.addClass('mobile-input');
+      }
+    }
+
+    // Drag handle (right side) - only on desktop
+    if (!isMobile) {
+      const handleContainer = row.createDiv({ cls: 'drag-handle-container' });
+      const handle = DragDropManager.createDragHandle();
+      handleContainer.appendChild(handle);
+    }
   }
 
   /**
@@ -421,37 +629,42 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createFooterActions(container: HTMLElement): void {
-    const footer = container.createDiv({ cls: 'rule-editor-footer' });
+    const isMobile = MobileUtils.isMobile();
+    const footer = container.createDiv({
+      cls: isMobile
+        ? 'rule-editor-footer rule-editor-footer-mobile'
+        : 'rule-editor-footer',
+    });
 
-    // Remove Rule button (only in edit mode)
-    if (this.ruleOptions.isEditMode && this.ruleOptions.onDelete) {
-      const leftSide = footer.createDiv({ cls: 'rule-editor-footer-left' });
-      new Setting(leftSide).addButton(btn =>
-        btn
-          .setButtonText('Remove Rule')
-          .setWarning()
-          .onClick(async () => {
-            const confirmed = confirm(
-              `Are you sure you want to delete the rule "${this.workingRule.name}"?\n\nThis action cannot be undone.`
-            );
-            if (confirmed && this.ruleOptions.onDelete) {
-              await this.ruleOptions.onDelete();
-              this.close();
-            }
-          })
-      );
-    }
+    if (isMobile) {
+      // Mobile: Stack buttons vertically
+      // Remove Rule button (only in edit mode)
+      if (this.ruleOptions.isEditMode && this.ruleOptions.onDelete) {
+        new Setting(footer).addButton(btn =>
+          btn
+            .setButtonText('Remove Rule')
+            .setWarning()
+            .onClick(async () => {
+              const confirmed = confirm(
+                `Are you sure you want to delete the rule "${this.workingRule.name}"?\n\nThis action cannot be undone.`
+              );
+              if (confirmed && this.ruleOptions.onDelete) {
+                await this.ruleOptions.onDelete();
+                this.close();
+              }
+            })
+        );
+      }
 
-    // Right side: Cancel and Save
-    const rightSide = footer.createDiv({ cls: 'rule-editor-footer-right' });
-
-    new Setting(rightSide)
-      .addButton(btn =>
+      // Cancel button
+      new Setting(footer).addButton(btn =>
         btn.setButtonText('Cancel').onClick(() => {
           this.close();
         })
-      )
-      .addButton(btn =>
+      );
+
+      // Save button
+      new Setting(footer).addButton(btn =>
         btn
           .setButtonText('Save')
           .setCta()
@@ -462,6 +675,48 @@ export class RuleEditorModal extends BaseModal {
             }
           })
       );
+    } else {
+      // Desktop: Original layout
+      // Remove Rule button (only in edit mode)
+      if (this.ruleOptions.isEditMode && this.ruleOptions.onDelete) {
+        const leftSide = footer.createDiv({ cls: 'rule-editor-footer-left' });
+        new Setting(leftSide).addButton(btn =>
+          btn
+            .setButtonText('Remove Rule')
+            .setWarning()
+            .onClick(async () => {
+              const confirmed = confirm(
+                `Are you sure you want to delete the rule "${this.workingRule.name}"?\n\nThis action cannot be undone.`
+              );
+              if (confirmed && this.ruleOptions.onDelete) {
+                await this.ruleOptions.onDelete();
+                this.close();
+              }
+            })
+        );
+      }
+
+      // Right side: Cancel and Save
+      const rightSide = footer.createDiv({ cls: 'rule-editor-footer-right' });
+
+      new Setting(rightSide)
+        .addButton(btn =>
+          btn.setButtonText('Cancel').onClick(() => {
+            this.close();
+          })
+        )
+        .addButton(btn =>
+          btn
+            .setButtonText('Save')
+            .setCta()
+            .onClick(async () => {
+              if (this.validateRule()) {
+                await this.ruleOptions.onSave(this.workingRule);
+                this.close();
+              }
+            })
+        );
+    }
   }
 
   private validateRule(): boolean {

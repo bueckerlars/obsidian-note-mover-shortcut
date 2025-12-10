@@ -14,6 +14,8 @@ import {
   ImportExportSettingsSection,
 } from './sections';
 import { DebounceManager } from '../utils/DebounceManager';
+import { MobileUtils } from '../utils/MobileUtils';
+import { MobileSettingsRenderer } from './mobile/MobileSettingsRenderer';
 
 interface Rule {
   criteria: string; // Format: "type: value" (e.g. "tag: #project", "fileName: notes.md")
@@ -86,6 +88,20 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   display(): void {
     this.containerEl.empty();
 
+    // Add mobile-specific classes to container
+    MobileUtils.addMobileClass(this.containerEl);
+
+    // Use mobile renderer if on mobile, otherwise use desktop implementation
+    if (MobileUtils.isMobile()) {
+      const mobileRenderer = new MobileSettingsRenderer(
+        this.plugin,
+        this.containerEl
+      );
+      mobileRenderer.render();
+      return;
+    }
+
+    // Desktop implementation (existing code)
     // Clean up existing section instances before creating new ones
     this.cleanupExistingSections();
 

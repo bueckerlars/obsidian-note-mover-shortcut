@@ -1,5 +1,6 @@
-import { App } from 'obsidian';
+import { App, Setting } from 'obsidian';
 import { BaseModal, BaseModalOptions } from './BaseModal';
+import { MobileUtils } from '../utils/MobileUtils';
 
 export interface ConfirmModalOptions extends BaseModalOptions {
   title: string;
@@ -29,39 +30,79 @@ export class ConfirmModal extends BaseModal {
 
   protected createContent(): void {
     const { contentEl } = this;
+    const isMobile = MobileUtils.isMobile();
 
     // Message
     const messageEl = contentEl.createEl('div', {
-      cls: 'confirm-modal-message',
+      cls: isMobile
+        ? 'confirm-modal-message confirm-modal-message-mobile'
+        : 'confirm-modal-message',
     });
     messageEl.innerHTML = this.confirmOptions.message;
 
-    // Button container
-    const buttonContainer = this.createButtonContainer(contentEl);
-
-    // Cancel button
-    this.createButton(
-      buttonContainer,
-      this.confirmOptions.cancelText || 'Cancel',
-      () => {
-        this.resolvePromise(false);
-        this.close();
+    if (isMobile) {
+      // Mobile: Stack buttons vertically, full-width
+      // Confirm button first (primary action)
+      const confirmSetting = new Setting(contentEl).addButton(btn => {
+        btn
+          .setButtonText(this.confirmOptions.confirmText || 'OK')
+          .setCta()
+          .onClick(() => {
+            this.resolvePromise(true);
+            this.close();
+          });
+        if (this.confirmOptions.danger) {
+          btn.setWarning();
+        }
+      });
+      const confirmBtn = confirmSetting.settingEl.querySelector('button');
+      if (confirmBtn) {
+        confirmBtn.style.width = '100%';
+        confirmBtn.style.minHeight = '48px';
       }
-    );
 
-    // Confirm button
-    this.createButton(
-      buttonContainer,
-      this.confirmOptions.confirmText || 'OK',
-      () => {
-        this.resolvePromise(true);
-        this.close();
-      },
-      {
-        isPrimary: true,
-        isWarning: this.confirmOptions.danger,
+      // Cancel button
+      const cancelSetting = new Setting(contentEl).addButton(btn => {
+        btn
+          .setButtonText(this.confirmOptions.cancelText || 'Cancel')
+          .onClick(() => {
+            this.resolvePromise(false);
+            this.close();
+          });
+      });
+      const cancelBtn = cancelSetting.settingEl.querySelector('button');
+      if (cancelBtn) {
+        cancelBtn.style.width = '100%';
+        cancelBtn.style.minHeight = '48px';
       }
-    );
+    } else {
+      // Desktop: Original horizontal layout
+      const buttonContainer = this.createButtonContainer(contentEl);
+
+      // Cancel button
+      this.createButton(
+        buttonContainer,
+        this.confirmOptions.cancelText || 'Cancel',
+        () => {
+          this.resolvePromise(false);
+          this.close();
+        }
+      );
+
+      // Confirm button
+      this.createButton(
+        buttonContainer,
+        this.confirmOptions.confirmText || 'OK',
+        () => {
+          this.resolvePromise(true);
+          this.close();
+        },
+        {
+          isPrimary: true,
+          isWarning: this.confirmOptions.danger,
+        }
+      );
+    }
   }
 
   onClose() {

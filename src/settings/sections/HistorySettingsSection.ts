@@ -3,6 +3,7 @@ import { App, Setting } from 'obsidian';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SETTINGS_CONSTANTS, HISTORY_CONSTANTS } from '../../config/constants';
 import { RetentionPolicy } from '../../types/HistoryEntry';
+import { MobileUtils } from '../../utils/MobileUtils';
 
 export class HistorySettingsSection {
   constructor(
@@ -11,13 +12,14 @@ export class HistorySettingsSection {
   ) {}
 
   addHistorySettings(): void {
+    const isMobile = MobileUtils.isMobile();
     new Setting(this.containerEl).setName('History').setHeading();
 
     // Retention Policy Settings
     this.addRetentionPolicySettings();
 
     // Clear History Button
-    new Setting(this.containerEl)
+    const clearHistorySetting = new Setting(this.containerEl)
       .setName('Clear history')
       .setDesc('Clears the history of moved notes')
       .addButton(btn =>
@@ -38,9 +40,22 @@ export class HistorySettingsSection {
             }
           })
       );
+
+    // Add mobile optimization classes
+    if (isMobile) {
+      clearHistorySetting.settingEl.addClass('mobile-optimized');
+      const controlEl = clearHistorySetting.settingEl.querySelector(
+        '.setting-item-control'
+      );
+      if (controlEl) {
+        (controlEl as HTMLElement).addClass('mobile-button-control');
+      }
+    }
   }
 
   private addRetentionPolicySettings(): void {
+    const isMobile = MobileUtils.isMobile();
+
     // Initialize retention policy if not set
     if (!this.plugin.settings.settings.retentionPolicy) {
       this.plugin.settings.settings.retentionPolicy = {
@@ -51,7 +66,7 @@ export class HistorySettingsSection {
     const retentionPolicy = this.plugin.settings.settings.retentionPolicy;
 
     // Retention Policy Section - Single line with value input and unit dropdown
-    new Setting(this.containerEl)
+    const retentionSetting = new Setting(this.containerEl)
       .setName(SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_TITLE)
       .setDesc(SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_DESC)
       .addText(text =>
@@ -87,8 +102,19 @@ export class HistorySettingsSection {
           })
       );
 
+    // Add mobile optimization classes
+    if (isMobile) {
+      retentionSetting.settingEl.addClass('mobile-optimized');
+      const controlEl = retentionSetting.settingEl.querySelector(
+        '.setting-item-control'
+      );
+      if (controlEl) {
+        (controlEl as HTMLElement).addClass('mobile-retention-controls');
+      }
+    }
+
     // Cleanup button
-    new Setting(this.containerEl)
+    const cleanupSetting = new Setting(this.containerEl)
       .setName('Clean up old entries')
       .setDesc(
         `Remove history entries older than ${retentionPolicy.value} ${retentionPolicy.unit}`
@@ -101,6 +127,17 @@ export class HistorySettingsSection {
             await this.plugin.historyManager.cleanupOldEntries();
           })
       );
+
+    // Add mobile optimization classes
+    if (isMobile) {
+      cleanupSetting.settingEl.addClass('mobile-optimized');
+      const controlEl = cleanupSetting.settingEl.querySelector(
+        '.setting-item-control'
+      );
+      if (controlEl) {
+        (controlEl as HTMLElement).addClass('mobile-button-control');
+      }
+    }
   }
 
   private get app(): App {
