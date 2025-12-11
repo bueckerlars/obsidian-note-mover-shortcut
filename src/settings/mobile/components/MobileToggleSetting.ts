@@ -20,7 +20,7 @@ export class MobileToggleSetting {
 
     const cardEl = this.settingItem.getCardElement();
     const headerEl = cardEl.querySelector(
-      '.mobile-setting-header'
+      '.noteMover-mobile-setting-header'
     ) as HTMLElement;
 
     if (!headerEl) {
