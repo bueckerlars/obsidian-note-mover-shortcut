@@ -16,7 +16,7 @@ export class MobileTriggersSection {
     private refreshDisplay?: () => void
   ) {
     this.sectionContainer = this.containerEl.createDiv({
-      cls: 'mobile-section-container',
+      cls: 'noteMover-mobile-section-container',
     });
   }
 
@@ -25,7 +25,7 @@ export class MobileTriggersSection {
 
     // Section heading
     const heading = this.sectionContainer.createDiv({
-      cls: 'mobile-section-heading',
+      cls: 'noteMover-mobile-section-heading',
     });
     heading.textContent = 'Triggers';
     heading.style.fontSize = '1.2em';

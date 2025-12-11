@@ -22,13 +22,13 @@ export class MobileButtonSetting {
     options: MobileButtonOptions = {}
   ) {
     this.settingItem = new MobileSettingItem(container, title, description);
-    this.settingItem.addClass('mobile-button-setting');
+    this.settingItem.addClass('noteMover-mobile-button-setting');
 
     const controlEl = this.settingItem.getControlElement();
 
     // Create button
     this.buttonEl = controlEl.createEl('button', {
-      cls: 'mobile-action-btn',
+      cls: 'noteMover-mobile-action-btn',
       text: buttonText,
     });
 

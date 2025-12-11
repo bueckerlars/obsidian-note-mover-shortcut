@@ -15,7 +15,7 @@ export class MobileSettingsRenderer {
   ) {}
 
   render(): void {
-    this.containerEl.addClass('mobile-settings-container');
+    this.containerEl.addClass('noteMover-mobile-settings-container');
     this.containerEl.empty();
 
     // Render all sections in order

@@ -34,12 +34,12 @@ export class ImportExportSettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      exportSetting.settingEl.addClass('mobile-optimized');
+      exportSetting.settingEl.addClass('noteMover-mobile-optimized');
       const controlEl = exportSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('mobile-button-control');
+        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
       }
     }
 
@@ -58,12 +58,12 @@ export class ImportExportSettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      importSetting.settingEl.addClass('mobile-optimized');
+      importSetting.settingEl.addClass('noteMover-mobile-optimized');
       const controlEl = importSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('mobile-button-control');
+        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
       }
     }
   }

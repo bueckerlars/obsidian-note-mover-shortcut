@@ -33,23 +33,29 @@ export class MobileRuleItemV2 {
     callbacks: MobileRuleItemCallbacks
   ) {
     // Create card
-    this.cardEl = container.createDiv({ cls: 'mobile-rule-card' });
+    this.cardEl = container.createDiv({ cls: 'noteMover-mobile-rule-card' });
 
     // Create header with name and toggle
-    this.headerEl = this.cardEl.createDiv({ cls: 'mobile-rule-header' });
-    this.nameEl = this.headerEl.createDiv({ cls: 'mobile-rule-name' });
+    this.headerEl = this.cardEl.createDiv({
+      cls: 'noteMover-mobile-rule-header',
+    });
+    this.nameEl = this.headerEl.createDiv({
+      cls: 'noteMover-mobile-rule-name',
+    });
     this.nameEl.textContent = rule.name || 'Unnamed Rule';
 
     // Create toggle
-    this.toggleEl = this.headerEl.createDiv({ cls: 'mobile-rule-toggle' });
+    this.toggleEl = this.headerEl.createDiv({
+      cls: 'noteMover-mobile-rule-toggle',
+    });
     this.toggleInput = document.createElement('input');
     this.toggleInput.type = 'checkbox';
-    this.toggleInput.className = 'mobile-toggle-input';
+    this.toggleInput.className = 'noteMover-mobile-toggle-input';
     this.toggleInput.checked = rule.active;
     this.toggleEl.appendChild(this.toggleInput);
 
     const toggleSlider = this.toggleEl.createDiv({
-      cls: 'mobile-toggle-slider',
+      cls: 'noteMover-mobile-toggle-slider',
     });
 
     this.updateToggleState(rule.active);
@@ -70,11 +76,13 @@ export class MobileRuleItemV2 {
     });
 
     // Create actions row
-    this.actionsEl = this.cardEl.createDiv({ cls: 'mobile-rule-actions' });
+    this.actionsEl = this.cardEl.createDiv({
+      cls: 'noteMover-mobile-rule-actions',
+    });
 
     // Create move buttons container
     this.moveButtonsContainer = this.actionsEl.createDiv({
-      cls: 'mobile-move-buttons-container',
+      cls: 'noteMover-mobile-move-buttons-container',
     });
     this.moveButtonsContainer.style.display = 'flex';
     this.moveButtonsContainer.style.gap = '8px';
@@ -83,7 +91,7 @@ export class MobileRuleItemV2 {
 
     // Move Up button
     this.moveUpButton = this.moveButtonsContainer.createEl('button', {
-      cls: 'mobile-move-button mobile-move-up-button',
+      cls: 'noteMover-mobile-move-button noteMover-mobile-move-up-button',
     });
     this.moveUpButton.style.flex = '1';
     this.moveUpButton.style.minHeight = '48px';
@@ -107,7 +115,7 @@ export class MobileRuleItemV2 {
 
     // Move Down button
     this.moveDownButton = this.moveButtonsContainer.createEl('button', {
-      cls: 'mobile-move-button mobile-move-down-button',
+      cls: 'noteMover-mobile-move-button noteMover-mobile-move-down-button',
     });
     this.moveDownButton.style.flex = '1';
     this.moveDownButton.style.minHeight = '48px';
@@ -131,7 +139,7 @@ export class MobileRuleItemV2 {
 
     // Edit button
     this.editButton = this.actionsEl.createEl('button', {
-      cls: 'mobile-action-btn mobile-edit-btn',
+      cls: 'noteMover-mobile-action-btn noteMover-mobile-edit-btn',
       text: 'Edit',
     });
     this.editButton.style.width = '100%';
@@ -145,7 +153,7 @@ export class MobileRuleItemV2 {
 
     // Delete button
     this.deleteButton = this.actionsEl.createEl('button', {
-      cls: 'mobile-action-btn mobile-delete-btn',
+      cls: 'noteMover-mobile-action-btn noteMover-mobile-delete-btn',
       text: 'Delete',
     });
     this.deleteButton.style.width = '100%';
@@ -205,15 +213,15 @@ export class MobileRuleItemV1 {
     }
   ) {
     // Create card
-    this.cardEl = container.createDiv({ cls: 'mobile-rule-card' });
+    this.cardEl = container.createDiv({ cls: 'noteMover-mobile-rule-card' });
 
     // Criteria input
     const criteriaLabel = this.cardEl.createDiv({
-      cls: 'mobile-input-label',
+      cls: 'noteMover-mobile-input-label',
       text: 'Criteria',
     });
     this.criteriaInput = this.cardEl.createEl('input', {
-      cls: 'mobile-text-input',
+      cls: 'noteMover-mobile-text-input',
       type: 'text',
       attr: {
         placeholder: 'e.g., tag: #project',
@@ -237,11 +245,11 @@ export class MobileRuleItemV1 {
 
     // Path input
     const pathLabel = this.cardEl.createDiv({
-      cls: 'mobile-input-label',
+      cls: 'noteMover-mobile-input-label',
       text: 'Destination Path',
     });
     this.pathInput = this.cardEl.createEl('input', {
-      cls: 'mobile-text-input',
+      cls: 'noteMover-mobile-text-input',
       type: 'text',
       attr: {
         placeholder: 'e.g., Projects/',
@@ -265,7 +273,7 @@ export class MobileRuleItemV1 {
 
     // Create move buttons container
     this.moveButtonsContainer = this.cardEl.createDiv({
-      cls: 'mobile-move-buttons-container',
+      cls: 'noteMover-mobile-move-buttons-container',
     });
     this.moveButtonsContainer.style.display = 'flex';
     this.moveButtonsContainer.style.gap = '8px';
@@ -274,7 +282,7 @@ export class MobileRuleItemV1 {
 
     // Move Up button
     this.moveUpButton = this.moveButtonsContainer.createEl('button', {
-      cls: 'mobile-move-button mobile-move-up-button',
+      cls: 'noteMover-mobile-move-button noteMover-mobile-move-up-button',
     });
     this.moveUpButton.style.flex = '1';
     this.moveUpButton.style.minHeight = '48px';
@@ -298,7 +306,7 @@ export class MobileRuleItemV1 {
 
     // Move Down button
     this.moveDownButton = this.moveButtonsContainer.createEl('button', {
-      cls: 'mobile-move-button mobile-move-down-button',
+      cls: 'noteMover-mobile-move-button noteMover-mobile-move-down-button',
     });
     this.moveDownButton.style.flex = '1';
     this.moveDownButton.style.minHeight = '48px';
@@ -322,7 +330,7 @@ export class MobileRuleItemV1 {
 
     // Delete button
     this.deleteButton = this.cardEl.createEl('button', {
-      cls: 'mobile-action-btn mobile-delete-btn',
+      cls: 'noteMover-mobile-action-btn noteMover-mobile-delete-btn',
       text: 'Delete',
     });
     this.deleteButton.style.width = '100%';

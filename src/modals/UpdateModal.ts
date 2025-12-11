@@ -45,12 +45,12 @@ export class UpdateModal extends BaseModal {
     if (this.lastSeenVersion) {
       contentEl.createEl('p', {
         text: `What's new since version ${this.lastSeenVersion}?`,
-        cls: 'modal-subtitle',
+        cls: 'noteMover-modal-subtitle',
       });
     } else {
       contentEl.createEl('p', {
         text: 'Here are the latest changes:',
-        cls: 'modal-subtitle',
+        cls: 'noteMover-modal-subtitle',
       });
     }
 
@@ -58,14 +58,14 @@ export class UpdateModal extends BaseModal {
     const isMobile = MobileUtils.isMobile();
     const changelogContainer = contentEl.createEl('div', {
       cls: isMobile
-        ? 'changelog-container changelog-container-mobile'
-        : 'changelog-container',
+        ? 'noteMover-changelog-container noteMover-changelog-container-mobile'
+        : 'noteMover-changelog-container',
     });
 
     if (this.changelogEntries.length === 0) {
       changelogContainer.createEl('p', {
         text: 'No specific changelog information available.',
-        cls: 'no-changelog-text',
+        cls: 'noteMover-no-changelog-text',
       });
     } else {
       this.renderChangelog(changelogContainer);
@@ -73,21 +73,23 @@ export class UpdateModal extends BaseModal {
 
     // Footer with links and button
     const footerContainer = contentEl.createEl('div', {
-      cls: isMobile ? 'modal-footer modal-footer-mobile' : 'modal-footer',
+      cls: isMobile
+        ? 'noteMover-modal-footer noteMover-modal-footer-mobile'
+        : 'noteMover-modal-footer',
     });
 
     // GitHub Link
     const linkContainer = footerContainer.createEl('div', {
       cls: isMobile
-        ? 'update-modal-links update-modal-links-mobile'
-        : 'update-modal-links',
+        ? 'noteMover-update-modal-links noteMover-update-modal-links-mobile'
+        : 'noteMover-update-modal-links',
     });
     const githubLink = linkContainer.createEl('a', {
       text: 'View full changelog on GitHub',
       href: 'https://github.com/bueckerlars/obsidian-note-mover-shortcut/releases',
       cls: isMobile
-        ? 'update-modal-github-link update-modal-github-link-mobile'
-        : 'update-modal-github-link',
+        ? 'noteMover-update-modal-github-link noteMover-update-modal-github-link-mobile'
+        : 'noteMover-update-modal-github-link',
     });
     githubLink.setAttribute('target', '_blank');
 
@@ -137,25 +139,25 @@ export class UpdateModal extends BaseModal {
     this.changelogEntries.forEach(entry => {
       const versionContainer = container.createEl('div', {
         cls: isMobile
-          ? 'changelog-version changelog-version-mobile'
-          : 'changelog-version',
+          ? 'noteMover-changelog-version noteMover-changelog-version-mobile'
+          : 'noteMover-changelog-version',
       });
 
       versionContainer.createEl('h3', {
         text: `Version ${entry.version}`,
-        cls: 'changelog-version-title',
+        cls: 'noteMover-changelog-version-title',
       });
 
       if (entry.changes.features && entry.changes.features.length > 0) {
         const featuresSection = versionContainer.createEl('div', {
-          cls: 'changelog-section',
+          cls: 'noteMover-changelog-section',
         });
         featuresSection.createEl('h4', {
           text: '✨ New Features',
-          cls: 'changelog-section-title',
+          cls: 'noteMover-changelog-section-title',
         });
         const featuresList = featuresSection.createEl('ul', {
-          cls: 'changelog-list',
+          cls: 'noteMover-changelog-list',
         });
         entry.changes.features.forEach(feature => {
           featuresList.createEl('li', { text: feature });
@@ -164,14 +166,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.improvements && entry.changes.improvements.length > 0) {
         const improvementsSection = versionContainer.createEl('div', {
-          cls: 'changelog-section',
+          cls: 'noteMover-changelog-section',
         });
         improvementsSection.createEl('h4', {
           text: '⚡ Improvements',
-          cls: 'changelog-section-title',
+          cls: 'noteMover-changelog-section-title',
         });
         const improvementsList = improvementsSection.createEl('ul', {
-          cls: 'changelog-list',
+          cls: 'noteMover-changelog-list',
         });
         entry.changes.improvements.forEach(improvement => {
           improvementsList.createEl('li', { text: improvement });
@@ -180,14 +182,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.bugFixes && entry.changes.bugFixes.length > 0) {
         const bugFixesSection = versionContainer.createEl('div', {
-          cls: 'changelog-section',
+          cls: 'noteMover-changelog-section',
         });
         bugFixesSection.createEl('h4', {
           text: '🐛 Bug Fixes',
-          cls: 'changelog-section-title',
+          cls: 'noteMover-changelog-section-title',
         });
         const bugFixesList = bugFixesSection.createEl('ul', {
-          cls: 'changelog-list',
+          cls: 'noteMover-changelog-list',
         });
         entry.changes.bugFixes.forEach(bugFix => {
           bugFixesList.createEl('li', { text: bugFix });
@@ -196,14 +198,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.changes && entry.changes.changes.length > 0) {
         const changesSection = versionContainer.createEl('div', {
-          cls: 'changelog-section',
+          cls: 'noteMover-changelog-section',
         });
         changesSection.createEl('h4', {
           text: '🔄 Changes',
-          cls: 'changelog-section-title',
+          cls: 'noteMover-changelog-section-title',
         });
         const changesList = changesSection.createEl('ul', {
-          cls: 'changelog-list',
+          cls: 'noteMover-changelog-list',
         });
         entry.changes.changes.forEach(change => {
           changesList.createEl('li', { text: change });
@@ -212,14 +214,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.fixes && entry.changes.fixes.length > 0) {
         const fixesSection = versionContainer.createEl('div', {
-          cls: 'changelog-section',
+          cls: 'noteMover-changelog-section',
         });
         fixesSection.createEl('h4', {
           text: '🔧 Fixes',
-          cls: 'changelog-section-title',
+          cls: 'noteMover-changelog-section-title',
         });
         const fixesList = fixesSection.createEl('ul', {
-          cls: 'changelog-list',
+          cls: 'noteMover-changelog-list',
         });
         entry.changes.fixes.forEach(fix => {
           fixesList.createEl('li', { text: fix });
@@ -228,14 +230,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.performance && entry.changes.performance.length > 0) {
         const performanceSection = versionContainer.createEl('div', {
-          cls: 'changelog-section',
+          cls: 'noteMover-changelog-section',
         });
         performanceSection.createEl('h4', {
           text: '⚡ Performance',
-          cls: 'changelog-section-title',
+          cls: 'noteMover-changelog-section-title',
         });
         const performanceList = performanceSection.createEl('ul', {
-          cls: 'changelog-list',
+          cls: 'noteMover-changelog-list',
         });
         entry.changes.performance.forEach(performance => {
           performanceList.createEl('li', { text: performance });

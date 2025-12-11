@@ -40,7 +40,7 @@ export class RuleEditorModal extends BaseModal {
     super(app, {
       title: 'Rule Editor',
       size: 'large',
-      cssClass: 'rule-editor-modal',
+      cssClass: 'noteMover-rule-editor-modal',
       autoFocus: false, // Disable auto focus to prevent scroll issues on mobile
     });
     this.ruleOptions = options;
@@ -61,13 +61,13 @@ export class RuleEditorModal extends BaseModal {
     this.createDestinationInput(contentEl);
 
     // Separator
-    contentEl.createEl('hr', { cls: 'rule-editor-separator' });
+    contentEl.createEl('hr', { cls: 'noteMover-rule-editor-separator' });
 
     // Conditions Section
     this.createConditionsSection(contentEl);
 
     // Separator
-    contentEl.createEl('hr', { cls: 'rule-editor-separator' });
+    contentEl.createEl('hr', { cls: 'noteMover-rule-editor-separator' });
 
     // Footer Actions
     this.createFooterActions(contentEl);
@@ -88,7 +88,7 @@ export class RuleEditorModal extends BaseModal {
           })
       );
 
-      nameSetting.settingEl.addClass('rule-name-mobile');
+      nameSetting.settingEl.addClass('noteMover-rule-name-mobile');
       const textInput =
         nameSetting.controlEl.querySelector('input[type="text"]');
       if (textInput) {
@@ -114,7 +114,7 @@ export class RuleEditorModal extends BaseModal {
             })
         );
 
-      activeSetting.settingEl.addClass('rule-active-toggle-mobile');
+      activeSetting.settingEl.addClass('noteMover-rule-active-toggle-mobile');
     } else {
       // Desktop: Original layout
       const setting = new Setting(container)
@@ -153,15 +153,15 @@ export class RuleEditorModal extends BaseModal {
 
     const buttonContainer = setting.controlEl.createDiv({
       cls: isMobile
-        ? 'rule-aggregation-buttons rule-aggregation-buttons-mobile'
-        : 'rule-aggregation-buttons',
+        ? 'noteMover-rule-aggregation-buttons noteMover-rule-aggregation-buttons-mobile'
+        : 'noteMover-rule-aggregation-buttons',
     });
 
     const aggregations: AggregationType[] = ['all', 'any', 'none'];
     aggregations.forEach(agg => {
       const button = buttonContainer.createEl('button', {
         text: agg.charAt(0).toUpperCase() + agg.slice(1),
-        cls: 'rule-aggregation-button',
+        cls: 'noteMover-rule-aggregation-button',
       });
 
       if (this.workingRule.aggregation === agg) {
@@ -172,7 +172,7 @@ export class RuleEditorModal extends BaseModal {
         this.workingRule.aggregation = agg;
         // Update button states
         buttonContainer
-          .querySelectorAll('.rule-aggregation-button')
+          .querySelectorAll('.noteMover-rule-aggregation-button')
           .forEach(btn => {
             btn.removeClass('is-active');
           });
@@ -199,7 +199,7 @@ export class RuleEditorModal extends BaseModal {
 
     // Mobile: Remove or hide the search icon that overlaps with text
     if (isMobile) {
-      setting.settingEl.addClass('rule-destination-mobile');
+      setting.settingEl.addClass('noteMover-rule-destination-mobile');
       // Use setTimeout to ensure the search container is fully rendered
       setTimeout(() => {
         const searchContainer = setting.controlEl.querySelector(
@@ -238,16 +238,18 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createConditionsSection(container: HTMLElement): void {
-    const section = container.createDiv({ cls: 'rule-conditions-section' });
+    const section = container.createDiv({
+      cls: 'noteMover-rule-conditions-section',
+    });
 
     section.createEl('h3', {
       text: 'Conditions:',
-      cls: 'rule-conditions-title',
+      cls: 'noteMover-rule-conditions-title',
     });
 
     // Triggers container
     this.triggersContainer = section.createDiv({
-      cls: 'rule-triggers-container',
+      cls: 'noteMover-rule-triggers-container',
     });
 
     this.renderTriggers();
@@ -267,7 +269,9 @@ export class RuleEditorModal extends BaseModal {
 
     // Mobile: Make button full-width and add mobile class
     if (isMobile) {
-      addButtonSetting.settingEl.addClass('rule-add-condition-mobile');
+      addButtonSetting.settingEl.addClass(
+        'noteMover-rule-add-condition-mobile'
+      );
       const buttonEl = addButtonSetting.settingEl.querySelector('button');
       if (buttonEl) {
         buttonEl.style.width = '100%';
@@ -305,24 +309,26 @@ export class RuleEditorModal extends BaseModal {
     index: number
   ): void {
     const isMobile = MobileUtils.isMobile();
-    const row = container.createDiv({ cls: 'rule-trigger-row' });
+    const row = container.createDiv({ cls: 'noteMover-rule-trigger-row' });
 
     if (isMobile) {
-      row.addClass('rule-trigger-row-mobile');
+      row.addClass('noteMover-rule-trigger-row-mobile');
     }
 
     // Mobile: Create header with move buttons and delete button
     if (isMobile) {
-      const mobileHeader = row.createDiv({ cls: 'rule-trigger-mobile-header' });
+      const mobileHeader = row.createDiv({
+        cls: 'noteMover-rule-trigger-mobile-header',
+      });
 
       // Move buttons container
       const moveButtonsContainer = mobileHeader.createDiv({
-        cls: 'rule-trigger-move-buttons',
+        cls: 'noteMover-rule-trigger-move-buttons',
       });
 
       // Move Up button
       const moveUpBtn = moveButtonsContainer.createEl('button', {
-        cls: 'rule-trigger-move-btn rule-trigger-move-up',
+        cls: 'noteMover-rule-trigger-move-btn noteMover-rule-trigger-move-up',
       });
       moveUpBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
       moveUpBtn.disabled = index === 0;
@@ -336,7 +342,7 @@ export class RuleEditorModal extends BaseModal {
 
       // Move Down button
       const moveDownBtn = moveButtonsContainer.createEl('button', {
-        cls: 'rule-trigger-move-btn rule-trigger-move-down',
+        cls: 'noteMover-rule-trigger-move-btn noteMover-rule-trigger-move-down',
       });
       moveDownBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
       moveDownBtn.disabled = index === this.workingRule.triggers.length - 1;
@@ -350,7 +356,7 @@ export class RuleEditorModal extends BaseModal {
 
       // Delete button
       const deleteBtn = mobileHeader.createEl('button', {
-        cls: 'rule-trigger-delete-btn-mobile',
+        cls: 'noteMover-rule-trigger-delete-btn-mobile',
       });
       deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
       deleteBtn.onclick = () => {
@@ -368,7 +374,7 @@ export class RuleEditorModal extends BaseModal {
     } else {
       // Desktop: Delete button (left side)
       const deleteBtn = row.createEl('button', {
-        cls: 'rule-trigger-delete-btn clickable-icon',
+        cls: 'noteMover-rule-trigger-delete-btn clickable-icon',
       });
       deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
       deleteBtn.onclick = () => {
@@ -387,18 +393,18 @@ export class RuleEditorModal extends BaseModal {
 
     // Mobile: Create fields container for vertical layout
     const fieldsContainer = isMobile
-      ? row.createDiv({ cls: 'rule-trigger-fields-mobile' })
+      ? row.createDiv({ cls: 'noteMover-rule-trigger-fields-mobile' })
       : row;
 
     // CriteriaType Dropdown
     if (isMobile) {
       const criteriaLabel = fieldsContainer.createDiv({
-        cls: 'rule-trigger-field-label',
+        cls: 'noteMover-rule-trigger-field-label',
         text: 'Criteria Type',
       });
     }
     const criteriaTypeSelect = fieldsContainer.createEl('select', {
-      cls: 'dropdown rule-criteria-type',
+      cls: 'dropdown noteMover-rule-criteria-type',
     });
     const criteriaTypes: CriteriaType[] = [
       'tag',
@@ -438,12 +444,12 @@ export class RuleEditorModal extends BaseModal {
     // Operator Dropdown (dynamically populated based on criteriaType)
     if (isMobile) {
       const operatorLabel = fieldsContainer.createDiv({
-        cls: 'rule-trigger-field-label',
+        cls: 'noteMover-rule-trigger-field-label',
         text: 'Operator',
       });
     }
     const operatorSelect = fieldsContainer.createEl('select', {
-      cls: 'dropdown rule-operator',
+      cls: 'dropdown noteMover-rule-operator',
     });
     this.populateOperatorDropdown(operatorSelect, trigger);
 
@@ -454,13 +460,13 @@ export class RuleEditorModal extends BaseModal {
       // Property Name Input mit Suggester
       if (isMobile) {
         const propertyLabel = fieldsContainer.createDiv({
-          cls: 'rule-trigger-field-label',
+          cls: 'noteMover-rule-trigger-field-label',
           text: 'Property Name',
         });
       }
       propertyNameInput = fieldsContainer.createEl('input', {
         type: 'text',
-        cls: 'rule-property-name',
+        cls: 'noteMover-rule-property-name',
         placeholder: 'Property Name',
         value: trigger.propertyName || '',
       });
@@ -490,13 +496,13 @@ export class RuleEditorModal extends BaseModal {
     if (operatorRequiresValue(trigger.operator)) {
       if (isMobile) {
         const valueLabel = fieldsContainer.createDiv({
-          cls: 'rule-trigger-field-label',
+          cls: 'noteMover-rule-trigger-field-label',
           text: trigger.criteriaType === 'tag' ? 'Tag' : 'Value',
         });
       }
       valueInput = fieldsContainer.createEl('input', {
         type: 'text',
-        cls: 'rule-trigger-value',
+        cls: 'noteMover-rule-trigger-value',
         placeholder: trigger.criteriaType === 'tag' ? '#tag' : 'Value',
         value: trigger.value,
       });
@@ -526,24 +532,26 @@ export class RuleEditorModal extends BaseModal {
 
     // Add CSS class to row based on whether value field is present
     if (!operatorRequiresValue(trigger.operator)) {
-      row.addClass('no-value-field');
+      row.addClass('noteMover-no-value-field');
     }
 
     // Mobile: Add mobile-specific classes to inputs/selects for styling
     if (isMobile) {
-      criteriaTypeSelect.addClass('mobile-input');
-      operatorSelect.addClass('mobile-input');
+      criteriaTypeSelect.addClass('noteMover-mobile-input');
+      operatorSelect.addClass('noteMover-mobile-input');
       if (propertyNameInput) {
-        propertyNameInput.addClass('mobile-input');
+        propertyNameInput.addClass('noteMover-mobile-input');
       }
       if (valueInput) {
-        valueInput.addClass('mobile-input');
+        valueInput.addClass('noteMover-mobile-input');
       }
     }
 
     // Drag handle (right side) - only on desktop
     if (!isMobile) {
-      const handleContainer = row.createDiv({ cls: 'drag-handle-container' });
+      const handleContainer = row.createDiv({
+        cls: 'noteMover-drag-handle-container',
+      });
       const handle = DragDropManager.createDragHandle();
       handleContainer.appendChild(handle);
     }
@@ -596,7 +604,9 @@ export class RuleEditorModal extends BaseModal {
 
         // Manually move the DOM element
         const items = Array.from(
-          this.triggersContainer!.querySelectorAll('.rule-trigger-row')
+          this.triggersContainer!.querySelectorAll(
+            '.noteMover-rule-trigger-row'
+          )
         );
         const movedElement = items[fromIndex] as HTMLElement;
 
@@ -606,7 +616,9 @@ export class RuleEditorModal extends BaseModal {
 
           // Insert at the new position
           const allItems = Array.from(
-            this.triggersContainer!.querySelectorAll('.rule-trigger-row')
+            this.triggersContainer!.querySelectorAll(
+              '.noteMover-rule-trigger-row'
+            )
           );
 
           if (adjustedToIndex >= allItems.length) {
@@ -623,8 +635,8 @@ export class RuleEditorModal extends BaseModal {
         // No additional action needed
         return Promise.resolve();
       },
-      itemSelector: '.rule-trigger-row',
-      handleSelector: '.drag-handle',
+      itemSelector: '.noteMover-rule-trigger-row',
+      handleSelector: '.noteMover-drag-handle',
     });
   }
 
@@ -632,8 +644,8 @@ export class RuleEditorModal extends BaseModal {
     const isMobile = MobileUtils.isMobile();
     const footer = container.createDiv({
       cls: isMobile
-        ? 'rule-editor-footer rule-editor-footer-mobile'
-        : 'rule-editor-footer',
+        ? 'noteMover-rule-editor-footer noteMover-rule-editor-footer-mobile'
+        : 'noteMover-rule-editor-footer',
     });
 
     if (isMobile) {
@@ -679,7 +691,9 @@ export class RuleEditorModal extends BaseModal {
       // Desktop: Original layout
       // Remove Rule button (only in edit mode)
       if (this.ruleOptions.isEditMode && this.ruleOptions.onDelete) {
-        const leftSide = footer.createDiv({ cls: 'rule-editor-footer-left' });
+        const leftSide = footer.createDiv({
+          cls: 'noteMover-rule-editor-footer-left',
+        });
         new Setting(leftSide).addButton(btn =>
           btn
             .setButtonText('Remove Rule')
@@ -697,7 +711,9 @@ export class RuleEditorModal extends BaseModal {
       }
 
       // Right side: Cancel and Save
-      const rightSide = footer.createDiv({ cls: 'rule-editor-footer-right' });
+      const rightSide = footer.createDiv({
+        cls: 'noteMover-rule-editor-footer-right',
+      });
 
       new Setting(rightSide)
         .addButton(btn =>
