@@ -10,23 +10,29 @@ export class MobileSettingItem {
 
   constructor(container: HTMLElement, title: string, description?: string) {
     // Create card container
-    this.cardEl = container.createDiv({ cls: 'mobile-setting-card' });
+    this.cardEl = container.createDiv({ cls: 'noteMover-mobile-setting-card' });
 
     // Create header
-    this.headerEl = this.cardEl.createDiv({ cls: 'mobile-setting-header' });
-    this.titleEl = this.headerEl.createDiv({ cls: 'mobile-setting-title' });
+    this.headerEl = this.cardEl.createDiv({
+      cls: 'noteMover-mobile-setting-header',
+    });
+    this.titleEl = this.headerEl.createDiv({
+      cls: 'noteMover-mobile-setting-title',
+    });
     this.titleEl.textContent = title;
 
     // Create description if provided
     if (description) {
       this.descriptionEl = this.cardEl.createDiv({
-        cls: 'mobile-setting-description',
+        cls: 'noteMover-mobile-setting-description',
       });
       this.descriptionEl.textContent = description;
     }
 
     // Create control container
-    this.controlEl = this.cardEl.createDiv({ cls: 'mobile-setting-control' });
+    this.controlEl = this.cardEl.createDiv({
+      cls: 'noteMover-mobile-setting-control',
+    });
   }
 
   getCardElement(): HTMLElement {
@@ -42,7 +48,7 @@ export class MobileSettingItem {
       this.descriptionEl.textContent = text;
     } else {
       this.descriptionEl = this.cardEl.createDiv({
-        cls: 'mobile-setting-description',
+        cls: 'noteMover-mobile-setting-description',
       });
       this.descriptionEl.textContent = text;
     }

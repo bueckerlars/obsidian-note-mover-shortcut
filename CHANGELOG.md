@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.3...0.5.4)
+
+### Fixes
+
+- Refactored mobile styles and classes for improved consistency
+  - Updated CSS class names to follow a unified naming convention with the prefix 'noteMover-' for better organization
+  - Refactored modal and settings components to utilize the new class names, enhancing mobile responsiveness and usability
+  - Ensured all mobile-specific styles are applied consistently across various modals and settings sections
+  - Updated drag & drop functionality, suggesters, and all mobile components to use the new naming convention
+
 ## [0.5.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.2...0.5.3)
 
 ### Fixes

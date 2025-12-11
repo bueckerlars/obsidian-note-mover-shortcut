@@ -20,7 +20,7 @@ export class MobileFiltersSection {
     private refreshDisplay?: () => void
   ) {
     this.sectionContainer = this.containerEl.createDiv({
-      cls: 'mobile-section-container',
+      cls: 'noteMover-mobile-section-container',
     });
   }
 
@@ -29,7 +29,7 @@ export class MobileFiltersSection {
 
     // Section heading
     const heading = this.sectionContainer.createDiv({
-      cls: 'mobile-section-heading',
+      cls: 'noteMover-mobile-section-heading',
     });
     heading.textContent = 'Filter';
     heading.style.fontSize = '1.2em';
@@ -39,7 +39,7 @@ export class MobileFiltersSection {
 
     // Description
     const desc = this.sectionContainer.createDiv({
-      cls: 'mobile-section-description',
+      cls: 'noteMover-mobile-section-description',
     });
     desc.textContent =
       'Blacklist filters. Files matching any criteria will be excluded from movement.';
@@ -49,7 +49,7 @@ export class MobileFiltersSection {
 
     // Filters list container
     const filtersContainer = this.sectionContainer.createDiv({
-      cls: 'mobile-filters-list-container',
+      cls: 'noteMover-mobile-filters-list-container',
     });
     filtersContainer.style.marginBottom = '12px';
 
@@ -100,7 +100,9 @@ export class MobileFiltersSection {
     const filters = this.plugin.settings.settings.filters.filter;
     filters.forEach((filter, index) => {
       // Create filter card
-      const filterCard = container.createDiv({ cls: 'mobile-filter-card' });
+      const filterCard = container.createDiv({
+        cls: 'noteMover-mobile-filter-card',
+      });
       filterCard.style.padding = '12px';
       filterCard.style.marginBottom = '8px';
       filterCard.style.border = '1px solid var(--background-modifier-border)';
@@ -109,7 +111,7 @@ export class MobileFiltersSection {
 
       // Filter input
       const inputLabel = filterCard.createDiv({
-        cls: 'mobile-input-label',
+        cls: 'noteMover-mobile-input-label',
         text: `Filter ${index + 1}`,
       });
       inputLabel.style.marginBottom = '8px';
@@ -117,7 +119,7 @@ export class MobileFiltersSection {
 
       const inputContainer = filterCard.createDiv();
       const input = inputContainer.createEl('input', {
-        cls: 'mobile-text-input',
+        cls: 'noteMover-mobile-text-input',
         type: 'text',
         attr: {
           placeholder: SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER,
@@ -150,7 +152,7 @@ export class MobileFiltersSection {
 
       // Create move buttons container
       const moveButtonsContainer = filterCard.createDiv({
-        cls: 'mobile-move-buttons-container',
+        cls: 'noteMover-mobile-move-buttons-container',
       });
       moveButtonsContainer.style.display = 'flex';
       moveButtonsContainer.style.gap = '8px';
@@ -159,7 +161,7 @@ export class MobileFiltersSection {
 
       // Move Up button
       const moveUpButton = moveButtonsContainer.createEl('button', {
-        cls: 'mobile-move-button mobile-move-up-button',
+        cls: 'noteMover-mobile-move-button noteMover-mobile-move-up-button',
       });
       moveUpButton.style.flex = '1';
       moveUpButton.style.minHeight = '48px';
@@ -179,7 +181,7 @@ export class MobileFiltersSection {
 
       // Move Down button
       const moveDownButton = moveButtonsContainer.createEl('button', {
-        cls: 'mobile-move-button mobile-move-down-button',
+        cls: 'noteMover-mobile-move-button noteMover-mobile-move-down-button',
       });
       moveDownButton.style.flex = '1';
       moveDownButton.style.minHeight = '48px';
@@ -201,7 +203,7 @@ export class MobileFiltersSection {
 
       // Delete button
       const deleteButton = filterCard.createEl('button', {
-        cls: 'mobile-action-btn mobile-delete-btn',
+        cls: 'noteMover-mobile-action-btn noteMover-mobile-delete-btn',
         text: 'Delete',
       });
       deleteButton.style.width = '100%';

@@ -26,7 +26,7 @@ export class MobileRulesSection {
     private refreshDisplay?: () => void
   ) {
     this.sectionContainer = this.containerEl.createDiv({
-      cls: 'mobile-section-container',
+      cls: 'noteMover-mobile-section-container',
     });
   }
 
@@ -35,7 +35,7 @@ export class MobileRulesSection {
 
     // Section heading
     const heading = this.sectionContainer.createDiv({
-      cls: 'mobile-section-heading',
+      cls: 'noteMover-mobile-section-heading',
     });
     heading.textContent = 'Rules';
     heading.style.fontSize = '1.2em';
@@ -45,7 +45,7 @@ export class MobileRulesSection {
 
     // Description
     const desc = this.sectionContainer.createDiv({
-      cls: 'mobile-section-description',
+      cls: 'noteMover-mobile-section-description',
     });
     desc.textContent =
       'Move files to folders based on criteria. First matching rule applies.';
@@ -96,7 +96,7 @@ export class MobileRulesSection {
 
     // Rules List
     const rulesContainer = this.sectionContainer.createDiv({
-      cls: 'mobile-rules-list-container',
+      cls: 'noteMover-mobile-rules-list-container',
     });
     rulesContainer.style.marginTop = '12px';
 
