@@ -39,12 +39,12 @@ export class TriggerSettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      onEditSetting.settingEl.addClass('mobile-optimized');
+      onEditSetting.settingEl.addClass('noteMover-mobile-optimized');
       const controlEl = onEditSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('mobile-toggle-control');
+        (controlEl as HTMLElement).addClass('noteMover-mobile-toggle-control');
       }
     }
 
@@ -71,12 +71,12 @@ export class TriggerSettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      periodicSetting.settingEl.addClass('mobile-optimized');
+      periodicSetting.settingEl.addClass('noteMover-mobile-optimized');
       const controlEl = periodicSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('mobile-toggle-control');
+        (controlEl as HTMLElement).addClass('noteMover-mobile-toggle-control');
       }
     }
 
@@ -121,17 +121,17 @@ export class TriggerSettingsSection {
 
       // Add mobile optimization classes
       if (isMobile) {
-        intervalSetting.settingEl.addClass('mobile-optimized');
+        intervalSetting.settingEl.addClass('noteMover-mobile-optimized');
         const controlEl = intervalSetting.settingEl.querySelector(
           '.setting-item-control'
         );
         if (controlEl) {
-          (controlEl as HTMLElement).addClass('mobile-input-control');
+          (controlEl as HTMLElement).addClass('noteMover-mobile-input-control');
         }
         const inputEl =
           intervalSetting.settingEl.querySelector('input[type="text"]');
         if (inputEl) {
-          (inputEl as HTMLElement).addClass('mobile-text-input');
+          (inputEl as HTMLElement).addClass('noteMover-mobile-text-input');
         }
       }
     }

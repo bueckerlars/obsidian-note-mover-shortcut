@@ -41,7 +41,7 @@ export class NoticeManager {
     if (options.showUndoButton && options.onUndo) {
       const undoButton = document.createElement('button');
       undoButton.textContent = options.undoText ?? 'Undo';
-      undoButton.className = 'mod-warning notice-undo-button';
+      undoButton.className = 'mod-warning noteMover-notice-undo-button';
       undoButton.onclick = () => {
         try {
           options.onUndo!();

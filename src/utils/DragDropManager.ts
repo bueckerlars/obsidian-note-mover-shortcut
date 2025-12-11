@@ -48,7 +48,7 @@ export class DragDropManager {
   private handleDragStart(event: DragEvent): void {
     const target = event.target as HTMLElement;
     const handle = target.closest(
-      this.options.handleSelector || '.drag-handle'
+      this.options.handleSelector || '.noteMover-drag-handle'
     );
 
     if (!handle) return;
@@ -67,7 +67,7 @@ export class DragDropManager {
     }
 
     // Add dragging class
-    item.classList.add('dragging');
+    item.classList.add('noteMover-dragging');
   }
 
   private handleDragOver(event: DragEvent): void {
@@ -105,9 +105,9 @@ export class DragDropManager {
     }
 
     if (isAbove) {
-      item.classList.add('drag-over-top');
+      item.classList.add('noteMover-drag-over-top');
     } else {
-      item.classList.add('drag-over-bottom');
+      item.classList.add('noteMover-drag-over-bottom');
     }
   }
 
@@ -124,7 +124,7 @@ export class DragDropManager {
 
       // Only add drag-over class if it's not the same position
       if (targetIndex !== draggedIndex && targetIndex !== draggedIndex + 1) {
-        item.classList.add('drag-over');
+        item.classList.add('noteMover-drag-over');
       }
     }
   }
@@ -140,7 +140,11 @@ export class DragDropManager {
       const y = event.clientY;
 
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-        item.classList.remove('drag-over', 'drag-over-top', 'drag-over-bottom');
+        item.classList.remove(
+          'noteMover-drag-over',
+          'noteMover-drag-over-top',
+          'noteMover-drag-over-bottom'
+        );
       }
     }
   }
@@ -183,7 +187,7 @@ export class DragDropManager {
   private handleDragEnd(event: DragEvent): void {
     // Clean up
     if (this.draggedElement) {
-      this.draggedElement.classList.remove('dragging');
+      this.draggedElement.classList.remove('noteMover-dragging');
     }
 
     this.clearDragOverClasses();
@@ -212,17 +216,21 @@ export class DragDropManager {
 
   private clearDragOverClasses(): void {
     const items = this.container.querySelectorAll(
-      '.drag-over, .drag-over-top, .drag-over-bottom'
+      '.noteMover-drag-over, .noteMover-drag-over-top, .noteMover-drag-over-bottom'
     );
     items.forEach(item => {
-      item.classList.remove('drag-over', 'drag-over-top', 'drag-over-bottom');
+      item.classList.remove(
+        'noteMover-drag-over',
+        'noteMover-drag-over-top',
+        'noteMover-drag-over-bottom'
+      );
     });
   }
 
   // Public method to create a drag handle
   public static createDragHandle(): HTMLElement {
     const handle = document.createElement('div');
-    handle.className = 'drag-handle';
+    handle.className = 'noteMover-drag-handle';
     handle.innerHTML = '⋮⋮'; // Vertical dots
     handle.setAttribute('draggable', 'true');
     handle.setAttribute('aria-label', 'Drag to reorder');
@@ -236,10 +244,10 @@ export class DragDropManager {
   // Public method to wrap a setting item with drag handle
   public static wrapWithDragHandle(settingItem: HTMLElement): HTMLElement {
     const wrapper = document.createElement('div');
-    wrapper.className = 'setting-item with-drag-handle';
+    wrapper.className = 'setting-item noteMover-with-drag-handle';
 
     const handleContainer = document.createElement('div');
-    handleContainer.className = 'drag-handle-container';
+    handleContainer.className = 'noteMover-drag-handle-container';
     handleContainer.appendChild(this.createDragHandle());
 
     wrapper.appendChild(handleContainer);

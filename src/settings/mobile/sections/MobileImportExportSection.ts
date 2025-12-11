@@ -18,7 +18,7 @@ export class MobileImportExportSection {
   render(): void {
     // Section heading
     const heading = this.containerEl.createDiv({
-      cls: 'mobile-section-heading',
+      cls: 'noteMover-mobile-section-heading',
     });
     heading.textContent = 'Import/Export';
     heading.style.fontSize = '1.2em';

@@ -16,13 +16,13 @@ export class MobileInputSetting {
     onChange: (value: string) => void | Promise<void>
   ) {
     this.settingItem = new MobileSettingItem(container, title, description);
-    this.settingItem.addClass('mobile-input-setting');
+    this.settingItem.addClass('noteMover-mobile-input-setting');
 
     const controlEl = this.settingItem.getControlElement();
 
     // Create input
     this.inputEl = controlEl.createEl('input', {
-      cls: 'mobile-text-input',
+      cls: 'noteMover-mobile-text-input',
       type: 'text',
       attr: {
         placeholder: placeholder,

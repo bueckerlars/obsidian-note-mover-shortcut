@@ -44,12 +44,12 @@ export class FilterSettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      addFilterSetting.settingEl.addClass('mobile-optimized');
+      addFilterSetting.settingEl.addClass('noteMover-mobile-optimized');
       const controlEl = addFilterSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('mobile-button-control');
+        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
       }
     }
   }
@@ -62,9 +62,9 @@ export class FilterSettingsSection {
 
     // Create a container for filters with drag & drop
     const filtersContainer = document.createElement('div');
-    filtersContainer.className = 'filters-container';
+    filtersContainer.className = 'noteMover-filters-container';
     if (isMobile) {
-      filtersContainer.addClass('mobile-filters-container');
+      filtersContainer.addClass('noteMover-mobile-filters-container');
     }
     this.containerEl.appendChild(filtersContainer);
 
@@ -94,7 +94,7 @@ export class FilterSettingsSection {
               this.plugin.noteMover.updateRuleManager();
             });
           // @ts-ignore
-          cb.containerEl.addClass('note_mover_search');
+          cb.containerEl.addClass('noteMover-search');
         })
         .addExtraButton(btn =>
           btn.setIcon('cross').onClick(async () => {
@@ -112,14 +112,16 @@ export class FilterSettingsSection {
 
       // Add mobile optimization classes
       if (isMobile) {
-        s.settingEl.addClass('mobile-filter-item');
+        s.settingEl.addClass('noteMover-mobile-filter-item');
         const controlEl = s.settingEl.querySelector('.setting-item-control');
         if (controlEl) {
-          (controlEl as HTMLElement).addClass('mobile-filter-controls');
+          (controlEl as HTMLElement).addClass(
+            'noteMover-mobile-filter-controls'
+          );
         }
         const inputEl = s.settingEl.querySelector('input[type="search"]');
         if (inputEl) {
-          (inputEl as HTMLElement).addClass('mobile-filter-input');
+          (inputEl as HTMLElement).addClass('noteMover-mobile-filter-input');
         }
       }
     });
@@ -150,19 +152,19 @@ export class FilterSettingsSection {
         this.refreshDisplay();
       },
       itemSelector: '.setting-item',
-      handleSelector: '.drag-handle',
+      handleSelector: '.noteMover-drag-handle',
     });
   }
 
   private addDragHandle(settingEl: HTMLElement, index: number): void {
     const handle = DragDropManager.createDragHandle();
     const handleContainer = document.createElement('div');
-    handleContainer.className = 'drag-handle-container';
+    handleContainer.className = 'noteMover-drag-handle-container';
     handleContainer.appendChild(handle);
 
     // Insert handle at the beginning of the setting
     settingEl.insertBefore(handleContainer, settingEl.firstChild);
-    settingEl.classList.add('with-drag-handle');
+    settingEl.classList.add('noteMover-with-drag-handle');
   }
 
   private reorderFilters(fromIndex: number, toIndex: number): void {
