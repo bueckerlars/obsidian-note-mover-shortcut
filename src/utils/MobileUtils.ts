@@ -1,4 +1,4 @@
-import { Platform } from 'obsidian';
+import { Platform, setIcon } from 'obsidian';
 
 /**
  * Utility class for mobile platform detection and mobile-specific functionality
@@ -58,5 +58,71 @@ export class MobileUtils {
       }
     }
     return 'is-desktop';
+  }
+
+  /**
+   * Create a move button (up/down) for mobile UI
+   * @param container - Container element to append button to
+   * @param direction - 'up' or 'down'
+   * @param onClick - Click handler
+   * @param disabled - Whether button should be disabled (if true, button won't be created)
+   * @returns Created button element or null if disabled
+   */
+  static createMoveButton(
+    container: HTMLElement,
+    direction: 'up' | 'down',
+    onClick: () => void | Promise<void>,
+    disabled = false
+  ): HTMLButtonElement | null {
+    if (disabled) {
+      return null;
+    }
+
+    const button = container.createEl('button', {
+      cls: `noteMover-mobile-move-button noteMover-mobile-move-${direction}-button`,
+    });
+
+    const iconName = direction === 'up' ? 'chevron-up' : 'chevron-down';
+    setIcon(button, iconName);
+
+    button.addEventListener('click', async () => {
+      await onClick();
+    });
+
+    return button;
+  }
+
+  /**
+   * Create an action button for mobile UI
+   * @param container - Container element to append button to
+   * @param text - Button text
+   * @param onClick - Click handler
+   * @param options - Button options (isPrimary, isDanger)
+   * @returns Created button element
+   */
+  static createActionButton(
+    container: HTMLElement,
+    text: string,
+    onClick: () => void | Promise<void>,
+    options: { isPrimary?: boolean; isDanger?: boolean } = {}
+  ): HTMLButtonElement {
+    const button = container.createEl('button', {
+      cls: 'noteMover-mobile-action-btn',
+      text: text,
+    });
+
+    if (options.isPrimary) {
+      button.addClass('mod-cta');
+      button.style.background = 'var(--interactive-accent)';
+      button.style.color = 'var(--text-on-accent)';
+    } else if (options.isDanger) {
+      button.addClass('noteMover-mobile-delete-btn');
+    }
+
+    button.addEventListener('click', async () => {
+      await onClick();
+    });
+
+    return button;
   }
 }
