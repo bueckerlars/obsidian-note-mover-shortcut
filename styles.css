@@ -915,8 +915,9 @@
   will-change: auto;
 }
 
-/* Ensure parent container allows scrolling */
-.is-mobile .vertical-tab-content {
+/* Ensure parent container allows scrolling - scoped to plugin only */
+.is-mobile .noteMover-mobile-settings-container ~ .vertical-tab-content,
+.is-mobile .vertical-tab-content:has(.noteMover-mobile-settings-container) {
   overflow-y: auto !important;
   overflow-x: hidden !important;
   height: 100% !important;
@@ -1546,13 +1547,24 @@
     word-break: break-word;
   }
 
-  .setting-item-control {
+  /* Scoped to plugin elements only */
+  .noteMover-modal-button-container .setting-item-control,
+  .noteMover-time-filter-container .setting-item-control,
+  .note-mover-history-modal .setting-item-control,
+  .note-mover-preview-modal .setting-item-control,
+  .note-mover-update-modal .setting-item-control,
+  [class*="noteMover"] .setting-item-control {
     margin-left: 0;
     width: 100%;
     justify-content: space-between;
   }
 
-  .setting-item-control button {
+  .noteMover-modal-button-container .setting-item-control button,
+  .noteMover-time-filter-container .setting-item-control button,
+  .note-mover-history-modal .setting-item-control button,
+  .note-mover-preview-modal .setting-item-control button,
+  .note-mover-update-modal .setting-item-control button,
+  [class*="noteMover"] .setting-item-control button {
     min-width: 44px;
     min-height: 44px;
     padding: 8px;
@@ -1871,8 +1883,12 @@
     font-size: 0.95em;
   }
 
-  /* Smaller button fonts to fit better */
-  button {
+  /* Smaller button fonts to fit better - scoped to plugin elements only */
+  [class*="noteMover"] button,
+  .note-mover-history-modal button,
+  .note-mover-preview-modal button,
+  .note-mover-update-modal button,
+  .noteMover-confirm-modal button {
     font-size: 0.95em;
   }
 }
