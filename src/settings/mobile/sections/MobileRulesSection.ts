@@ -38,10 +38,6 @@ export class MobileRulesSection {
       cls: 'noteMover-mobile-section-heading',
     });
     heading.textContent = 'Rules';
-    heading.style.fontSize = '1.2em';
-    heading.style.fontWeight = '600';
-    heading.style.marginBottom = '12px';
-    heading.style.marginTop = '16px';
 
     // Description
     const desc = this.sectionContainer.createDiv({
@@ -49,9 +45,6 @@ export class MobileRulesSection {
     });
     desc.textContent =
       'Move files to folders based on criteria. First matching rule applies.';
-    desc.style.fontSize = '0.9em';
-    desc.style.color = 'var(--text-muted)';
-    desc.style.marginBottom = '12px';
 
     // Rule V2 Toggle
     const ruleV2Toggle = new MobileToggleSetting(
@@ -98,7 +91,6 @@ export class MobileRulesSection {
     const rulesContainer = this.sectionContainer.createDiv({
       cls: 'noteMover-mobile-rules-list-container',
     });
-    rulesContainer.style.marginTop = '12px';
 
     if (this.plugin.settings.settings.enableRuleV2) {
       this.renderRulesV2(rulesContainer);

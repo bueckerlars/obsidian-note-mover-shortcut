@@ -30,13 +30,6 @@ export class MobileInputSetting {
       },
     });
 
-    // Set font size to 16px to prevent iOS zoom
-    this.inputEl.style.fontSize = '16px';
-    this.inputEl.style.minHeight = '48px';
-    this.inputEl.style.width = '100%';
-    this.inputEl.style.padding = '12px';
-    this.inputEl.style.boxSizing = 'border-box';
-
     // Add change handler
     this.inputEl.addEventListener('input', async () => {
       await onChange(this.inputEl.value);

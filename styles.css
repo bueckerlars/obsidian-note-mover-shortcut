@@ -906,21 +906,21 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-  position: relative;
-  flex-shrink: 0;
-  will-change: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Ensure parent container allows scrolling - scoped to plugin only */
-.is-mobile .noteMover-mobile-settings-container ~ .vertical-tab-content,
-.is-mobile .vertical-tab-content:has(.noteMover-mobile-settings-container) {
+.is-mobile .vertical-tab-content {
   overflow-y: auto !important;
   overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
   height: 100% !important;
+}
+
+/* Ensure settings container doesn't interfere with scrolling */
+.is-mobile .vertical-tab-content .noteMover-mobile-settings-container {
+  min-height: min-content;
 }
 
 .noteMover-mobile-section-heading {
@@ -929,6 +929,14 @@
   margin-bottom: 12px;
   margin-top: 16px;
   color: var(--text-normal);
+}
+
+/* Mobile Section Description */
+.noteMover-mobile-section-description {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.4;
 }
 
 .noteMover-mobile-section-description {
@@ -941,14 +949,9 @@
 /* Mobile Section Container */
 .noteMover-mobile-section-container {
   width: 100%;
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
   display: flex;
   flex-direction: column;
-  overflow: visible;
   position: relative;
-  flex-shrink: 0;
 }
 
 /* Mobile Setting Cards */
@@ -958,12 +961,8 @@
   border-radius: 8px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  min-height: auto !important;
-  height: auto !important;
-  max-height: none !important;
   width: 100%;
   box-sizing: border-box;
-  overflow: visible;
   position: relative;
 }
 
@@ -972,12 +971,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
-  min-height: auto;
-  height: auto;
-  max-height: none;
   width: 100%;
   box-sizing: border-box;
-  position: relative;
 }
 
 .noteMover-mobile-setting-title {
@@ -999,10 +994,6 @@
 .noteMover-mobile-setting-control {
   width: 100%;
   margin-top: 8px;
-  height: auto;
-  min-height: auto;
-  max-height: none;
-  overflow: visible;
 }
 
 /* Mobile Toggle Settings */
@@ -1095,6 +1086,21 @@
   margin-bottom: 8px;
 }
 
+/* Mobile Filter Cards */
+.noteMover-mobile-filter-card {
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.noteMover-mobile-filters-list-container {
+  margin-bottom: 12px;
+}
+
 /* Mobile Button Settings */
 .noteMover-mobile-button-setting .noteMover-mobile-action-btn {
   width: 100%;
@@ -1123,13 +1129,8 @@
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
   background: var(--background-secondary);
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
   width: 100%;
   box-sizing: border-box;
-  overflow: visible;
-  position: relative;
 }
 
 .noteMover-mobile-rule-header {
@@ -1137,12 +1138,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
-  height: auto;
-  min-height: auto;
-  max-height: none;
   width: 100%;
   box-sizing: border-box;
-  position: relative;
 }
 
 .noteMover-mobile-rule-name {
@@ -1205,8 +1202,25 @@
 }
 
 .noteMover-mobile-delete-btn {
-  background: var(--background-modifier-error) !important;
-  color: var(--text-on-accent) !important;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  transition: opacity 0.2s ease;
+}
+
+.noteMover-mobile-delete-btn:hover {
+  opacity: 0.9;
+}
+
+.noteMover-mobile-delete-btn:active {
+  opacity: 0.8;
 }
 
 /* Mobile Filter Cards */
@@ -1225,14 +1239,9 @@
 /* Mobile Rules List Container */
 .noteMover-mobile-rules-list-container {
   margin-top: 12px;
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
   width: 100%;
   display: flex;
   flex-direction: column;
-  overflow: visible;
-  position: relative;
 }
 
 /* Mobile Retention Controls */
@@ -1383,6 +1392,10 @@
 .noteMover-mobile-move-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.noteMover-mobile-move-button[style*="display: none"] {
+  display: none !important;
 }
 
 /* Mobile rules container */
@@ -1922,42 +1935,38 @@
   padding: 20px 16px !important;
 }
 
-/* Ensure proper horizontal padding for all modal content */
-.is-mobile .noteMover-rule-editor-modal > * {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.is-mobile .noteMover-rule-editor-modal .setting-item,
-.is-mobile .noteMover-rule-editor-modal .noteMover-rule-conditions-section,
-.is-mobile .noteMover-rule-editor-modal .noteMover-rule-editor-footer,
-.is-mobile .noteMover-rule-editor-modal hr {
-  margin-left: 0;
-  margin-right: 0;
-  width: 100%;
-}
-
-/* Rule Editor Modal Mobile Styles */
+/* Rule Editor Modal Mobile Styles - Consistent padding */
 .is-mobile .noteMover-rule-editor-modal {
-  padding: 16px 0 !important;
+  padding: 0 !important;
 }
 
 .is-mobile .noteMover-rule-editor-modal .setting-item {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure all content respects modal padding */
+.is-mobile .noteMover-rule-editor-modal .setting-item,
+.is-mobile .noteMover-rule-editor-modal .noteMover-rule-conditions-section,
+.is-mobile .noteMover-rule-editor-modal hr {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Separator styling for mobile */
 .is-mobile .noteMover-rule-editor-separator {
-  margin: 24px 0;
+  margin: 32px 0;
   border: none;
-  border-top: 2px solid var(--background-modifier-border);
-  opacity: 0.5;
+  border-top: 1px solid var(--background-modifier-border);
+  opacity: 0.6;
+  width: 100%;
 }
 
 /* Name Setting Mobile */
 .is-mobile .noteMover-rule-name-mobile {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .is-mobile .noteMover-rule-name-mobile .setting-item-control input[type="text"] {
@@ -1966,11 +1975,12 @@
 
 /* Active Toggle Setting Mobile - Horizontal layout with toggle next to text */
 .is-mobile .noteMover-rule-active-toggle-mobile {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: flex !important;
   flex-direction: row !important;
-  align-items: flex-start !important;
-  gap: 12px;
+  align-items: center !important;
+  gap: 16px;
+  padding: 0;
 }
 
 .is-mobile .noteMover-rule-active-toggle-mobile .setting-item-info {
@@ -1983,13 +1993,14 @@
 
 .is-mobile .noteMover-rule-active-toggle-mobile .setting-item-name {
   font-weight: 600;
-  font-size: 0.95em;
+  font-size: 1em;
   margin-bottom: 4px !important;
   width: auto !important;
+  color: var(--text-normal);
 }
 
 .is-mobile .noteMover-rule-active-toggle-mobile .setting-item-description {
-  font-size: 0.85em;
+  font-size: 0.9em;
   color: var(--text-muted);
   margin-top: 0;
   margin-bottom: 0;
@@ -2006,6 +2017,8 @@
   margin-top: 0 !important;
   flex-shrink: 0;
   order: 2;
+  align-self: flex-start;
+  padding-top: 2px; /* Slight offset to align with text baseline */
 }
 
 .is-mobile .noteMover-rule-active-toggle-mobile .checkbox-container {
@@ -2035,35 +2048,42 @@
 }
 
 /* Destination Input Mobile - Hide search icon */
-.is-mobile .noteMover-rule-destination-mobile .search-input-container {
+.is-mobile .noteMover-rule-editor-modal .setting-item:has(.search-input-container) {
+  margin-bottom: 24px;
+}
+
+.is-mobile .noteMover-rule-editor-modal .search-input-container {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
-.is-mobile .noteMover-rule-destination-mobile .search-input-container::before,
-.is-mobile .noteMover-rule-destination-mobile .search-input-container::after {
+.is-mobile .noteMover-rule-editor-modal .search-input-container::before,
+.is-mobile .noteMover-rule-editor-modal .search-input-container::after {
   display: none !important;
   content: none !important;
 }
 
 /* Hide any icons on the left side of the search input */
-.is-mobile .noteMover-rule-destination-mobile .search-input-container > svg:not(.search-input-clear-button svg),
-.is-mobile .noteMover-rule-destination-mobile .search-input-container > .clickable-icon:not(.search-input-clear-button),
-.is-mobile .noteMover-rule-destination-mobile .search-input-container > [class*="icon"]:not(.search-input-clear-button),
-.is-mobile .noteMover-rule-destination-mobile .search-input-container > *:not(input):not(.search-input-clear-button) {
+.is-mobile .noteMover-rule-editor-modal .search-input-container > svg:not(.search-input-clear-button svg),
+.is-mobile .noteMover-rule-editor-modal .search-input-container > .clickable-icon:not(.search-input-clear-button),
+.is-mobile .noteMover-rule-editor-modal .search-input-container > [class*="icon"]:not(.search-input-clear-button),
+.is-mobile .noteMover-rule-editor-modal .search-input-container > *:not(input):not(.search-input-clear-button) {
   display: none !important;
 }
 
-.is-mobile .noteMover-rule-destination-mobile .search-input-container input {
+.is-mobile .noteMover-rule-editor-modal .search-input-container input {
   padding-left: 16px !important;
   padding-right: 40px !important;
   background-image: none !important;
   background-position: unset !important;
   flex: 1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.is-mobile .noteMover-rule-destination-mobile .search-input-container .search-input-clear-button {
+.is-mobile .noteMover-rule-editor-modal .search-input-container .search-input-clear-button {
   right: 12px !important;
   left: auto !important;
   position: absolute !important;
@@ -2073,26 +2093,17 @@
 /* Match Conditions Section Mobile */
 .is-mobile .noteMover-rule-editor-modal .setting-item-name {
   font-weight: 600;
-  font-size: 0.95em;
+  font-size: 1em;
   margin-bottom: 8px;
+  color: var(--text-normal);
 }
 
 .is-mobile .noteMover-rule-editor-modal .setting-item-description {
-  font-size: 0.85em;
+  font-size: 0.9em;
   color: var(--text-muted);
   margin-top: 4px;
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-.is-mobile .noteMover-rule-editor-modal .setting-item {
-  padding: 0;
-}
-
-.is-mobile .noteMover-rule-editor-modal .setting-item-name {
-  font-weight: 600;
-  font-size: 0.95em;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  line-height: 1.5;
 }
 
 .is-mobile .noteMover-rule-editor-modal .setting-item-control input[type="text"],
@@ -2103,6 +2114,10 @@
   border-radius: 8px;
   border: 1px solid var(--background-modifier-border);
   transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--background-primary);
+  color: var(--text-normal);
 }
 
 .is-mobile .noteMover-rule-editor-modal .setting-item-control input[type="text"]:focus,
@@ -2115,39 +2130,58 @@
 /* Apply horizontal padding to headings/titles inside modal */
 .is-mobile .noteMover-rule-editor-modal .noteMover-modal-title,
 .is-mobile .noteMover-rule-editor-modal .noteMover-modal-title-container {
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 0;
+  padding-right: 0;
   box-sizing: border-box;
+  margin-bottom: 24px;
+}
+
+.is-mobile .noteMover-rule-editor-modal .noteMover-modal-title {
+  font-size: 1.5em;
+  font-weight: 600;
+  color: var(--text-normal);
 }
 
 /* Ensure section containers respect horizontal padding */
-.is-mobile .noteMover-rule-editor-modal .noteMover-rule-conditions-section,
+.is-mobile .noteMover-rule-editor-modal .noteMover-rule-conditions-section {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .is-mobile .noteMover-rule-editor-modal .noteMover-rule-editor-footer {
-  padding-left: 0;
-  padding-right: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: 8px;
 }
 
 /* Mobile Aggregation Buttons */
 .is-mobile .noteMover-rule-aggregation-buttons-mobile {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .is-mobile .noteMover-rule-aggregation-buttons-mobile .noteMover-rule-aggregation-button {
   width: 100%;
   min-height: 52px;
-  padding: 14px 16px;
+  padding: 14px 20px;
   font-size: 16px;
   font-weight: 500;
   border-radius: 8px;
   transition: all 0.2s ease;
+  border: 1px solid var(--background-modifier-border);
 }
 
 .is-mobile .noteMover-rule-aggregation-buttons-mobile .noteMover-rule-aggregation-button:active {
   transform: scale(0.98);
+}
+
+.is-mobile .noteMover-rule-aggregation-buttons-mobile .noteMover-rule-aggregation-button.is-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
 }
 
 /* Mobile Trigger Rows - Card-based layout */
@@ -2282,16 +2316,18 @@
 }
 
 .is-mobile .noteMover-rule-conditions-section {
-  margin: 24px 0;
+  margin: 32px 0 24px 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .is-mobile .noteMover-rule-conditions-title {
-  font-size: 1.2em;
+  font-size: 1.1em;
   font-weight: 600;
   margin-bottom: 16px;
   color: var(--text-normal);
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--background-modifier-border);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 /* Add Condition Button Mobile */
@@ -2323,9 +2359,10 @@
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 2px solid var(--background-modifier-border);
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--background-modifier-border);
+  box-sizing: border-box;
 }
 
 .is-mobile .noteMover-rule-editor-footer-mobile .setting-item {
@@ -2338,9 +2375,10 @@
   width: 100%;
   min-height: 52px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   border-radius: 8px;
   transition: all 0.2s ease;
+  padding: 14px 20px;
 }
 
 .is-mobile .noteMover-rule-editor-footer-mobile .setting-item button:active {
