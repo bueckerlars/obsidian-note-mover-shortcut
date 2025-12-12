@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.5](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.4...0.5.5)
+
+### Fixes
+
+- Fixed CSS selectors overwriting global Obsidian styles [#48](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/48)
+  - Scoped `.vertical-tab-content` selector to plugin containers only
+  - Restricted `.setting-item-control` selectors to plugin modals and containers
+  - Limited generic `button` selector to plugin elements only
+  - Prevents plugin styles from affecting other Obsidian UI elements, especially on mobile devices
+
 ## [0.5.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.3...0.5.4)
 
 ### Fixes
