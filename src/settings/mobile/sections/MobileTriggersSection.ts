@@ -28,10 +28,6 @@ export class MobileTriggersSection {
       cls: 'noteMover-mobile-section-heading',
     });
     heading.textContent = 'Triggers';
-    heading.style.fontSize = '1.2em';
-    heading.style.fontWeight = '600';
-    heading.style.marginBottom = '12px';
-    heading.style.marginTop = '16px';
 
     // On Edit Trigger
     new MobileToggleSetting(

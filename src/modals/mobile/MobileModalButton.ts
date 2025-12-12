@@ -1,16 +1,16 @@
-import { MobileSettingItem } from './MobileSettingItem';
+import { MobileModalCard } from './MobileModalCard';
 
-export interface MobileButtonOptions {
+export interface MobileModalButtonOptions {
   isPrimary?: boolean;
   isWarning?: boolean;
   isDanger?: boolean;
 }
 
 /**
- * Mobile-optimized button setting component
+ * Mobile-optimized button component for modals
  */
-export class MobileButtonSetting {
-  private settingItem: MobileSettingItem;
+export class MobileModalButton {
+  private modalCard: MobileModalCard;
   private buttonEl: HTMLButtonElement;
 
   constructor(
@@ -19,15 +19,15 @@ export class MobileButtonSetting {
     description: string | undefined,
     buttonText: string,
     onClick: () => void | Promise<void>,
-    options: MobileButtonOptions = {}
+    options: MobileModalButtonOptions = {}
   ) {
-    this.settingItem = new MobileSettingItem(container, title, description);
-    this.settingItem.addClass('noteMover-mobile-button-setting');
+    this.modalCard = new MobileModalCard(container, title, description);
+    this.modalCard.addClass('noteMover-mobile-modal-button');
 
-    const controlEl = this.settingItem.getControlElement();
+    const contentEl = this.modalCard.getContentElement();
 
     // Create button
-    this.buttonEl = controlEl.createEl('button', {
+    this.buttonEl = contentEl.createEl('button', {
       cls: 'noteMover-mobile-action-btn',
       text: buttonText,
     });
@@ -56,6 +56,6 @@ export class MobileButtonSetting {
   }
 
   getCardElement(): HTMLElement {
-    return this.settingItem.getCardElement();
+    return this.modalCard.getCardElement();
   }
 }

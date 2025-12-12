@@ -1,0 +1,80 @@
+import { MobileModalCard } from './MobileModalCard';
+
+/**
+ * Mobile-optimized toggle component for modals
+ */
+export class MobileModalToggle {
+  private modalCard: MobileModalCard;
+  private toggleEl: HTMLElement;
+  private toggleInput: HTMLInputElement;
+
+  constructor(
+    container: HTMLElement,
+    title: string,
+    description: string | undefined,
+    value: boolean,
+    onChange: (value: boolean) => void | Promise<void>
+  ) {
+    this.modalCard = new MobileModalCard(container, title, description);
+    this.modalCard.addClass('noteMover-mobile-modal-toggle');
+
+    const headerEl = this.modalCard.getHeaderElement();
+
+    // Create toggle switch directly in header (right side)
+    this.toggleEl = headerEl.createDiv({
+      cls: 'noteMover-mobile-toggle-switch',
+    });
+    this.toggleInput = document.createElement('input');
+    this.toggleInput.type = 'checkbox';
+    this.toggleInput.className = 'noteMover-mobile-toggle-input';
+    this.toggleInput.checked = value;
+    this.toggleEl.appendChild(this.toggleInput);
+
+    // Add visual toggle switch
+    const toggleSlider = this.toggleEl.createDiv({
+      cls: 'noteMover-mobile-toggle-slider',
+    });
+
+    // Update visual state
+    this.updateToggleState(value);
+
+    // Add click handler
+    this.toggleInput.addEventListener('change', async () => {
+      const newValue = this.toggleInput.checked;
+      this.updateToggleState(newValue);
+      await onChange(newValue);
+    });
+
+    // Make entire toggle area clickable
+    this.toggleEl.addEventListener('click', e => {
+      if (e.target !== this.toggleInput) {
+        this.toggleInput.click();
+      }
+    });
+
+    // Hide the content element since toggle is in header
+    const contentEl = this.modalCard.getContentElement();
+    contentEl.style.display = 'none';
+  }
+
+  private updateToggleState(value: boolean): void {
+    if (value) {
+      this.toggleEl.addClass('is-active');
+    } else {
+      this.toggleEl.removeClass('is-active');
+    }
+  }
+
+  setValue(value: boolean): void {
+    this.toggleInput.checked = value;
+    this.updateToggleState(value);
+  }
+
+  getValue(): boolean {
+    return this.toggleInput.checked;
+  }
+
+  getCardElement(): HTMLElement {
+    return this.modalCard.getCardElement();
+  }
+}
