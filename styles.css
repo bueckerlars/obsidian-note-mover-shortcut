@@ -1931,6 +1931,92 @@
   touch-action: pan-y;
 }
 
+/* Mobile Modal Cards - Consistent with Mobile Settings */
+.noteMover-mobile-modal-card {
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.noteMover-mobile-modal-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.noteMover-mobile-modal-card-title {
+  font-weight: 600;
+  font-size: 1em;
+  flex: 1;
+  color: var(--text-normal);
+  margin-right: 12px;
+}
+
+.noteMover-mobile-modal-card-description {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  margin-top: 4px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.noteMover-mobile-modal-card-content {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Mobile Modal Toggle */
+.noteMover-mobile-modal-toggle .noteMover-mobile-modal-card-header {
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.noteMover-mobile-modal-toggle .noteMover-mobile-modal-card-description {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.noteMover-mobile-modal-toggle .noteMover-mobile-modal-card-content {
+  display: none;
+}
+
+/* Mobile Modal Input */
+.noteMover-mobile-modal-input .noteMover-mobile-modal-card-content {
+  margin-top: 0;
+}
+
+/* Mobile Modal Button */
+.noteMover-mobile-modal-button .noteMover-mobile-modal-card-header {
+  margin-bottom: 8px;
+}
+
+.noteMover-mobile-modal-button .noteMover-mobile-modal-card-content {
+  margin-top: 0;
+}
+
+/* Mobile Modal Section */
+.noteMover-mobile-modal-section {
+  margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.noteMover-mobile-modal-section-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-normal);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
 .is-mobile .noteMover-rule-editor-modal .modal-content {
   padding: 20px 16px !important;
 }
@@ -2047,7 +2133,46 @@
   margin-right: 0 !important;
 }
 
-/* Destination Input Mobile - Hide search icon */
+/* Destination Input Mobile - Search Container */
+.noteMover-mobile-modal-card .search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.noteMover-mobile-modal-card .search-input-container::before,
+.noteMover-mobile-modal-card .search-input-container::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Hide any icons on the left side of the search input */
+.noteMover-mobile-modal-card .search-input-container > svg:not(.search-input-clear-button svg),
+.noteMover-mobile-modal-card .search-input-container > .clickable-icon:not(.search-input-clear-button),
+.noteMover-mobile-modal-card .search-input-container > [class*="icon"]:not(.search-input-clear-button),
+.noteMover-mobile-modal-card .search-input-container > *:not(input):not(.search-input-clear-button) {
+  display: none !important;
+}
+
+.noteMover-mobile-modal-card .search-input-container input {
+  padding-left: 16px !important;
+  padding-right: 40px !important;
+  background-image: none !important;
+  background-position: unset !important;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.noteMover-mobile-modal-card .search-input-container .search-input-clear-button {
+  right: 12px !important;
+  left: auto !important;
+  position: absolute !important;
+  z-index: 10;
+}
+
+/* Legacy Destination Input Mobile */
 .is-mobile .noteMover-rule-editor-modal .setting-item:has(.search-input-container) {
   margin-bottom: 24px;
 }
@@ -2065,7 +2190,6 @@
   content: none !important;
 }
 
-/* Hide any icons on the left side of the search input */
 .is-mobile .noteMover-rule-editor-modal .search-input-container > svg:not(.search-input-clear-button svg),
 .is-mobile .noteMover-rule-editor-modal .search-input-container > .clickable-icon:not(.search-input-clear-button),
 .is-mobile .noteMover-rule-editor-modal .search-input-container > [class*="icon"]:not(.search-input-clear-button),
@@ -2184,17 +2308,117 @@
   border-color: var(--interactive-accent);
 }
 
-/* Mobile Trigger Rows - Card-based layout */
+/* Mobile Trigger Cards - Card-based layout */
+.noteMover-mobile-trigger-card {
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.noteMover-mobile-trigger-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.noteMover-mobile-trigger-move-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.noteMover-mobile-trigger-delete-container {
+  display: flex;
+  align-items: center;
+}
+
+.noteMover-mobile-trigger-delete-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--background-modifier-error);
+  border-radius: 6px;
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.noteMover-mobile-trigger-delete-btn:active {
+  opacity: 0.8;
+  transform: scale(0.95);
+}
+
+.noteMover-mobile-trigger-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Field Labels */
+.noteMover-mobile-trigger-field-label {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.noteMover-mobile-trigger-fields select,
+.noteMover-mobile-trigger-fields input {
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.noteMover-mobile-trigger-fields select:focus,
+.noteMover-mobile-trigger-fields input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
+}
+
+/* Dropdown styling with indicator */
+.noteMover-mobile-trigger-fields select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 36px;
+}
+
+/* Legacy Mobile Trigger Rows - Keep for backward compatibility */
 .is-mobile .noteMover-rule-trigger-row-mobile {
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 16px;
   background: var(--background-secondary);
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--background-modifier-border);
   margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .is-mobile .noteMover-rule-trigger-mobile-header {
@@ -2267,7 +2491,7 @@
   width: 100%;
 }
 
-/* Field Labels */
+/* Field Labels - Legacy */
 .is-mobile .noteMover-rule-trigger-field-label {
   font-size: 0.9em;
   font-weight: 600;
@@ -2279,11 +2503,11 @@
 .is-mobile .noteMover-rule-trigger-fields-mobile select,
 .is-mobile .noteMover-rule-trigger-fields-mobile input {
   width: 100%;
-  min-height: 52px;
+  min-height: 48px;
   font-size: 16px;
-  padding: 14px 16px;
+  padding: 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--background-primary);
   color: var(--text-normal);
   box-sizing: border-box;
@@ -2300,18 +2524,18 @@
   box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
 }
 
-/* Dropdown styling with indicator */
+/* Dropdown styling with indicator - Legacy */
 .is-mobile .noteMover-rule-trigger-fields-mobile select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 16px center;
+  background-position: right 12px center;
   background-size: 12px;
-  padding-right: 40px;
+  padding-right: 36px;
 }
 
 .is-mobile .noteMover-rule-trigger-fields-mobile .noteMover-mobile-input {
   width: 100% !important;
-  min-height: 52px !important;
+  min-height: 48px !important;
   font-size: 16px !important;
 }
 
@@ -2331,6 +2555,25 @@
 }
 
 /* Add Condition Button Mobile */
+.noteMover-mobile-modal-button.noteMover-mobile-modal-card:has(.noteMover-mobile-action-btn:contains("+ Add Condition")) {
+  margin-top: 16px;
+}
+
+.noteMover-mobile-modal-button .noteMover-mobile-action-btn {
+  background: var(--background-primary);
+  border: 2px solid var(--interactive-accent);
+  color: var(--interactive-accent);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.noteMover-mobile-modal-button .noteMover-mobile-action-btn:active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  transform: scale(0.98);
+}
+
+/* Legacy Add Condition Button */
 .is-mobile .noteMover-rule-add-condition-mobile {
   margin-top: 8px;
   margin-bottom: 0;
@@ -2354,6 +2597,36 @@
   transform: scale(0.98);
 }
 
+.noteMover-rule-editor-footer-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--background-modifier-border);
+  box-sizing: border-box;
+}
+
+.noteMover-rule-editor-footer-mobile .noteMover-mobile-modal-card {
+  margin-bottom: 0;
+}
+
+.noteMover-rule-editor-footer-mobile .noteMover-mobile-action-btn {
+  width: 100%;
+  min-height: 52px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  padding: 14px 20px;
+}
+
+.noteMover-rule-editor-footer-mobile .noteMover-mobile-action-btn:active {
+  transform: scale(0.98);
+}
+
+/* Legacy Footer Styles */
 .is-mobile .noteMover-rule-editor-footer-mobile {
   display: flex;
   flex-direction: column;
