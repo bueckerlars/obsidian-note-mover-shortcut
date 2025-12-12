@@ -6,7 +6,12 @@ import {
   Operator,
   TextOperator,
 } from '../types/RuleV2';
-import { getDefaultOperatorForCriteriaType } from '../utils/OperatorMapping';
+import {
+  getDefaultOperatorForCriteriaType,
+  isOperatorValidForCriteriaType,
+  isOperatorValidForPropertyType,
+  operatorRequiresValue,
+} from '../utils/OperatorMapping';
 
 /**
  * Service for migrating Rule V1 to Rule V2 format
@@ -36,12 +41,18 @@ export class RuleMigrationService {
    */
   private static migrateRule(ruleV1: Rule, index: number): RuleV2 | null {
     if (!ruleV1 || !ruleV1.criteria || !ruleV1.path) {
+      console.warn(
+        `[RuleMigration] Rule ${index + 1}: Skipping invalid rule (missing criteria or path)`
+      );
       return null;
     }
 
     // Parse V1 criteria string: "type: value"
     const match = ruleV1.criteria.match(/^([a-zA-Z_]+):\s*(.*)$/);
     if (!match) {
+      console.warn(
+        `[RuleMigration] Rule ${index + 1}: Invalid criteria format: "${ruleV1.criteria}"`
+      );
       // Invalid format - create disabled rule with original criteria as name
       return {
         name: `Rule ${index + 1} (Invalid format)`,
@@ -65,6 +76,9 @@ export class RuleMigrationService {
     const triggerMapping = this.mapV1ToV2Trigger(type, value);
 
     if (!triggerMapping) {
+      console.warn(
+        `[RuleMigration] Rule ${index + 1}: Unsupported criteria type: "${type}"`
+      );
       // Unsupported type - create disabled rule with hint
       return {
         name: `Rule ${index + 1} (Unsupported: ${type})`,
@@ -81,20 +95,85 @@ export class RuleMigrationService {
       };
     }
 
+    // Validate the migrated trigger
+    // For properties with propertyType, validate against propertyType instead of criteriaType
+    let isValidOperator = false;
+    if (
+      triggerMapping.criteriaType === 'properties' &&
+      triggerMapping.propertyType
+    ) {
+      // For properties, validate against propertyType
+      isValidOperator = isOperatorValidForPropertyType(
+        triggerMapping.operator,
+        triggerMapping.propertyType
+      );
+      if (!isValidOperator) {
+        console.error(
+          `[RuleMigration] Rule ${index + 1}: Invalid operator "${triggerMapping.operator}" for propertyType "${triggerMapping.propertyType}"`
+        );
+      }
+    } else {
+      // For other criteria types, validate against criteriaType
+      isValidOperator = isOperatorValidForCriteriaType(
+        triggerMapping.operator,
+        triggerMapping.criteriaType
+      );
+      if (!isValidOperator) {
+        console.error(
+          `[RuleMigration] Rule ${index + 1}: Invalid operator "${triggerMapping.operator}" for criteriaType "${triggerMapping.criteriaType}"`
+        );
+      }
+    }
+
+    if (!isValidOperator) {
+      // Create disabled rule with validation error
+      return {
+        name: `Rule ${index + 1} (Invalid operator)`,
+        destination: ruleV1.path,
+        aggregation: 'all',
+        triggers: [triggerMapping],
+        active: false,
+      };
+    }
+
+    // Check if operator requires value and value is empty
+    if (
+      operatorRequiresValue(triggerMapping.operator) &&
+      (!triggerMapping.value || triggerMapping.value.trim() === '')
+    ) {
+      console.warn(
+        `[RuleMigration] Rule ${index + 1}: Operator "${triggerMapping.operator}" requires a value but value is empty. Rule will be disabled.`
+      );
+      // Create disabled rule with empty value warning
+      return {
+        name: this.generateRuleName(type, value, index),
+        destination: ruleV1.path,
+        aggregation: 'all',
+        triggers: [triggerMapping],
+        active: false,
+      };
+    }
+
     // Create RuleV2 with single trigger and aggregation "all"
-    return {
+    const migratedRule: RuleV2 = {
       name: this.generateRuleName(type, value, index),
       destination: ruleV1.path,
       aggregation: 'all',
       triggers: [triggerMapping],
       active: true,
     };
+
+    console.log(
+      `[RuleMigration] Rule ${index + 1}: Successfully migrated "${ruleV1.criteria}" -> "${migratedRule.name}"`
+    );
+
+    return migratedRule;
   }
 
   /**
    * Maps V1 criteria type and value to V2 Trigger
    * @param type - V1 criteria type
-   * @param value - V1 criteria value
+   * @param value - V1 criteria value (already extracted from "type: value" format)
    * @returns Trigger object or null if not mappable
    */
   private static mapV1ToV2Trigger(type: string, value: string): Trigger | null {
@@ -120,11 +199,14 @@ export class RuleMigrationService {
         return null;
       case 'created_at':
         criteriaType = 'created_at';
-        operator = 'date is'; // More appropriate for date criteria
+        // Use default operator 'is' for date criteria
+        // This matches ISO date strings (e.g., "2024-01-01")
+        operator = getDefaultOperatorForCriteriaType('created_at');
         break;
       case 'updated_at':
         criteriaType = 'modified_at';
-        operator = 'date is'; // More appropriate for date criteria
+        // Use default operator 'is' for date criteria
+        operator = getDefaultOperatorForCriteriaType('modified_at');
         break;
       case 'property':
         criteriaType = 'properties';
@@ -134,24 +216,31 @@ export class RuleMigrationService {
         return null;
     }
 
+    // Preserve important whitespace and leading characters (e.g., # for tags)
+    // Only trim trailing whitespace, not leading
+    const processedValue = this.processValue(value, criteriaType);
+
     const trigger: Trigger = {
       criteriaType,
       operator,
-      value,
+      value: processedValue,
     };
 
     // Add property-specific fields for properties criteria
     if (criteriaType === 'properties') {
-      // Try to extract property name from V1 format
-      const colonIndex = value.indexOf(':');
+      // V1 format: "property: key" or "property: key:value"
+      // The value parameter here is already "key" or "key:value"
+      const colonIndex = processedValue.indexOf(':');
       if (colonIndex !== -1) {
-        trigger.propertyName = value.substring(0, colonIndex).trim();
-        trigger.value = value.substring(colonIndex + 1).trim();
+        // Format: "key:value" - extract property name and value
+        trigger.propertyName = processedValue.substring(0, colonIndex).trim();
+        const propertyValue = processedValue.substring(colonIndex + 1).trim();
+        trigger.value = propertyValue;
         trigger.propertyType = 'text'; // Default to text type
         trigger.operator = 'contains'; // Change to text-based operator for value matching
       } else {
-        // No colon found, treat as property existence check
-        trigger.propertyName = value;
+        // Format: "key" - property existence check
+        trigger.propertyName = processedValue.trim();
         trigger.value = '';
         trigger.propertyType = 'text';
         trigger.operator = 'has any value';
@@ -159,6 +248,32 @@ export class RuleMigrationService {
     }
 
     return trigger;
+  }
+
+  /**
+   * Processes value string, preserving important leading characters
+   * @param value - Raw value string
+   * @param criteriaType - The criteria type to determine processing rules
+   * @returns Processed value string
+   */
+  private static processValue(
+    value: string,
+    criteriaType: CriteriaType
+  ): string {
+    if (!value) {
+      return '';
+    }
+
+    // For tags, preserve leading # and only trim trailing whitespace
+    if (criteriaType === 'tag') {
+      // Remove leading whitespace but preserve # if present
+      const trimmed = value.trimStart();
+      // Only trim trailing whitespace
+      return trimmed.trimEnd();
+    }
+
+    // For other types, trim both ends but preserve internal whitespace
+    return value.trim();
   }
 
   /**
@@ -248,6 +363,113 @@ export class RuleMigrationService {
     }
 
     return migrated;
+  }
+
+  /**
+   * Repairs RuleV2 rules with invalid or missing property fields
+   * This fixes issues like properties criteria without propertyName
+   * @param rulesV2 - Array of RuleV2 objects to repair
+   * @returns True if any repair was performed
+   */
+  public static repairRuleV2Properties(rulesV2: RuleV2[]): boolean {
+    if (!Array.isArray(rulesV2)) {
+      return false;
+    }
+
+    let repaired = false;
+
+    for (let ruleIndex = 0; ruleIndex < rulesV2.length; ruleIndex++) {
+      const rule = rulesV2[ruleIndex];
+      if (!rule.triggers || !Array.isArray(rule.triggers)) {
+        continue;
+      }
+
+      for (
+        let triggerIndex = 0;
+        triggerIndex < rule.triggers.length;
+        triggerIndex++
+      ) {
+        const trigger = rule.triggers[triggerIndex];
+
+        // Check if this is a properties trigger without propertyName
+        if (trigger.criteriaType === 'properties' && !trigger.propertyName) {
+          console.warn(
+            `[RuleMigration] Repairing RuleV2[${ruleIndex}].triggers[${triggerIndex}]: Missing propertyName for properties criteria`
+          );
+
+          // Try to extract propertyName from value if value exists and looks like a property name
+          if (trigger.value && trigger.value.trim() !== '') {
+            // Check if value contains a colon (key:value format)
+            const colonIndex = trigger.value.indexOf(':');
+            if (colonIndex !== -1) {
+              // Extract property name from "key:value" format
+              trigger.propertyName = trigger.value
+                .substring(0, colonIndex)
+                .trim();
+              trigger.value = trigger.value.substring(colonIndex + 1).trim();
+              trigger.propertyType = trigger.propertyType || 'text';
+              // Ensure operator is valid for property type
+              if (
+                !isOperatorValidForPropertyType(
+                  trigger.operator,
+                  trigger.propertyType
+                )
+              ) {
+                trigger.operator = 'contains';
+              }
+            } else {
+              // Value is just the property name
+              trigger.propertyName = trigger.value.trim();
+              trigger.value = '';
+              trigger.propertyType = trigger.propertyType || 'text';
+              trigger.operator = 'has any value';
+            }
+            repaired = true;
+          } else {
+            // No value to extract from, disable the rule
+            console.error(
+              `[RuleMigration] RuleV2[${ruleIndex}].triggers[${triggerIndex}]: Cannot repair properties trigger without value. Disabling rule.`
+            );
+            rule.active = false;
+            repaired = true;
+          }
+        }
+
+        // Also check if propertyName is empty string and fix it
+        if (
+          trigger.criteriaType === 'properties' &&
+          trigger.propertyName === ''
+        ) {
+          console.warn(
+            `[RuleMigration] Repairing RuleV2[${ruleIndex}].triggers[${triggerIndex}]: Empty propertyName for properties criteria`
+          );
+
+          if (trigger.value && trigger.value.trim() !== '') {
+            const colonIndex = trigger.value.indexOf(':');
+            if (colonIndex !== -1) {
+              trigger.propertyName = trigger.value
+                .substring(0, colonIndex)
+                .trim();
+              trigger.value = trigger.value.substring(colonIndex + 1).trim();
+            } else {
+              trigger.propertyName = trigger.value.trim();
+              trigger.value = '';
+              trigger.operator = 'has any value';
+            }
+            trigger.propertyType = trigger.propertyType || 'text';
+            repaired = true;
+          } else {
+            console.error(
+              `[RuleMigration] RuleV2[${ruleIndex}].triggers[${triggerIndex}]: Cannot repair properties trigger with empty propertyName and value. Disabling rule.`
+            );
+            rule.active = false;
+            repaired = true;
+          }
+        }
+      }
+    }
+
+    return repaired;
   }
 
   /**
