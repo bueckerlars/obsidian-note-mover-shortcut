@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.5...0.5.6)
+
+### Improvements
+
+- **Mobile-First Redesign of RuleEditorModal**: Complete mobile optimization of the rule editor modal
+  - Introduced reusable mobile modal components (Card, Input, Toggle, Button, Section) for consistent UI/UX
+  - Implemented MobileTriggerCard component with card-based layout for trigger conditions
+  - Separated mobile and desktop implementations, removing all conditional mobile logic
+  - Replaced SVG strings with `setIcon()` for better maintainability
+  - Optimized CSS with consistent padding (16px horizontal, 12px card padding) and touch-friendly targets (min-height: 48px)
+  - Mobile UI now uses a consistent design system matching the mobile settings interface
+
 ## [0.5.5](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.4...0.5.5)
 
 ### Fixes

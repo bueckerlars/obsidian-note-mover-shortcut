@@ -158,9 +158,6 @@ export class MobileTriggerCard {
       if (callbacks.onCriteriaTypeChange) {
         callbacks.onCriteriaTypeChange(trigger.criteriaType);
       }
-      if (callbacks.onRender) {
-        callbacks.onRender();
-      }
     });
 
     // Operator Dropdown (will be populated by populateOperatorDropdown)
@@ -176,9 +173,6 @@ export class MobileTriggerCard {
       trigger.operator = this.operatorSelect.value as Operator;
       if (callbacks.onOperatorChange) {
         callbacks.onOperatorChange(trigger.operator);
-      }
-      if (callbacks.onRender) {
-        callbacks.onRender();
       }
     });
 
@@ -205,12 +199,15 @@ export class MobileTriggerCard {
         );
         if (detectedType) {
           trigger.propertyType = detectedType;
+          // Property type detection requires re-render to update operator dropdown
           if (callbacks.onRender) {
             callbacks.onRender();
           }
-        }
-        if (callbacks.onPropertyNameChange) {
-          callbacks.onPropertyNameChange(trigger.propertyName || '');
+        } else {
+          // Only call onPropertyNameChange if no type was detected (no re-render needed)
+          if (callbacks.onPropertyNameChange) {
+            callbacks.onPropertyNameChange(trigger.propertyName || '');
+          }
         }
       });
     }
