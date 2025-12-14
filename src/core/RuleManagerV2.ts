@@ -96,9 +96,11 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
+        // Show warnings for actual file moves, but not for previews
         return this.resolveTemplateDestination(
           matchingRule.destination,
-          metadata
+          metadata,
+          true // showWarnings = true for actual moves
         );
       }
 
@@ -157,9 +159,11 @@ export class RuleManagerV2 {
 
       if (matchingRule) {
         // Resolve template destination if enabled
+        // Don't show warnings in preview mode to avoid spam
         const resolvedDestination = this.resolveTemplateDestination(
           matchingRule.destination,
-          metadata
+          metadata,
+          false // showWarnings = false for preview
         );
 
         // Calculate the full target path
@@ -266,7 +270,7 @@ export class RuleManagerV2 {
   }
 
   /**
-   * Validates that all rules have valid triggers
+   * Validates that all rules have valid triggers and template syntax
    *
    * @returns Array of validation errors
    */
@@ -290,8 +294,22 @@ export class RuleManagerV2 {
         errors.push(`Rule "${rule.name}" has no destination`);
       }
 
-      // Warn if template syntax is found but feature is not enabled
+      // Validate template syntax if feature is enabled
       if (
+        this.enableTemplateRules &&
+        TemplateEngine.hasTemplateSyntax(rule.destination)
+      ) {
+        // Get available properties from all files in vault for validation
+        // For now, we'll validate syntax without property existence check
+        const templateErrors = TemplateEngine.validateTemplateSyntax(
+          rule.destination
+        );
+        if (templateErrors.length > 0) {
+          errors.push(
+            `Rule "${rule.name}" has template syntax errors: ${templateErrors.join('; ')}`
+          );
+        }
+      } else if (
         !this.enableTemplateRules &&
         TemplateEngine.hasTemplateSyntax(rule.destination)
       ) {
@@ -309,11 +327,13 @@ export class RuleManagerV2 {
    *
    * @param destination - Destination path (may contain template syntax)
    * @param metadata - File metadata for property substitution
+   * @param showWarnings - Whether to show warnings for missing properties (default: true)
    * @returns Resolved destination path
    */
   private resolveTemplateDestination(
     destination: string,
-    metadata: FileMetadata
+    metadata: FileMetadata,
+    showWarnings = true
   ): string {
     // If template rules are not enabled, return destination as-is
     if (!this.enableTemplateRules) {
@@ -325,7 +345,27 @@ export class RuleManagerV2 {
       return destination;
     }
 
-    // Render template with property values
-    return TemplateEngine.renderTemplate(destination, metadata);
+    // Render template with validation
+    const result = TemplateEngine.renderTemplateWithValidation(
+      destination,
+      metadata,
+      showWarnings
+    );
+
+    // Show warnings if any
+    if (showWarnings && result.warnings.length > 0) {
+      for (const warning of result.warnings) {
+        NoticeManager.warning(warning);
+      }
+    }
+
+    // Show errors if any
+    if (result.errors.length > 0) {
+      for (const error of result.errors) {
+        NoticeManager.error(error);
+      }
+    }
+
+    return result.path;
   }
 }

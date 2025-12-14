@@ -23,6 +23,8 @@ import {
   operatorRequiresValue,
   getPropertyTypeFromVault,
 } from '../utils/OperatorMapping';
+import { TemplateEngine } from '../utils/TemplateEngine';
+import { DebounceManager } from '../utils/DebounceManager';
 
 interface RuleEditorModalOptions {
   rule: RuleV2;
@@ -36,6 +38,8 @@ export class RuleEditorModal extends BaseModal {
   private workingRule: RuleV2;
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
+  private templateValidationEl: HTMLElement | null = null;
+  private debounceManager: DebounceManager;
 
   constructor(app: App, options: RuleEditorModalOptions) {
     super(app, {
@@ -47,6 +51,8 @@ export class RuleEditorModal extends BaseModal {
     this.ruleOptions = options;
     // Create a working copy of the rule
     this.workingRule = JSON.parse(JSON.stringify(options.rule));
+    // Initialize debounce manager for template validation
+    this.debounceManager = new DebounceManager();
   }
 
   protected createContent(): void {
@@ -184,15 +190,15 @@ export class RuleEditorModal extends BaseModal {
 
   private createDestinationInput(container: HTMLElement): void {
     const isMobile = MobileUtils.isMobile();
-    
+
     // Create description with template syntax info
     const desc = document.createDocumentFragment();
     desc.append(
       'Folder where files matching this rule will be moved',
       document.createElement('br'),
-      'You can use template syntax: {{propertyName}} or {{getPropertyValue:propertyName}} to insert property values dynamically.',
+      'Template syntax: {{propertyName}}, {{propertyName|default}}, {{tag:tagName}}',
       document.createElement('br'),
-      'Example: /Personal/Tasks/{{status}} will become /Personal/Tasks/In progress'
+      'Examples: /Personal/Tasks/{{status}}, /Personal/Tasks/{{status|pending}}, /Personal/{{tag:tasks/personal}}'
     );
 
     const setting = new Setting(container)
@@ -204,6 +210,14 @@ export class RuleEditorModal extends BaseModal {
           .setValue(this.workingRule.destination)
           .onChange(value => {
             this.workingRule.destination = value;
+            // Debounce validation to avoid performance issues
+            this.debounceManager.debounce(
+              'templateValidation',
+              () => {
+                this.validateTemplateSyntax(value);
+              },
+              300
+            );
           });
         // Make search input wider
         cb.inputEl.style.width = '100%';
@@ -211,6 +225,19 @@ export class RuleEditorModal extends BaseModal {
 
     // Add CSS class to the setting item for better styling
     setting.settingEl.addClass('destination-setting');
+
+    // Create validation message container
+    this.templateValidationEl = container.createDiv({
+      cls: 'template-validation-message',
+    });
+    this.templateValidationEl.style.marginTop = '8px';
+    this.templateValidationEl.style.fontSize = '0.9em';
+    this.templateValidationEl.style.display = 'none';
+
+    // Initial validation
+    if (this.workingRule.destination) {
+      this.validateTemplateSyntax(this.workingRule.destination);
+    }
 
     // Mobile: Remove or hide the search icon that overlaps with text
     if (isMobile) {
@@ -734,6 +761,65 @@ export class RuleEditorModal extends BaseModal {
     }
   }
 
+  /**
+   * Validates template syntax in destination and shows warnings/errors
+   */
+  private validateTemplateSyntax(destination: string): void {
+    if (!this.templateValidationEl) {
+      return;
+    }
+
+    // Clear previous validation
+    this.templateValidationEl.empty();
+    this.templateValidationEl.style.display = 'none';
+
+    if (!destination || !TemplateEngine.hasTemplateSyntax(destination)) {
+      return;
+    }
+
+    // Get available properties from vault for better validation
+    const availableProperties = this.getAvailableProperties();
+
+    // Validate template syntax
+    const errors = TemplateEngine.validateTemplateSyntax(
+      destination,
+      availableProperties
+    );
+
+    if (errors.length > 0) {
+      this.templateValidationEl.style.display = 'block';
+      this.templateValidationEl.style.color = 'var(--text-error)';
+      this.templateValidationEl.textContent = `⚠️ Template errors: ${errors.join('; ')}`;
+    } else {
+      // Show info that template syntax is valid
+      this.templateValidationEl.style.display = 'block';
+      this.templateValidationEl.style.color = 'var(--text-muted)';
+      this.templateValidationEl.textContent = '✓ Template syntax is valid';
+    }
+  }
+
+  /**
+   * Gets available property names from vault for template validation
+   */
+  private getAvailableProperties(): string[] {
+    const propertyKeys = new Set<string>();
+    const files = this.app.vault.getMarkdownFiles();
+
+    files.forEach(file => {
+      const cachedMetadata = this.app.metadataCache.getFileCache(file);
+      if (cachedMetadata?.frontmatter) {
+        Object.keys(cachedMetadata.frontmatter).forEach(key => {
+          // Skip Obsidian internal properties
+          if (!key.startsWith('position') && key !== 'tags') {
+            propertyKeys.add(key);
+          }
+        });
+      }
+    });
+
+    return Array.from(propertyKeys);
+  }
+
   private validateRule(): boolean {
     // Validate name
     if (!this.workingRule.name || this.workingRule.name.trim() === '') {
@@ -748,6 +834,19 @@ export class RuleEditorModal extends BaseModal {
     ) {
       alert('Destination folder cannot be empty.');
       return false;
+    }
+
+    // Validate template syntax if present
+    if (TemplateEngine.hasTemplateSyntax(this.workingRule.destination)) {
+      const templateErrors = TemplateEngine.validateTemplateSyntax(
+        this.workingRule.destination
+      );
+      if (templateErrors.length > 0) {
+        alert(
+          `Template syntax errors in destination:\n${templateErrors.join('\n')}`
+        );
+        return false;
+      }
     }
 
     // Validate triggers
@@ -789,6 +888,10 @@ export class RuleEditorModal extends BaseModal {
     if (this.dragDropManager) {
       this.dragDropManager.destroy();
       this.dragDropManager = null;
+    }
+    // Cancel any pending debounced operations
+    if (this.debounceManager) {
+      this.debounceManager.cancelAll();
     }
     super.onClose();
   }

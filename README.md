@@ -74,6 +74,39 @@ Notes:
   - Note: If a file matches multiple rules, the first matching rule will be applied.
   - Note: Destination folders will be created automatically if they don't exist.
 
+#### Template Rules (Beta)
+
+Template Rules allow you to dynamically generate folder paths based on file metadata. This feature is available when Rule V2 is enabled.
+
+**Template Syntax:**
+
+- `{{propertyName}}` - Inserts the value of a frontmatter property
+- `{{propertyName|defaultValue}}` - Inserts property value, or uses default if property is missing
+- `{{tag:tagName}}` - Inserts the deepest level of a matching tag (e.g., `{{tag:tasks/personal}}` → `personal`)
+
+**Examples:**
+
+- `/Personal/Tasks/{{status}}` → `/Personal/Tasks/In_progress` (if `status: "In progress"`)
+- `/Personal/Tasks/{{status|pending}}` → `/Personal/Tasks/pending` (if `status` is missing)
+- `/Personal/{{tag:tasks/personal}}` → `/Personal/personal` (if file has tag `#tasks/personal`)
+
+**Behavior:**
+
+- Property values are automatically sanitized for file paths (spaces → underscores, invalid characters removed)
+- Hierarchical values (like `tasks/personal`) extract only the deepest level (`personal`)
+- Array properties use the first value
+- Missing properties result in empty strings unless a default is provided
+- Empty template values are removed from paths to prevent invalid folder names
+- Tag references match hierarchically (e.g., `{{tag:tasks}}` matches `#tasks/personal` and extracts `personal`)
+
+**Edge Cases:**
+
+- **Null/Undefined properties**: Return empty string (use defaults: `{{property|default}}`)
+- **Array properties**: First element is used
+- **Nested objects**: Not supported (returns empty string)
+- **Empty strings**: Removed from path segments
+- **Missing tags**: Returns empty string (use defaults: `{{tag:name|default}}`)
+
 ### Example Configurations
 
 #### Advanced Rule Examples

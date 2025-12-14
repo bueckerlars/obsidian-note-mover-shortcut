@@ -121,6 +121,12 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     templateContent: string;
     templateStart: number;
     templateEnd: number;
+    identifier: string;
+    hasDefault: boolean;
+    isTag: boolean;
+    isGetPropertyValue: boolean;
+    cursorInIdentifier: boolean;
+    cursorInDefault: boolean;
   } {
     // Default return value
     const defaultReturn = {
@@ -128,13 +134,19 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
       templateContent: '',
       templateStart: -1,
       templateEnd: -1,
+      identifier: '',
+      hasDefault: false,
+      isTag: false,
+      isGetPropertyValue: false,
+      cursorInIdentifier: false,
+      cursorInDefault: false,
     };
 
     if (cursorPos < 0 || cursorPos > query.length) {
       return defaultReturn;
     }
 
-    // Find all {{...}} patterns in the query
+    // Find all {{...}} patterns in the query (handle nested braces by matching innermost first)
     const templatePattern = /\{\{([^}]*)\}\}/g;
     let match;
     const templates: Array<{
@@ -164,11 +176,52 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     for (const template of templates) {
       // Cursor must be between {{ and }} (not on the braces themselves)
       if (cursorPos > template.start && cursorPos < template.end) {
+        const content = template.content;
+
+        // Parse template content: identifier|default or tag:name|default or getPropertyValue:identifier|default
+        let identifier = content;
+        let hasDefault = false;
+        let isTag = false;
+        let isGetPropertyValue = false;
+        let cursorInIdentifier = true;
+        let cursorInDefault = false;
+
+        // Check for default value (|default)
+        const defaultIndex = content.indexOf('|');
+        if (defaultIndex !== -1) {
+          hasDefault = true;
+          identifier = content.substring(0, defaultIndex);
+          const defaultStart = template.contentStart + defaultIndex + 1;
+          // Check if cursor is in default section
+          if (cursorPos >= defaultStart) {
+            cursorInIdentifier = false;
+            cursorInDefault = true;
+          }
+        }
+
+        // Remove getPropertyValue: prefix if present
+        if (identifier.startsWith('getPropertyValue:')) {
+          isGetPropertyValue = true;
+          identifier = identifier.substring('getPropertyValue:'.length);
+        }
+
+        // Check if it's a tag reference
+        if (identifier.startsWith('tag:')) {
+          isTag = true;
+          identifier = identifier.substring(4);
+        }
+
         return {
           isInTemplate: true,
-          templateContent: template.content,
+          templateContent: content,
           templateStart: template.start,
           templateEnd: template.end,
+          identifier: identifier.trim(),
+          hasDefault,
+          isTag,
+          isGetPropertyValue,
+          cursorInIdentifier,
+          cursorInDefault,
         };
       }
     }
@@ -184,11 +237,97 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     const templateContext = this.detectTemplateContext(query, cursorPos);
 
     if (templateContext.isInTemplate) {
-      // We're inside a template, suggest property names
-      const queryInsideTemplate = templateContext.templateContent.toLowerCase();
-      return Array.from(this.propertyKeys)
-        .filter(key => key.toLowerCase().includes(queryInsideTemplate))
-        .map(key => key);
+      // We're inside a template, provide context-aware suggestions
+      if (templateContext.cursorInDefault) {
+        // Cursor is in default value section, suggest common default values or property values
+        const queryInDefault = templateContext.templateContent
+          .substring(templateContext.templateContent.indexOf('|') + 1)
+          .toLowerCase();
+
+        // Suggest property values if we have an identifier
+        if (templateContext.identifier && !templateContext.isTag) {
+          const propertyValues = this.propertyValues.get(
+            templateContext.identifier
+          );
+          if (propertyValues) {
+            return Array.from(propertyValues)
+              .filter(value => value.toLowerCase().includes(queryInDefault))
+              .slice(0, 20);
+          }
+        }
+
+        // Suggest common default values
+        const commonDefaults = [
+          'pending',
+          'default',
+          'unknown',
+          'other',
+          'none',
+        ];
+        return commonDefaults
+          .filter(d => d.toLowerCase().includes(queryInDefault))
+          .slice(0, 10);
+      }
+
+      // Cursor is in identifier section
+      const queryInIdentifier = templateContext.identifier.toLowerCase();
+
+      // If user typed "tag:", suggest tags
+      if (templateContext.isTag || queryInIdentifier.startsWith('tag:')) {
+        const tagQuery = queryInIdentifier.startsWith('tag:')
+          ? queryInIdentifier.substring(4)
+          : queryInIdentifier;
+        return Array.from(this.tags)
+          .filter(tag => {
+            const tagWithoutHash = tag.startsWith('#') ? tag.substring(1) : tag;
+            return tagWithoutHash.toLowerCase().includes(tagQuery);
+          })
+          .map(tag => {
+            const tagWithoutHash = tag.startsWith('#') ? tag.substring(1) : tag;
+            return `tag:${tagWithoutHash}`;
+          })
+          .slice(0, 20);
+      }
+
+      // If user typed "getPropertyValue:", suggest properties
+      if (
+        templateContext.isGetPropertyValue ||
+        queryInIdentifier.startsWith('getpropertyvalue:')
+      ) {
+        const propQuery = queryInIdentifier.startsWith('getpropertyvalue:')
+          ? queryInIdentifier.substring('getpropertyvalue:'.length)
+          : queryInIdentifier;
+        return Array.from(this.propertyKeys)
+          .filter(key => key.toLowerCase().includes(propQuery))
+          .map(key => `getPropertyValue:${key}`)
+          .slice(0, 20);
+      }
+
+      // Default: suggest property names, tag: prefix, or getPropertyValue: prefix
+      const suggestions: string[] = [];
+
+      // Suggest properties
+      Array.from(this.propertyKeys)
+        .filter(key => key.toLowerCase().includes(queryInIdentifier))
+        .forEach(key => suggestions.push(key));
+
+      // Suggest tag: prefix if query matches
+      if (
+        queryInIdentifier === '' ||
+        'tag:'.startsWith(queryInIdentifier.toLowerCase())
+      ) {
+        suggestions.push('tag:');
+      }
+
+      // Suggest getPropertyValue: prefix if query matches
+      if (
+        queryInIdentifier === '' ||
+        'getpropertyvalue:'.startsWith(queryInIdentifier.toLowerCase())
+      ) {
+        suggestions.push('getPropertyValue:');
+      }
+
+      return suggestions.slice(0, 20);
     }
 
     // If in destination mode and no type match, suggest folders
@@ -313,17 +452,44 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     const templateContext = this.detectTemplateContext(currentQuery, cursorPos);
 
     if (templateContext.isInTemplate) {
-      // We're inside a template, replace only the content between {{ and }}
+      // We're inside a template, handle replacement based on context
       const beforeTemplate = currentQuery.substring(
         0,
         templateContext.templateStart
       );
       const afterTemplate = currentQuery.substring(templateContext.templateEnd);
-      const newValue = `${beforeTemplate}{{${value}}}${afterTemplate}`;
 
+      let newTemplateContent = '';
+      let newCursorPos = 0;
+
+      if (templateContext.cursorInDefault) {
+        // Cursor is in default section, replace default value
+        const defaultIndex = templateContext.templateContent.indexOf('|');
+        const identifierPart = templateContext.templateContent.substring(
+          0,
+          defaultIndex
+        );
+        newTemplateContent = `${identifierPart}|${value}`;
+        newCursorPos =
+          templateContext.templateStart + 2 + newTemplateContent.length;
+      } else {
+        // Cursor is in identifier section
+        if (templateContext.hasDefault) {
+          // Preserve existing default value
+          const defaultIndex = templateContext.templateContent.indexOf('|');
+          const defaultPart =
+            templateContext.templateContent.substring(defaultIndex);
+          newTemplateContent = `${value}${defaultPart}`;
+        } else {
+          // No default, just replace identifier
+          newTemplateContent = value;
+        }
+        newCursorPos =
+          templateContext.templateStart + 2 + newTemplateContent.length;
+      }
+
+      const newValue = `${beforeTemplate}{{${newTemplateContent}}}${afterTemplate}`;
       this.inputEl.value = newValue;
-      // Set cursor position after the closing }}
-      const newCursorPos = templateContext.templateStart + 2 + value.length + 2;
       this.inputEl.setSelectionRange(newCursorPos, newCursorPos);
       this.inputEl.trigger('input');
       this.close();
