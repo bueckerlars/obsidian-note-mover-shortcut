@@ -32,7 +32,7 @@ export class PreviewModal extends BaseModal {
     const subtitle = `${stats.totalFiles} files analyzed • ${stats.successfulMoves.length} will be moved`;
     contentEl.createEl('p', {
       text: subtitle,
-      cls: 'modal-subtitle',
+      cls: 'noteMover-modal-subtitle',
     });
 
     // Settings info removed - Rules and Filter are always enabled now
@@ -47,7 +47,7 @@ export class PreviewModal extends BaseModal {
     // No files message
     if (stats.totalFiles === 0) {
       contentEl.createEl('div', {
-        cls: 'modal-empty',
+        cls: 'noteMover-modal-empty',
         text: 'No files found to analyze.',
       });
     }
@@ -64,75 +64,85 @@ export class PreviewModal extends BaseModal {
     const section = this.createSection(
       container,
       isMobile
-        ? 'preview-section preview-section-success preview-section-mobile'
-        : 'preview-section preview-section-success'
+        ? 'noteMover-preview-section noteMover-preview-section-success noteMover-preview-section-mobile'
+        : 'noteMover-preview-section noteMover-preview-section-success'
     );
 
-    const header = section.createEl('div', { cls: 'modal-section-header' });
+    const header = section.createEl('div', {
+      cls: 'noteMover-modal-section-header',
+    });
     header.innerHTML = `<h3>✅ Files to be moved (${entries.length})</h3>`;
 
     const list = section.createEl('div', {
-      cls: isMobile ? 'modal-list modal-list-mobile' : 'modal-list',
+      cls: isMobile
+        ? 'noteMover-modal-list noteMover-modal-list-mobile'
+        : 'noteMover-modal-list',
     });
 
     entries.forEach(entry => {
       const item = list.createEl('div', {
         cls: isMobile
-          ? 'modal-list-item preview-item-success preview-item-mobile'
-          : 'modal-list-item preview-item-success',
+          ? 'noteMover-modal-list-item noteMover-preview-item-success noteMover-preview-item-mobile'
+          : 'noteMover-modal-list-item noteMover-preview-item-success',
       });
 
-      const mainInfo = item.createEl('div', { cls: 'preview-item-main' });
+      const mainInfo = item.createEl('div', {
+        cls: 'noteMover-preview-item-main',
+      });
       const fileName = mainInfo.createEl('div', {
-        cls: 'preview-item-filename',
+        cls: 'noteMover-preview-item-filename',
       });
       fileName.textContent = entry.fileName;
 
       const pathInfo = mainInfo.createEl('div', {
         cls: isMobile
-          ? 'preview-item-paths preview-item-paths-mobile'
-          : 'preview-item-paths',
+          ? 'noteMover-preview-item-paths noteMover-preview-item-paths-mobile'
+          : 'noteMover-preview-item-paths',
       });
 
       if (isMobile) {
         // Mobile: Stack paths vertically
         const currentPathEl = pathInfo.createEl('div', {
-          cls: 'preview-path-mobile preview-path-current',
+          cls: 'noteMover-preview-path-mobile noteMover-preview-path-current',
         });
         currentPathEl.textContent = entry.currentPath;
 
         const arrowEl = pathInfo.createEl('div', {
-          cls: 'preview-arrow-mobile',
+          cls: 'noteMover-preview-arrow-mobile',
         });
         arrowEl.textContent = '↓';
 
         const targetPathEl = pathInfo.createEl('div', {
-          cls: 'preview-path-mobile preview-path-target',
+          cls: 'noteMover-preview-path-mobile noteMover-preview-path-target',
         });
         targetPathEl.textContent = entry.targetPath;
       } else {
         // Desktop: Horizontal layout
         pathInfo.innerHTML = `
-          <span class="current-path">${entry.currentPath}</span>
-          <span class="arrow">→</span>
-          <span class="target-path">${entry.targetPath}</span>
+          <span class="noteMover-current-path">${entry.currentPath}</span>
+          <span class="noteMover-arrow">→</span>
+          <span class="noteMover-target-path">${entry.targetPath}</span>
         `;
       }
 
       const details = item.createEl('div', {
         cls: isMobile
-          ? 'preview-item-details preview-item-details-mobile'
-          : 'preview-item-details',
+          ? 'noteMover-preview-item-details noteMover-preview-item-details-mobile'
+          : 'noteMover-preview-item-details',
       });
 
       if (entry.matchedRule) {
-        const rule = details.createEl('div', { cls: 'preview-item-rule' });
-        rule.innerHTML = `<span class="rule-label">Rule:</span> <code>${entry.matchedRule}</code>`;
+        const rule = details.createEl('div', {
+          cls: 'noteMover-preview-item-rule',
+        });
+        rule.innerHTML = `<span class="noteMover-rule-label">Rule:</span> <code>${entry.matchedRule}</code>`;
       }
 
       if (entry.tags && entry.tags.length > 0) {
-        const tags = details.createEl('div', { cls: 'preview-item-tags' });
-        tags.innerHTML = `<span class="tags-label">Tags:</span> ${entry.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}`;
+        const tags = details.createEl('div', {
+          cls: 'noteMover-preview-item-tags',
+        });
+        tags.innerHTML = `<span class="noteMover-tags-label">Tags:</span> ${entry.tags.map(tag => `<span class="noteMover-tag">${tag}</span>`).join(' ')}`;
       }
     });
   }
@@ -142,7 +152,9 @@ export class PreviewModal extends BaseModal {
   private createActionButtons(container: HTMLElement) {
     const isMobile = MobileUtils.isMobile();
     const footer = container.createEl('div', {
-      cls: isMobile ? 'modal-footer modal-footer-mobile' : 'modal-footer',
+      cls: isMobile
+        ? 'noteMover-modal-footer noteMover-modal-footer-mobile'
+        : 'noteMover-modal-footer',
     });
 
     const buttonContainer = this.createButtonContainer(footer);

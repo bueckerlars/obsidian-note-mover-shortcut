@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.5.7](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.6...0.5.7)
+
+### Fixes
+
+- Fixed RuleV1 to RuleV2 migration issues
+  - Correct property migration for "property: key:value" format
+  - Improved operator validation for properties with propertyType
+  - Fixed date criteria operator selection
+  - Preserved leading characters (e.g., # for tags) during migration
+  - Added comprehensive error logging for migration failures
+- Added automatic repair for existing RuleV2 rules with missing propertyName
+  - Repair function extracts propertyName from value when possible
+  - Invalid rules are automatically disabled with error logging
+
+## [0.5.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.5...0.5.6)
+
+### Improvements
+
+- **Mobile-First Redesign of RuleEditorModal**: Complete mobile optimization of the rule editor modal
+  - Introduced reusable mobile modal components (Card, Input, Toggle, Button, Section) for consistent UI/UX
+  - Implemented MobileTriggerCard component with card-based layout for trigger conditions
+  - Separated mobile and desktop implementations, removing all conditional mobile logic
+  - Replaced SVG strings with `setIcon()` for better maintainability
+  - Optimized CSS with consistent padding (16px horizontal, 12px card padding) and touch-friendly targets (min-height: 48px)
+  - Mobile UI now uses a consistent design system matching the mobile settings interface
+
+## [0.5.5](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.4...0.5.5)
+
+### Fixes
+
+- Fixed CSS selectors overwriting global Obsidian styles [#48](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/48)
+  - Scoped `.vertical-tab-content` selector to plugin containers only
+  - Restricted `.setting-item-control` selectors to plugin modals and containers
+  - Limited generic `button` selector to plugin elements only
+  - Prevents plugin styles from affecting other Obsidian UI elements, especially on mobile devices
+
+## [0.5.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.3...0.5.4)
+
+### Fixes
+
+- Refactored mobile styles and classes for improved consistency
+  - Updated CSS class names to follow a unified naming convention with the prefix 'noteMover-' for better organization
+  - Refactored modal and settings components to utilize the new class names, enhancing mobile responsiveness and usability
+  - Ensured all mobile-specific styles are applied consistently across various modals and settings sections
+  - Updated drag & drop functionality, suggesters, and all mobile components to use the new naming convention
+
 ## [0.5.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.2...0.5.3)
 
 ### Fixes

@@ -136,9 +136,9 @@ export class RulesSettingsSection {
 
     // Create a container for rules with drag & drop
     const rulesContainer = document.createElement('div');
-    rulesContainer.className = 'rules-container';
+    rulesContainer.className = 'noteMover-rules-container';
     if (isMobile) {
-      rulesContainer.addClass('mobile-rules-container');
+      rulesContainer.addClass('noteMover-mobile-rules-container');
     }
     this.containerEl.appendChild(rulesContainer);
 
@@ -178,7 +178,7 @@ export class RulesSettingsSection {
               this.plugin.noteMover.updateRuleManager();
             });
           // @ts-ignore
-          cb.containerEl.addClass('note_mover_search');
+          cb.containerEl.addClass('noteMover-search');
         })
         .addSearch(cb => {
           new FolderSuggest(this.app, cb.inputEl);
@@ -189,7 +189,7 @@ export class RulesSettingsSection {
               await this.plugin.save_settings();
             });
           // @ts-ignore
-          cb.containerEl.addClass('note_mover_search');
+          cb.containerEl.addClass('noteMover-search');
         })
         .addExtraButton(btn =>
           btn.setIcon('cross').onClick(async () => {
@@ -207,10 +207,10 @@ export class RulesSettingsSection {
 
       // Add mobile optimization classes
       if (isMobile) {
-        s.settingEl.addClass('mobile-rule-item');
+        s.settingEl.addClass('noteMover-mobile-rule-item');
         const controlEl = s.settingEl.querySelector('.setting-item-control');
         if (controlEl) {
-          (controlEl as HTMLElement).addClass('mobile-rule-controls');
+          (controlEl as HTMLElement).addClass('noteMover-mobile-rule-controls');
         }
       }
     });
@@ -241,19 +241,19 @@ export class RulesSettingsSection {
         this.refreshDisplay();
       },
       itemSelector: '.setting-item',
-      handleSelector: '.drag-handle',
+      handleSelector: '.noteMover-drag-handle',
     });
   }
 
   private addDragHandle(settingEl: HTMLElement, index: number): void {
     const handle = DragDropManager.createDragHandle();
     const handleContainer = document.createElement('div');
-    handleContainer.className = 'drag-handle-container';
+    handleContainer.className = 'noteMover-drag-handle-container';
     handleContainer.appendChild(handle);
 
     // Insert handle at the beginning of the setting
     settingEl.insertBefore(handleContainer, settingEl.firstChild);
-    settingEl.classList.add('with-drag-handle');
+    settingEl.classList.add('noteMover-with-drag-handle');
   }
 
   private reorderRules(fromIndex: number, toIndex: number): void {
@@ -304,9 +304,9 @@ export class RulesSettingsSection {
 
     // Create a container for rules with drag & drop
     const rulesContainer = document.createElement('div');
-    rulesContainer.className = 'rules-v2-container';
+    rulesContainer.className = 'noteMover-rules-v2-container';
     if (isMobile) {
-      rulesContainer.addClass('mobile-rules-container');
+      rulesContainer.addClass('noteMover-mobile-rules-container');
     }
     this.containerEl.appendChild(rulesContainer);
 
@@ -321,26 +321,28 @@ export class RulesSettingsSection {
 
       // Create custom layout container
       const customContainer = s.settingEl.createDiv({
-        cls: 'rule-v2-custom-container',
+        cls: 'noteMover-rule-v2-custom-container',
       });
 
       // Add mobile class if on mobile
       if (isMobile) {
-        customContainer.addClass('mobile-rule-container');
+        customContainer.addClass('noteMover-mobile-rule-container');
       }
 
       // Rule name display (left side)
-      const nameEl = customContainer.createDiv({ cls: 'rule-v2-name' });
+      const nameEl = customContainer.createDiv({
+        cls: 'noteMover-rule-v2-name',
+      });
       nameEl.textContent = rule.name || 'Unnamed Rule';
 
       // Actions container (right side)
       const actionsContainer = customContainer.createDiv({
-        cls: 'rule-v2-actions',
+        cls: 'noteMover-rule-v2-actions',
       });
 
       // Add mobile class if on mobile
       if (isMobile) {
-        actionsContainer.addClass('mobile-rule-actions');
+        actionsContainer.addClass('noteMover-mobile-rule-actions');
       }
 
       // Add delete button to actions container
@@ -390,7 +392,7 @@ export class RulesSettingsSection {
 
       // Add drag handle to actions container (rightmost position)
       const handleContainer = actionsContainer.createDiv({
-        cls: 'drag-handle-container',
+        cls: 'noteMover-drag-handle-container',
       });
       const handle = DragDropManager.createDragHandle();
       handleContainer.appendChild(handle);
@@ -416,7 +418,7 @@ export class RulesSettingsSection {
         this.refreshDisplay();
       },
       itemSelector: '.setting-item',
-      handleSelector: '.drag-handle',
+      handleSelector: '.noteMover-drag-handle',
     });
   }
 

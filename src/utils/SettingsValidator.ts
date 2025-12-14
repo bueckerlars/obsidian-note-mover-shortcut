@@ -705,17 +705,6 @@ export class SettingsValidator {
       return false;
     }
 
-    // Check if operator is valid for the criteria type
-    if (
-      !isOperatorValidForCriteriaType(trigger.operator, trigger.criteriaType)
-    ) {
-      const validOperators = getOperatorsForCriteriaType(trigger.criteriaType);
-      result.errors.push(
-        `${path}.operator '${trigger.operator}' is not valid for criteriaType '${trigger.criteriaType}'. Valid operators: ${validOperators.join(', ')}`
-      );
-      return false;
-    }
-
     // Special validation for properties criteria
     if (trigger.criteriaType === 'properties') {
       // Validate propertyName
@@ -744,16 +733,51 @@ export class SettingsValidator {
         }
       }
 
-      // Validate operator against property type
+      // Validate operator against property type if propertyType is set
+      // Otherwise validate against criteriaType
+      if (trigger.propertyType) {
+        // If propertyType is set, validate against propertyType
+        if (
+          !isOperatorValidForPropertyType(
+            trigger.operator,
+            trigger.propertyType
+          )
+        ) {
+          const validOperators = getOperatorsForPropertyType(
+            trigger.propertyType
+          );
+          result.errors.push(
+            `${path}.operator '${trigger.operator}' is not valid for propertyType '${trigger.propertyType}'. Valid operators: ${validOperators.join(', ')}`
+          );
+          return false;
+        }
+      } else {
+        // If propertyType is not set, validate against criteriaType (base property operators only)
+        if (
+          !isOperatorValidForCriteriaType(
+            trigger.operator,
+            trigger.criteriaType
+          )
+        ) {
+          const validOperators = getOperatorsForCriteriaType(
+            trigger.criteriaType
+          );
+          result.errors.push(
+            `${path}.operator '${trigger.operator}' is not valid for criteriaType '${trigger.criteriaType}'. Valid operators: ${validOperators.join(', ')}`
+          );
+          return false;
+        }
+      }
+    } else {
+      // For non-properties criteria, validate against criteriaType
       if (
-        trigger.propertyType &&
-        !isOperatorValidForPropertyType(trigger.operator, trigger.propertyType)
+        !isOperatorValidForCriteriaType(trigger.operator, trigger.criteriaType)
       ) {
-        const validOperators = getOperatorsForPropertyType(
-          trigger.propertyType
+        const validOperators = getOperatorsForCriteriaType(
+          trigger.criteriaType
         );
         result.errors.push(
-          `${path}.operator '${trigger.operator}' is not valid for propertyType '${trigger.propertyType}'. Valid operators: ${validOperators.join(', ')}`
+          `${path}.operator '${trigger.operator}' is not valid for criteriaType '${trigger.criteriaType}'. Valid operators: ${validOperators.join(', ')}`
         );
         return false;
       }

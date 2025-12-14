@@ -1,37 +1,38 @@
 /**
- * Base mobile setting item component with compact card-based layout
+ * Base mobile modal card component with consistent card-based layout
+ * Similar to MobileSettingItem but optimized for modal usage
  */
-export class MobileSettingItem {
+export class MobileModalCard {
   private cardEl: HTMLElement;
   private headerEl: HTMLElement;
   private titleEl: HTMLElement;
   private descriptionEl: HTMLElement | null = null;
-  private controlEl: HTMLElement;
+  private contentEl: HTMLElement;
 
   constructor(container: HTMLElement, title: string, description?: string) {
     // Create card container
-    this.cardEl = container.createDiv({ cls: 'noteMover-mobile-setting-card' });
+    this.cardEl = container.createDiv({ cls: 'noteMover-mobile-modal-card' });
 
     // Create header
     this.headerEl = this.cardEl.createDiv({
-      cls: 'noteMover-mobile-setting-header',
+      cls: 'noteMover-mobile-modal-card-header',
     });
     this.titleEl = this.headerEl.createDiv({
-      cls: 'noteMover-mobile-setting-title',
+      cls: 'noteMover-mobile-modal-card-title',
     });
     this.titleEl.textContent = title;
 
     // Create description if provided
     if (description) {
       this.descriptionEl = this.cardEl.createDiv({
-        cls: 'noteMover-mobile-setting-description',
+        cls: 'noteMover-mobile-modal-card-description',
       });
       this.descriptionEl.textContent = description;
     }
 
-    // Create control container
-    this.controlEl = this.cardEl.createDiv({
-      cls: 'noteMover-mobile-setting-control',
+    // Create content container
+    this.contentEl = this.cardEl.createDiv({
+      cls: 'noteMover-mobile-modal-card-content',
     });
   }
 
@@ -39,8 +40,12 @@ export class MobileSettingItem {
     return this.cardEl;
   }
 
-  getControlElement(): HTMLElement {
-    return this.controlEl;
+  getContentElement(): HTMLElement {
+    return this.contentEl;
+  }
+
+  getHeaderElement(): HTMLElement {
+    return this.headerEl;
   }
 
   setDescription(text: string): void {
@@ -48,7 +53,7 @@ export class MobileSettingItem {
       this.descriptionEl.textContent = text;
     } else {
       this.descriptionEl = this.cardEl.createDiv({
-        cls: 'noteMover-mobile-setting-description',
+        cls: 'noteMover-mobile-modal-card-description',
       });
       this.descriptionEl.textContent = text;
     }

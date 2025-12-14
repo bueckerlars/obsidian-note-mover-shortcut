@@ -1,10 +1,10 @@
-import { MobileSettingItem } from './MobileSettingItem';
+import { MobileModalCard } from './MobileModalCard';
 
 /**
- * Mobile-optimized input setting component
+ * Mobile-optimized input component for modals
  */
-export class MobileInputSetting {
-  private settingItem: MobileSettingItem;
+export class MobileModalInput {
+  private modalCard: MobileModalCard;
   private inputEl: HTMLInputElement;
 
   constructor(
@@ -15,13 +15,13 @@ export class MobileInputSetting {
     value: string,
     onChange: (value: string) => void | Promise<void>
   ) {
-    this.settingItem = new MobileSettingItem(container, title, description);
-    this.settingItem.addClass('noteMover-mobile-input-setting');
+    this.modalCard = new MobileModalCard(container, title, description);
+    this.modalCard.addClass('noteMover-mobile-modal-input');
 
-    const controlEl = this.settingItem.getControlElement();
+    const contentEl = this.modalCard.getContentElement();
 
     // Create input
-    this.inputEl = controlEl.createEl('input', {
+    this.inputEl = contentEl.createEl('input', {
       cls: 'noteMover-mobile-text-input',
       type: 'text',
       attr: {
@@ -49,6 +49,6 @@ export class MobileInputSetting {
   }
 
   getCardElement(): HTMLElement {
-    return this.settingItem.getCardElement();
+    return this.modalCard.getCardElement();
   }
 }

@@ -18,13 +18,9 @@ export class MobileImportExportSection {
   render(): void {
     // Section heading
     const heading = this.containerEl.createDiv({
-      cls: 'mobile-section-heading',
+      cls: 'noteMover-mobile-section-heading',
     });
     heading.textContent = 'Import/Export';
-    heading.style.fontSize = '1.2em';
-    heading.style.fontWeight = '600';
-    heading.style.marginBottom = '12px';
-    heading.style.marginTop = '16px';
 
     // Export Settings Button
     new MobileButtonSetting(

@@ -1,10 +1,10 @@
-import { MobileSettingItem } from './MobileSettingItem';
+import { MobileModalCard } from './MobileModalCard';
 
 /**
- * Mobile-optimized toggle setting component
+ * Mobile-optimized toggle component for modals
  */
-export class MobileToggleSetting {
-  private settingItem: MobileSettingItem;
+export class MobileModalToggle {
+  private modalCard: MobileModalCard;
   private toggleEl: HTMLElement;
   private toggleInput: HTMLInputElement;
 
@@ -15,17 +15,10 @@ export class MobileToggleSetting {
     value: boolean,
     onChange: (value: boolean) => void | Promise<void>
   ) {
-    this.settingItem = new MobileSettingItem(container, title, description);
-    this.settingItem.addClass('noteMover-mobile-toggle-setting');
+    this.modalCard = new MobileModalCard(container, title, description);
+    this.modalCard.addClass('noteMover-mobile-modal-toggle');
 
-    const cardEl = this.settingItem.getCardElement();
-    const headerEl = cardEl.querySelector(
-      '.noteMover-mobile-setting-header'
-    ) as HTMLElement;
-
-    if (!headerEl) {
-      throw new Error('Header element not found');
-    }
+    const headerEl = this.modalCard.getHeaderElement();
 
     // Create toggle switch directly in header (right side)
     this.toggleEl = headerEl.createDiv({
@@ -59,9 +52,9 @@ export class MobileToggleSetting {
       }
     });
 
-    // Hide the control element since toggle is in header
-    const controlEl = this.settingItem.getControlElement();
-    controlEl.style.display = 'none';
+    // Hide the content element since toggle is in header
+    const contentEl = this.modalCard.getContentElement();
+    contentEl.style.display = 'none';
   }
 
   private updateToggleState(value: boolean): void {
@@ -82,6 +75,6 @@ export class MobileToggleSetting {
   }
 
   getCardElement(): HTMLElement {
-    return this.settingItem.getCardElement();
+    return this.modalCard.getCardElement();
   }
 }

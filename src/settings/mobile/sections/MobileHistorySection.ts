@@ -20,13 +20,9 @@ export class MobileHistorySection {
   render(): void {
     // Section heading
     const heading = this.containerEl.createDiv({
-      cls: 'mobile-section-heading',
+      cls: 'noteMover-mobile-section-heading',
     });
     heading.textContent = 'History';
-    heading.style.fontSize = '1.2em';
-    heading.style.fontWeight = '600';
-    heading.style.marginBottom = '12px';
-    heading.style.marginTop = '16px';
 
     // Retention Policy
     this.renderRetentionPolicy();
@@ -82,46 +78,35 @@ export class MobileHistorySection {
 
     // Retention Policy Card
     const policyCard = this.containerEl.createDiv({
-      cls: 'mobile-setting-card',
+      cls: 'noteMover-mobile-setting-card',
     });
-    policyCard.style.padding = '12px';
-    policyCard.style.marginBottom = '12px';
 
     // Title
     const title = policyCard.createDiv({
-      cls: 'mobile-setting-title',
+      cls: 'noteMover-mobile-setting-title',
       text: SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_TITLE,
     });
-    title.style.marginBottom = '8px';
 
     // Description
     const desc = policyCard.createDiv({
-      cls: 'mobile-setting-description',
+      cls: 'noteMover-mobile-setting-description',
       text: SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_DESC,
     });
-    desc.style.marginBottom = '12px';
 
     // Value and Unit container
     const controlsContainer = policyCard.createDiv({
-      cls: 'mobile-retention-controls',
+      cls: 'noteMover-mobile-retention-controls',
     });
-    controlsContainer.style.display = 'flex';
-    controlsContainer.style.flexDirection = 'column';
-    controlsContainer.style.gap = '8px';
 
     // Value input
     const valueInput = controlsContainer.createEl('input', {
       type: 'text',
+      cls: 'noteMover-mobile-text-input',
       attr: {
         placeholder: '30',
         value: retentionPolicy.value.toString(),
       },
     });
-    valueInput.style.width = '100%';
-    valueInput.style.minHeight = '48px';
-    valueInput.style.fontSize = '16px';
-    valueInput.style.padding = '12px';
-    valueInput.style.boxSizing = 'border-box';
 
     valueInput.addEventListener('input', async () => {
       const numValue = parseInt(valueInput.value);
@@ -135,13 +120,8 @@ export class MobileHistorySection {
 
     // Unit dropdown
     const unitSelect = controlsContainer.createEl('select', {
-      cls: 'mobile-dropdown',
+      cls: 'noteMover-mobile-dropdown',
     });
-    unitSelect.style.width = '100%';
-    unitSelect.style.minHeight = '48px';
-    unitSelect.style.fontSize = '16px';
-    unitSelect.style.padding = '12px';
-    unitSelect.style.boxSizing = 'border-box';
 
     const daysOption = unitSelect.createEl('option', {
       text: SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_DAYS,
