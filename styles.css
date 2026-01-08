@@ -692,7 +692,7 @@
   margin-left: 0;
 }
 
-.noteMover-rule-editor-modal .setting-item-control input[type="text"],
+.noteMover-rule-editor-modal .setting-item-control input[type='text'],
 .noteMover-rule-editor-modal .setting-item-control .search-input-container {
   width: 100%;
 }
@@ -753,7 +753,9 @@
   background: var(--background-secondary);
   border-radius: 4px;
   border: 1px solid var(--background-modifier-border);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .noteMover-rule-trigger-row.noteMover-dragging {
@@ -886,7 +888,8 @@
 }
 
 /* When no value field is present, property name should fill available space */
-.noteMover-rule-trigger-row.noteMover-no-value-field .noteMover-rule-property-name {
+.noteMover-rule-trigger-row.noteMover-no-value-field
+  .noteMover-rule-property-name {
   flex: 1;
   width: 100%;
 }
@@ -1062,7 +1065,8 @@
   background-color: var(--interactive-accent);
 }
 
-.noteMover-mobile-toggle-switch.is-active .noteMover-mobile-toggle-slider:before {
+.noteMover-mobile-toggle-switch.is-active
+  .noteMover-mobile-toggle-slider:before {
   transform: translateX(20px);
 }
 
@@ -1394,12 +1398,13 @@
   cursor: not-allowed;
 }
 
-.noteMover-mobile-move-button[style*="display: none"] {
+.noteMover-mobile-move-button[style*='display: none'] {
   display: none !important;
 }
 
 /* Mobile rules container */
-.noteMover-mobile-rules-container .noteMover-rule-v2-custom-container.noteMover-mobile-rule-container {
+.noteMover-mobile-rules-container
+  .noteMover-rule-v2-custom-container.noteMover-mobile-rule-container {
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
@@ -1411,7 +1416,8 @@
   word-break: break-word;
 }
 
-.noteMover-mobile-rules-container .noteMover-rule-v2-actions.noteMover-mobile-rule-actions {
+.noteMover-mobile-rules-container
+  .noteMover-rule-v2-actions.noteMover-mobile-rule-actions {
   width: 100%;
   justify-content: center;
   gap: 12px;
@@ -1419,7 +1425,9 @@
 }
 
 .noteMover-mobile-rules-container .noteMover-rule-v2-actions .clickable-icon,
-.noteMover-mobile-rules-container .noteMover-rule-v2-actions .checkbox-container {
+.noteMover-mobile-rules-container
+  .noteMover-rule-v2-actions
+  .checkbox-container {
   min-width: 44px;
   min-height: 44px;
 }
@@ -1441,7 +1449,7 @@
   width: 100%;
 }
 
-.noteMover-mobile-rule-controls input[type="search"] {
+.noteMover-mobile-rule-controls input[type='search'] {
   min-height: 44px;
   width: 100%;
   font-size: 16px;
@@ -1473,7 +1481,7 @@
   width: 100%;
 }
 
-.noteMover-mobile-retention-controls input[type="text"],
+.noteMover-mobile-retention-controls input[type='text'],
 .noteMover-mobile-retention-controls .dropdown {
   min-height: 44px;
   width: 100%;
@@ -1566,7 +1574,7 @@
   .note-mover-history-modal .setting-item-control,
   .note-mover-preview-modal .setting-item-control,
   .note-mover-update-modal .setting-item-control,
-  [class*="noteMover"] .setting-item-control {
+  [class*='noteMover'] .setting-item-control {
     margin-left: 0;
     width: 100%;
     justify-content: space-between;
@@ -1577,7 +1585,7 @@
   .note-mover-history-modal .setting-item-control button,
   .note-mover-preview-modal .setting-item-control button,
   .note-mover-update-modal .setting-item-control button,
-  [class*="noteMover"] .setting-item-control button {
+  [class*='noteMover'] .setting-item-control button {
     min-width: 44px;
     min-height: 44px;
     padding: 8px;
@@ -1715,7 +1723,9 @@
     flex-shrink: 0;
   }
 
-  .note-mover-update-modal .noteMover-modal-button-container .setting-item-control {
+  .note-mover-update-modal
+    .noteMover-modal-button-container
+    .setting-item-control {
     margin: 0 !important;
   }
 
@@ -1897,7 +1907,7 @@
   }
 
   /* Smaller button fonts to fit better - scoped to plugin elements only */
-  [class*="noteMover"] button,
+  [class*='noteMover'] button,
   .note-mover-history-modal button,
   .note-mover-preview-modal button,
   .note-mover-update-modal button,
@@ -2055,7 +2065,10 @@
   margin-bottom: 24px;
 }
 
-.is-mobile .noteMover-rule-name-mobile .setting-item-control input[type="text"] {
+.is-mobile
+  .noteMover-rule-name-mobile
+  .setting-item-control
+  input[type='text'] {
   width: 100% !important;
 }
 
@@ -2148,10 +2161,18 @@
 }
 
 /* Hide any icons on the left side of the search input */
-.noteMover-mobile-modal-card .search-input-container > svg:not(.search-input-clear-button svg),
-.noteMover-mobile-modal-card .search-input-container > .clickable-icon:not(.search-input-clear-button),
-.noteMover-mobile-modal-card .search-input-container > [class*="icon"]:not(.search-input-clear-button),
-.noteMover-mobile-modal-card .search-input-container > *:not(input):not(.search-input-clear-button) {
+.noteMover-mobile-modal-card
+  .search-input-container
+  > svg:not(.search-input-clear-button svg),
+.noteMover-mobile-modal-card
+  .search-input-container
+  > .clickable-icon:not(.search-input-clear-button),
+.noteMover-mobile-modal-card
+  .search-input-container
+  > [class*='icon']:not(.search-input-clear-button),
+.noteMover-mobile-modal-card
+  .search-input-container
+  > *:not(input):not(.search-input-clear-button) {
   display: none !important;
 }
 
@@ -2165,7 +2186,9 @@
   box-sizing: border-box;
 }
 
-.noteMover-mobile-modal-card .search-input-container .search-input-clear-button {
+.noteMover-mobile-modal-card
+  .search-input-container
+  .search-input-clear-button {
   right: 12px !important;
   left: auto !important;
   position: absolute !important;
@@ -2173,7 +2196,9 @@
 }
 
 /* Legacy Destination Input Mobile */
-.is-mobile .noteMover-rule-editor-modal .setting-item:has(.search-input-container) {
+.is-mobile
+  .noteMover-rule-editor-modal
+  .setting-item:has(.search-input-container) {
   margin-bottom: 24px;
 }
 
@@ -2190,10 +2215,22 @@
   content: none !important;
 }
 
-.is-mobile .noteMover-rule-editor-modal .search-input-container > svg:not(.search-input-clear-button svg),
-.is-mobile .noteMover-rule-editor-modal .search-input-container > .clickable-icon:not(.search-input-clear-button),
-.is-mobile .noteMover-rule-editor-modal .search-input-container > [class*="icon"]:not(.search-input-clear-button),
-.is-mobile .noteMover-rule-editor-modal .search-input-container > *:not(input):not(.search-input-clear-button) {
+.is-mobile
+  .noteMover-rule-editor-modal
+  .search-input-container
+  > svg:not(.search-input-clear-button svg),
+.is-mobile
+  .noteMover-rule-editor-modal
+  .search-input-container
+  > .clickable-icon:not(.search-input-clear-button),
+.is-mobile
+  .noteMover-rule-editor-modal
+  .search-input-container
+  > [class*='icon']:not(.search-input-clear-button),
+.is-mobile
+  .noteMover-rule-editor-modal
+  .search-input-container
+  > *:not(input):not(.search-input-clear-button) {
   display: none !important;
 }
 
@@ -2207,7 +2244,10 @@
   box-sizing: border-box;
 }
 
-.is-mobile .noteMover-rule-editor-modal .search-input-container .search-input-clear-button {
+.is-mobile
+  .noteMover-rule-editor-modal
+  .search-input-container
+  .search-input-clear-button {
   right: 12px !important;
   left: auto !important;
   position: absolute !important;
@@ -2230,8 +2270,15 @@
   line-height: 1.5;
 }
 
-.is-mobile .noteMover-rule-editor-modal .setting-item-control input[type="text"],
-.is-mobile .noteMover-rule-editor-modal .setting-item-control .search-input-container input {
+.is-mobile
+  .noteMover-rule-editor-modal
+  .setting-item-control
+  input[type='text'],
+.is-mobile
+  .noteMover-rule-editor-modal
+  .setting-item-control
+  .search-input-container
+  input {
   min-height: 52px;
   font-size: 16px;
   padding: 14px 16px;
@@ -2244,8 +2291,15 @@
   color: var(--text-normal);
 }
 
-.is-mobile .noteMover-rule-editor-modal .setting-item-control input[type="text"]:focus,
-.is-mobile .noteMover-rule-editor-modal .setting-item-control .search-input-container input:focus {
+.is-mobile
+  .noteMover-rule-editor-modal
+  .setting-item-control
+  input[type='text']:focus,
+.is-mobile
+  .noteMover-rule-editor-modal
+  .setting-item-control
+  .search-input-container
+  input:focus {
   outline: none;
   border-color: var(--interactive-accent);
   box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
@@ -2287,7 +2341,9 @@
   margin-top: 12px;
 }
 
-.is-mobile .noteMover-rule-aggregation-buttons-mobile .noteMover-rule-aggregation-button {
+.is-mobile
+  .noteMover-rule-aggregation-buttons-mobile
+  .noteMover-rule-aggregation-button {
   width: 100%;
   min-height: 52px;
   padding: 14px 20px;
@@ -2298,11 +2354,15 @@
   border: 1px solid var(--background-modifier-border);
 }
 
-.is-mobile .noteMover-rule-aggregation-buttons-mobile .noteMover-rule-aggregation-button:active {
+.is-mobile
+  .noteMover-rule-aggregation-buttons-mobile
+  .noteMover-rule-aggregation-button:active {
   transform: scale(0.98);
 }
 
-.is-mobile .noteMover-rule-aggregation-buttons-mobile .noteMover-rule-aggregation-button.is-active {
+.is-mobile
+  .noteMover-rule-aggregation-buttons-mobile
+  .noteMover-rule-aggregation-button.is-active {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   border-color: var(--interactive-accent);
@@ -2555,7 +2615,9 @@
 }
 
 /* Add Condition Button Mobile */
-.noteMover-mobile-modal-button.noteMover-mobile-modal-card:has(.noteMover-mobile-action-btn:contains("+ Add Condition")) {
+.noteMover-mobile-modal-button.noteMover-mobile-modal-card:has(
+    .noteMover-mobile-action-btn:contains('+ Add Condition')
+  ) {
   margin-top: 16px;
 }
 
@@ -2667,7 +2729,10 @@
   margin-bottom: 16px;
 }
 
-.is-mobile .noteMover-time-filter-container-mobile .setting-item-control select {
+.is-mobile
+  .noteMover-time-filter-container-mobile
+  .setting-item-control
+  select {
   min-height: 48px;
   font-size: 16px;
   width: 100%;
