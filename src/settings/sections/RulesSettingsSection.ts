@@ -332,6 +332,28 @@ export class RulesSettingsSection {
           })
       );
 
+      // Add clone button to actions container
+      s.addExtraButton(btn =>
+        btn
+          .setIcon('copy')
+          .setTooltip('Clone rule')
+          .onClick(async () => {
+            if (!this.plugin.settings.settings.rulesV2) {
+              this.plugin.settings.settings.rulesV2 = [];
+            }
+            const clonedRule = JSON.parse(JSON.stringify(rule)) as RuleV2;
+            const baseName = rule.name?.trim() || 'Unnamed Rule';
+            clonedRule.name = `${baseName} (copy)`;
+            this.plugin.settings.settings.rulesV2.splice(
+              index + 1,
+              0,
+              clonedRule
+            );
+            await this.plugin.save_settings();
+            this.refreshDisplay();
+          })
+      );
+
       // Add edit button to actions container
       s.addExtraButton(btn =>
         btn

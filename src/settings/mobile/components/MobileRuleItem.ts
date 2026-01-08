@@ -6,6 +6,7 @@ import { MobileUtils } from '../../../utils/MobileUtils';
 export interface MobileRuleItemCallbacks {
   onToggle?: (active: boolean) => void | Promise<void>;
   onEdit?: () => void;
+  onClone?: () => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
   onMoveUp?: () => void | Promise<void>;
   onMoveDown?: () => void | Promise<void>;
@@ -27,6 +28,7 @@ export class MobileRuleItemV2 {
   private moveUpButton: HTMLButtonElement;
   private moveDownButton: HTMLButtonElement;
   private editButton: HTMLButtonElement;
+  private cloneButton: HTMLButtonElement;
   private deleteButton: HTMLButtonElement;
 
   constructor(
@@ -129,6 +131,17 @@ export class MobileRuleItemV2 {
     this.editButton.addEventListener('click', () => {
       if (callbacks.onEdit) {
         callbacks.onEdit();
+      }
+    });
+
+    // Clone button
+    this.cloneButton = this.actionsEl.createEl('button', {
+      cls: 'noteMover-mobile-action-btn noteMover-mobile-clone-btn',
+      text: 'Clone',
+    });
+    this.cloneButton.addEventListener('click', async () => {
+      if (callbacks.onClone) {
+        await callbacks.onClone();
       }
     });
 
