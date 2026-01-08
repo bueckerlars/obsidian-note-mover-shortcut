@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.7](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.6...0.5.7)
+
+### Fixes
+
+- Fixed rule validation
+
 ## [0.5.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.5...0.5.6)
 
 ### Improvements
