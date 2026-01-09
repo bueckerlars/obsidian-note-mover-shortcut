@@ -4,15 +4,7 @@
 
 ### Fixes
 
-- Fixed RuleV1 to RuleV2 migration issues
-  - Correct property migration for "property: key:value" format
-  - Improved operator validation for properties with propertyType
-  - Fixed date criteria operator selection
-  - Preserved leading characters (e.g., # for tags) during migration
-  - Added comprehensive error logging for migration failures
-- Added automatic repair for existing RuleV2 rules with missing propertyName
-  - Repair function extracts propertyName from value when possible
-  - Invalid rules are automatically disabled with error logging
+- Fixed rule validation
 
 ## [0.5.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.5...0.5.6)
 
