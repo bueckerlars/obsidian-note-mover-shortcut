@@ -733,10 +733,8 @@ export class SettingsValidator {
         }
       }
 
-      // Validate operator against property type if propertyType is set
-      // Otherwise validate against criteriaType
+      // Validate operator against property type (if known), otherwise base property operators
       if (trigger.propertyType) {
-        // If propertyType is set, validate against propertyType
         if (
           !isOperatorValidForPropertyType(
             trigger.operator,
@@ -752,15 +750,17 @@ export class SettingsValidator {
           return false;
         }
       } else {
-        // If propertyType is not set, validate against criteriaType (base property operators only)
-        if (
-          !isOperatorValidForCriteriaType(
-            trigger.operator,
-            trigger.criteriaType
-          )
-        ) {
-          const validOperators = getOperatorsForCriteriaType(
-            trigger.criteriaType
+        const propertyTypes = ['text', 'number', 'checkbox', 'date', 'list'];
+        const isValidForAnyPropertyType = propertyTypes.some(propertyType =>
+          isOperatorValidForPropertyType(trigger.operator, propertyType)
+        );
+        if (!isValidForAnyPropertyType) {
+          const validOperators = Array.from(
+            new Set(
+              propertyTypes.flatMap(propertyType =>
+                getOperatorsForPropertyType(propertyType)
+              )
+            )
           );
           result.errors.push(
             `${path}.operator '${trigger.operator}' is not valid for criteriaType '${trigger.criteriaType}'. Valid operators: ${validOperators.join(', ')}`
@@ -769,7 +769,7 @@ export class SettingsValidator {
         }
       }
     } else {
-      // For non-properties criteria, validate against criteriaType
+      // Check if operator is valid for the criteria type
       if (
         !isOperatorValidForCriteriaType(trigger.operator, trigger.criteriaType)
       ) {
