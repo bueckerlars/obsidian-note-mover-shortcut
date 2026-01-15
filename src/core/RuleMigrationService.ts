@@ -428,6 +428,11 @@ export class RuleMigrationService {
               trigger.propertyName = valueStr.substring(0, colonIndex).trim();
               trigger.value = valueStr.substring(colonIndex + 1).trim();
               trigger.propertyType = trigger.propertyType || 'text';
+              // Check if extracted value is non-empty before determining operator
+              const extractedValue = trigger.value;
+              const hasExtractedValue = !!(
+                extractedValue && extractedValue.trim() !== ''
+              );
               // Ensure operator is valid for property type
               if (
                 !isOperatorValidForPropertyType(
@@ -437,7 +442,7 @@ export class RuleMigrationService {
               ) {
                 trigger.operator = getDefaultOperatorForPropertyType(
                   trigger.propertyType,
-                  true // hasValue is true since we extracted a value
+                  hasExtractedValue // Only true if extracted value is non-empty
                 );
               }
             } else {
@@ -474,6 +479,11 @@ export class RuleMigrationService {
               trigger.propertyName = valueStr.substring(0, colonIndex).trim();
               trigger.value = valueStr.substring(colonIndex + 1).trim();
               trigger.propertyType = trigger.propertyType || 'text';
+              // Check if extracted value is non-empty before determining operator
+              const extractedValue = trigger.value;
+              const hasExtractedValue = !!(
+                extractedValue && extractedValue.trim() !== ''
+              );
               // Ensure operator is valid for property type
               if (
                 !isOperatorValidForPropertyType(
@@ -483,7 +493,7 @@ export class RuleMigrationService {
               ) {
                 trigger.operator = getDefaultOperatorForPropertyType(
                   trigger.propertyType,
-                  true // hasValue is true since we extracted a value
+                  hasExtractedValue // Only true if extracted value is non-empty
                 );
               }
             } else {
