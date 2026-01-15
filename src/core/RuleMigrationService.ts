@@ -466,8 +466,19 @@ export class RuleMigrationService {
           if (valueStr && valueStr.trim() !== '') {
             const colonIndex = valueStr.indexOf(':');
             if (colonIndex !== -1) {
+              // Extract property name from "key:value" format
               trigger.propertyName = valueStr.substring(0, colonIndex).trim();
               trigger.value = valueStr.substring(colonIndex + 1).trim();
+              trigger.propertyType = trigger.propertyType || 'text';
+              // Ensure operator is valid for property type
+              if (
+                !isOperatorValidForPropertyType(
+                  trigger.operator,
+                  trigger.propertyType
+                )
+              ) {
+                trigger.operator = 'contains';
+              }
             } else {
               trigger.propertyName = valueStr.trim();
               trigger.value = '';
