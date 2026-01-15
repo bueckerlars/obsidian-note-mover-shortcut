@@ -366,6 +366,23 @@ export class RuleMigrationService {
   }
 
   /**
+   * Safely converts a value to a string for processing
+   * Handles cases where value might be a number, boolean, object, etc. from corrupted data
+   * @param value - Value to convert (can be any type)
+   * @returns String representation of the value, or empty string for null/undefined
+   */
+  private static ensureStringValue(value: unknown): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    if (typeof value === 'string') {
+      return value;
+    }
+    // Convert other types to string (number, boolean, object, etc.)
+    return String(value);
+  }
+
+  /**
    * Repairs RuleV2 rules with invalid or missing property fields
    * This fixes issues like properties criteria without propertyName
    * @param rulesV2 - Array of RuleV2 objects to repair
@@ -391,6 +408,10 @@ export class RuleMigrationService {
       ) {
         const trigger = rule.triggers[triggerIndex];
 
+        // Safely convert value to string before processing
+        const valueStr = this.ensureStringValue(trigger.value);
+        trigger.value = valueStr;
+
         // Check if this is a properties trigger without propertyName
         if (trigger.criteriaType === 'properties' && !trigger.propertyName) {
           console.warn(
@@ -398,15 +419,13 @@ export class RuleMigrationService {
           );
 
           // Try to extract propertyName from value if value exists and looks like a property name
-          if (trigger.value && trigger.value.trim() !== '') {
+          if (valueStr && valueStr.trim() !== '') {
             // Check if value contains a colon (key:value format)
-            const colonIndex = trigger.value.indexOf(':');
+            const colonIndex = valueStr.indexOf(':');
             if (colonIndex !== -1) {
               // Extract property name from "key:value" format
-              trigger.propertyName = trigger.value
-                .substring(0, colonIndex)
-                .trim();
-              trigger.value = trigger.value.substring(colonIndex + 1).trim();
+              trigger.propertyName = valueStr.substring(0, colonIndex).trim();
+              trigger.value = valueStr.substring(colonIndex + 1).trim();
               trigger.propertyType = trigger.propertyType || 'text';
               // Ensure operator is valid for property type
               if (
@@ -419,7 +438,7 @@ export class RuleMigrationService {
               }
             } else {
               // Value is just the property name
-              trigger.propertyName = trigger.value.trim();
+              trigger.propertyName = valueStr.trim();
               trigger.value = '';
               trigger.propertyType = trigger.propertyType || 'text';
               trigger.operator = 'has any value';
@@ -444,15 +463,13 @@ export class RuleMigrationService {
             `[RuleMigration] Repairing RuleV2[${ruleIndex}].triggers[${triggerIndex}]: Empty propertyName for properties criteria`
           );
 
-          if (trigger.value && trigger.value.trim() !== '') {
-            const colonIndex = trigger.value.indexOf(':');
+          if (valueStr && valueStr.trim() !== '') {
+            const colonIndex = valueStr.indexOf(':');
             if (colonIndex !== -1) {
-              trigger.propertyName = trigger.value
-                .substring(0, colonIndex)
-                .trim();
-              trigger.value = trigger.value.substring(colonIndex + 1).trim();
+              trigger.propertyName = valueStr.substring(0, colonIndex).trim();
+              trigger.value = valueStr.substring(colonIndex + 1).trim();
             } else {
-              trigger.propertyName = trigger.value.trim();
+              trigger.propertyName = valueStr.trim();
               trigger.value = '';
               trigger.operator = 'has any value';
             }
