@@ -155,6 +155,7 @@ export class MobileRulesSection {
           clonedRule.name = `${baseName} (copy)`;
           rulesV2.splice(index + 1, 0, clonedRule);
           await this.plugin.save_settings();
+          this.plugin.noteMover.updateRuleManager();
           if (this.refreshDisplay) {
             this.refreshDisplay();
           }

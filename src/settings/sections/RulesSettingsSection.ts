@@ -350,6 +350,7 @@ export class RulesSettingsSection {
               clonedRule
             );
             await this.plugin.save_settings();
+            this.plugin.noteMover.updateRuleManager();
             this.refreshDisplay();
           })
       );
