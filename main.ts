@@ -215,6 +215,35 @@ export default class NoteMoverShortcutPlugin extends Plugin {
           );
           await this.save_settings();
         }
+
+        // Repair RuleV2 properties with missing propertyName
+        const repaired = RuleMigrationService.repairRuleV2Properties(
+          this.settings.settings.rulesV2
+        );
+        if (repaired) {
+          console.log(
+            'Repaired RuleV2 properties triggers with missing propertyName'
+          );
+          await this.save_settings();
+        }
+      }
+    }
+
+    // Repair RuleV2 properties even if RuleV2 is not enabled (to prevent validation errors)
+    // Only run if enableRuleV2 is false, since it was already repaired above if enabled
+    if (
+      !this.settings.settings.enableRuleV2 &&
+      this.settings.settings.rulesV2 &&
+      this.settings.settings.rulesV2.length > 0
+    ) {
+      const repaired = RuleMigrationService.repairRuleV2Properties(
+        this.settings.settings.rulesV2
+      );
+      if (repaired) {
+        console.log(
+          'Repaired RuleV2 properties triggers with missing propertyName'
+        );
+        await this.save_settings();
       }
     }
 

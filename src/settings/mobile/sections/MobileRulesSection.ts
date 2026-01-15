@@ -149,6 +149,17 @@ export class MobileRulesSection {
         onEdit: () => {
           this.openRuleEditorModal(index);
         },
+        onClone: async () => {
+          const clonedRule = JSON.parse(JSON.stringify(rule)) as RuleV2;
+          const baseName = rule.name?.trim() || 'Unnamed Rule';
+          clonedRule.name = `${baseName} (copy)`;
+          rulesV2.splice(index + 1, 0, clonedRule);
+          await this.plugin.save_settings();
+          this.plugin.noteMover.updateRuleManager();
+          if (this.refreshDisplay) {
+            this.refreshDisplay();
+          }
+        },
         onDelete: async () => {
           const confirmed = confirm(
             `Delete rule "${rule.name}"?\n\nThis cannot be undone.`

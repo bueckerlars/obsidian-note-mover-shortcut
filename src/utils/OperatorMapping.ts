@@ -235,6 +235,59 @@ export function getDefaultOperatorForCriteriaType(
 }
 
 /**
+ * Gets the default operator for a property type
+ * @param propertyType - The property type to get default operator for
+ * @param hasValue - Whether the trigger has a non-empty value (optional)
+ * @returns The default operator for the property type
+ */
+export function getDefaultOperatorForPropertyType(
+  propertyType: string,
+  hasValue = false
+): Operator {
+  const validOperators = getOperatorsForPropertyType(propertyType);
+
+  if (validOperators.length === 0) {
+    // Fallback to base property operator
+    return 'has any value';
+  }
+
+  // If hasValue is true, prefer an operator that requires a value
+  if (hasValue) {
+    const valueRequiringOperators = validOperators.filter(op =>
+      operatorRequiresValue(op)
+    );
+    if (valueRequiringOperators.length > 0) {
+      // Prefer common operators based on property type
+      if (propertyType === 'text') {
+        const preferred = valueRequiringOperators.find(op => op === 'contains');
+        if (preferred) return preferred;
+      } else if (propertyType === 'number') {
+        const preferred = valueRequiringOperators.find(op => op === 'equals');
+        if (preferred) return preferred;
+      } else if (propertyType === 'date') {
+        const preferred = valueRequiringOperators.find(op => op === 'is');
+        if (preferred) return preferred;
+      } else if (propertyType === 'list') {
+        const preferred = valueRequiringOperators.find(
+          op => op === 'includes item'
+        );
+        if (preferred) return preferred;
+      }
+      // Return first value-requiring operator
+      return valueRequiringOperators[0];
+    }
+  }
+
+  // Default to 'has any value' if available (always valid for all property types)
+  if (validOperators.includes('has any value')) {
+    return 'has any value';
+  }
+
+  // Fallback to first valid operator
+  return validOperators[0];
+}
+
+/**
  * Checks if an operator requires regex compilation
  * @param operator - The operator to check
  * @returns True if the operator uses regex patterns
