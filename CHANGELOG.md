@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.9](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.8...0.5.9)
+
+### Improvements
+
+- **Enhanced RuleV2 Property Repair**: Improved property repair functionality in RuleMigrationService
+  - Added `getDefaultOperatorForPropertyType` function for intelligent operator selection based on property types
+  - Better operator selection when extracting property values from corrupted data
+  - Improved handling of extracted values to ensure operators match property types (text, number, date, list)
+  - Enhanced value type safety with `ensureStringValue` helper to handle corrupted data types
+
+### Fixes
+
+- Fixed rule manager not updating after cloning rules
+  - Rule manager now properly updates after cloning rules in both desktop and mobile settings
+  - Ensures cloned rules are immediately available for file movement operations
+- Fixed duplicate RuleV2 property repair execution
+  - Property repair now only runs once when RuleV2 is enabled, preventing unnecessary duplicate repairs
+  - Improved conditional logic to prevent repair execution when RuleV2 is already enabled
+
 ## [0.5.8](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.7...0.5.8)
 
 ### Features
