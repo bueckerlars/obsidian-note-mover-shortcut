@@ -230,7 +230,9 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     }
 
     // Repair RuleV2 properties even if RuleV2 is not enabled (to prevent validation errors)
+    // Only run if enableRuleV2 is false, since it was already repaired above if enabled
     if (
+      !this.settings.settings.enableRuleV2 &&
       this.settings.settings.rulesV2 &&
       this.settings.settings.rulesV2.length > 0
     ) {
