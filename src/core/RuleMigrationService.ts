@@ -8,6 +8,7 @@ import {
 } from '../types/RuleV2';
 import {
   getDefaultOperatorForCriteriaType,
+  getDefaultOperatorForPropertyType,
   isOperatorValidForCriteriaType,
   isOperatorValidForPropertyType,
   operatorRequiresValue,
@@ -434,7 +435,10 @@ export class RuleMigrationService {
                   trigger.propertyType
                 )
               ) {
-                trigger.operator = 'contains';
+                trigger.operator = getDefaultOperatorForPropertyType(
+                  trigger.propertyType,
+                  true // hasValue is true since we extracted a value
+                );
               }
             } else {
               // Value is just the property name
@@ -477,7 +481,10 @@ export class RuleMigrationService {
                   trigger.propertyType
                 )
               ) {
-                trigger.operator = 'contains';
+                trigger.operator = getDefaultOperatorForPropertyType(
+                  trigger.propertyType,
+                  true // hasValue is true since we extracted a value
+                );
               }
             } else {
               trigger.propertyName = valueStr.trim();
