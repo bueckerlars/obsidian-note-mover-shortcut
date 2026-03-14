@@ -201,10 +201,9 @@ export class MetadataExtractor {
    */
   public async extractFileMetadataV2(file: TFile): Promise<FileMetadata> {
     try {
-      // Get base metadata using existing method
-      const baseMetadata = await this.extractFileMetadata(file);
+      // V2 rules never use fileContent, so avoid the costly vault.read() call
+      const baseMetadata = await this.extractBasicMetadata(file);
 
-      // Extract additional V2-specific metadata
       const fileCache = this.app.metadataCache.getFileCache(file);
 
       // Extension from file name
@@ -242,6 +241,7 @@ export class MetadataExtractor {
 
       return {
         ...baseMetadata,
+        fileContent: '',
         extension,
         links,
         embeds,
@@ -254,10 +254,10 @@ export class MetadataExtractor {
         false
       );
 
-      // Return base metadata with V2-specific fields populated with default values
-      const baseMetadata = await this.extractFileMetadata(file);
+      const baseMetadata = await this.extractBasicMetadata(file);
       return {
         ...baseMetadata,
+        fileContent: '',
         extension: '',
         links: [],
         embeds: [],

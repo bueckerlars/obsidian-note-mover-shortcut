@@ -59,6 +59,21 @@ export class MobileTriggersSection {
       }
     );
 
+    // Rule Evaluation Cache (beta)
+    new MobileToggleSetting(
+      this.sectionContainer,
+      'Enable rule evaluation cache (beta)',
+      'Skip re-evaluation for unchanged files to improve performance',
+      this.plugin.settings.settings.enableRuleEvaluationCache ?? false,
+      async value => {
+        this.plugin.settings.settings.enableRuleEvaluationCache = value;
+        await this.plugin.save_settings();
+        if (!value) {
+          this.plugin.ruleCache.invalidateAll();
+        }
+      }
+    );
+
     // Periodic Movement Interval (only if enabled)
     if (this.plugin.settings.settings.triggers.enablePeriodicMovement) {
       new MobileInputSetting(
