@@ -232,9 +232,15 @@ export class ImportExportSettingsSection {
             current.schemaVersion = importedSettings.schemaVersion;
           }
 
-          // Import enableRuleV2 flag if present
-          if (s.enableRuleV2 !== undefined) {
-            current.settings.enableRuleV2 = !!s.enableRuleV2;
+          // Import enableLegacyRules (or migrate from old enableRuleV2)
+          if (s.enableLegacyRules !== undefined) {
+            current.settings.enableLegacyRules = !!s.enableLegacyRules;
+          } else if ((s as any).enableRuleV2 !== undefined) {
+            current.settings.enableLegacyRules = !(s as any).enableRuleV2;
+          }
+          if (s.legacyMigrationDismissed !== undefined) {
+            current.settings.legacyMigrationDismissed =
+              !!s.legacyMigrationDismissed;
           }
 
           // Import RuleV2 if present
@@ -277,8 +283,8 @@ export class ImportExportSettingsSection {
           }
         }
 
-        // Migrate V1 rules to V2 if feature flag is enabled
-        if (current.settings.enableRuleV2) {
+        // Migrate V1 rules to V2 when not in legacy mode
+        if (!current.settings.enableLegacyRules) {
           if (
             RuleMigrationService.shouldMigrate(
               current.settings.rules,

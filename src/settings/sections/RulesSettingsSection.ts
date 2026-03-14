@@ -30,35 +30,13 @@ export class RulesSettingsSection {
     );
 
     new Setting(this.containerEl).setDesc(descUseRules);
-
-    // Feature flag toggle for Rule V2
-    const ruleV2Desc = document.createDocumentFragment();
-    ruleV2Desc.append(
-      'Enable the new Rule V2 system (beta). This provides more flexible rule matching with multiple conditions and logical operators.',
-      document.createElement('br'),
-      '⚠️ Beta feature: Rule V2 replaces the existing rule system when enabled. Your existing rules will be migrated automatically.'
-    );
-
-    new Setting(this.containerEl)
-      .setName('Enable Rule-V2 (beta)')
-      .setDesc(ruleV2Desc)
-      .addToggle(toggle =>
-        toggle
-          .setValue(this.plugin.settings.settings.enableRuleV2 ?? false)
-          .onChange(async value => {
-            this.plugin.settings.settings.enableRuleV2 = value;
-            await this.plugin.save_settings();
-            this.refreshDisplay();
-          })
-      );
   }
 
   addAddRuleButtonSetting(): void {
-    // Check if RuleV2 is enabled
-    if (this.plugin.settings.settings.enableRuleV2) {
-      this.addAddRuleV2ButtonSetting();
-    } else {
+    if (this.plugin.settings.settings.enableLegacyRules) {
       this.addAddRuleV1ButtonSetting();
+    } else {
+      this.addAddRuleV2ButtonSetting();
     }
   }
 
@@ -89,11 +67,10 @@ export class RulesSettingsSection {
   }
 
   addRulesArray(): void {
-    // Check if RuleV2 is enabled
-    if (this.plugin.settings.settings.enableRuleV2) {
-      this.addRulesV2Array();
-    } else {
+    if (this.plugin.settings.settings.enableLegacyRules) {
       this.addRulesV1Array();
+    } else {
+      this.addRulesV2Array();
     }
   }
 

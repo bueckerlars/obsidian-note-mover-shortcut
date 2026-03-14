@@ -4,6 +4,7 @@ import { MobileFiltersSection } from './sections/MobileFiltersSection';
 import { MobileRulesSection } from './sections/MobileRulesSection';
 import { MobileHistorySection } from './sections/MobileHistorySection';
 import { MobileImportExportSection } from './sections/MobileImportExportSection';
+import { MobileLegacySection } from './sections/MobileLegacySection';
 
 /**
  * Main mobile settings renderer that orchestrates all mobile sections
@@ -30,5 +31,8 @@ export class MobileSettingsRenderer {
     ).render();
     new MobileHistorySection(this.plugin, this.containerEl).render();
     new MobileImportExportSection(this.plugin, this.containerEl).render();
+    new MobileLegacySection(this.plugin, this.containerEl, () =>
+      this.render()
+    ).render();
   }
 }

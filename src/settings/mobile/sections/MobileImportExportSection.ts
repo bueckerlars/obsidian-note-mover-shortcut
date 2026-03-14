@@ -55,7 +55,9 @@ export class MobileImportExportSection {
         filters: this.plugin.settings.settings.filters,
         rules: this.plugin.settings.settings.rules,
         rulesV2: this.plugin.settings.settings.rulesV2,
-        enableRuleV2: this.plugin.settings.settings.enableRuleV2,
+        enableLegacyRules: this.plugin.settings.settings.enableLegacyRules,
+        legacyMigrationDismissed:
+          this.plugin.settings.settings.legacyMigrationDismissed,
         retentionPolicy: this.plugin.settings.settings.retentionPolicy,
       };
 
@@ -128,8 +130,17 @@ export class MobileImportExportSection {
             importedSettings.rules || this.plugin.settings.settings.rules;
           this.plugin.settings.settings.rulesV2 =
             importedSettings.rulesV2 || this.plugin.settings.settings.rulesV2;
-          this.plugin.settings.settings.enableRuleV2 =
-            importedSettings.enableRuleV2 ?? false;
+          if (importedSettings.enableLegacyRules !== undefined) {
+            this.plugin.settings.settings.enableLegacyRules =
+              !!importedSettings.enableLegacyRules;
+          } else if (importedSettings.enableRuleV2 !== undefined) {
+            this.plugin.settings.settings.enableLegacyRules =
+              !importedSettings.enableRuleV2;
+          }
+          if (importedSettings.legacyMigrationDismissed !== undefined) {
+            this.plugin.settings.settings.legacyMigrationDismissed =
+              !!importedSettings.legacyMigrationDismissed;
+          }
           this.plugin.settings.settings.retentionPolicy =
             importedSettings.retentionPolicy ||
             this.plugin.settings.settings.retentionPolicy;

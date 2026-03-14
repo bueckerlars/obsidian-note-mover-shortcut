@@ -46,42 +46,24 @@ export class MobileRulesSection {
     desc.textContent =
       'Move files to folders based on criteria. First matching rule applies.';
 
-    // Rule V2 Toggle
-    const ruleV2Toggle = new MobileToggleSetting(
-      this.sectionContainer,
-      'Enable Rule-V2 (beta)',
-      'Advanced rule matching with multiple conditions',
-      this.plugin.settings.settings.enableRuleV2 ?? false,
-      async value => {
-        this.plugin.settings.settings.enableRuleV2 = value;
-        await this.plugin.save_settings();
-        // Update the active rule manager based on the feature flag
-        this.plugin.noteMover.updateRuleManager();
-        // Re-render to show correct rule list
-        if (this.refreshDisplay) {
-          this.refreshDisplay();
-        }
-      }
-    );
-
     // Add Rule Button
-    const addRuleButton = new MobileButtonSetting(
+    new MobileButtonSetting(
       this.sectionContainer,
       '',
       undefined,
-      this.plugin.settings.settings.enableRuleV2
-        ? '+ Add Rule'
-        : 'Add new rule',
+      this.plugin.settings.settings.enableLegacyRules
+        ? 'Add new rule'
+        : '+ Add Rule',
       async () => {
-        if (this.plugin.settings.settings.enableRuleV2) {
-          this.openRuleEditorModal(null);
-        } else {
+        if (this.plugin.settings.settings.enableLegacyRules) {
           this.plugin.settings.settings.rules.push({ criteria: '', path: '' });
           await this.plugin.save_settings();
           this.plugin.noteMover.updateRuleManager();
           if (this.refreshDisplay) {
             this.refreshDisplay();
           }
+        } else {
+          this.openRuleEditorModal(null);
         }
       },
       { isPrimary: true }
@@ -92,10 +74,10 @@ export class MobileRulesSection {
       cls: 'noteMover-mobile-rules-list-container',
     });
 
-    if (this.plugin.settings.settings.enableRuleV2) {
-      this.renderRulesV2(rulesContainer);
-    } else {
+    if (this.plugin.settings.settings.enableLegacyRules) {
       this.renderRulesV1(rulesContainer);
+    } else {
+      this.renderRulesV2(rulesContainer);
     }
   }
 

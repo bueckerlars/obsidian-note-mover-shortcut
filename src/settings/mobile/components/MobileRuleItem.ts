@@ -180,6 +180,11 @@ export class MobileRuleItemV2 {
 /**
  * Mobile-optimized rule item component for RuleV1
  */
+/**
+ * Mobile-optimized rule item component for Rules V1 (legacy).
+ * Rules V1 is no longer in active development. Used only when Legacy Mode is enabled.
+ * @deprecated Legacy code. Prefer MobileRuleItemV2.
+ */
 export class MobileRuleItemV1 {
   private cardEl: HTMLElement;
   private criteriaInput: HTMLInputElement;

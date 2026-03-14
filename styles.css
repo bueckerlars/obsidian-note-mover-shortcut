@@ -572,6 +572,37 @@
   min-width: 80px;
 }
 
+/* Legacy Migration Modal */
+.noteMover-legacy-migration-modal {
+  padding: 16px 24px 24px 24px;
+  box-sizing: border-box;
+}
+
+.noteMover-legacy-migration-modal .noteMover-legacy-migration-message {
+  margin: 0 0 20px 0;
+  padding: 0;
+  color: var(--text-normal);
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.noteMover-legacy-migration-modal .noteMover-legacy-migration-message p {
+  margin: 0 0 10px 0;
+}
+
+.noteMover-legacy-migration-modal .noteMover-legacy-migration-message p:last-child {
+  margin-bottom: 0;
+}
+
+.noteMover-legacy-migration-modal .noteMover-modal-button-container {
+  padding-top: 16px;
+  margin-top: 0;
+}
+
+.noteMover-legacy-migration-modal .setting-item {
+  padding-left: 0;
+}
+
 /* ===== DRAG & DROP STYLES ===== */
 
 /* Drag Handle Styles */

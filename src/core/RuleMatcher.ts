@@ -3,13 +3,13 @@ import { Rule } from '../types/Rule';
 import { MetadataExtractor } from './MetadataExtractor';
 
 /**
- * Handles all rule and filter matching logic for file processing
- *
+ * Handles all rule and filter matching logic for file processing (Rule V1).
  * Extracted from RuleManager to eliminate code duplication and improve reusability.
  * Provides centralized matching for tags, properties, and rule evaluation.
+ * Rules V1 is no longer in active development. Used only when Legacy Mode is enabled.
  *
  * @since 0.4.0
- * @deprecated This class uses the legacy Rule V1 format. Will be replaced by RuleV2 matching system in future versions.
+ * @deprecated Legacy code. RuleMatcherV2 is used by default. Kept for backward compatibility.
  */
 export class RuleMatcher {
   private metadataExtractor: MetadataExtractor;

@@ -2,14 +2,26 @@
 
 ## [0.7.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.6.0...0.7.0)
 
+### Features
+
+- **Rules V2 as default**: Rules V2 is now the default rule system. The previous "Enable Rule-V2 (beta)" toggle has been replaced by **Enable Legacy Rules (V1)** in a new "Legacy" settings section at the bottom of the settings. New users get Rules V2 by default; existing users keep their current behavior via automatic migration of the `enableRuleV2` setting to `enableLegacyRules` (inverted).
+- **Legacy Migration Modal**: When using Legacy Rules (V1) with at least one rule and the prompt has not been dismissed, a modal appears on load offering: **Migrate to Rules V2** (migrates rules and switches to V2), **Ask me later**, or **Don't ask again** (persisted via `legacyMigrationDismissed`). Desktop and mobile layouts are supported with appropriate styling.
+
 ### Improvements
 
+- **Settings UI**: Removed the "Enable Rule-V2 (beta)" toggle from the Rules section. Legacy mode is now controlled from the dedicated "Legacy" section (desktop and mobile).
+- **Import/Export**: Export and import now use `enableLegacyRules` and `legacyMigrationDismissed`. Imports that still contain `enableRuleV2` are converted to `enableLegacyRules` (inverted) for backward compatibility.
+- **Deprecation clarity**: RuleManager, RuleMatcher, Rule (V1), and MobileRuleItemV1 are explicitly documented as legacy; RuleV2/RuleManagerV2 remain the default and recommended path.
 - **Performance for large vaults**: Several optimizations to reduce work and improve responsiveness when many files are present.
   - **Suggesters**: Added 500ms debouncing and lazy loading to AdvancedSuggest and PropertySuggest to avoid repeated full vault scans on metadata changes. FolderSuggest now caches the folder list and exits early when the suggestion limit is reached.
   - **Metadata extraction**: V1 MetadataExtractor skips `vault.read()` when no content-based rules exist. V2 MetadataExtractor no longer calls `getFileCache()` twice.
   - **Rule matching**: V1 RuleMatcher uses early-exit loops and a regex cache.
   - **Preview modal**: Reuses pre-computed target paths instead of re-evaluating rules.
   - **Bulk moves**: Chunked processing with UI yielding to keep the interface responsive during large move operations.
+
+### Fixes
+
+- **RuleV2 property repair**: Repair of RuleV2 properties with missing `propertyName` now runs when in Legacy mode but `rulesV2` data exists (e.g. after re-enabling Legacy), so validation errors are avoided in that case.
 
 ## [0.6.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.9...0.6.0)
 

@@ -25,20 +25,18 @@ export class NoteMoverShortcut {
   }
 
   public updateRuleManager(): void {
-    // Choose which rule manager to use based on feature flag
-    if (this.plugin.settings.settings.enableRuleV2 === true) {
-      // Use RuleV2 - always update, even if rulesV2 is empty or undefined
+    // Use V1 (legacy) only when legacy mode is enabled; otherwise V2 is default
+    if (this.plugin.settings.settings.enableLegacyRules === true) {
+      this.ruleManager.setRules(this.plugin.settings.settings.rules);
+      this.ruleManager.setFilter(
+        this.plugin.settings.settings.filters.filter.map(f => f.value)
+      );
+    } else {
       const rulesV2 = Array.isArray(this.plugin.settings.settings.rulesV2)
         ? this.plugin.settings.settings.rulesV2
         : [];
       this.ruleManagerV2.setRules(rulesV2);
       this.ruleManagerV2.setFilter(
-        this.plugin.settings.settings.filters.filter.map(f => f.value)
-      );
-    } else {
-      // Use RuleV1 (deprecated)
-      this.ruleManager.setRules(this.plugin.settings.settings.rules);
-      this.ruleManager.setFilter(
         this.plugin.settings.settings.filters.filter.map(f => f.value)
       );
     }
@@ -123,10 +121,10 @@ export class NoteMoverShortcut {
 
       let result: string | null = null;
 
-      if (this.plugin.settings.settings.enableRuleV2 === true) {
-        result = await this.ruleManagerV2.moveFileBasedOnTags(file, skipFilter);
-      } else {
+      if (this.plugin.settings.settings.enableLegacyRules === true) {
         result = await this.ruleManager.moveFileBasedOnTags(file, skipFilter);
+      } else {
+        result = await this.ruleManagerV2.moveFileBasedOnTags(file, skipFilter);
       }
 
       if (cacheEnabled) {
@@ -333,15 +331,14 @@ export class NoteMoverShortcut {
 
     const files = app.vault.getFiles();
 
-    // Choose rule manager based on feature flag
-    if (this.plugin.settings.settings.enableRuleV2 === true) {
-      return await this.ruleManagerV2.generateMovePreview(
+    if (this.plugin.settings.settings.enableLegacyRules === true) {
+      return await this.ruleManager.generateMovePreview(
         files,
         true, // Rules are always enabled
         true // Filter is always enabled
       );
     } else {
-      return await this.ruleManager.generateMovePreview(
+      return await this.ruleManagerV2.generateMovePreview(
         files,
         true, // Rules are always enabled
         true // Filter is always enabled
@@ -360,18 +357,17 @@ export class NoteMoverShortcut {
       return null;
     }
 
-    // Choose rule manager based on feature flag
-    if (this.plugin.settings.settings.enableRuleV2 === true) {
-      return await this.ruleManagerV2.generateMovePreview(
-        [activeFile],
-        true, // Rules are always enabled
-        true // Filter is always enabled
-      );
-    } else {
+    if (this.plugin.settings.settings.enableLegacyRules === true) {
       return await this.ruleManager.generateMovePreview(
         [activeFile],
-        true, // Rules are always enabled
-        true // Filter is always enabled
+        true,
+        true
+      );
+    } else {
+      return await this.ruleManagerV2.generateMovePreview(
+        [activeFile],
+        true,
+        true
       );
     }
   }

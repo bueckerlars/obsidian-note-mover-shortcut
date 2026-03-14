@@ -28,13 +28,13 @@ export class RuleEvaluationCache {
     rules: Rule[],
     rulesV2: RuleV2[],
     filters: Filter[],
-    enableRuleV2: boolean
+    enableLegacyRules: boolean
   ): void {
     const newHash = this.computeRulesHash(
       rules,
       rulesV2,
       filters,
-      enableRuleV2
+      enableLegacyRules
     );
     if (newHash !== this.currentRulesHash) {
       this.currentRulesHash = newHash;
@@ -107,10 +107,10 @@ export class RuleEvaluationCache {
     rules: Rule[],
     rulesV2: RuleV2[],
     filters: Filter[],
-    enableRuleV2: boolean
+    enableLegacyRules: boolean
   ): string {
     try {
-      return JSON.stringify({ enableRuleV2, rules, rulesV2, filters });
+      return JSON.stringify({ enableLegacyRules, rules, rulesV2, filters });
     } catch {
       return '';
     }
