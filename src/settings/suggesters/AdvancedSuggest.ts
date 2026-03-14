@@ -20,6 +20,8 @@ const SUGGEST_TYPES: { label: string; value: SuggestType }[] = [
   { label: 'property: ', value: 'property' },
 ];
 
+const REFRESH_DEBOUNCE_MS = 500;
+
 export class AdvancedSuggest extends AbstractInputSuggest<string> {
   private selectedType: SuggestType | null = null;
   private tags: Set<string> = new Set();
@@ -29,6 +31,8 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   private propertyValues: Map<string, Set<string>> = new Map();
   private metadataExtractor: MetadataExtractor;
   private refreshDataHandler: () => void;
+  private refreshTimerId: ReturnType<typeof setTimeout> | null = null;
+  private dataLoaded = false;
 
   constructor(
     public app: App,
@@ -36,15 +40,19 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   ) {
     super(app, inputEl);
     this.metadataExtractor = new MetadataExtractor(app);
-    this.loadTags();
-    this.loadFolders();
-    this.loadFileNames();
-    this.loadPropertyKeysAndValues();
 
-    // Create bound handler for cleanup
-    this.refreshDataHandler = () => this.refreshData();
+    // Create debounced handler for cleanup
+    this.refreshDataHandler = () => {
+      if (this.refreshTimerId !== null) {
+        clearTimeout(this.refreshTimerId);
+      }
+      this.refreshTimerId = setTimeout(() => {
+        this.refreshTimerId = null;
+        this.refreshData();
+      }, REFRESH_DEBOUNCE_MS);
+    };
 
-    // Listen for metadata changes to refresh suggestions
+    // Listen for metadata changes to refresh suggestions (debounced)
     this.app.metadataCache.on('changed', this.refreshDataHandler);
   }
 
@@ -62,11 +70,18 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     this.fileNames = files.map(f => f.name);
   }
 
+  private ensureDataLoaded(): void {
+    if (!this.dataLoaded) {
+      this.loadTags();
+      this.loadFolders();
+      this.loadFileNames();
+      this.loadPropertyKeysAndValues();
+      this.dataLoaded = true;
+    }
+  }
+
   private refreshData(): void {
-    this.loadTags();
-    this.loadFolders();
-    this.loadFileNames();
-    this.loadPropertyKeysAndValues();
+    this.dataLoaded = false;
   }
 
   private loadPropertyKeysAndValues(): void {
@@ -107,6 +122,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   }
 
   getSuggestions(query: string): string[] {
+    this.ensureDataLoaded();
     // Check if a valid type is selected (at the beginning of the query) - case insensitive
     const typeMatch = SUGGEST_TYPES.find(t =>
       query.toLowerCase().startsWith(t.label.toLowerCase())
@@ -201,6 +217,10 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
    * Should be called when the suggest is no longer needed
    */
   public destroy(): void {
+    if (this.refreshTimerId !== null) {
+      clearTimeout(this.refreshTimerId);
+      this.refreshTimerId = null;
+    }
     this.app.metadataCache.off('changed', this.refreshDataHandler);
   }
 

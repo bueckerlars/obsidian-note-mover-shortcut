@@ -10,10 +10,14 @@ export interface PropertyInfo {
   exampleValue?: string;
 }
 
+const REFRESH_DEBOUNCE_MS = 500;
+
 export class PropertySuggest extends AbstractInputSuggest<string> {
   private properties: Map<string, PropertyInfo>;
   private metadataExtractor: MetadataExtractor;
   private refreshDataHandler: () => void;
+  private refreshTimerId: ReturnType<typeof setTimeout> | null = null;
+  private dataLoaded = false;
 
   constructor(
     app: App,
@@ -22,12 +26,19 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
     super(app, inputEl);
     this.properties = new Map();
     this.metadataExtractor = new MetadataExtractor(app);
-    this.loadProperties();
 
-    // Create bound handler for cleanup
-    this.refreshDataHandler = () => this.refreshData();
+    // Create debounced handler for cleanup
+    this.refreshDataHandler = () => {
+      if (this.refreshTimerId !== null) {
+        clearTimeout(this.refreshTimerId);
+      }
+      this.refreshTimerId = setTimeout(() => {
+        this.refreshTimerId = null;
+        this.refreshData();
+      }, REFRESH_DEBOUNCE_MS);
+    };
 
-    // Listen for metadata changes to refresh suggestions
+    // Listen for metadata changes to refresh suggestions (debounced)
     this.app.metadataCache.on('changed', this.refreshDataHandler);
   }
 
@@ -92,11 +103,19 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
     return str.length > 20 ? str.substring(0, 20) + '...' : str;
   }
 
+  private ensureDataLoaded(): void {
+    if (!this.dataLoaded) {
+      this.loadProperties();
+      this.dataLoaded = true;
+    }
+  }
+
   private refreshData(): void {
-    this.loadProperties();
+    this.dataLoaded = false;
   }
 
   getSuggestions(inputStr: string): string[] {
+    this.ensureDataLoaded();
     const lowerInput = inputStr.toLowerCase();
     const suggestions: string[] = [];
 
@@ -160,6 +179,10 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
    * Should be called when the suggest is no longer needed
    */
   public destroy(): void {
+    if (this.refreshTimerId !== null) {
+      clearTimeout(this.refreshTimerId);
+      this.refreshTimerId = null;
+    }
     this.app.metadataCache.off('changed', this.refreshDataHandler);
   }
 }
