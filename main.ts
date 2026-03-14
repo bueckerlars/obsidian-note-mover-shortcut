@@ -1,10 +1,11 @@
-import { Plugin, TFile } from 'obsidian';
+import { Plugin, TFile, TAbstractFile } from 'obsidian';
 import { NoteMoverShortcut } from 'src/core/NoteMoverShortcut';
 import { CommandHandler } from 'src/handlers/CommandHandler';
 import { NoteMoverShortcutSettingsTab } from 'src/settings/Settings';
 import { HistoryManager } from 'src/core/HistoryManager';
 import { TriggerEventHandler } from 'src/core/TriggerEventHandler';
 import { UpdateManager } from 'src/core/UpdateManager';
+import { RuleEvaluationCache } from 'src/core/RuleEvaluationCache';
 import {
   PluginData,
   SettingsData,
@@ -22,11 +23,13 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   public historyManager: HistoryManager;
   public updateManager: UpdateManager;
   public triggerHandler: TriggerEventHandler;
+  public ruleCache: RuleEvaluationCache;
   private settingTab: NoteMoverShortcutSettingsTab;
 
   async onload() {
     await this.load_settings();
 
+    this.ruleCache = new RuleEvaluationCache();
     this.historyManager = new HistoryManager(this);
     this.historyManager.loadHistoryFromSettings();
     this.updateManager = new UpdateManager(this);
@@ -46,8 +49,11 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     this.triggerHandler.togglePeriodic();
     this.triggerHandler.toggleOnEditListener();
 
-    // Event listener for automatic history creation during manual file operations
+    // Event listeners for history and cache dirty-tracking
     this.setupVaultEventListeners();
+
+    // Seed the rules hash so the cache knows the current config
+    this.syncRuleCacheHash();
 
     // Check for updates after complete loading
     this.app.workspace.onLayoutReady(() => {
@@ -67,20 +73,59 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     // Event listeners are automatically removed when the plugin is unloaded
   }
 
+  /** Sync the rule-evaluation cache hash with the current settings. */
+  public syncRuleCacheHash(): void {
+    const s = this.settings.settings;
+    this.ruleCache.updateRulesHash(
+      s.rules,
+      s.rulesV2 ?? [],
+      s.filters.filter,
+      !!s.enableRuleV2
+    );
+  }
+
   /**
-   * Setup of event listeners for automatic history creation
+   * Setup of event listeners for automatic history creation and cache
+   * dirty-tracking.
    */
   private setupVaultEventListeners(): void {
-    // Monitor file renaming/moving
+    // Monitor file renaming/moving (history + cache)
     this.registerEvent(
       this.app.vault.on('rename', (file, oldPath) => {
-        // Only for Markdown files
         if (file instanceof TFile && file.extension === 'md') {
           this.historyManager.addEntryFromVaultEvent(
             oldPath,
             file.path,
             file.name
           );
+          this.ruleCache.handleRename(oldPath, file.path);
+        }
+      })
+    );
+
+    // Mark modified files as dirty so the next periodic run re-evaluates them
+    this.registerEvent(
+      this.app.vault.on('modify', (file: TAbstractFile) => {
+        if (file instanceof TFile && file.extension === 'md') {
+          this.ruleCache.markDirty(file.path);
+        }
+      })
+    );
+
+    // Newly created files need evaluation
+    this.registerEvent(
+      this.app.vault.on('create', (file: TAbstractFile) => {
+        if (file instanceof TFile && file.extension === 'md') {
+          this.ruleCache.markDirty(file.path);
+        }
+      })
+    );
+
+    // Remove deleted files from the cache
+    this.registerEvent(
+      this.app.vault.on('delete', (file: TAbstractFile) => {
+        if (file instanceof TFile && file.extension === 'md') {
+          this.ruleCache.handleDelete(file.path);
         }
       })
     );
@@ -154,6 +199,11 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     // Ensure RuleV2 feature flag exists
     if (this.settings.settings.enableRuleV2 === undefined) {
       this.settings.settings.enableRuleV2 = false;
+    }
+
+    // Ensure rule evaluation cache feature flag exists
+    if (this.settings.settings.enableRuleEvaluationCache === undefined) {
+      this.settings.settings.enableRuleEvaluationCache = false;
     }
 
     // Ensure RuleV2 array exists
@@ -301,6 +351,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       retentionPolicy: defaults.retentionPolicy,
       enableRuleV2: false,
       rulesV2: [],
+      enableRuleEvaluationCache: false,
     } as SettingsData;
   }
 

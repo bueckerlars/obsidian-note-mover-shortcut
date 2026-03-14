@@ -40,6 +40,9 @@ export class NoteMoverShortcut {
         this.plugin.settings.settings.filters.filter.map(f => f.value)
       );
     }
+
+    // Re-hash the rules config; invalidates the cache when anything changed
+    this.plugin.syncRuleCacheHash();
   }
 
   public async addFileToBlacklist(fileName: string): Promise<void> {
@@ -94,53 +97,66 @@ export class NoteMoverShortcut {
     skipFilter = false
   ): Promise<void> {
     const { app } = this.plugin;
+    const cache = this.plugin.ruleCache;
+    const cacheEnabled =
+      this.plugin.settings.settings.enableRuleEvaluationCache === true;
     const originalPath = file.path;
+    const mtime = file.stat?.mtime ?? 0;
+
+    // Fast path: if the cache is enabled and already knows the result for
+    // this file, skip the expensive rule evaluation entirely.
+    if (cacheEnabled && !cache.needsEvaluation(originalPath, mtime)) {
+      const cachedDest = cache.getCachedDestination(originalPath);
+      if (cachedDest === null || cachedDest === undefined) {
+        return; // No rule matched last time and nothing changed
+      }
+      const cachedPath = combinePath(cachedDest, file.name);
+      if (originalPath === cachedPath) {
+        return; // Already in correct folder
+      }
+    }
 
     try {
       let targetFolder = defaultFolder;
 
-      // Always use rules and filters (no toggle check)
       let result: string | null = null;
 
-      // Choose rule manager based on feature flag
       if (this.plugin.settings.settings.enableRuleV2 === true) {
         result = await this.ruleManagerV2.moveFileBasedOnTags(file, skipFilter);
       } else {
         result = await this.ruleManager.moveFileBasedOnTags(file, skipFilter);
       }
 
+      if (cacheEnabled) {
+        cache.store(originalPath, mtime, result);
+      }
+
       if (result === null) {
-        return; // File should be skipped based on filter or no matching rule
+        return;
       }
       targetFolder = result;
 
       const newPath = combinePath(targetFolder, file.name);
 
-      // Skip if file is already in the correct location
       if (originalPath === newPath) {
-        return; // File is already in the correct folder, no need to move
+        return;
       }
 
-      // Ensure target folder exists before moving the file
       if (!(await ensureFolderExists(app, targetFolder))) {
         throw createError(`Failed to create target folder: ${targetFolder}`);
       }
 
-      // Markiere Plugin-interne Verschiebung
       this.plugin.historyManager.markPluginMoveStart();
 
       try {
-        // Move file to new path
         await app.fileManager.renameFile(file, newPath);
 
-        // Add entry to history
         this.plugin.historyManager.addEntry({
           sourcePath: originalPath,
           destinationPath: newPath,
           fileName: file.name,
         });
       } finally {
-        // End internal plugin move (even on errors)
         this.plugin.historyManager.markPluginMoveEnd();
       }
     } catch (error) {

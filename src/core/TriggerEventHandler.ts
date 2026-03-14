@@ -76,8 +76,12 @@ export class TriggerEventHandler {
    * @param file - The specific TFile that was modified
    */
   private async handleOnEdit(file: TFile): Promise<void> {
-    // Process ONLY the specific modified file - no vault-wide operations
-    // This is the key performance optimization: single-file processing
+    if (this.plugin.settings.settings.enableRuleEvaluationCache) {
+      // Ensure the file is marked dirty so the cache check re-evaluates it.
+      // The vault event listener in main.ts does the same, but listener
+      // ordering is not guaranteed.
+      this.plugin.ruleCache.markDirty(file.path);
+    }
     await this.plugin.noteMover.moveFileBasedOnTags(file, '/', false);
   }
 

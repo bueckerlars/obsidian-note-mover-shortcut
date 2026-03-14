@@ -80,6 +80,43 @@ export class TriggerSettingsSection {
       }
     }
 
+    // Rule Evaluation Cache (beta)
+    const cacheDesc = document.createDocumentFragment();
+    cacheDesc.append(
+      'Cache rule evaluation results so unchanged files are not re-evaluated on every periodic or on-edit run.',
+      document.createElement('br'),
+      'This significantly improves performance for vaults with many files and rules.'
+    );
+
+    const cacheSetting = new Setting(this.containerEl)
+      .setName('Enable rule evaluation cache (beta)')
+      .setDesc(cacheDesc)
+      .addToggle(toggle =>
+        toggle
+          .setValue(
+            this.plugin.settings.settings.enableRuleEvaluationCache ?? false
+          )
+          .onChange(async value => {
+            this.plugin.settings.settings.enableRuleEvaluationCache = value;
+            await this.plugin.save_settings();
+            if (!value) {
+              this.plugin.ruleCache.invalidateAll();
+            }
+          })
+      );
+
+    if (isMobile) {
+      cacheSetting.settingEl.addClass('noteMover-mobile-optimized');
+      const cacheControlEl = cacheSetting.settingEl.querySelector(
+        '.setting-item-control'
+      );
+      if (cacheControlEl) {
+        (cacheControlEl as HTMLElement).addClass(
+          'noteMover-mobile-toggle-control'
+        );
+      }
+    }
+
     if (this.plugin.settings.settings.triggers.enablePeriodicMovement) {
       const intervalSetting = new Setting(this.containerEl)
         .setName('Periodic movement interval')
