@@ -13,10 +13,21 @@ import { MetadataExtractor } from './MetadataExtractor';
  */
 export class RuleMatcher {
   private metadataExtractor: MetadataExtractor;
+  private regexCache: Map<string, RegExp> = new Map();
 
   constructor(metadataExtractor?: MetadataExtractor) {
     this.metadataExtractor =
       metadataExtractor || new MetadataExtractor({} as any);
+  }
+
+  private getCachedRegex(pattern: string, flags: string): RegExp {
+    const key = `${pattern}|||${flags}`;
+    let regex = this.regexCache.get(key);
+    if (!regex) {
+      regex = new RegExp(pattern, flags);
+      this.regexCache.set(key, regex);
+    }
+    return regex;
   }
   /**
    * Matches tags hierarchically with parent-child relationships
@@ -65,17 +76,10 @@ export class RuleMatcher {
 
     // 2. Wildcard pattern matching
     if (pattern.includes('*') || pattern.includes('?')) {
-      // Convert wildcard pattern to regex
-      // First escape all regex special characters except * and ?
       let regexPattern = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+      regexPattern = regexPattern.replace(/\*/g, '.*').replace(/\?/g, '.');
 
-      // Then convert wildcards to regex patterns
-      regexPattern = regexPattern
-        .replace(/\*/g, '.*') // * -> .*
-        .replace(/\?/g, '.'); // ? -> .
-
-      // Create case-insensitive regex
-      const regex = new RegExp(`^${regexPattern}$`, 'i');
+      const regex = this.getCachedRegex(`^${regexPattern}$`, 'i');
       return regex.test(fileName);
     }
 
@@ -235,36 +239,12 @@ export class RuleMatcher {
    * @returns First matching rule by user order, with specificity as tiebreaker
    */
   public findMatchingRule(metadata: FileMetadata, rules: Rule[]): Rule | null {
-    // Collect matching rules with their original index and a specificity score
-    const matchingWithMeta = rules
-      .map((rule, index) => {
-        // Compute a basic specificity score for tag rules based on hierarchy depth
-        const tagMatch = rule.criteria.match(/^tag:\s*(.*)$/);
-        const specificity = tagMatch
-          ? (tagMatch[1].match(/\//g) || []).length
-          : 0;
-
-        return {
-          rule,
-          index,
-          specificity,
-        };
-      })
-      .filter(entry => this.evaluateCriteria(metadata, entry.rule.criteria));
-
-    if (matchingWithMeta.length === 0) {
-      return null;
-    }
-
-    // Sort by user order first, then by specificity (desc) as tiebreaker
-    matchingWithMeta.sort((a, b) => {
-      if (a.index !== b.index) {
-        return a.index - b.index; // earlier user-defined rule wins
+    for (const rule of rules) {
+      if (this.evaluateCriteria(metadata, rule.criteria)) {
+        return rule;
       }
-      return b.specificity - a.specificity; // tiebreaker: more specific tag wins
-    });
-
-    return matchingWithMeta[0].rule;
+    }
+    return null;
   }
 
   /**
