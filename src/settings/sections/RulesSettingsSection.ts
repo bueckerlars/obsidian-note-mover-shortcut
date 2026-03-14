@@ -30,28 +30,6 @@ export class RulesSettingsSection {
     );
 
     new Setting(this.containerEl).setDesc(descUseRules);
-
-    // Legacy mode toggle: when ON, use Rules V1 (deprecated); when OFF, use Rules V2 (default)
-    const legacyDesc = document.createDocumentFragment();
-    legacyDesc.append(
-      'Enable Legacy Rules (V1) to use the older rule format. Rules V2 is now the default and supports multiple conditions and logical operators.',
-      document.createElement('br'),
-      'Legacy mode is not actively developed. Consider migrating to Rules V2 via the migration prompt.'
-    );
-
-    new Setting(this.containerEl)
-      .setName('Enable Legacy Rules (V1)')
-      .setDesc(legacyDesc)
-      .addToggle(toggle =>
-        toggle
-          .setValue(this.plugin.settings.settings.enableLegacyRules ?? false)
-          .onChange(async value => {
-            this.plugin.settings.settings.enableLegacyRules = value;
-            await this.plugin.save_settings();
-            this.plugin.noteMover.updateRuleManager();
-            this.refreshDisplay();
-          })
-      );
   }
 
   addAddRuleButtonSetting(): void {

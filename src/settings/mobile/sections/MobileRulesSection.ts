@@ -46,22 +46,6 @@ export class MobileRulesSection {
     desc.textContent =
       'Move files to folders based on criteria. First matching rule applies.';
 
-    // Legacy Rules (V1) toggle: when ON use V1, when OFF use V2 (default)
-    new MobileToggleSetting(
-      this.sectionContainer,
-      'Enable Legacy Rules (V1)',
-      'Use the older rule format. Rules V2 is the default.',
-      this.plugin.settings.settings.enableLegacyRules ?? false,
-      async value => {
-        this.plugin.settings.settings.enableLegacyRules = value;
-        await this.plugin.save_settings();
-        this.plugin.noteMover.updateRuleManager();
-        if (this.refreshDisplay) {
-          this.refreshDisplay();
-        }
-      }
-    );
-
     // Add Rule Button
     new MobileButtonSetting(
       this.sectionContainer,
