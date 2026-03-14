@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.7.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.6.0...0.7.0)
+
+### Features
+
+- **Rules V2 as default**: Rules V2 is now the default rule system. The previous "Enable Rule-V2 (beta)" toggle has been replaced by **Enable Legacy Rules (V1)** in a new "Legacy" settings section at the bottom of the settings. New users get Rules V2 by default; existing users keep their current behavior via automatic migration of the `enableRuleV2` setting to `enableLegacyRules` (inverted).
+- **Legacy Migration Modal**: When using Legacy Rules (V1) with at least one rule and the prompt has not been dismissed, a modal appears on load offering: **Migrate to Rules V2** (migrates rules and switches to V2), **Ask me later**, or **Don't ask again** (persisted via `legacyMigrationDismissed`). Desktop and mobile layouts are supported with appropriate styling.
+
+### Improvements
+
+- **Settings UI**: Removed the "Enable Rule-V2 (beta)" toggle from the Rules section. Legacy mode is now controlled from the dedicated "Legacy" section (desktop and mobile).
+- **Import/Export**: Export and import now use `enableLegacyRules` and `legacyMigrationDismissed`. Imports that still contain `enableRuleV2` are converted to `enableLegacyRules` (inverted) for backward compatibility.
+- **Deprecation clarity**: RuleManager, RuleMatcher, Rule (V1), and MobileRuleItemV1 are explicitly documented as legacy; RuleV2/RuleManagerV2 remain the default and recommended path.
+
+### Fixes
+
+- **RuleV2 property repair**: Repair of RuleV2 properties with missing `propertyName` now runs when in Legacy mode but `rulesV2` data exists (e.g. after re-enabling Legacy), so validation errors are avoided in that case.
+
+---
+
 ## [0.6.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.5.9...0.6.0)
 
 ### Features
