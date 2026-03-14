@@ -6,6 +6,10 @@
 
 - **Rule Evaluation Cache (beta)**: Added an opt-in caching layer that tracks which files have changed between rule checks, skipping redundant re-evaluation for files already in their correct folder. On periodic runs this reduces work from O(all files) to O(changed files). Enable via the new toggle in the Triggers settings section.
 
+### Bug Fixes
+
+- **Periodic Trigger Notice**: Fixed the periodic trigger always showing "Successfully moved X files" even when no files were actually moved. The move count now only reflects files that were truly relocated.
+
 ### Improvements
 
 - **V2 Metadata Extraction Optimization**: `extractFileMetadataV2()` no longer reads full file content via `vault.read()`. V2 rules only use metadata cache fields (tags, links, properties, etc.), so the costly I/O call is now skipped entirely.

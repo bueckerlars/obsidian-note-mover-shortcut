@@ -95,7 +95,7 @@ export class NoteMoverShortcut {
     file: TFile,
     defaultFolder: string,
     skipFilter = false
-  ): Promise<void> {
+  ): Promise<boolean> {
     const { app } = this.plugin;
     const cache = this.plugin.ruleCache;
     const cacheEnabled =
@@ -108,11 +108,11 @@ export class NoteMoverShortcut {
     if (cacheEnabled && !cache.needsEvaluation(originalPath, mtime)) {
       const cachedDest = cache.getCachedDestination(originalPath);
       if (cachedDest === null || cachedDest === undefined) {
-        return; // No rule matched last time and nothing changed
+        return false; // No rule matched last time and nothing changed
       }
       const cachedPath = combinePath(cachedDest, file.name);
       if (originalPath === cachedPath) {
-        return; // Already in correct folder
+        return false; // Already in correct folder
       }
     }
 
@@ -132,14 +132,14 @@ export class NoteMoverShortcut {
       }
 
       if (result === null) {
-        return;
+        return false;
       }
       targetFolder = result;
 
       const newPath = combinePath(targetFolder, file.name);
 
       if (originalPath === newPath) {
-        return;
+        return false;
       }
 
       if (!(await ensureFolderExists(app, targetFolder))) {
@@ -159,8 +159,11 @@ export class NoteMoverShortcut {
       } finally {
         this.plugin.historyManager.markPluginMoveEnd();
       }
+
+      return true;
     } catch (error) {
       handleError(error, `Error moving file '${file.path}'`);
+      return false;
     }
   }
 
@@ -193,8 +196,10 @@ export class NoteMoverShortcut {
       // Iterate over each file and move it
       for (const file of files) {
         try {
-          await this.moveFileBasedOnTags(file, '/');
-          successCount++;
+          const wasMoved = await this.moveFileBasedOnTags(file, '/');
+          if (wasMoved) {
+            successCount++;
+          }
         } catch (error) {
           errorCount++;
           const errorMessage =
