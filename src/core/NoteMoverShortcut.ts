@@ -12,6 +12,8 @@ import {
   NOTIFICATION_CONSTANTS,
 } from '../config/constants';
 
+const BULK_CHUNK_SIZE = 50;
+
 export class NoteMoverShortcut {
   private ruleManager: RuleManager;
   private ruleManagerV2: RuleManagerV2;
@@ -174,11 +176,9 @@ export class NoteMoverShortcut {
   }): Promise<void> {
     const { app } = this.plugin;
 
-    // Get all files in the vault
-    const files = await app.vault.getFiles();
+    const files = app.vault.getFiles();
 
     if (files.length === 0) {
-      // Only show notice for manual/bulk runs, stay silent for periodic runs
       if (options.showNotifications && options.operationType === 'bulk') {
         NoticeManager.info('No files found in vault');
       }
@@ -193,10 +193,9 @@ export class NoteMoverShortcut {
     let errorCount = 0;
 
     try {
-      // Iterate over each file and move it
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
         try {
-          const wasMoved = await this.moveFileBasedOnTags(file, '/');
+          const wasMoved = await this.moveFileBasedOnTags(files[i], '/');
           if (wasMoved) {
             successCount++;
           }
@@ -204,9 +203,13 @@ export class NoteMoverShortcut {
           errorCount++;
           const errorMessage =
             options.operationType === 'periodic'
-              ? `Error moving file '${file.path}' during periodic movement`
-              : `Error moving file '${file.path}'`;
+              ? `Error moving file '${files[i].path}' during periodic movement`
+              : `Error moving file '${files[i].path}'`;
           handleError(error, errorMessage, false);
+        }
+        // Yield to the UI thread periodically to prevent freezing
+        if ((i + 1) % BULK_CHUNK_SIZE === 0 && i + 1 < files.length) {
+          await new Promise<void>(resolve => setTimeout(resolve, 0));
         }
       }
 
@@ -328,8 +331,7 @@ export class NoteMoverShortcut {
   async generateVaultMovePreview(): Promise<MovePreview> {
     const { app } = this.plugin;
 
-    // Get all files in the vault
-    const files = await app.vault.getFiles();
+    const files = app.vault.getFiles();
 
     // Choose rule manager based on feature flag
     if (this.plugin.settings.settings.enableRuleV2 === true) {

@@ -11,33 +11,35 @@ export class MetadataExtractor {
   constructor(private app: App) {}
 
   /**
-   * Extracts complete metadata from a file
-   * Handles errors gracefully and provides null values for unavailable data
+   * Extracts complete metadata from a file.
+   * @param file - TFile to extract metadata from
+   * @param needsContent - When false, skips the expensive vault.read() call.
+   *                       Pass true only when content:-based rules are configured.
    */
-  public async extractFileMetadata(file: TFile): Promise<FileMetadata> {
+  public async extractFileMetadata(
+    file: TFile,
+    needsContent = true
+  ): Promise<FileMetadata> {
     try {
-      // Basic file information
       const fileName = file.name;
       const filePath = file.path;
 
-      // File system dates
       const createdAt =
         file.stat && file.stat.ctime ? new Date(file.stat.ctime) : null;
       const updatedAt =
         file.stat && file.stat.mtime ? new Date(file.stat.mtime) : null;
 
-      // Metadata cache
       const fileCache = this.app.metadataCache.getFileCache(file);
       const tags = getAllTags(fileCache || {}) || [];
       const properties = fileCache?.frontmatter || {};
 
-      // File content (optional, with error handling)
       let fileContent = '';
-      try {
-        fileContent = await this.app.vault.read(file);
-      } catch (error) {
-        // Content is optional - don't fail if we can't read it
-        // Could log this for debugging if needed
+      if (needsContent) {
+        try {
+          fileContent = await this.app.vault.read(file);
+        } catch {
+          // Content is optional - don't fail if we can't read it
+        }
       }
 
       return {
@@ -56,7 +58,6 @@ export class MetadataExtractor {
         false
       );
 
-      // Return minimal metadata on error
       return {
         fileName: file.name,
         filePath: file.path,
@@ -201,47 +202,53 @@ export class MetadataExtractor {
    */
   public async extractFileMetadataV2(file: TFile): Promise<FileMetadata> {
     try {
-      // V2 rules never use fileContent, so avoid the costly vault.read() call
-      const baseMetadata = await this.extractBasicMetadata(file);
+      const fileName = file.name;
+      const filePath = file.path;
+      const createdAt =
+        file.stat && file.stat.ctime ? new Date(file.stat.ctime) : null;
+      const updatedAt =
+        file.stat && file.stat.mtime ? new Date(file.stat.mtime) : null;
 
       const fileCache = this.app.metadataCache.getFileCache(file);
-
-      // Extension from file name
+      const tags = getAllTags(fileCache || {}) || [];
+      const properties = fileCache?.frontmatter || {};
       const extension = file.extension || '';
 
-      // Links from metadata cache
       const links: string[] = [];
       if (fileCache?.links) {
-        fileCache.links.forEach(link => {
+        for (const link of fileCache.links) {
           if (link.link && typeof link.link === 'string') {
             links.push(link.link);
           }
-        });
+        }
       }
 
-      // Embeds from metadata cache
       const embeds: string[] = [];
       if (fileCache?.embeds) {
-        fileCache.embeds.forEach(embed => {
+        for (const embed of fileCache.embeds) {
           if (embed.link && typeof embed.link === 'string') {
             embeds.push(embed.link);
           }
-        });
+        }
       }
 
-      // Headings from metadata cache
       const headings: string[] = [];
       if (fileCache?.headings) {
-        fileCache.headings.forEach(heading => {
+        for (const heading of fileCache.headings) {
           if (heading.heading && typeof heading.heading === 'string') {
             headings.push(heading.heading);
           }
-        });
+        }
       }
 
       return {
-        ...baseMetadata,
+        fileName,
+        filePath,
+        tags,
+        properties,
         fileContent: '',
+        createdAt,
+        updatedAt,
         extension,
         links,
         embeds,
@@ -254,10 +261,14 @@ export class MetadataExtractor {
         false
       );
 
-      const baseMetadata = await this.extractBasicMetadata(file);
       return {
-        ...baseMetadata,
+        fileName: file.name,
+        filePath: file.path,
+        tags: [],
+        properties: {},
         fileContent: '',
+        createdAt: null,
+        updatedAt: null,
         extension: '',
         links: [],
         embeds: [],

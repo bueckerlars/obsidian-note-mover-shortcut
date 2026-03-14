@@ -14,6 +14,7 @@ import { RuleMatcher } from './RuleMatcher';
 export class RuleManager {
   private rules: Rule[] = [];
   private filter: string[] = [];
+  private needsContent = false;
   private metadataExtractor: MetadataExtractor;
   private ruleMatcher: RuleMatcher;
 
@@ -27,10 +28,22 @@ export class RuleManager {
 
   public setRules(rules: Rule[]): void {
     this.rules = rules;
+    this.updateNeedsContent();
   }
 
   public setFilter(filter: string[]): void {
     this.filter = filter;
+    this.updateNeedsContent();
+  }
+
+  private updateNeedsContent(): void {
+    const hasContentRule = this.rules.some(r =>
+      r.criteria.trimStart().startsWith('content:')
+    );
+    const hasContentFilter = this.filter.some(f =>
+      f.trimStart().startsWith('content:')
+    );
+    this.needsContent = hasContentRule || hasContentFilter;
   }
 
   /**
@@ -48,18 +61,18 @@ export class RuleManager {
     skipFilter = false
   ): Promise<string | null> {
     try {
-      // Extract metadata
-      const metadata = await this.metadataExtractor.extractFileMetadata(file);
+      const metadata = await this.metadataExtractor.extractFileMetadata(
+        file,
+        this.needsContent
+      );
 
-      // Check if file should be skipped based on filter
       if (
         !skipFilter &&
         !this.ruleMatcher.evaluateFilter(metadata, this.filter)
       ) {
-        return null; // File is blocked by filter
+        return null;
       }
 
-      // Find matching rule
       const matchingRule = this.ruleMatcher.findMatchingRule(
         metadata,
         this.rules
@@ -68,7 +81,6 @@ export class RuleManager {
         return matchingRule.path;
       }
 
-      // No rule matched - skip the file since only notes with rules should be moved
       return null;
     } catch (error) {
       handleError(
@@ -88,8 +100,10 @@ export class RuleManager {
     skipFilter = false
   ): Promise<PreviewEntry> {
     try {
-      // Extract metadata
-      const metadata = await this.metadataExtractor.extractFileMetadata(file);
+      const metadata = await this.metadataExtractor.extractFileMetadata(
+        file,
+        this.needsContent
+      );
       const { tags, fileName, filePath } = metadata;
 
       // Check filters first

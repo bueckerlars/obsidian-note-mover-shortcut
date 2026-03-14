@@ -2,6 +2,8 @@ import { AbstractInputSuggest, App, TAbstractFile, TFolder } from 'obsidian';
 import { GENERAL_CONSTANTS } from '../../config/constants';
 
 export class FolderSuggest extends AbstractInputSuggest<TFolder> {
+  private cachedFolders: TFolder[] | null = null;
+
   constructor(
     app: App,
     private inputEl: HTMLInputElement
@@ -9,24 +11,39 @@ export class FolderSuggest extends AbstractInputSuggest<TFolder> {
     super(app, inputEl);
   }
 
+  private getFolders(): TFolder[] {
+    if (this.cachedFolders === null) {
+      const abstractFiles = this.app.vault.getAllLoadedFiles();
+      this.cachedFolders = abstractFiles.filter(
+        (f): f is TFolder => f instanceof TFolder
+      );
+    }
+    return this.cachedFolders;
+  }
+
+  /** Call when the vault structure changes to rebuild the folder list. */
+  public invalidateCache(): void {
+    this.cachedFolders = null;
+  }
+
   protected getSuggestions(query: string): TFolder[] | Promise<TFolder[]> {
-    const abstractFiles = this.app.vault.getAllLoadedFiles();
-    const folders: TFolder[] = [];
+    const folders = this.getFolders();
     const lowerCaseInputStr = query.toLowerCase();
 
-    abstractFiles.forEach((folder: TAbstractFile) => {
-      if (
-        folder instanceof TFolder &&
-        folder.path.toLowerCase().contains(lowerCaseInputStr)
-      ) {
-        folders.push(folder);
+    const matched: TFolder[] = [];
+    for (const folder of folders) {
+      if (folder.path.toLowerCase().contains(lowerCaseInputStr)) {
+        matched.push(folder);
+        if (
+          matched.length >=
+          GENERAL_CONSTANTS.SUGGESTION_LIMITS.FOLDER_SUGGESTIONS
+        ) {
+          break;
+        }
       }
-    });
+    }
 
-    return folders.slice(
-      0,
-      GENERAL_CONSTANTS.SUGGESTION_LIMITS.FOLDER_SUGGESTIONS
-    );
+    return matched;
   }
 
   renderSuggestion(value: TFolder, el: HTMLElement): void {

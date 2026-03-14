@@ -3,6 +3,8 @@ import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import NoteMoverShortcutPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
 import { MobileUtils } from '../utils/MobileUtils';
+import { combinePath, ensureFolderExists } from '../utils/PathUtils';
+import { handleError, createError } from '../utils/Error';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class PreviewModal extends BaseModal {
@@ -215,36 +217,52 @@ export class PreviewModal extends BaseModal {
   }
 
   private async executeMoves() {
-    // Close modal first
     this.close();
 
-    // Execute the moves for successful entries
     const successfulEntries = this.movePreview.successfulMoves;
     let movedCount = 0;
     let errorCount = 0;
 
-    for (const entry of successfulEntries) {
-      try {
-        // Find the TFile for this entry
-        const file = this.app.vault.getAbstractFileByPath(entry.currentPath);
-        if (file && file instanceof TFile) {
-          // Use the existing move logic from NoteMoverShortcut
-          await this.plugin.noteMover.moveFileBasedOnTags(
-            file,
-            entry.targetPath || '/',
-            true
-          );
-          movedCount++;
+    const bulkOperationId =
+      this.plugin.historyManager.startBulkOperation('bulk');
+
+    try {
+      for (const entry of successfulEntries) {
+        try {
+          const file = this.app.vault.getAbstractFileByPath(entry.currentPath);
+          if (!(file instanceof TFile) || !entry.targetPath) continue;
+
+          const targetFolder = entry.targetPath;
+          const newPath = combinePath(targetFolder, file.name);
+          if (file.path === newPath) continue;
+
+          if (!(await ensureFolderExists(this.app, targetFolder))) {
+            throw createError(
+              `Failed to create target folder: ${targetFolder}`
+            );
+          }
+
+          this.plugin.historyManager.markPluginMoveStart();
+          try {
+            await this.app.fileManager.renameFile(file, newPath);
+            this.plugin.historyManager.addEntry({
+              sourcePath: entry.currentPath,
+              destinationPath: newPath,
+              fileName: file.name,
+            });
+            movedCount++;
+          } finally {
+            this.plugin.historyManager.markPluginMoveEnd();
+          }
+        } catch (error) {
+          handleError(error, `Error moving file ${entry.fileName}`, false);
+          errorCount++;
         }
-      } catch (error) {
-        NoticeManager.error(
-          `Error moving file ${entry.fileName}: ${error instanceof Error ? error.message : String(error)}`
-        );
-        errorCount++;
       }
+    } finally {
+      this.plugin.historyManager.endBulkOperation();
     }
 
-    // Show completion notice
     if (errorCount === 0) {
       NoticeManager.success(`Successfully moved ${movedCount} files!`);
     } else {
