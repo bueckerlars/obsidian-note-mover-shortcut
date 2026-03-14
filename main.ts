@@ -182,6 +182,16 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     if (!Array.isArray(settingsAny.history.bulkOperations)) {
       settingsAny.history.bulkOperations = [];
     }
+
+    // Ensure rule flags are always defined so they are serialized (JSON.stringify omits undefined)
+    const s = this.settings.settings;
+    if (s.enableLegacyRules === undefined) {
+      s.enableLegacyRules = false;
+    }
+    if (s.legacyMigrationDismissed === undefined) {
+      s.legacyMigrationDismissed = false;
+    }
+
     await this.saveData(this.settings);
   }
 
@@ -234,6 +244,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     if (settingsAny.enableRuleV2 !== undefined) {
       this.settings.settings.enableLegacyRules = !settingsAny.enableRuleV2;
       delete settingsAny.enableRuleV2;
+      // Persist new format so reload keeps the value
+      await this.save_settings();
     }
     if (this.settings.settings.enableLegacyRules === undefined) {
       this.settings.settings.enableLegacyRules = false;
