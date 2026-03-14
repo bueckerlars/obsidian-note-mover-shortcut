@@ -56,9 +56,9 @@ export class RulesSettingsSection {
 
   addAddRuleButtonSetting(): void {
     if (this.plugin.settings.settings.enableLegacyRules) {
-      this.addAddRuleV2ButtonSetting();
-    } else {
       this.addAddRuleV1ButtonSetting();
+    } else {
+      this.addAddRuleV2ButtonSetting();
     }
   }
 
