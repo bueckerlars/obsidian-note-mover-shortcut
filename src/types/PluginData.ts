@@ -17,7 +17,8 @@ export interface SettingsData {
   filters: FilterSettings;
   rules: Rule[];
   retentionPolicy: RetentionPolicy;
-  enableRuleV2?: boolean;
+  enableLegacyRules?: boolean;
+  legacyMigrationDismissed?: boolean;
   rulesV2?: RuleV2[];
   enableRuleEvaluationCache?: boolean;
 }

@@ -31,31 +31,31 @@ export class RulesSettingsSection {
 
     new Setting(this.containerEl).setDesc(descUseRules);
 
-    // Feature flag toggle for Rule V2
-    const ruleV2Desc = document.createDocumentFragment();
-    ruleV2Desc.append(
-      'Enable the new Rule V2 system (beta). This provides more flexible rule matching with multiple conditions and logical operators.',
+    // Legacy mode toggle: when ON, use Rules V1 (deprecated); when OFF, use Rules V2 (default)
+    const legacyDesc = document.createDocumentFragment();
+    legacyDesc.append(
+      'Enable Legacy Rules (V1) to use the older rule format. Rules V2 is now the default and supports multiple conditions and logical operators.',
       document.createElement('br'),
-      '⚠️ Beta feature: Rule V2 replaces the existing rule system when enabled. Your existing rules will be migrated automatically.'
+      'Legacy mode is not actively developed. Consider migrating to Rules V2 via the migration prompt.'
     );
 
     new Setting(this.containerEl)
-      .setName('Enable Rule-V2 (beta)')
-      .setDesc(ruleV2Desc)
+      .setName('Enable Legacy Rules (V1)')
+      .setDesc(legacyDesc)
       .addToggle(toggle =>
         toggle
-          .setValue(this.plugin.settings.settings.enableRuleV2 ?? false)
+          .setValue(this.plugin.settings.settings.enableLegacyRules ?? false)
           .onChange(async value => {
-            this.plugin.settings.settings.enableRuleV2 = value;
+            this.plugin.settings.settings.enableLegacyRules = value;
             await this.plugin.save_settings();
+            this.plugin.noteMover.updateRuleManager();
             this.refreshDisplay();
           })
       );
   }
 
   addAddRuleButtonSetting(): void {
-    // Check if RuleV2 is enabled
-    if (this.plugin.settings.settings.enableRuleV2) {
+    if (this.plugin.settings.settings.enableLegacyRules) {
       this.addAddRuleV2ButtonSetting();
     } else {
       this.addAddRuleV1ButtonSetting();
@@ -89,11 +89,10 @@ export class RulesSettingsSection {
   }
 
   addRulesArray(): void {
-    // Check if RuleV2 is enabled
-    if (this.plugin.settings.settings.enableRuleV2) {
-      this.addRulesV2Array();
-    } else {
+    if (this.plugin.settings.settings.enableLegacyRules) {
       this.addRulesV1Array();
+    } else {
+      this.addRulesV2Array();
     }
   }
 

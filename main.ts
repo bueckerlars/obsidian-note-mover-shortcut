@@ -15,6 +15,7 @@ import {
 import { SETTINGS_CONSTANTS } from 'src/config/constants';
 import { SettingsValidator } from 'src/utils/SettingsValidator';
 import { RuleMigrationService } from 'src/core/RuleMigrationService';
+import { LegacyMigrationModal } from 'src/modals/LegacyMigrationModal';
 
 export default class NoteMoverShortcutPlugin extends Plugin {
   public settings: PluginData;
@@ -55,10 +56,42 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     // Seed the rules hash so the cache knows the current config
     this.syncRuleCacheHash();
 
+    // Show legacy migration modal when user has V1 rules and has not dismissed the prompt
+    if (
+      this.settings.settings.enableLegacyRules === true &&
+      !this.settings.settings.legacyMigrationDismissed &&
+      this.settings.settings.rules.length > 0
+    ) {
+      setTimeout(() => this.showLegacyMigrationModal(), 500);
+    }
+
     // Check for updates after complete loading
     this.app.workspace.onLayoutReady(() => {
       this.updateManager.checkForUpdates();
     });
+  }
+
+  /**
+   * Opens the legacy migration modal with options to migrate to V2, ask later, or don't ask again.
+   */
+  private showLegacyMigrationModal(): void {
+    const modal = new LegacyMigrationModal(this.app, {
+      onMigrate: async () => {
+        this.settings.settings.rulesV2 = RuleMigrationService.migrateRules(
+          this.settings.settings.rules
+        );
+        this.settings.settings.enableLegacyRules = false;
+        await this.save_settings();
+        this.noteMover.updateRuleManager();
+        this.syncRuleCacheHash();
+      },
+      onDismiss: () => {},
+      onDismissPermanently: async () => {
+        this.settings.settings.legacyMigrationDismissed = true;
+        await this.save_settings();
+      },
+    });
+    modal.open();
   }
 
   onunload() {
@@ -80,7 +113,7 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       s.rules,
       s.rulesV2 ?? [],
       s.filters.filter,
-      !!s.enableRuleV2
+      !!s.enableLegacyRules
     );
   }
 
@@ -196,9 +229,17 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       this.settings.settings.filters.filter = [];
     }
 
-    // Ensure RuleV2 feature flag exists
-    if (this.settings.settings.enableRuleV2 === undefined) {
-      this.settings.settings.enableRuleV2 = false;
+    // Migrate from old enableRuleV2 to enableLegacyRules (inverted meaning)
+    const settingsAny = this.settings.settings as any;
+    if (settingsAny.enableRuleV2 !== undefined) {
+      this.settings.settings.enableLegacyRules = !settingsAny.enableRuleV2;
+      delete settingsAny.enableRuleV2;
+    }
+    if (this.settings.settings.enableLegacyRules === undefined) {
+      this.settings.settings.enableLegacyRules = false;
+    }
+    if (this.settings.settings.legacyMigrationDismissed === undefined) {
+      this.settings.settings.legacyMigrationDismissed = false;
     }
 
     // Ensure rule evaluation cache feature flag exists
@@ -232,8 +273,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
         f => f && typeof f.value === 'string' && f.value.trim() !== ''
       );
 
-    // Migrate V1 rules to V2 if feature flag is enabled and migration is needed
-    if (this.settings.settings.enableRuleV2) {
+    // Migrate V1 rules to V2 when using V2 (enableLegacyRules false) and migration is needed
+    if (!this.settings.settings.enableLegacyRules) {
       if (
         RuleMigrationService.shouldMigrate(
           this.settings.settings.rules,
@@ -247,7 +288,6 @@ export default class NoteMoverShortcutPlugin extends Plugin {
         console.log(
           `Migrated ${this.settings.settings.rulesV2.length} rules to V2 format`
         );
-        // Save migrated rules
         await this.save_settings();
       }
 
@@ -266,7 +306,6 @@ export default class NoteMoverShortcutPlugin extends Plugin {
           await this.save_settings();
         }
 
-        // Repair RuleV2 properties with missing propertyName
         const repaired = RuleMigrationService.repairRuleV2Properties(
           this.settings.settings.rulesV2
         );
@@ -279,10 +318,9 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       }
     }
 
-    // Repair RuleV2 properties even if RuleV2 is not enabled (to prevent validation errors)
-    // Only run if enableRuleV2 is false, since it was already repaired above if enabled
+    // Repair RuleV2 properties when in legacy mode but rulesV2 exist (e.g. after re-enabling legacy)
     if (
-      !this.settings.settings.enableRuleV2 &&
+      this.settings.settings.enableLegacyRules &&
       this.settings.settings.rulesV2 &&
       this.settings.settings.rulesV2.length > 0
     ) {
@@ -349,7 +387,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
       },
       rules: Array.isArray(defaults.rules) ? defaults.rules : [],
       retentionPolicy: defaults.retentionPolicy,
-      enableRuleV2: false,
+      enableLegacyRules: false,
+      legacyMigrationDismissed: false,
       rulesV2: [],
       enableRuleEvaluationCache: false,
     } as SettingsData;
@@ -393,7 +432,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
         filters: { filter: filters },
         rules,
         retentionPolicy,
-        enableRuleV2: false,
+        enableLegacyRules: false,
+        legacyMigrationDismissed: false,
       },
       history: {
         history: historyArray,

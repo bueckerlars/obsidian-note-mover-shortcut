@@ -8,8 +8,9 @@ import { MetadataExtractor } from './MetadataExtractor';
 import { RuleMatcher } from './RuleMatcher';
 
 /**
- * RuleManager for Rule V1 system
- * @deprecated This class uses the legacy Rule V1 format. Will be replaced by RuleV2 system in future versions.
+ * RuleManager for Rule V1 system (legacy).
+ * Rules V1 is no longer in active development. Used only when Legacy Mode is enabled.
+ * @deprecated Legacy code. RuleV2 (RuleManagerV2) is the default. Kept for backward compatibility.
  */
 export class RuleManager {
   private rules: Rule[] = [];
