@@ -188,7 +188,14 @@ export function renderDestinationTemplate(
     return '';
   }
 
-  const { segments } = parseDestinationTemplate(raw);
+  const { segments, error } = parseDestinationTemplate(raw);
+
+  // If the template is syntactically invalid, bubble up an error so that
+  // callers (e.g. RuleManagerV2.resolveDestinationTemplate) can safely fall
+  // back to the raw destination string instead of using a truncated path.
+  if (error) {
+    throw new Error(error.message);
+  }
 
   if (segments.length === 0) {
     return '';

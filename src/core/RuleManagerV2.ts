@@ -88,10 +88,18 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
-        return this.resolveDestinationTemplate(
+        const targetFolder = this.resolveDestinationTemplate(
           matchingRule.destination,
           metadata
         );
+
+        // If the destination template resolves to an empty value, treat it as
+        // "no valid move target" so the file is not moved to the vault root.
+        if (!targetFolder || targetFolder.trim() === '') {
+          return null;
+        }
+
+        return targetFolder;
       }
 
       // No rule matched - skip the file since only notes with rules should be moved
@@ -152,6 +160,21 @@ export class RuleManagerV2 {
           matchingRule.destination,
           metadata
         );
+
+        // If the destination template resolves to an empty value, treat it as
+        // "no valid move target" so the file is left unmoved.
+        if (!targetFolder || targetFolder.trim() === '') {
+          return {
+            fileName,
+            currentPath: filePath,
+            targetPath: null,
+            willBeMoved: false,
+            blockReason:
+              'Destination template did not resolve to a folder for this file',
+            matchedRule: matchingRule.name,
+            tags,
+          };
+        }
 
         // Calculate the full target path
         const fullTargetPath = combinePath(targetFolder, fileName);
@@ -310,7 +333,11 @@ export class RuleManagerV2 {
     };
 
     try {
-      return renderDestinationTemplate(destination, context);
+      const rendered = renderDestinationTemplate(destination, context);
+
+      // If all placeholders failed to resolve, the rendered value may be an
+      // empty string. Callers treat an empty string as "no valid destination".
+      return rendered;
     } catch {
       // Fail safe and fall back to the raw destination
       return destination;

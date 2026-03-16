@@ -276,9 +276,12 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createDestinationInput(container: HTMLElement): void {
+    let destinationInputEl: any = null;
+
     const setting = new Setting(container)
       .setName('Destination')
       .addSearch(cb => {
+        destinationInputEl = cb.inputEl;
         new FolderSuggest(this.app, cb.inputEl);
         cb.setPlaceholder(
           'Example: Personal/Tasks/{{property.status}} or {{tag.tasks/personal}}/Incoming'
@@ -299,8 +302,12 @@ export class RuleEditorModal extends BaseModal {
       text: descriptionText,
     });
 
-    // Visually associate the description with the same section
-    descriptionEl.setAttr('aria-describedby', 'Destination');
+    // Visually and accessibly associate the description with the input
+    const descriptionId = 'noteMover-rule-destination-description';
+    descriptionEl.setAttr('id', descriptionId);
+    if (destinationInputEl) {
+      destinationInputEl.setAttribute('aria-describedby', descriptionId);
+    }
   }
 
   private createMobileConditionsSection(container: HTMLElement): void {
