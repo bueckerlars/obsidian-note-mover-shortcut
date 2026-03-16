@@ -293,7 +293,7 @@ export class RuleEditorModal extends BaseModal {
 
     // Move description below the input to give the input more horizontal space
     const descriptionText =
-      'Folder or template where files matching this rule will be moved. Supports {{tag.*}} and {{property.*}} placeholders.';
+      'Folder or template where files matching this rule will be moved. Supports {{tag.*}} and {{property.*}} placeholders. Type {{tag. or {{property. to get template suggestions.';
     const descriptionEl = container.createDiv({
       cls: 'noteMover-rule-destination-description',
       text: descriptionText,
