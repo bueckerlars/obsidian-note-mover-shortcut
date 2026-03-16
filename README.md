@@ -80,7 +80,8 @@ Rule V2 supports **template-based destinations** that can use metadata from the 
 
 - **Template syntax**: Uses double curly braces `{{...}}` inside the destination:
   - `{{tag.<tagValue>}}` – injects the matching tag path (without the leading `#`)
-    - Example: If the note has the tag `#tasks/personal`, `{{tag.tasks/personal}}` resolves to `tasks/personal`.
+    - Example (exact match): If the note has the tag `#tasks/personal`, `{{tag.tasks/personal}}` resolves to `tasks/personal`.
+    - Example (prefix match): If the note has the tag `#tasks/personal`, `{{tag.tasks}}` also resolves to `tasks/personal` – the full tag path is used automatically.
   - `{{property.<propertyKey>}}` – injects the value of a frontmatter property
     - Example: If the note has `status: In progress` in its frontmatter, `{{property.status}}` resolves to `In progress`.
 - **Combination with static paths**:

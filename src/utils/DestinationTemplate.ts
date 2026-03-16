@@ -221,14 +221,33 @@ function resolveTagPlaceholder(key: string, tags: string[]): string {
     ? key.toLowerCase()
     : `#${key.toLowerCase()}`;
 
-  const match = tags.find(tag => tag.toLowerCase() === normalizedKey);
+  // 1. Exact match (current behaviour)
+  const exactMatch = tags.find(tag => tag.toLowerCase() === normalizedKey);
+  if (exactMatch) {
+    return stripTagHash(exactMatch);
+  }
 
-  if (!match) {
+  // 2. Prefix match: use the most specific tag that starts with the same root
+  const root = normalizedKey.split('/')[0]; // e.g. "#tasks" from "#tasks/personal"
+
+  const candidates = tags.filter(tag => {
+    const lower = tag.toLowerCase();
+    return lower === root || lower.startsWith(root + '/');
+  });
+
+  if (candidates.length === 0) {
     return '';
   }
 
-  // Strip leading '#' from the tag and return the inner path, e.g. "tasks/personal"
-  return match.startsWith('#') ? match.substring(1) : match;
+  const bestMatch = candidates.reduce((currentBest, candidate) => {
+    return candidate.length > currentBest.length ? candidate : currentBest;
+  });
+
+  return stripTagHash(bestMatch);
+}
+
+function stripTagHash(tag: string): string {
+  return tag.startsWith('#') ? tag.substring(1) : tag;
 }
 
 function resolvePropertyPlaceholder(
