@@ -227,12 +227,10 @@ function resolveTagPlaceholder(key: string, tags: string[]): string {
     return stripTagHash(exactMatch);
   }
 
-  // 2. Prefix match: use the most specific tag that starts with the same root
-  const root = normalizedKey.split('/')[0]; // e.g. "#tasks" from "#tasks/personal"
-
+  // 2. Prefix match: use the most specific tag that starts with the full key
   const candidates = tags.filter(tag => {
     const lower = tag.toLowerCase();
-    return lower === root || lower.startsWith(root + '/');
+    return lower === normalizedKey || lower.startsWith(normalizedKey + '/');
   });
 
   if (candidates.length === 0) {

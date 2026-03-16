@@ -88,11 +88,10 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
-        const resolvedDestination = this.resolveDestinationTemplate(
+        return this.resolveDestinationTemplate(
           matchingRule.destination,
           metadata
         );
-        return resolvedDestination || matchingRule.destination;
       }
 
       // No rule matched - skip the file since only notes with rules should be moved
@@ -149,11 +148,10 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
-        const resolvedDestination = this.resolveDestinationTemplate(
+        const targetFolder = this.resolveDestinationTemplate(
           matchingRule.destination,
           metadata
         );
-        const targetFolder = resolvedDestination || matchingRule.destination;
 
         // Calculate the full target path
         const fullTargetPath = combinePath(targetFolder, fileName);
