@@ -74,6 +74,34 @@ Notes:
   - Note: If a file matches multiple rules, the first matching rule will be applied.
   - Note: Destination folders will be created automatically if they don't exist.
 
+##### Template Rules for Dynamic Destinations (Rule V2)
+
+Rule V2 supports **template-based destinations** that can use metadata from the matched note to build the target folder dynamically.
+
+- **Template syntax**: Uses double curly braces `{{...}}` inside the destination:
+  - `{{tag.<tagValue>}}` – injects the matching tag path (without the leading `#`)
+    - Example: If the note has the tag `#tasks/personal`, `{{tag.tasks/personal}}` resolves to `tasks/personal`.
+  - `{{property.<propertyKey>}}` – injects the value of a frontmatter property
+    - Example: If the note has `status: In progress` in its frontmatter, `{{property.status}}` resolves to `In progress`.
+- **Combination with static paths**:
+  - You can combine static folders with templates:
+    - `/Personal/Tasks/{{property.status}}`
+    - `Projects/{{property.type}}/{{property.status}}`
+    - `{{tag.tasks/personal}}/Archive`
+- **Validation and safety**:
+  - Template syntax is validated when rules are loaded; invalid patterns (e.g. unclosed `{{`/`}}`) are rejected.
+  - If a placeholder cannot be resolved at runtime (e.g. missing property), it is treated as an empty string, so the rest of the destination path still works.
+  - Plain string destinations without templates continue to work exactly as before.
+
+This allows you to model scenarios like in [Template Rules · Issue #49](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/49):  
+Match notes tagged `#tasks/personal` and use a destination such as:
+
+- `/Personal/Tasks/{{property.status}}`
+
+With `status: In progress`, the note will be moved to:
+
+- `/Personal/Tasks/In progress`
+
 ### Example Configurations
 
 #### Advanced Rule Examples

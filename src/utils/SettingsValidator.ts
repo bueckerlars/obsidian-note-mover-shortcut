@@ -2,6 +2,7 @@ import { NoteMoverShortcutSettings } from '../settings/Settings';
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import { PluginData } from '../types/PluginData';
 import { RuleV2, Trigger, CriteriaType, Operator } from '../types/RuleV2';
+import { validateDestinationTemplate } from './DestinationTemplate';
 import {
   getOperatorsForCriteriaType,
   getOperatorsForPropertyType,
@@ -590,7 +591,7 @@ export class SettingsValidator {
       return false;
     }
 
-    // Validate destination
+    // Validate destination (required string)
     if (
       !this.validateStringField(
         rule.destination,
@@ -598,6 +599,15 @@ export class SettingsValidator {
         result
       )
     ) {
+      return false;
+    }
+
+    // Validate destination template syntax (lenient: only syntax, no semantics)
+    const templateValidation = validateDestinationTemplate(rule.destination);
+    if (!templateValidation.isValid) {
+      for (const error of templateValidation.errors) {
+        result.errors.push(`rulesV2[${index}].destination: ${error}`);
+      }
       return false;
     }
 
