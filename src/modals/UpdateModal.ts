@@ -1,4 +1,10 @@
-import { Setting, App, ButtonComponent } from 'obsidian';
+import {
+  Setting,
+  App,
+  ButtonComponent,
+  MarkdownRenderer,
+  Component,
+} from 'obsidian';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 
@@ -134,6 +140,16 @@ export class UpdateModal extends BaseModal {
     }
   }
 
+  private renderMarkdownListItem(container: HTMLElement, markdown: string) {
+    const item = container.createEl('li');
+    MarkdownRenderer.renderMarkdown(
+      markdown,
+      item,
+      '',
+      this as unknown as Component
+    );
+  }
+
   private renderChangelog(container: HTMLElement) {
     const isMobile = MobileUtils.isMobile();
     this.changelogEntries.forEach(entry => {
@@ -160,7 +176,7 @@ export class UpdateModal extends BaseModal {
           cls: 'noteMover-changelog-list',
         });
         entry.changes.features.forEach(feature => {
-          featuresList.createEl('li', { text: feature });
+          this.renderMarkdownListItem(featuresList, feature);
         });
       }
 
@@ -176,7 +192,7 @@ export class UpdateModal extends BaseModal {
           cls: 'noteMover-changelog-list',
         });
         entry.changes.improvements.forEach(improvement => {
-          improvementsList.createEl('li', { text: improvement });
+          this.renderMarkdownListItem(improvementsList, improvement);
         });
       }
 
@@ -192,7 +208,7 @@ export class UpdateModal extends BaseModal {
           cls: 'noteMover-changelog-list',
         });
         entry.changes.bugFixes.forEach(bugFix => {
-          bugFixesList.createEl('li', { text: bugFix });
+          this.renderMarkdownListItem(bugFixesList, bugFix);
         });
       }
 
@@ -208,7 +224,7 @@ export class UpdateModal extends BaseModal {
           cls: 'noteMover-changelog-list',
         });
         entry.changes.changes.forEach(change => {
-          changesList.createEl('li', { text: change });
+          this.renderMarkdownListItem(changesList, change);
         });
       }
 
@@ -224,7 +240,7 @@ export class UpdateModal extends BaseModal {
           cls: 'noteMover-changelog-list',
         });
         entry.changes.fixes.forEach(fix => {
-          fixesList.createEl('li', { text: fix });
+          this.renderMarkdownListItem(fixesList, fix);
         });
       }
 
@@ -240,7 +256,7 @@ export class UpdateModal extends BaseModal {
           cls: 'noteMover-changelog-list',
         });
         entry.changes.performance.forEach(performance => {
-          performanceList.createEl('li', { text: performance });
+          this.renderMarkdownListItem(performanceList, performance);
         });
       }
     });

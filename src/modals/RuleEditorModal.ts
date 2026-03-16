@@ -247,7 +247,11 @@ export class RuleEditorModal extends BaseModal {
     });
     card.createDiv({
       cls: 'noteMover-mobile-modal-card-description',
-      text: 'Folder where files matching this rule will be moved',
+      text: 'Folder or template where files matching this rule will be moved',
+    });
+    card.createDiv({
+      cls: 'noteMover-mobile-modal-card-description',
+      text: 'Supports templates like {{tag.tasks/personal}} or {{property.status}}',
     });
     const content = card.createDiv({
       cls: 'noteMover-mobile-modal-card-content',
@@ -259,7 +263,8 @@ export class RuleEditorModal extends BaseModal {
     const input = searchContainer.createEl('input', {
       type: 'text',
       cls: 'noteMover-mobile-text-input',
-      placeholder: 'Example: folder1/folder2',
+      placeholder:
+        'Example: folder1/folder2 or Personal/Tasks/{{property.status}}',
       value: this.workingRule.destination,
     });
 
@@ -271,12 +276,16 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createDestinationInput(container: HTMLElement): void {
+    let destinationInputEl: any = null;
+
     const setting = new Setting(container)
       .setName('Destination')
-      .setDesc('Folder where files matching this rule will be moved')
       .addSearch(cb => {
+        destinationInputEl = cb.inputEl;
         new FolderSuggest(this.app, cb.inputEl);
-        cb.setPlaceholder('Example: folder1/folder2')
+        cb.setPlaceholder(
+          'Example: Personal/Tasks/{{property.status}} or {{tag.tasks/personal}}/Incoming'
+        )
           .setValue(this.workingRule.destination)
           .onChange(value => {
             this.workingRule.destination = value;
@@ -284,6 +293,21 @@ export class RuleEditorModal extends BaseModal {
         // Make search input wider
         cb.inputEl.style.width = '100%';
       });
+
+    // Move description below the input to give the input more horizontal space
+    const descriptionText =
+      'Folder or template where files matching this rule will be moved. Supports {{tag.*}} and {{property.*}} placeholders. Type {{tag. or {{property. to get template suggestions.';
+    const descriptionEl = container.createDiv({
+      cls: 'noteMover-rule-destination-description',
+      text: descriptionText,
+    });
+
+    // Visually and accessibly associate the description with the input
+    const descriptionId = 'noteMover-rule-destination-description';
+    descriptionEl.setAttr('id', descriptionId);
+    if (destinationInputEl) {
+      destinationInputEl.setAttribute('aria-describedby', descriptionId);
+    }
   }
 
   private createMobileConditionsSection(container: HTMLElement): void {

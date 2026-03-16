@@ -7,6 +7,10 @@ import { combinePath } from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
 import { RuleMatcherV2 } from './RuleMatcherV2';
 import { RuleMatcher } from './RuleMatcher';
+import {
+  DestinationTemplateContext,
+  renderDestinationTemplate,
+} from '../utils/DestinationTemplate';
 
 /**
  * RuleManager for Rule V2 system
@@ -84,7 +88,18 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
-        return matchingRule.destination;
+        const targetFolder = this.resolveDestinationTemplate(
+          matchingRule.destination,
+          metadata
+        );
+
+        // If the destination template resolves to an empty value, treat it as
+        // "no valid move target" so the file is not moved to the vault root.
+        if (!targetFolder || targetFolder.trim() === '') {
+          return null;
+        }
+
+        return targetFolder;
       }
 
       // No rule matched - skip the file since only notes with rules should be moved
@@ -141,15 +156,35 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
+        const targetFolder = this.resolveDestinationTemplate(
+          matchingRule.destination,
+          metadata
+        );
+
+        // If the destination template resolves to an empty value, treat it as
+        // "no valid move target" so the file is left unmoved.
+        if (!targetFolder || targetFolder.trim() === '') {
+          return {
+            fileName,
+            currentPath: filePath,
+            targetPath: null,
+            willBeMoved: false,
+            blockReason:
+              'Destination template did not resolve to a folder for this file',
+            matchedRule: matchingRule.name,
+            tags,
+          };
+        }
+
         // Calculate the full target path
-        const fullTargetPath = combinePath(matchingRule.destination, fileName);
+        const fullTargetPath = combinePath(targetFolder, fileName);
 
         // Check if file is already in the correct location
         if (filePath === fullTargetPath) {
           return {
             fileName,
             currentPath: filePath,
-            targetPath: matchingRule.destination,
+            targetPath: targetFolder,
             willBeMoved: false,
             blockReason: 'File is already in the correct folder',
             matchedRule: matchingRule.name,
@@ -160,7 +195,7 @@ export class RuleManagerV2 {
         return {
           fileName,
           currentPath: filePath,
-          targetPath: matchingRule.destination,
+          targetPath: targetFolder,
           willBeMoved: true,
           matchedRule: matchingRule.name,
           tags,
@@ -271,5 +306,41 @@ export class RuleManagerV2 {
     }
 
     return errors;
+  }
+
+  /**
+   * Resolves a destination string that may contain template placeholders.
+   *
+   * If the destination does not contain any template markers, the original
+   * string is returned. In case of template parse errors, the raw destination
+   * is used as a safe fallback.
+   */
+  private resolveDestinationTemplate(
+    destination: string,
+    metadata: Awaited<ReturnType<MetadataExtractor['extractFileMetadataV2']>>
+  ): string {
+    if (!destination) {
+      return destination;
+    }
+
+    if (!destination.includes('{{')) {
+      return destination;
+    }
+
+    const context: DestinationTemplateContext = {
+      tags: metadata.tags,
+      properties: metadata.properties,
+    };
+
+    try {
+      const rendered = renderDestinationTemplate(destination, context);
+
+      // If all placeholders failed to resolve, the rendered value may be an
+      // empty string. Callers treat an empty string as "no valid destination".
+      return rendered;
+    } catch {
+      // Fail safe and fall back to the raw destination
+      return destination;
+    }
   }
 }

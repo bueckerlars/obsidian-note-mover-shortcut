@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.7.0...0.7.1)
+
+### Features
+
+- **Template-based destinations**: Destinations can now include tag and property placeholders such as `{{tag.tasks/personal}}` and `{{property.status}}` to dynamically build target folders from note metadata.
+- **Template suggestions in destination inputs**: Destination inputs use an enhanced suggester that offers completions for `{{tag.*}}` and `{{property.*}}` placeholders based on tags and properties discovered in your vault.
+
+### Improvements
+
+- **Rule editor UX**: Updated desktop and mobile rule editor destination inputs, descriptions, and placeholders to highlight template support and provide clearer examples.
+- **Changelog rendering**: The in-app update modal now renders changelog list entries as Markdown, so formatting and links from the changelog are displayed correctly.
+
 ## [0.7.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.6.0...0.7.0)
 
 ### Features
