@@ -138,9 +138,9 @@ export function getOperatorsForCriteriaType(
       return DATE_OPERATORS;
 
     case 'properties':
-      // For properties, we need to know the property type to determine operators
-      // Return base property operators as default
-      return BASE_PROPERTY_OPERATORS;
+      // When the property type is still unknown, fall back to text-style
+      // property operators so users can still select value-based comparisons.
+      return [...BASE_PROPERTY_OPERATORS, ...TEXT_OPERATORS];
 
     default:
       return [];
