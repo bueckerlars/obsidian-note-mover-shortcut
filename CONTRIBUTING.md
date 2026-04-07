@@ -13,16 +13,16 @@ Thank you for your interest in contributing to NoteMover Shortcut! This document
 
 ### Development Setup
 
-1. **Fork the repository** from the `dev` branch
+1. **Fork the repository** and clone it
 
    ```bash
    # Clone your fork
    git clone https://github.com/YOUR_USERNAME/obsidian-note-mover-shortcut.git
    cd obsidian-note-mover-shortcut
 
-   # Make sure you're on the dev branch
-   git checkout dev
-   git pull origin dev
+   # Make sure you're on the main branch
+   git checkout main
+   git pull origin main
    ```
 
 2. **Install dependencies**
@@ -38,18 +38,18 @@ Thank you for your interest in contributing to NoteMover Shortcut! This document
 
 ## Contribution Workflow
 
-### 1. Fork from the `dev` branch
+### 1. Fork and branch from `main`
 
-Always fork and work from the `dev` branch, not `main`. The `dev` branch is where active development happens.
+Fork the repository and create your work branch from `main`. Pull requests should target `main` directly.
 
 ### 2. Create a feature branch
 
 Create a new branch for your feature or bug fix:
 
 ```bash
-# Make sure you're on the dev branch and up to date
-git checkout dev
-git pull origin dev
+# Make sure you're on main and up to date
+git checkout main
+git pull origin main
 
 # Create and switch to a new feature branch
 git checkout -b feat/your-feature-name
@@ -114,11 +114,11 @@ Push your feature branch to your fork:
 git push origin feat/your-feature-name
 ```
 
-Then, open a new Pull Request from your feature branch to the `dev` branch:
+Then, open a new Pull Request from your feature branch to `main`:
 
 1. Go to the original repository on GitHub
 2. Click "New Pull Request"
-3. Select `dev` as the base branch
+3. Select `main` as the base branch
 4. Select your feature branch as the compare branch
 5. Fill out the PR template (see below)
 
