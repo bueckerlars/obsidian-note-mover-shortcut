@@ -1,5 +1,40 @@
 import { App } from 'obsidian';
 
+const INVALID_PATH_CHARS = /[<>:"\\|?*]/g;
+const WINDOWS_RESERVED_NAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+
+function unwrapWikilinks(value: string): string {
+  return value.replace(/\[\[([^\]]+)\]\]/g, (_match, inner: string) => {
+    // Prefer alias text for [[target|alias]] and drop heading/block suffixes.
+    const aliasOrTarget = inner.split('|').pop()?.trim() || '';
+    return aliasOrTarget.replace(/[#^].*$/, '').trim();
+  });
+}
+
+function sanitizePathSegment(segment: string): string {
+  segment = unwrapWikilinks(segment);
+
+  // Remove characters that are invalid on major desktop filesystems.
+  let sanitized = segment
+    .replace(INVALID_PATH_CHARS, '')
+    .split('')
+    .filter(char => char.charCodeAt(0) >= 32)
+    .join('');
+
+  // Windows does not allow trailing spaces or periods in a segment.
+  sanitized = sanitized.replace(/[. ]+$/g, '');
+
+  if (sanitized === '.' || sanitized === '..') {
+    return '';
+  }
+
+  if (WINDOWS_RESERVED_NAMES.test(sanitized)) {
+    sanitized = `${sanitized}_`;
+  }
+
+  return sanitized;
+}
+
 /**
  * Formats a path correctly by removing double slashes
  * and ensuring the path is relative to vault root (no leading slash)
@@ -12,6 +47,13 @@ export function formatPath(path: string): string {
 
   // Remove double slashes first
   path = path.replace(/\/+/g, '/');
+
+  // Sanitize each path segment while preserving folder separators.
+  path = path
+    .split('/')
+    .map(segment => sanitizePathSegment(segment))
+    .filter(segment => segment.length > 0)
+    .join('/');
 
   // Remove trailing slash
   if (path.endsWith('/')) {

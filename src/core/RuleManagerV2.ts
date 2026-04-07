@@ -3,7 +3,7 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { RuleV2 } from '../types/RuleV2';
 import { PreviewEntry, MovePreview } from '../types/MovePreview';
 import { createError, handleError } from '../utils/Error';
-import { combinePath } from '../utils/PathUtils';
+import { combinePath, formatPath } from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
 import { RuleMatcherV2 } from './RuleMatcherV2';
 import { RuleMatcher } from './RuleMatcher';
@@ -156,10 +156,13 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
-        const targetFolder = this.resolveDestinationTemplate(
+        let targetFolder = this.resolveDestinationTemplate(
           matchingRule.destination,
           metadata
         );
+
+        // Sanitize the resolved destination to unwrap wikilinks and remove invalid chars
+        targetFolder = formatPath(targetFolder);
 
         // If the destination template resolves to an empty value, treat it as
         // "no valid move target" so the file is left unmoved.
