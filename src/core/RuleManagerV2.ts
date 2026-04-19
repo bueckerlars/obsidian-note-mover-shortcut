@@ -3,7 +3,11 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { RuleV2 } from '../types/RuleV2';
 import { PreviewEntry, MovePreview } from '../types/MovePreview';
 import { createError, handleError } from '../utils/Error';
-import { combinePath } from '../utils/PathUtils';
+import {
+  combinePath,
+  DESTINATION_PATH_BLOCK_REASONS,
+  normalizeDestinationFolderPath,
+} from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
 import { RuleMatcherV2 } from './RuleMatcherV2';
 import { BlacklistFilterEngine } from '../domain/filters/blacklist-filter-engine';
@@ -99,18 +103,17 @@ export class RuleManagerV2 {
           );
 
           if (matchingRule) {
-            const targetFolder = this.resolveDestinationTemplate(
+            const rendered = this.resolveDestinationTemplate(
               matchingRule.destination,
               metadata
             );
 
-            // If the destination template resolves to an empty value, treat it as
-            // "no valid move target" so the file is not moved to the vault root.
-            if (!targetFolder || targetFolder.trim() === '') {
+            const normalized = this.normalizeRenderedDestination(rendered);
+            if (!normalized.ok) {
               return null;
             }
 
-            return targetFolder;
+            return normalized.path;
           }
 
           // No rule matched - skip the file since only notes with rules should be moved
@@ -172,25 +175,25 @@ export class RuleManagerV2 {
       );
 
       if (matchingRule) {
-        const targetFolder = this.resolveDestinationTemplate(
+        const rendered = this.resolveDestinationTemplate(
           matchingRule.destination,
           metadata
         );
 
-        // If the destination template resolves to an empty value, treat it as
-        // "no valid move target" so the file is left unmoved.
-        if (!targetFolder || targetFolder.trim() === '') {
+        const normalized = this.normalizeRenderedDestination(rendered);
+        if (!normalized.ok) {
           return {
             fileName,
             currentPath: filePath,
             targetPath: null,
             willBeMoved: false,
-            blockReason:
-              'Destination template did not resolve to a folder for this file',
+            blockReason: normalized.reason,
             matchedRule: matchingRule.name,
             tags,
           };
         }
+
+        const targetFolder = normalized.path;
 
         // Calculate the full target path
         const fullTargetPath = combinePath(targetFolder, fileName);
@@ -340,6 +343,21 @@ export class RuleManagerV2 {
    * string is returned. In case of template parse errors, the raw destination
    * is used as a safe fallback.
    */
+  /**
+   * Applies the same destination normalization for move and preview so both agree.
+   */
+  private normalizeRenderedDestination(
+    rendered: string
+  ): { ok: true; path: string } | { ok: false; reason: string } {
+    if (!rendered || rendered.trim() === '') {
+      return {
+        ok: false,
+        reason: DESTINATION_PATH_BLOCK_REASONS.emptyAfterResolve,
+      };
+    }
+    return normalizeDestinationFolderPath(rendered);
+  }
+
   private resolveDestinationTemplate(
     destination: string,
     metadata: Awaited<ReturnType<MetadataExtractor['extractFileMetadataV2']>>

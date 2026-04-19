@@ -1,6 +1,101 @@
 import { App } from 'obsidian';
 
 /**
+ * Sanitizes a single vault-relative path segment (folder name).
+ * Strips characters that are invalid or unsafe in path components and unwraps [[wikilinks]].
+ *
+ * @returns Empty string if nothing usable remains (caller should treat as invalid destination).
+ */
+export function sanitizePathSegment(segment: string): string {
+  let s = segment.trim();
+  if (!s) {
+    return '';
+  }
+
+  s = s.replace(/\[\[([^\]]+)\]\]/g, (_m, inner: string) => {
+    const piece = inner.includes('|')
+      ? inner.split('|')[0]!.trim()
+      : inner.trim();
+    return piece;
+  });
+
+  s = s.replace(/[\0<>:"|?*\\]/g, '');
+  s = s.replace(/\s+/g, ' ').trim();
+  return s;
+}
+
+export const DESTINATION_PATH_BLOCK_REASONS = {
+  emptyAfterResolve:
+    'Destination template did not resolve to a folder for this file',
+  emptyPath: 'Destination folder is empty.',
+  emptySegment:
+    'Destination contains an empty path segment (for example from an empty tag or property placeholder). Move skipped for safety.',
+  dotSegment:
+    'Destination contains an invalid path segment (. or ..). Move skipped for safety.',
+  segmentSanitizedEmpty:
+    'A destination path segment became empty after sanitization; move skipped for safety.',
+} as const;
+
+/**
+ * Normalizes a resolved destination folder path and rejects unsafe results:
+ * - empty path components (e.g. `Projects//Notes` after an empty placeholder)
+ * - `.` / `..` segments
+ * - segments that sanitize to an empty string
+ *
+ * Does not collapse `//` before validation — empty segments are detected first.
+ */
+export function normalizeDestinationFolderPath(
+  rawPath: string
+): { ok: true; path: string } | { ok: false; reason: string } {
+  if (rawPath == null) {
+    return { ok: false, reason: DESTINATION_PATH_BLOCK_REASONS.emptyPath };
+  }
+
+  let path = String(rawPath).trim();
+  if (!path || path === '/') {
+    return { ok: false, reason: DESTINATION_PATH_BLOCK_REASONS.emptyPath };
+  }
+
+  while (path.startsWith('/')) {
+    path = path.slice(1);
+  }
+  while (path.endsWith('/')) {
+    path = path.slice(0, -1);
+  }
+
+  if (!path) {
+    return { ok: false, reason: DESTINATION_PATH_BLOCK_REASONS.emptyPath };
+  }
+
+  const segments = path.split('/');
+  const out: string[] = [];
+
+  for (const seg of segments) {
+    const trimmed = seg.trim();
+    if (trimmed === '') {
+      return { ok: false, reason: DESTINATION_PATH_BLOCK_REASONS.emptySegment };
+    }
+    if (trimmed === '.' || trimmed === '..') {
+      return { ok: false, reason: DESTINATION_PATH_BLOCK_REASONS.dotSegment };
+    }
+    const sanitized = sanitizePathSegment(trimmed);
+    if (!sanitized) {
+      return {
+        ok: false,
+        reason: DESTINATION_PATH_BLOCK_REASONS.segmentSanitizedEmpty,
+      };
+    }
+    out.push(sanitized);
+  }
+
+  if (out.length === 0) {
+    return { ok: false, reason: DESTINATION_PATH_BLOCK_REASONS.emptyPath };
+  }
+
+  return { ok: true, path: out.join('/') };
+}
+
+/**
  * Formats a path correctly by removing double slashes
  * and ensuring the path is relative to vault root (no leading slash)
  */
