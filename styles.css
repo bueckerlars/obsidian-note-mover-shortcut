@@ -444,11 +444,15 @@
   margin-bottom: 16px;
 }
 
-.advancedNoteMover-preview-section-success .advancedNoteMover-modal-section-header h3 {
+.advancedNoteMover-preview-section-success
+  .advancedNoteMover-modal-section-header
+  h3 {
   color: var(--text-success);
 }
 
-.advancedNoteMover-preview-section-blocked .advancedNoteMover-modal-section-header h3 {
+.advancedNoteMover-preview-section-blocked
+  .advancedNoteMover-modal-section-header
+  h3 {
   color: var(--text-error);
 }
 
@@ -568,7 +572,9 @@
   padding-top: 16px;
 }
 
-.advancedNoteMover-confirm-modal .advancedNoteMover-modal-button-container button {
+.advancedNoteMover-confirm-modal
+  .advancedNoteMover-modal-button-container
+  button {
   min-width: 80px;
 }
 
@@ -578,7 +584,8 @@
   box-sizing: border-box;
 }
 
-.advancedNoteMover-legacy-migration-modal .advancedNoteMover-legacy-migration-message {
+.advancedNoteMover-legacy-migration-modal
+  .advancedNoteMover-legacy-migration-message {
   margin: 0 0 20px 0;
   padding: 0;
   color: var(--text-normal);
@@ -586,15 +593,20 @@
   line-height: 1.5;
 }
 
-.advancedNoteMover-legacy-migration-modal .advancedNoteMover-legacy-migration-message p {
+.advancedNoteMover-legacy-migration-modal
+  .advancedNoteMover-legacy-migration-message
+  p {
   margin: 0 0 10px 0;
 }
 
-.advancedNoteMover-legacy-migration-modal .advancedNoteMover-legacy-migration-message p:last-child {
+.advancedNoteMover-legacy-migration-modal
+  .advancedNoteMover-legacy-migration-message
+  p:last-child {
   margin-bottom: 0;
 }
 
-.advancedNoteMover-legacy-migration-modal .advancedNoteMover-modal-button-container {
+.advancedNoteMover-legacy-migration-modal
+  .advancedNoteMover-modal-button-container {
   padding-top: 16px;
   margin-top: 0;
 }
@@ -724,7 +736,9 @@
 }
 
 .advancedNoteMover-rule-editor-modal .setting-item-control input[type='text'],
-.advancedNoteMover-rule-editor-modal .setting-item-control .search-input-container {
+.advancedNoteMover-rule-editor-modal
+  .setting-item-control
+  .search-input-container {
   width: 100%;
 }
 
@@ -1031,17 +1045,20 @@
 }
 
 /* Mobile Toggle Settings */
-.advancedNoteMover-mobile-toggle-setting .advancedNoteMover-mobile-setting-header {
+.advancedNoteMover-mobile-toggle-setting
+  .advancedNoteMover-mobile-setting-header {
   align-items: center;
   margin-bottom: 0;
 }
 
-.advancedNoteMover-mobile-toggle-setting .advancedNoteMover-mobile-setting-description {
+.advancedNoteMover-mobile-toggle-setting
+  .advancedNoteMover-mobile-setting-description {
   margin-top: 4px;
   margin-bottom: 0;
 }
 
-.advancedNoteMover-mobile-toggle-setting .advancedNoteMover-mobile-setting-control {
+.advancedNoteMover-mobile-toggle-setting
+  .advancedNoteMover-mobile-setting-control {
   display: none;
 }
 
@@ -1092,7 +1109,8 @@
   transition: 0.3s;
 }
 
-.advancedNoteMover-mobile-toggle-switch.is-active .advancedNoteMover-mobile-toggle-slider {
+.advancedNoteMover-mobile-toggle-switch.is-active
+  .advancedNoteMover-mobile-toggle-slider {
   background-color: var(--interactive-accent);
 }
 
@@ -1204,7 +1222,8 @@
   transition: 0.3s;
 }
 
-.advancedNoteMover-mobile-rule-toggle .advancedNoteMover-mobile-toggle-slider:before {
+.advancedNoteMover-mobile-rule-toggle
+  .advancedNoteMover-mobile-toggle-slider:before {
   position: absolute;
   content: '';
   height: 24px;
@@ -1216,11 +1235,13 @@
   transition: 0.3s;
 }
 
-.advancedNoteMover-mobile-rule-toggle.is-active .advancedNoteMover-mobile-toggle-slider {
+.advancedNoteMover-mobile-rule-toggle.is-active
+  .advancedNoteMover-mobile-toggle-slider {
   background-color: var(--interactive-accent);
 }
 
-.advancedNoteMover-mobile-rule-toggle.is-active .advancedNoteMover-mobile-toggle-slider:before {
+.advancedNoteMover-mobile-rule-toggle.is-active
+  .advancedNoteMover-mobile-toggle-slider:before {
   transform: translateX(20px);
 }
 
@@ -1455,7 +1476,9 @@
   flex-wrap: wrap;
 }
 
-.advancedNoteMover-mobile-rules-container .advancedNoteMover-rule-v2-actions .clickable-icon,
+.advancedNoteMover-mobile-rules-container
+  .advancedNoteMover-rule-v2-actions
+  .clickable-icon,
 .advancedNoteMover-mobile-rules-container
   .advancedNoteMover-rule-v2-actions
   .checkbox-container {
@@ -1487,13 +1510,15 @@
 }
 
 /* Mobile filters container */
-.advancedNoteMover-mobile-filters-container .advancedNoteMover-mobile-filter-item {
+.advancedNoteMover-mobile-filters-container
+  .advancedNoteMover-mobile-filter-item {
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
 }
 
-.advancedNoteMover-mobile-filters-container .advancedNoteMover-mobile-filter-controls {
+.advancedNoteMover-mobile-filters-container
+  .advancedNoteMover-mobile-filter-controls {
   width: 100%;
   flex-direction: column;
   gap: 8px;
@@ -1842,7 +1867,9 @@
   }
 
   /* Confirm modal button adjustments */
-  .advancedNoteMover-confirm-modal .advancedNoteMover-modal-button-container button {
+  .advancedNoteMover-confirm-modal
+    .advancedNoteMover-modal-button-container
+    button {
     min-width: 100%;
     min-height: 44px;
   }
@@ -2014,31 +2041,37 @@
 }
 
 /* Mobile Modal Toggle */
-.advancedNoteMover-mobile-modal-toggle .advancedNoteMover-mobile-modal-card-header {
+.advancedNoteMover-mobile-modal-toggle
+  .advancedNoteMover-mobile-modal-card-header {
   align-items: center;
   margin-bottom: 0;
 }
 
-.advancedNoteMover-mobile-modal-toggle .advancedNoteMover-mobile-modal-card-description {
+.advancedNoteMover-mobile-modal-toggle
+  .advancedNoteMover-mobile-modal-card-description {
   margin-top: 4px;
   margin-bottom: 0;
 }
 
-.advancedNoteMover-mobile-modal-toggle .advancedNoteMover-mobile-modal-card-content {
+.advancedNoteMover-mobile-modal-toggle
+  .advancedNoteMover-mobile-modal-card-content {
   display: none;
 }
 
 /* Mobile Modal Input */
-.advancedNoteMover-mobile-modal-input .advancedNoteMover-mobile-modal-card-content {
+.advancedNoteMover-mobile-modal-input
+  .advancedNoteMover-mobile-modal-card-content {
   margin-top: 0;
 }
 
 /* Mobile Modal Button */
-.advancedNoteMover-mobile-modal-button .advancedNoteMover-mobile-modal-card-header {
+.advancedNoteMover-mobile-modal-button
+  .advancedNoteMover-mobile-modal-card-header {
   margin-bottom: 8px;
 }
 
-.advancedNoteMover-mobile-modal-button .advancedNoteMover-mobile-modal-card-content {
+.advancedNoteMover-mobile-modal-button
+  .advancedNoteMover-mobile-modal-card-content {
   margin-top: 0;
 }
 
@@ -2076,7 +2109,9 @@
 
 /* Ensure all content respects modal padding */
 .is-mobile .advancedNoteMover-rule-editor-modal .setting-item,
-.is-mobile .advancedNoteMover-rule-editor-modal .advancedNoteMover-rule-conditions-section,
+.is-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-rule-conditions-section,
 .is-mobile .advancedNoteMover-rule-editor-modal hr {
   width: 100%;
   box-sizing: border-box;
@@ -2129,7 +2164,9 @@
   color: var(--text-normal);
 }
 
-.is-mobile .advancedNoteMover-rule-active-toggle-mobile .setting-item-description {
+.is-mobile
+  .advancedNoteMover-rule-active-toggle-mobile
+  .setting-item-description {
   font-size: 0.9em;
   color: var(--text-muted);
   margin-top: 0;
@@ -2165,7 +2202,10 @@
 }
 
 /* Ensure toggle switch itself is properly sized - Obsidian uses .checkbox class */
-.is-mobile .advancedNoteMover-rule-active-toggle-mobile .checkbox-container .checkbox {
+.is-mobile
+  .advancedNoteMover-rule-active-toggle-mobile
+  .checkbox-container
+  .checkbox {
   width: 52px !important;
   height: 32px !important;
   margin: 0 !important;
@@ -2338,7 +2378,9 @@
 
 /* Apply horizontal padding to headings/titles inside modal */
 .is-mobile .advancedNoteMover-rule-editor-modal .advancedNoteMover-modal-title,
-.is-mobile .advancedNoteMover-rule-editor-modal .advancedNoteMover-modal-title-container {
+.is-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-modal-title-container {
   padding-left: 0;
   padding-right: 0;
   box-sizing: border-box;
@@ -2352,12 +2394,16 @@
 }
 
 /* Ensure section containers respect horizontal padding */
-.is-mobile .advancedNoteMover-rule-editor-modal .advancedNoteMover-rule-conditions-section {
+.is-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-rule-conditions-section {
   width: 100%;
   box-sizing: border-box;
 }
 
-.is-mobile .advancedNoteMover-rule-editor-modal .advancedNoteMover-rule-editor-footer {
+.is-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-footer {
   width: 100%;
   box-sizing: border-box;
   padding-top: 8px;
@@ -2624,7 +2670,9 @@
   padding-right: 36px;
 }
 
-.is-mobile .advancedNoteMover-rule-trigger-fields-mobile .advancedNoteMover-mobile-input {
+.is-mobile
+  .advancedNoteMover-rule-trigger-fields-mobile
+  .advancedNoteMover-mobile-input {
   width: 100% !important;
   min-height: 48px !important;
   font-size: 16px !important;
@@ -2660,7 +2708,8 @@
   transition: all 0.2s ease;
 }
 
-.advancedNoteMover-mobile-modal-button .advancedNoteMover-mobile-action-btn:active {
+.advancedNoteMover-mobile-modal-button
+  .advancedNoteMover-mobile-action-btn:active {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   transform: scale(0.98);
@@ -2701,11 +2750,13 @@
   box-sizing: border-box;
 }
 
-.advancedNoteMover-rule-editor-footer-mobile .advancedNoteMover-mobile-modal-card {
+.advancedNoteMover-rule-editor-footer-mobile
+  .advancedNoteMover-mobile-modal-card {
   margin-bottom: 0;
 }
 
-.advancedNoteMover-rule-editor-footer-mobile .advancedNoteMover-mobile-action-btn {
+.advancedNoteMover-rule-editor-footer-mobile
+  .advancedNoteMover-mobile-action-btn {
   width: 100%;
   min-height: 52px;
   font-size: 16px;
@@ -2715,7 +2766,8 @@
   padding: 14px 20px;
 }
 
-.advancedNoteMover-rule-editor-footer-mobile .advancedNoteMover-mobile-action-btn:active {
+.advancedNoteMover-rule-editor-footer-mobile
+  .advancedNoteMover-mobile-action-btn:active {
   transform: scale(0.98);
 }
 
@@ -2747,7 +2799,10 @@
   padding: 14px 20px;
 }
 
-.is-mobile .advancedNoteMover-rule-editor-footer-mobile .setting-item button:active {
+.is-mobile
+  .advancedNoteMover-rule-editor-footer-mobile
+  .setting-item
+  button:active {
   transform: scale(0.98);
 }
 
@@ -3082,7 +3137,9 @@
 
 /* Optimize for large vertical aspect ratios */
 @media (max-height: 800px) and (orientation: portrait) {
-  .is-mobile .modal-container.advancedNoteMover-modal-size-mobile .modal-content {
+  .is-mobile
+    .modal-container.advancedNoteMover-modal-size-mobile
+    .modal-content {
     padding: 16px 12px !important;
   }
 

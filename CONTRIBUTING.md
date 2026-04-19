@@ -172,6 +172,7 @@ Before submitting your PR, ensure:
 
 ```bash
 # All checks pass
+npm test
 npm run lint
 npm run format:check
 npm run type-check

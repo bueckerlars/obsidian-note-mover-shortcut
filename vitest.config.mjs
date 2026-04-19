@@ -8,7 +8,10 @@ export default defineConfig({
   resolve: {
     conditions: ['browser', 'development'],
     alias: {
-      obsidian: path.resolve(__dirname, 'src/test-utils/obsidian-vitest-stub.ts'),
+      obsidian: path.resolve(
+        __dirname,
+        'src/test-utils/obsidian-vitest-stub.ts'
+      ),
     },
   },
   test: {
