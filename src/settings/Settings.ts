@@ -1,45 +1,15 @@
 import NoteMoverShortcutPlugin from 'main';
 import { PluginSettingTab } from 'obsidian';
 import {
-  HistoryEntry,
-  BulkOperation,
-  RetentionPolicy,
-} from '../types/HistoryEntry';
-import { SETTINGS_CONSTANTS } from '../config/constants';
-import {
   PeriodicMovementSettingsSection,
   FilterSettingsSection,
   RulesSettingsSection,
   HistorySettingsSection,
   ImportExportSettingsSection,
-  LegacySettingsSection,
+  PerformanceDebugSettingsSection,
 } from './sections';
 import { DebounceManager } from '../utils/DebounceManager';
 import { MobileUtils } from '../utils/MobileUtils';
-import { MobileSettingsRenderer } from './mobile/MobileSettingsRenderer';
-
-interface Rule {
-  criteria: string; // Format: "type: value" (e.g. "tag: #project", "fileName: notes.md")
-  path: string;
-}
-
-/**
- * @deprecated Use PluginData instead
- */
-export interface NoteMoverShortcutSettings {
-  enablePeriodicMovement: boolean;
-  periodicMovementInterval: number;
-  enableOnEditTrigger?: boolean;
-  filter: string[];
-  rules: Rule[];
-  history?: HistoryEntry[];
-  bulkOperations?: BulkOperation[];
-  lastSeenVersion?: string;
-  retentionPolicy?: RetentionPolicy;
-}
-
-export const DEFAULT_SETTINGS: NoteMoverShortcutSettings =
-  SETTINGS_CONSTANTS.DEFAULT_SETTINGS;
 
 export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   private periodicMovementSettings: PeriodicMovementSettingsSection;
@@ -47,7 +17,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   private rulesSettings: RulesSettingsSection;
   private historySettings: HistorySettingsSection;
   private importExportSettings: ImportExportSettingsSection;
-  private legacySettings: LegacySettingsSection;
+  private performanceDebugSettings: PerformanceDebugSettingsSection;
   private debounceManager: DebounceManager;
 
   constructor(private plugin: NoteMoverShortcutPlugin) {
@@ -85,7 +55,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
       this.containerEl,
       debouncedDisplay
     );
-    this.legacySettings = new LegacySettingsSection(
+    this.performanceDebugSettings = new PerformanceDebugSettingsSection(
       plugin,
       this.containerEl,
       debouncedDisplay
@@ -98,17 +68,6 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
     // Add mobile-specific classes to container
     MobileUtils.addMobileClass(this.containerEl);
 
-    // Use mobile renderer if on mobile, otherwise use desktop implementation
-    if (MobileUtils.isMobile()) {
-      const mobileRenderer = new MobileSettingsRenderer(
-        this.plugin,
-        this.containerEl
-      );
-      mobileRenderer.render();
-      return;
-    }
-
-    // Desktop implementation (existing code)
     // Clean up existing section instances before creating new ones
     this.cleanupExistingSections();
 
@@ -147,7 +106,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
       this.containerEl,
       debouncedDisplay
     );
-    this.legacySettings = new LegacySettingsSection(
+    this.performanceDebugSettings = new PerformanceDebugSettingsSection(
       this.plugin,
       this.containerEl,
       debouncedDisplay
@@ -165,21 +124,13 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
 
     this.importExportSettings.addImportExportSettings();
 
-    this.legacySettings.addLegacySettings();
+    this.performanceDebugSettings.addPerformanceDebugSettings();
   }
 
   /**
-   * Ensure arrays exist without removing empty rules during display
+   * Ensure filter array exists without removing empty rules during display
    */
   private ensureArraysExist(): void {
-    // Ensure rules array exists and is valid
-    if (!Array.isArray(this.plugin.settings.settings?.rules)) {
-      (this.plugin.settings as any).settings =
-        this.plugin.settings.settings || ({} as any);
-      (this.plugin.settings.settings as any).rules = [];
-    }
-
-    // Ensure filter array exists and is valid
     if (!Array.isArray(this.plugin.settings.settings?.filters?.filter)) {
       (this.plugin.settings as any).settings =
         this.plugin.settings.settings || ({} as any);
@@ -187,35 +138,6 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
         this.plugin.settings.settings.filters || ({} as any);
       (this.plugin.settings.settings.filters as any).filter = [];
     }
-  }
-
-  /**
-   * Validate settings to prevent data loss during rendering
-   * This method should only be called when explicitly validating settings
-   */
-  private validateSettings(): void {
-    // Ensure arrays exist first
-    this.ensureArraysExist();
-
-    // Remove any invalid rules (empty criteria or path)
-    this.plugin.settings.settings.rules =
-      this.plugin.settings.settings.rules.filter(
-        (rule: any) =>
-          rule &&
-          rule.criteria &&
-          rule.path &&
-          rule.criteria.trim() !== '' &&
-          rule.path.trim() !== ''
-      );
-
-    // Remove any invalid filters (empty strings)
-    this.plugin.settings.settings.filters.filter =
-      this.plugin.settings.settings.filters.filter.filter(
-        (filter: any) =>
-          filter &&
-          typeof filter.value === 'string' &&
-          filter.value.trim() !== ''
-      );
   }
 
   /**

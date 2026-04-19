@@ -12,6 +12,10 @@ import {
   CheckboxPropertyOperator,
 } from '../types/RuleV2';
 import { App } from 'obsidian';
+import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault-index-cache';
+
+/** When using vault index cache, cap how many distinct property samples we scan for type inference. */
+const PROPERTY_TYPE_INFERENCE_MAX_SAMPLES = 80;
 
 /**
  * Utility functions for mapping operators to criteria types and property types
@@ -335,16 +339,25 @@ export function operatorRequiresValue(operator: Operator): boolean {
  */
 export function getPropertyTypeFromVault(
   app: App,
-  propertyName: string
+  propertyName: string,
+  vaultIndexCache?: PluginVaultIndexCache | null
 ): 'text' | 'number' | 'checkbox' | 'date' | 'list' | null {
-  const files = app.vault.getMarkdownFiles();
+  const files = vaultIndexCache
+    ? vaultIndexCache.getMarkdownFilesCached(app)
+    : app.vault.getMarkdownFiles();
   const valueSamples: any[] = [];
+  const maxSamples = vaultIndexCache
+    ? PROPERTY_TYPE_INFERENCE_MAX_SAMPLES
+    : Infinity;
 
   // Collect samples of the property value from multiple files
   for (const file of files) {
     const cache = app.metadataCache.getFileCache(file);
     if (cache?.frontmatter?.[propertyName] !== undefined) {
       valueSamples.push(cache.frontmatter[propertyName]);
+      if (valueSamples.length >= maxSamples) {
+        break;
+      }
     }
   }
 

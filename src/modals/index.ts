@@ -6,5 +6,3 @@ export { HistoryModal } from './HistoryModal';
 export { PreviewModal } from './PreviewModal';
 export { UpdateModal } from './UpdateModal';
 export { RuleEditorModal } from './RuleEditorModal';
-export { LegacyMigrationModal } from './LegacyMigrationModal';
-export type { LegacyMigrationModalOptions } from './LegacyMigrationModal';

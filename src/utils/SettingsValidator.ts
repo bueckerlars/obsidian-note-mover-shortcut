@@ -1,8 +1,7 @@
-import { NoteMoverShortcutSettings } from '../settings/Settings';
 import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import { PluginData } from '../types/PluginData';
 import { RuleV2, Trigger, CriteriaType, Operator } from '../types/RuleV2';
-import { validateDestinationTemplate } from './DestinationTemplate';
+import { validateDestinationTemplate } from '../domain/templates/DestinationTemplate';
 import {
   getOperatorsForCriteriaType,
   getOperatorsForPropertyType,
@@ -16,14 +15,6 @@ export interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
-}
-
-/**
- * @deprecated Use RuleV2 from '../types/RuleV2' instead. This will be removed in a future version.
- */
-export interface Rule {
-  criteria: string;
-  path: string;
 }
 
 export class SettingsValidator {
@@ -49,7 +40,7 @@ export class SettingsValidator {
       return this.validatePluginData(settings as PluginData);
     }
 
-    // Otherwise treat as legacy NoteMoverShortcutSettings
+    // Flat legacy JSON (pre–PluginData export shape)
     return this.validateLegacySettings(settings);
   }
 
@@ -70,14 +61,14 @@ export class SettingsValidator {
       return (
         ('triggers' in s && typeof s.triggers === 'object') ||
         ('filters' in s && typeof s.filters === 'object') ||
-        Array.isArray(s.rules)
+        Array.isArray(s.rulesV2)
       );
     }
     return false;
   }
 
   /**
-   * Validate legacy NoteMoverShortcutSettings
+   * Validate flat legacy settings JSON (historical export format without nested `settings`).
    */
   private static validateLegacySettings(settings: any): ValidationResult {
     const result: ValidationResult = {
@@ -394,8 +385,7 @@ export class SettingsValidator {
     result: ValidationResult
   ): boolean {
     if (value === undefined || value === null) {
-      result.errors.push('Field "rules" is required');
-      return false;
+      return true;
     }
 
     if (!Array.isArray(value)) {
@@ -506,7 +496,7 @@ export class SettingsValidator {
   /**
    * Creates a clean settings object with only valid fields
    */
-  static sanitizeSettings(settings: any): Partial<NoteMoverShortcutSettings> {
+  static sanitizeSettings(settings: any): Record<string, unknown> {
     const sanitized: any = {};
 
     // Copy valid fields

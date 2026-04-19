@@ -75,7 +75,11 @@ export class FilterSettingsSection {
       const s = new Setting(filtersContainer)
         .addSearch(cb => {
           // AdvancedSuggest instead of TagSuggest
-          const advancedSuggest = new AdvancedSuggest(this.app, cb.inputEl);
+          const advancedSuggest = new AdvancedSuggest(
+            this.app,
+            cb.inputEl,
+            this.plugin.vaultIndexCache
+          );
           // Track the instance for cleanup
           this.advancedSuggestInstances.push(advancedSuggest);
           cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER)

@@ -89,12 +89,12 @@ export class TriggerSettingsSection {
     );
 
     const cacheSetting = new Setting(this.containerEl)
-      .setName('Enable rule evaluation cache (beta)')
+      .setName('Enable rule evaluation cache')
       .setDesc(cacheDesc)
       .addToggle(toggle =>
         toggle
           .setValue(
-            this.plugin.settings.settings.enableRuleEvaluationCache ?? false
+            this.plugin.settings.settings.enableRuleEvaluationCache ?? true
           )
           .onChange(async value => {
             this.plugin.settings.settings.enableRuleEvaluationCache = value;

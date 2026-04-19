@@ -32,10 +32,8 @@ Notes:
 
 ![Filter Settings](images/noteMover-settings-filter.png)
 
-- **Toggle blacklist/whitelist**: Choose between:
-  - **Blacklist**: Move all files EXCEPT those matching the specified criteria
-  - **Whitelist**: Move ONLY files matching the specified criteria
-- **Filter criteria**: Add criteria to include/exclude from movement. Supported types:
+- **Blacklist only**: Filters always act as a **blacklist** — files matching any filter line are **excluded** from automatic moves (manual commands still respect the same rules + filters).
+- **Filter criteria**: Add criteria to exclude from movement. Supported types:
   - **Tags**: `tag: tagname` - Match files with specific tags (e.g., `tag: #inbox`, `tag: work/project`)
   - **Properties**: Property-based criteria from frontmatter:
     - `property: key` - Match files that have the specified property key
@@ -47,32 +45,13 @@ Notes:
   - **Creation Date**: `created_at: date` - Match files based on creation date
   - **Update Date**: `updated_at: date` - Match files based on last modification date
 
-#### Rules
+#### Rules (Rule V2)
 
 ![Rules Configuration](images/noteMover-settings-rules.png)
 
-- **Rules description**: Define custom rules for moving files based on various criteria. Rules are always active.
-- **Rule configuration**: For each rule, specify:
-  - **Criteria**: The criteria that triggers the rule. Supported types:
-    - **Tags**: `tag: tagname` - Trigger for files with specific tags
-      - Supports subtags (e.g., `tag: work/project` matches both `#work/project` and `#work`)
-      - Example: `tag: meeting`, `tag: #inbox`
-    - **Properties**: `property: key` or `property: key:value` - Trigger based on frontmatter properties
-      - `property: key` - Trigger for files that have the specified property key
-      - `property: key:value` - Trigger for files where the property key has the exact value
-      - Example: `property: type:meeting`, `property: urgent`
-    - **File Names**: `fileName: pattern` - Trigger for files matching filename patterns
-      - Supports wildcards (e.g., `fileName: *.json`, `fileName: Daily*`)
-      - Example: `fileName: Meeting`, `fileName: *.md`
-    - **Content**: `content: text` - Trigger for files containing specific text
-      - Example: `content: TODO`, `content: urgent`
-    - **Path**: `path: folder/path` - Trigger for files in specific locations
-      - Example: `path: Inbox/`, `path: Templates/`
-    - **Creation Date**: `created_at: date` - Trigger based on when the file was created
-    - **Update Date**: `updated_at: date` - Trigger based on when the file was last modified
-  - **Path**: The destination folder for files matching this criteria
-  - Note: If a file matches multiple rules, the first matching rule will be applied.
-  - Note: Destination folders will be created automatically if they don't exist.
+- **Rules**: Define **Rule V2** entries with named rules, **match aggregation** (`all` / `any` / `none`), typed **triggers** (tag, fileName, folder, properties, dates, links, embeds, headings, extension), and a **destination** (plain path or template).
+- **Order**: If multiple rules match, the **first** matching rule in the list wins.
+- **Destinations**: Folders are created when needed. Template placeholders such as `{{tag.x}}` / `{{property.y}}` are supported (see below).
 
 ##### Template Rules for Dynamic Destinations (Rule V2)
 

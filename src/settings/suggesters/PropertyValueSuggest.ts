@@ -1,15 +1,17 @@
 import { App, AbstractInputSuggest } from 'obsidian';
+import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 
 export class PropertyValueSuggest extends AbstractInputSuggest<string> {
   private propertyName: string;
   private propertyType: 'text' | 'number' | 'checkbox' | 'date' | 'list';
-  private availableValues: Set<string>;
+  private availableValues = new Set<string>();
 
   constructor(
     app: App,
     private inputEl: HTMLInputElement,
     propertyName: string,
-    propertyType: 'text' | 'number' | 'checkbox' | 'date' | 'list'
+    propertyType: 'text' | 'number' | 'checkbox' | 'date' | 'list',
+    private vaultIndexCache?: PluginVaultIndexCache
   ) {
     super(app, inputEl);
     this.propertyName = propertyName;
@@ -22,6 +24,15 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
 
     // Keine Vorschläge für Date-Typ
     if (this.propertyType === 'date') {
+      return;
+    }
+
+    if (this.vaultIndexCache) {
+      this.availableValues = this.vaultIndexCache.getPropertyValueSetCached(
+        this.app,
+        this.propertyName,
+        this.propertyType
+      );
       return;
     }
 

@@ -1,5 +1,6 @@
 import NoteMoverShortcutPlugin from 'main';
-import { Editor, MarkdownView, Notice } from 'obsidian';
+import type { MarkdownFileInfo } from 'obsidian';
+import { Editor, MarkdownView } from 'obsidian';
 import { HistoryModal } from '../modals/HistoryModal';
 import { UpdateModal } from '../modals/UpdateModal';
 import { PreviewModal } from '../modals/PreviewModal';
@@ -14,7 +15,10 @@ export class CommandHandler {
     this.plugin.addCommand({
       id: 'trigger-note-movement',
       name: 'Move active note to note folder',
-      editorCallback: (editor: Editor, view: MarkdownView) => {
+      editorCallback: (
+        _editor: Editor,
+        _ctx: MarkdownView | MarkdownFileInfo
+      ) => {
         this.plugin.noteMover.moveFocusedNoteToDestination();
       },
     });
@@ -72,7 +76,10 @@ export class CommandHandler {
     this.plugin.addCommand({
       id: 'preview-note-movement',
       name: 'Preview active note movement',
-      editorCallback: async (editor: Editor, view: MarkdownView) => {
+      editorCallback: async (
+        _editor: Editor,
+        _ctx: MarkdownView | MarkdownFileInfo
+      ) => {
         try {
           const preview =
             await this.plugin.noteMover.generateActiveNotePreview();
@@ -94,9 +101,12 @@ export class CommandHandler {
     this.plugin.addCommand({
       id: 'add-current-file-to-blacklist',
       name: 'Add current file to blacklist',
-      editorCallback: async (editor: Editor, view: MarkdownView) => {
+      editorCallback: async (
+        _editor: Editor,
+        ctx: MarkdownView | MarkdownFileInfo
+      ) => {
         try {
-          const fileName = view.file?.name;
+          const fileName = ctx.file?.name;
           if (!fileName) {
             NoticeManager.warning('No active file to add to blacklist.');
             return;

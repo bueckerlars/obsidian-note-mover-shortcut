@@ -3,4 +3,4 @@ export { FilterSettingsSection } from './FilterSettingsSection';
 export { RulesSettingsSection } from './RulesSettingsSection';
 export { HistorySettingsSection } from './HistorySettingsSection';
 export { ImportExportSettingsSection } from './ImportExportSettingsSection';
-export { LegacySettingsSection } from './LegacySettingsSection';
+export { PerformanceDebugSettingsSection } from './PerformanceDebugSettingsSection';

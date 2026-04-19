@@ -3122,3 +3122,14 @@
     padding-top: 16px;
   }
 }
+
+.noteMover-preview-bulk-status {
+  margin-bottom: 0.5rem;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.noteMover-preview-bulk-actions {
+  display: flex;
+  justify-content: flex-end;
+}

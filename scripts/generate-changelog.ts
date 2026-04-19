@@ -32,6 +32,8 @@ function parseChangelog(content: string): ChangelogEntry[] {
     // Recognize version header (e.g. "## [0.2.1]" or "## [0.1.6]")
     const versionMatch = line.match(/^##\s*\[?(\d+\.\d+\.\d+)\]?/);
     if (versionMatch) {
+      const nextVersion = versionMatch[1];
+      if (!nextVersion) continue;
       // Save previous version if exists
       if (currentVersion) {
         entries.push({
@@ -41,7 +43,7 @@ function parseChangelog(content: string): ChangelogEntry[] {
       }
 
       // Start new version
-      currentVersion = versionMatch[1];
+      currentVersion = nextVersion;
       currentChanges = {};
       currentSection = null;
       continue;

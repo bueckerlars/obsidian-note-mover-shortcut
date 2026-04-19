@@ -1,4 +1,4 @@
-import { Setting, App, TFile, Notice } from 'obsidian';
+import { Setting, App, TFile } from 'obsidian';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import NoteMoverShortcutPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
@@ -9,6 +9,7 @@ import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class PreviewModal extends BaseModal {
   private movePreview: MovePreview;
+  private actionFooterEl: HTMLElement | null = null;
 
   constructor(
     app: App,
@@ -158,6 +159,7 @@ export class PreviewModal extends BaseModal {
         ? 'noteMover-modal-footer noteMover-modal-footer-mobile'
         : 'noteMover-modal-footer',
     });
+    this.actionFooterEl = footer;
 
     const buttonContainer = this.createButtonContainer(footer);
 
@@ -217,17 +219,36 @@ export class PreviewModal extends BaseModal {
   }
 
   private async executeMoves() {
-    this.close();
-
     const successfulEntries = this.movePreview.successfulMoves;
     let movedCount = 0;
     let errorCount = 0;
+    const abortCtl = new AbortController();
 
-    const bulkOperationId =
-      this.plugin.historyManager.startBulkOperation('bulk');
+    if (this.actionFooterEl) {
+      this.actionFooterEl.empty();
+      const status = this.actionFooterEl.createDiv({
+        cls: 'noteMover-preview-bulk-status',
+        text: `Moving files… (${successfulEntries.length} planned)`,
+      });
+      const row = this.actionFooterEl.createDiv({
+        cls: 'noteMover-preview-bulk-actions',
+      });
+      new Setting(row).addButton(btn =>
+        btn.setButtonText('Stop').onClick(() => {
+          abortCtl.abort();
+          status.setText('Stopping after current file…');
+        })
+      );
+    }
+
+    this.plugin.historyManager.startBulkOperation('bulk');
 
     try {
-      for (const entry of successfulEntries) {
+      for (let i = 0; i < successfulEntries.length; i++) {
+        const entry = successfulEntries[i];
+        if (abortCtl.signal.aborted) {
+          break;
+        }
         try {
           const file = this.app.vault.getAbstractFileByPath(entry.currentPath);
           if (!(file instanceof TFile) || !entry.targetPath) continue;
@@ -258,12 +279,35 @@ export class PreviewModal extends BaseModal {
           handleError(error, `Error moving file ${entry.fileName}`, false);
           errorCount++;
         }
+        if ((i + 1) % 50 === 0 && i + 1 < successfulEntries.length) {
+          await new Promise<void>(resolve => {
+            const ric = (
+              globalThis as typeof globalThis & {
+                requestIdleCallback?: (
+                  cb: IdleRequestCallback,
+                  opts?: IdleRequestOptions
+                ) => number;
+              }
+            ).requestIdleCallback;
+            if (typeof ric === 'function') {
+              ric(() => resolve(), { timeout: 250 });
+            } else {
+              setTimeout(resolve, 0);
+            }
+          });
+        }
       }
     } finally {
       this.plugin.historyManager.endBulkOperation();
     }
 
-    if (errorCount === 0) {
+    this.close();
+
+    if (abortCtl.signal.aborted) {
+      NoticeManager.info(
+        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).`
+      );
+    } else if (errorCount === 0) {
       NoticeManager.success(`Successfully moved ${movedCount} files!`);
     } else {
       NoticeManager.warning(

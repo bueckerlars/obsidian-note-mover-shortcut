@@ -12,30 +12,22 @@ import { TagSuggest } from '../settings/suggesters/TagSuggest';
 import { PropertySuggest } from '../settings/suggesters/PropertySuggest';
 import { PropertyValueSuggest } from '../settings/suggesters/PropertyValueSuggest';
 import { DragDropManager } from '../utils/DragDropManager';
-import { MobileUtils } from '../utils/MobileUtils';
 import {
   getOperatorsForCriteriaType,
   getOperatorsForPropertyType,
   getDefaultOperatorForCriteriaType,
-  getAvailablePropertyTypes,
   isRegexOperator,
   operatorRequiresValue,
   getPropertyTypeFromVault,
 } from '../utils/OperatorMapping';
-import {
-  MobileModalInput,
-  MobileModalToggle,
-  MobileModalButton,
-  MobileModalSection,
-  MobileTriggerCard,
-  MobileTriggerCardCallbacks,
-} from './mobile';
+import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault-index-cache';
 
 interface RuleEditorModalOptions {
   rule: RuleV2;
   isEditMode: boolean;
   onSave: (rule: RuleV2) => Promise<void>;
   onDelete?: () => Promise<void>;
+  vaultIndexCache?: PluginVaultIndexCache;
 }
 
 export class RuleEditorModal extends BaseModal {
@@ -43,7 +35,6 @@ export class RuleEditorModal extends BaseModal {
   private workingRule: RuleV2;
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
-  private mobileTriggerCards: MobileTriggerCard[] = [];
 
   constructor(app: App, options: RuleEditorModalOptions) {
     super(app, {
@@ -59,55 +50,7 @@ export class RuleEditorModal extends BaseModal {
 
   protected createContent(): void {
     const { contentEl } = this;
-
-    if (MobileUtils.isMobile()) {
-      this.createMobileContent(contentEl);
-    } else {
-      this.createDesktopContent(contentEl);
-    }
-  }
-
-  private createMobileContent(container: HTMLElement): void {
-    // Name Card
-    const nameInput = new MobileModalInput(
-      container,
-      'Name',
-      undefined,
-      'Enter rule name',
-      this.workingRule.name,
-      async value => {
-        this.workingRule.name = value;
-      }
-    );
-
-    // Active Toggle Card
-    new MobileModalToggle(
-      container,
-      'Active',
-      'Enable or disable this rule',
-      this.workingRule.active,
-      async value => {
-        this.workingRule.active = value;
-      }
-    );
-
-    // Match Conditions Card
-    this.createMobileMatchConditions(container);
-
-    // Destination Card
-    this.createMobileDestination(container);
-
-    // Separator
-    container.createEl('hr', { cls: 'noteMover-rule-editor-separator' });
-
-    // Conditions Section
-    this.createMobileConditionsSection(container);
-
-    // Separator
-    container.createEl('hr', { cls: 'noteMover-rule-editor-separator' });
-
-    // Footer Actions
-    this.createMobileFooterActions(container);
+    this.createDesktopContent(contentEl);
   }
 
   private createDesktopContent(container: HTMLElement): void {
@@ -164,47 +107,6 @@ export class RuleEditorModal extends BaseModal {
     }
   }
 
-  private createMobileMatchConditions(container: HTMLElement): void {
-    const card = container.createDiv({ cls: 'noteMover-mobile-modal-card' });
-    const header = card.createDiv({
-      cls: 'noteMover-mobile-modal-card-header',
-    });
-    header.createDiv({
-      cls: 'noteMover-mobile-modal-card-title',
-      text: 'Match Conditions',
-    });
-    const content = card.createDiv({
-      cls: 'noteMover-mobile-modal-card-content',
-    });
-
-    const buttonContainer = content.createDiv({
-      cls: 'noteMover-rule-aggregation-buttons-mobile',
-    });
-
-    const aggregations: AggregationType[] = ['all', 'any', 'none'];
-    aggregations.forEach(agg => {
-      const button = buttonContainer.createEl('button', {
-        text: agg.charAt(0).toUpperCase() + agg.slice(1),
-        cls: 'noteMover-rule-aggregation-button',
-      });
-
-      if (this.workingRule.aggregation === agg) {
-        button.addClass('is-active');
-      }
-
-      button.onclick = () => {
-        this.workingRule.aggregation = agg;
-        // Update button states
-        buttonContainer
-          .querySelectorAll('.noteMover-rule-aggregation-button')
-          .forEach(btn => {
-            btn.removeClass('is-active');
-          });
-        button.addClass('is-active');
-      };
-    });
-  }
-
   private createMatchConditionsSelector(container: HTMLElement): void {
     const setting = new Setting(container).setName('Match Conditions');
 
@@ -233,45 +135,6 @@ export class RuleEditorModal extends BaseModal {
           });
         button.addClass('is-active');
       };
-    });
-  }
-
-  private createMobileDestination(container: HTMLElement): void {
-    const card = container.createDiv({ cls: 'noteMover-mobile-modal-card' });
-    const header = card.createDiv({
-      cls: 'noteMover-mobile-modal-card-header',
-    });
-    header.createDiv({
-      cls: 'noteMover-mobile-modal-card-title',
-      text: 'Destination',
-    });
-    card.createDiv({
-      cls: 'noteMover-mobile-modal-card-description',
-      text: 'Folder or template where files matching this rule will be moved',
-    });
-    card.createDiv({
-      cls: 'noteMover-mobile-modal-card-description',
-      text: 'Supports templates like {{tag.tasks/personal}} or {{property.status}}',
-    });
-    const content = card.createDiv({
-      cls: 'noteMover-mobile-modal-card-content',
-    });
-
-    const searchContainer = content.createDiv({
-      cls: 'search-input-container',
-    });
-    const input = searchContainer.createEl('input', {
-      type: 'text',
-      cls: 'noteMover-mobile-text-input',
-      placeholder:
-        'Example: folder1/folder2 or Personal/Tasks/{{property.status}}',
-      value: this.workingRule.destination,
-    });
-
-    new FolderSuggest(this.app, input);
-
-    input.addEventListener('input', () => {
-      this.workingRule.destination = input.value;
     });
   }
 
@@ -310,35 +173,6 @@ export class RuleEditorModal extends BaseModal {
     }
   }
 
-  private createMobileConditionsSection(container: HTMLElement): void {
-    const section = new MobileModalSection(container, 'Conditions');
-    const sectionEl = section.getSectionElement();
-
-    // Triggers container
-    this.triggersContainer = sectionEl.createDiv({
-      cls: 'noteMover-rule-triggers-container',
-    });
-
-    this.renderMobileTriggers();
-
-    // Add Condition Button
-    new MobileModalButton(
-      sectionEl,
-      '',
-      undefined,
-      '+ Add Condition',
-      () => {
-        this.workingRule.triggers.push({
-          criteriaType: 'tag',
-          operator: 'includes item',
-          value: '',
-        });
-        this.renderMobileTriggers();
-      },
-      {}
-    );
-  }
-
   private createConditionsSection(container: HTMLElement): void {
     const section = container.createDiv({
       cls: 'noteMover-rule-conditions-section',
@@ -367,68 +201,6 @@ export class RuleEditorModal extends BaseModal {
         this.renderTriggers();
       })
     );
-  }
-
-  private renderMobileTriggers(): void {
-    if (!this.triggersContainer) return;
-
-    this.triggersContainer.empty();
-    this.mobileTriggerCards = [];
-
-    this.workingRule.triggers.forEach((trigger, index) => {
-      const callbacks: MobileTriggerCardCallbacks = {
-        onCriteriaTypeChange: () => {
-          this.renderMobileTriggers();
-        },
-        onOperatorChange: () => {
-          this.renderMobileTriggers();
-        },
-        onPropertyNameChange: () => {
-          this.renderMobileTriggers();
-        },
-        onValueChange: () => {
-          // Value change doesn't require re-render
-        },
-        onMoveUp: () => {
-          if (index > 0) {
-            const [movedTrigger] = this.workingRule.triggers.splice(index, 1);
-            this.workingRule.triggers.splice(index - 1, 0, movedTrigger);
-            this.renderMobileTriggers();
-          }
-        },
-        onMoveDown: () => {
-          if (index < this.workingRule.triggers.length - 1) {
-            const [movedTrigger] = this.workingRule.triggers.splice(index, 1);
-            this.workingRule.triggers.splice(index + 1, 0, movedTrigger);
-            this.renderMobileTriggers();
-          }
-        },
-        onDelete: () => {
-          this.workingRule.triggers.splice(index, 1);
-          if (this.workingRule.triggers.length === 0) {
-            this.workingRule.triggers.push({
-              criteriaType: 'tag',
-              operator: 'includes item',
-              value: '',
-            });
-          }
-          this.renderMobileTriggers();
-        },
-        canMoveUp: index > 0,
-        canMoveDown: index < this.workingRule.triggers.length - 1,
-        onRender: () => {
-          this.renderMobileTriggers();
-        },
-      };
-
-      const triggerCard = new MobileTriggerCard(
-        this.triggersContainer!,
-        trigger,
-        callbacks,
-        this.app
-      );
-      this.mobileTriggerCards.push(triggerCard);
-    });
   }
 
   private renderTriggers(): void {
@@ -541,7 +313,8 @@ export class RuleEditorModal extends BaseModal {
         // Automatische Typ-Erkennung
         const detectedType = getPropertyTypeFromVault(
           this.app,
-          trigger.propertyName
+          trigger.propertyName,
+          this.ruleOptions.vaultIndexCache
         );
         if (detectedType) {
           trigger.propertyType = detectedType;
@@ -565,7 +338,7 @@ export class RuleEditorModal extends BaseModal {
 
       // Add suggesters based on criteriaType
       if (trigger.criteriaType === 'tag') {
-        new TagSuggest(this.app, valueInput);
+        new TagSuggest(this.app, valueInput, this.ruleOptions.vaultIndexCache);
       } else if (trigger.criteriaType === 'folder') {
         new FolderSuggest(this.app, valueInput);
       } else if (
@@ -578,7 +351,8 @@ export class RuleEditorModal extends BaseModal {
           this.app,
           valueInput,
           trigger.propertyName,
-          trigger.propertyType
+          trigger.propertyType,
+          this.ruleOptions.vaultIndexCache
         );
       }
     }
@@ -677,59 +451,6 @@ export class RuleEditorModal extends BaseModal {
       itemSelector: '.noteMover-rule-trigger-row',
       handleSelector: '.noteMover-drag-handle',
     });
-  }
-
-  private createMobileFooterActions(container: HTMLElement): void {
-    const footer = container.createDiv({
-      cls: 'noteMover-rule-editor-footer-mobile',
-    });
-
-    // Remove Rule button (only in edit mode)
-    if (this.ruleOptions.isEditMode && this.ruleOptions.onDelete) {
-      new MobileModalButton(
-        footer,
-        '',
-        undefined,
-        'Remove Rule',
-        async () => {
-          const confirmed = confirm(
-            `Are you sure you want to delete the rule "${this.workingRule.name}"?\n\nThis action cannot be undone.`
-          );
-          if (confirmed && this.ruleOptions.onDelete) {
-            await this.ruleOptions.onDelete();
-            this.close();
-          }
-        },
-        { isDanger: true }
-      );
-    }
-
-    // Cancel button
-    new MobileModalButton(
-      footer,
-      '',
-      undefined,
-      'Cancel',
-      () => {
-        this.close();
-      },
-      {}
-    );
-
-    // Save button
-    new MobileModalButton(
-      footer,
-      '',
-      undefined,
-      'Save',
-      async () => {
-        if (this.validateRule()) {
-          await this.ruleOptions.onSave(this.workingRule);
-          this.close();
-        }
-      },
-      { isPrimary: true }
-    );
   }
 
   private createFooterActions(container: HTMLElement): void {

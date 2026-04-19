@@ -6,11 +6,13 @@ import { createError, handleError } from '../utils/Error';
 import { combinePath } from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
 import { RuleMatcherV2 } from './RuleMatcherV2';
-import { RuleMatcher } from './RuleMatcher';
+import { BlacklistFilterEngine } from '../domain/filters/blacklist-filter-engine';
+import { filtersNeedContent } from '../domain/filters/filter-needs-content';
 import {
   DestinationTemplateContext,
   renderDestinationTemplate,
-} from '../utils/DestinationTemplate';
+} from '../domain/templates/DestinationTemplate';
+import type { PerformanceTraceRecorder } from '../infrastructure/debug/performance-trace';
 
 /**
  * RuleManager for Rule V2 system
@@ -25,15 +27,15 @@ export class RuleManagerV2 {
   private filter: string[] = []; // Filter remain V1-compatible
   private metadataExtractor: MetadataExtractor;
   private ruleMatcherV2: RuleMatcherV2;
-  private ruleMatcherV1: RuleMatcher; // For filter evaluation
+  private readonly filterEngine = new BlacklistFilterEngine();
 
   constructor(
     private app: App,
-    private defaultFolder: string
+    private defaultFolder: string,
+    private readonly perf: PerformanceTraceRecorder
   ) {
     this.metadataExtractor = new MetadataExtractor(app);
     this.ruleMatcherV2 = new RuleMatcherV2(this.metadataExtractor);
-    this.ruleMatcherV1 = new RuleMatcher(this.metadataExtractor);
   }
 
   /**
@@ -43,6 +45,7 @@ export class RuleManagerV2 {
    */
   public setRules(rules: RuleV2[]): void {
     this.rules = rules;
+    this.ruleMatcherV2.warmRegexCacheFromRules(rules);
   }
 
   /**
@@ -53,6 +56,10 @@ export class RuleManagerV2 {
    */
   public setFilter(filter: string[]): void {
     this.filter = filter;
+  }
+
+  private filterNeedsContent(): boolean {
+    return filtersNeedContent(this.filter);
   }
 
   /**
@@ -69,49 +76,56 @@ export class RuleManagerV2 {
     file: TFile,
     skipFilter = false
   ): Promise<string | null> {
-    try {
-      // Extract V2 metadata
-      const metadata = await this.metadataExtractor.extractFileMetadataV2(file);
+    return this.perf.recordAsync(
+      'RuleManagerV2.moveFileBasedOnTags',
+      async () => {
+        try {
+          const metadata = await this.metadataExtractor.extractFileMetadataV2(
+            file,
+            this.filterNeedsContent()
+          );
 
-      // Check if file should be skipped based on filter (using V1 logic)
-      if (
-        !skipFilter &&
-        !this.ruleMatcherV1.evaluateFilter(metadata, this.filter)
-      ) {
-        return null; // File is blocked by filter
-      }
+          if (
+            !skipFilter &&
+            !this.filterEngine.evaluateFilter(metadata, this.filter)
+          ) {
+            return null; // File is blocked by filter
+          }
 
-      // Find matching rule using V2 logic
-      const matchingRule = this.ruleMatcherV2.findMatchingRule(
-        metadata,
-        this.rules
-      );
+          // Find matching rule using V2 logic
+          const matchingRule = this.ruleMatcherV2.findMatchingRule(
+            metadata,
+            this.rules
+          );
 
-      if (matchingRule) {
-        const targetFolder = this.resolveDestinationTemplate(
-          matchingRule.destination,
-          metadata
-        );
+          if (matchingRule) {
+            const targetFolder = this.resolveDestinationTemplate(
+              matchingRule.destination,
+              metadata
+            );
 
-        // If the destination template resolves to an empty value, treat it as
-        // "no valid move target" so the file is not moved to the vault root.
-        if (!targetFolder || targetFolder.trim() === '') {
+            // If the destination template resolves to an empty value, treat it as
+            // "no valid move target" so the file is not moved to the vault root.
+            if (!targetFolder || targetFolder.trim() === '') {
+              return null;
+            }
+
+            return targetFolder;
+          }
+
+          // No rule matched - skip the file since only notes with rules should be moved
+          return null;
+        } catch (error) {
+          handleError(
+            error,
+            `Error processing V2 rules for file '${file.path}'`,
+            false
+          );
           return null;
         }
-
-        return targetFolder;
-      }
-
-      // No rule matched - skip the file since only notes with rules should be moved
-      return null;
-    } catch (error) {
-      handleError(
-        error,
-        `Error processing V2 rules for file '${file.path}'`,
-        false
-      );
-      return null;
-    }
+      },
+      { path: file.path, skipFilter }
+    );
   }
 
   /**
@@ -126,13 +140,15 @@ export class RuleManagerV2 {
     skipFilter = false
   ): Promise<PreviewEntry> {
     try {
-      // Extract V2 metadata
-      const metadata = await this.metadataExtractor.extractFileMetadataV2(file);
+      const metadata = await this.metadataExtractor.extractFileMetadataV2(
+        file,
+        this.filterNeedsContent()
+      );
       const { tags, fileName, filePath } = metadata;
 
       // Check filters first (using V1 logic)
       if (!skipFilter) {
-        const filterDetails = this.ruleMatcherV1.getFilterMatchDetails(
+        const filterDetails = this.filterEngine.getFilterMatchDetails(
           metadata,
           this.filter
         );
@@ -241,24 +257,33 @@ export class RuleManagerV2 {
     enableRules: boolean,
     enableFilter: boolean
   ): Promise<MovePreview> {
-    const successfulMoves: PreviewEntry[] = [];
+    return this.perf.recordAsync(
+      'RuleManagerV2.generateMovePreview',
+      async () => {
+        const successfulMoves: PreviewEntry[] = [];
 
-    for (const file of files) {
-      const preview = await this.generatePreviewForFile(file, !enableFilter);
+        for (const file of files) {
+          const preview = await this.generatePreviewForFile(
+            file,
+            !enableFilter
+          );
 
-      if (preview.willBeMoved) {
-        successfulMoves.push(preview);
-      }
-      // Only include files that will be moved - blocked files are ignored
-    }
+          if (preview.willBeMoved) {
+            successfulMoves.push(preview);
+          }
+          // Only include files that will be moved - blocked files are ignored
+        }
 
-    return {
-      successfulMoves,
-      totalFiles: files.length,
-      settings: {
-        isFilterWhitelist: false, // Always blacklist mode
+        return {
+          successfulMoves,
+          totalFiles: files.length,
+          settings: {
+            isFilterWhitelist: false, // Always blacklist mode
+          },
+        };
       },
-    };
+      { fileCount: files.length, enableRules, enableFilter }
+    );
   }
 
   /**
