@@ -2,9 +2,8 @@ import AdvancedNoteMoverPlugin from 'main';
 import type { MarkdownFileInfo } from 'obsidian';
 import { Editor, MarkdownView } from 'obsidian';
 import { HistoryModal } from '../modals/HistoryModal';
-import { UpdateModal } from '../modals/UpdateModal';
 import { PreviewModal } from '../modals/PreviewModal';
-import { createError, handleError } from '../utils/Error';
+import { handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
 
 export class CommandHandler {
@@ -42,15 +41,6 @@ export class CommandHandler {
           this.plugin.historyManager,
           this.plugin
         ).open();
-      },
-    });
-
-    // Update modal command (for testing/manual trigger)
-    this.plugin.addCommand({
-      id: 'show-update-modal',
-      name: 'Show update modal',
-      callback: () => {
-        this.plugin.updateManager.showUpdateModal(true);
       },
     });
 
