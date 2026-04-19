@@ -1,6 +1,5 @@
 import type { FileMetadata } from '../types/Common';
 import type { RuleV2, Trigger } from '../types/RuleV2';
-import type { MetadataExtractor } from './MetadataExtractor';
 import { RuleMatcherV2Engine } from '../domain/rules/v2/RuleMatcherV2Engine';
 
 /**
@@ -9,8 +8,7 @@ import { RuleMatcherV2Engine } from '../domain/rules/v2/RuleMatcherV2Engine';
 export class RuleMatcherV2 {
   private readonly engine = new RuleMatcherV2Engine();
 
-  /** @param _metadataExtractor unused; kept for call-site compatibility. */
-  constructor(_metadataExtractor?: MetadataExtractor) {}
+  constructor() {}
 
   public findMatchingRule(
     metadata: FileMetadata,

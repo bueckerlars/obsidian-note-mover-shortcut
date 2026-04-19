@@ -69,10 +69,6 @@ export class AdvancedNoteMover {
     }
   }
 
-  async setup(): Promise<void> {
-    // Periodic setup moved to TriggerEventHandler
-  }
-
   /**
    * Moves a single file based on its tags and rules
    *

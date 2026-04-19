@@ -35,7 +35,7 @@ export class RuleManagerV2 {
     private readonly perf: PerformanceTraceRecorder
   ) {
     this.metadataExtractor = new MetadataExtractor(app);
-    this.ruleMatcherV2 = new RuleMatcherV2(this.metadataExtractor);
+    this.ruleMatcherV2 = new RuleMatcherV2();
   }
 
   /**
