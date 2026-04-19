@@ -1,5 +1,5 @@
 import { TFile } from 'obsidian';
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { DebounceManager } from '../utils/DebounceManager';
 
 export class TriggerEventHandler {
@@ -8,7 +8,7 @@ export class TriggerEventHandler {
   private debounceManager: DebounceManager;
   private debouncedHandleOnEdit: (file: TFile) => void;
 
-  constructor(private plugin: NoteMoverShortcutPlugin) {
+  constructor(private plugin: AdvancedNoteMoverPlugin) {
     this.debounceManager = new DebounceManager();
     // Initialize debounced handler after debounceManager is created
     this.debouncedHandleOnEdit = this.debounceManager.debounce(
@@ -35,7 +35,7 @@ export class TriggerEventHandler {
         this.plugin.settings.settings.triggers.periodicMovementInterval;
       this.periodicIntervalId = window.setInterval(
         async () => {
-          await this.plugin.noteMover.moveAllFilesInVaultPeriodic();
+          await this.plugin.advancedNoteMover.moveAllFilesInVaultPeriodic();
         },
         minutes * (60 * 1000)
       );
@@ -82,7 +82,7 @@ export class TriggerEventHandler {
       // ordering is not guaranteed.
       this.plugin.ruleCache.markDirty(file.path);
     }
-    await this.plugin.noteMover.moveFileBasedOnTags(file, '/', false);
+    await this.plugin.advancedNoteMover.moveFileBasedOnTags(file, '/', false);
   }
 
   /**

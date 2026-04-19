@@ -1,10 +1,10 @@
-# NoteMover Shortcut
+# Advanced Note Mover
 
-NoteMover Shortcut is a plugin for [Obsidian](https://obsidian.md).
+Advanced Note Mover is a plugin for [Obsidian](https://obsidian.md).
 
 ## Description
 
-The "NoteMover Shortcut" plugin streamlines your file organization in Obsidian. It offers a suite of shortcuts to:
+The "Advanced Note Mover" plugin streamlines your file organization in Obsidian. It offers a suite of shortcuts to:
 
 - **Move Single Files**: Swiftly relocate the currently open file to an appropriate destination folder based on rules and filters.
 - **Batch Move Files**: Efficiently transfer all files in your vault to appropriate target folders based on various criteria including tags, properties, file names, content, paths, and dates.
@@ -117,13 +117,13 @@ This setup will only process files tagged with #process OR having status:ready, 
 
 ### Hotkeys:
 
-- Set Hotkeys to the NoteMover Commands
+- Set Hotkeys to the Advanced Note Mover Commands
 
 ## Usage
 
 1. **Configuration:** Configure your rules and filters as described in the [Configuration section](#configuration)
 2. **Open File:** Open the file you want to move (optional for bulk operations).
-3. **Execute Command:** Execute one of the NoteMover commands from the command palette or use your configured shortcuts.
+3. **Execute Command:** Execute one of the Advanced Note Mover commands from the command palette or use your configured shortcuts.
 
 ### Available Commands
 

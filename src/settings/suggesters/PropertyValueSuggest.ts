@@ -168,18 +168,18 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
   renderSuggestion(value: string, el: HTMLElement): void {
     // Create a container for the suggestion
     const container = el.createDiv({
-      cls: 'noteMover-property-value-suggestion',
+      cls: 'advancedNoteMover-property-value-suggestion',
     });
 
     // Value text
     const valueEl = container.createDiv({
-      cls: 'noteMover-property-value-text',
+      cls: 'advancedNoteMover-property-value-text',
     });
     valueEl.setText(value);
 
     // Type indicator
     const typeEl = container.createDiv({
-      cls: 'noteMover-property-value-type',
+      cls: 'advancedNoteMover-property-value-type',
     });
     typeEl.setText(`(${this.propertyType})`);
   }

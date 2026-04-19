@@ -8,7 +8,7 @@ import {
 } from '../config/constants';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 
 export class HistoryModal extends BaseModal {
   private currentTimeFilter: TimeFilter = 'all';
@@ -16,7 +16,7 @@ export class HistoryModal extends BaseModal {
   constructor(
     app: App,
     private historyManager: HistoryManager,
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     options: BaseModalOptions = {}
   ) {
     super(app, {
@@ -47,7 +47,7 @@ export class HistoryModal extends BaseModal {
     }
 
     const historyList = contentEl.createEl('div', {
-      cls: 'noteMover-history-list',
+      cls: 'advancedNoteMover-history-list',
     });
 
     // Create a combined list of operations sorted by timestamp
@@ -83,8 +83,8 @@ export class HistoryModal extends BaseModal {
     const isMobile = MobileUtils.isMobile();
     const filterContainer = container.createEl('div', {
       cls: isMobile
-        ? 'noteMover-time-filter-container noteMover-time-filter-container-mobile'
-        : 'noteMover-time-filter-container',
+        ? 'advancedNoteMover-time-filter-container advancedNoteMover-time-filter-container-mobile'
+        : 'advancedNoteMover-time-filter-container',
     });
 
     const setting = new Setting(filterContainer)
@@ -123,12 +123,12 @@ export class HistoryModal extends BaseModal {
     const isMobile = MobileUtils.isMobile();
     const bulkEntryEl = container.createEl('div', {
       cls: isMobile
-        ? 'noteMover-history-entry noteMover-bulk-operation noteMover-history-entry-mobile'
-        : 'noteMover-history-entry noteMover-bulk-operation',
+        ? 'advancedNoteMover-history-entry advancedNoteMover-bulk-operation advancedNoteMover-history-entry-mobile'
+        : 'advancedNoteMover-history-entry advancedNoteMover-bulk-operation',
     });
 
     const headerEl = bulkEntryEl.createEl('div', {
-      cls: 'noteMover-bulk-header',
+      cls: 'advancedNoteMover-bulk-header',
     });
     const date = new Date(bulkOp.timestamp);
     const formattedDate = date.toLocaleString('en-US');
@@ -138,18 +138,18 @@ export class HistoryModal extends BaseModal {
     const operationIcon = bulkOp.operationType === 'bulk' ? '📦' : '🕐';
 
     headerEl.createEl('div', {
-      cls: 'noteMover-bulk-operation-info',
+      cls: 'advancedNoteMover-bulk-operation-info',
       text: `${operationIcon} ${operationTypeText}: ${bulkOp.totalFiles} files - ${formattedDate}`,
     });
 
     // Expandable details (opened by default)
     const detailsEl = bulkEntryEl.createEl('details', {
-      cls: 'noteMover-bulk-details',
+      cls: 'advancedNoteMover-bulk-details',
     });
     detailsEl.open = true;
     const summaryEl = detailsEl.createEl('summary', { text: 'Hide files' });
     const filesListEl = detailsEl.createEl('div', {
-      cls: 'noteMover-bulk-files-list',
+      cls: 'advancedNoteMover-bulk-files-list',
     });
 
     // Update summary text based on open state
@@ -164,22 +164,22 @@ export class HistoryModal extends BaseModal {
 
     sortedEntries.forEach(entry => {
       const fileEl = filesListEl.createEl('div', {
-        cls: 'noteMover-history-entry noteMover-bulk-file-entry',
+        cls: 'advancedNoteMover-history-entry advancedNoteMover-bulk-file-entry',
       });
 
       const contentEl = fileEl.createEl('div', {
-        cls: 'noteMover-history-entry-content',
+        cls: 'advancedNoteMover-history-entry-content',
       });
       const date = new Date(entry.timestamp);
       const formattedDate = date.toLocaleString('en-US');
 
       contentEl.createEl('div', {
-        cls: 'noteMover-history-entry-info',
+        cls: 'advancedNoteMover-history-entry-info',
         text: `📄 ${entry.fileName} - ${formattedDate}`,
       });
 
       contentEl.createEl('div', {
-        cls: 'noteMover-history-entry-paths',
+        cls: 'advancedNoteMover-history-entry-paths',
         text: `${entry.sourcePath} → ${entry.destinationPath}`,
       });
 
@@ -188,12 +188,12 @@ export class HistoryModal extends BaseModal {
       if (isMobile) {
         // Mobile: Stack buttons vertically
         const buttonsContainer = fileEl.createDiv({
-          cls: 'noteMover-history-entry-buttons-mobile',
+          cls: 'advancedNoteMover-history-entry-buttons-mobile',
         });
 
         // Open button
         const openBtn = buttonsContainer.createEl('button', {
-          cls: 'noteMover-history-entry-button-mobile',
+          cls: 'advancedNoteMover-history-entry-button-mobile',
           text: 'Open',
         });
         openBtn.onclick = () => {
@@ -220,7 +220,7 @@ export class HistoryModal extends BaseModal {
 
         // Undo button
         const undoBtn = buttonsContainer.createEl('button', {
-          cls: 'noteMover-history-entry-button-mobile',
+          cls: 'advancedNoteMover-history-entry-button-mobile',
           text: 'Undo',
         });
         undoBtn.onclick = async () => {
@@ -237,11 +237,13 @@ export class HistoryModal extends BaseModal {
 
         // Blacklist button
         const blacklistBtn = buttonsContainer.createEl('button', {
-          cls: 'noteMover-history-entry-button-mobile noteMover-history-entry-button-warning',
+          cls: 'advancedNoteMover-history-entry-button-mobile advancedNoteMover-history-entry-button-warning',
           text: 'Add to Blacklist',
         });
         blacklistBtn.onclick = async () => {
-          await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
+          await this.plugin.advancedNoteMover.addFileToBlacklist(
+            entry.fileName
+          );
         };
       } else {
         // Desktop: Original horizontal layout
@@ -296,7 +298,9 @@ export class HistoryModal extends BaseModal {
               .setIcon('ban')
               .setTooltip(`Add ${entry.fileName} to blacklist`)
               .onClick(async () => {
-                await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
+                await this.plugin.advancedNoteMover.addFileToBlacklist(
+                  entry.fileName
+                );
               });
           });
       }
@@ -337,35 +341,35 @@ export class HistoryModal extends BaseModal {
     const isMobile = MobileUtils.isMobile();
     const entryEl = container.createEl('div', {
       cls: isMobile
-        ? 'noteMover-history-entry noteMover-single-operation noteMover-history-entry-mobile'
-        : 'noteMover-history-entry noteMover-single-operation',
+        ? 'advancedNoteMover-history-entry advancedNoteMover-single-operation advancedNoteMover-history-entry-mobile'
+        : 'advancedNoteMover-history-entry advancedNoteMover-single-operation',
     });
 
     const contentEl = entryEl.createEl('div', {
-      cls: 'noteMover-history-entry-content',
+      cls: 'advancedNoteMover-history-entry-content',
     });
     const date = new Date(entry.timestamp);
     const formattedDate = date.toLocaleString('en-US');
 
     contentEl.createEl('div', {
-      cls: 'noteMover-history-entry-info',
+      cls: 'advancedNoteMover-history-entry-info',
       text: `📄 ${entry.fileName} - ${formattedDate}`,
     });
 
     contentEl.createEl('div', {
-      cls: 'noteMover-history-entry-paths',
+      cls: 'advancedNoteMover-history-entry-paths',
       text: `${entry.sourcePath} → ${entry.destinationPath}`,
     });
 
     if (isMobile) {
       // Mobile: Stack buttons vertically
       const buttonsContainer = entryEl.createDiv({
-        cls: 'noteMover-history-entry-buttons-mobile',
+        cls: 'advancedNoteMover-history-entry-buttons-mobile',
       });
 
       // Open button
       const openBtn = buttonsContainer.createEl('button', {
-        cls: 'noteMover-history-entry-button-mobile',
+        cls: 'advancedNoteMover-history-entry-button-mobile',
         text: 'Open',
       });
       openBtn.onclick = () => {
@@ -392,7 +396,7 @@ export class HistoryModal extends BaseModal {
 
       // Undo button
       const undoBtn = buttonsContainer.createEl('button', {
-        cls: 'noteMover-history-entry-button-mobile',
+        cls: 'advancedNoteMover-history-entry-button-mobile',
         text: 'Undo',
       });
       undoBtn.onclick = async () => {
@@ -404,11 +408,11 @@ export class HistoryModal extends BaseModal {
 
       // Blacklist button
       const blacklistBtn = buttonsContainer.createEl('button', {
-        cls: 'noteMover-history-entry-button-mobile noteMover-history-entry-button-warning',
+        cls: 'advancedNoteMover-history-entry-button-mobile advancedNoteMover-history-entry-button-warning',
         text: 'Add to Blacklist',
       });
       blacklistBtn.onclick = async () => {
-        await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
+        await this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);
       };
     } else {
       // Desktop: Original horizontal layout
@@ -455,7 +459,9 @@ export class HistoryModal extends BaseModal {
             .setIcon('ban')
             .setTooltip(`Add ${entry.fileName} to blacklist`)
             .onClick(async () => {
-              await this.plugin.noteMover.addFileToBlacklist(entry.fileName);
+              await this.plugin.advancedNoteMover.addFileToBlacklist(
+                entry.fileName
+              );
             });
         });
     }

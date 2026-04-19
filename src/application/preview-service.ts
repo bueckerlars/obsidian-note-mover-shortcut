@@ -1,14 +1,14 @@
 import type { MovePreview } from 'src/types/MovePreview';
-import type NoteMoverShortcutPlugin from 'main';
+import type AdvancedNoteMoverPlugin from 'main';
 
 export class PreviewService {
-  constructor(private readonly plugin: NoteMoverShortcutPlugin) {}
+  constructor(private readonly plugin: AdvancedNoteMoverPlugin) {}
 
   generateVaultMovePreview(): Promise<MovePreview> {
-    return this.plugin.noteMover.generateVaultMovePreview();
+    return this.plugin.advancedNoteMover.generateVaultMovePreview();
   }
 
   generateActiveNotePreview(): Promise<MovePreview | null> {
-    return this.plugin.noteMover.generateActiveNotePreview();
+    return this.plugin.advancedNoteMover.generateActiveNotePreview();
   }
 }

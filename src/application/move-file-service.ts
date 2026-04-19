@@ -1,14 +1,14 @@
 import type { TFile } from 'obsidian';
-import type NoteMoverShortcutPlugin from 'main';
+import type AdvancedNoteMoverPlugin from 'main';
 
 /**
  * Application use-case: move files using configured rules (delegates to core).
  */
 export class MoveFileService {
-  constructor(private readonly plugin: NoteMoverShortcutPlugin) {}
+  constructor(private readonly plugin: AdvancedNoteMoverPlugin) {}
 
   async moveFocusedNoteToDestination(): Promise<void> {
-    await this.plugin.noteMover.moveFocusedNoteToDestination();
+    await this.plugin.advancedNoteMover.moveFocusedNoteToDestination();
   }
 
   async moveFileBasedOnTags(
@@ -16,7 +16,7 @@ export class MoveFileService {
     defaultFolder: string,
     skipFilter = false
   ): Promise<boolean> {
-    return this.plugin.noteMover.moveFileBasedOnTags(
+    return this.plugin.advancedNoteMover.moveFileBasedOnTags(
       file,
       defaultFolder,
       skipFilter
@@ -24,10 +24,10 @@ export class MoveFileService {
   }
 
   async moveAllFilesInVault(opts?: { signal?: AbortSignal }): Promise<void> {
-    await this.plugin.noteMover.moveAllFilesInVault(opts);
+    await this.plugin.advancedNoteMover.moveAllFilesInVault(opts);
   }
 
   updateRuleManager(): void {
-    this.plugin.noteMover.updateRuleManager();
+    this.plugin.advancedNoteMover.updateRuleManager();
   }
 }

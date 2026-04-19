@@ -1,7 +1,7 @@
 import { Plugin } from 'obsidian';
-import { NoteMoverShortcut } from 'src/core/NoteMoverShortcut';
+import { AdvancedNoteMover } from 'src/core/AdvancedNoteMover';
 import { CommandHandler } from 'src/handlers/CommandHandler';
-import { NoteMoverShortcutSettingsTab } from 'src/settings/Settings';
+import { AdvancedNoteMoverSettingsTab } from 'src/settings/Settings';
 import { HistoryManager } from 'src/core/HistoryManager';
 import { TriggerEventHandler } from 'src/core/TriggerEventHandler';
 import { UpdateManager } from 'src/core/UpdateManager';
@@ -20,9 +20,9 @@ import { PerformanceTraceRecorder } from 'src/infrastructure/debug/performance-t
 import { createPluginApplicationServices } from 'src/application/plugin-application-services';
 import type { PluginApplicationServices } from 'src/application/plugin-application-services';
 
-export default class NoteMoverShortcutPlugin extends Plugin {
+export default class AdvancedNoteMoverPlugin extends Plugin {
   public settings!: PluginData;
-  public noteMover!: NoteMoverShortcut;
+  public advancedNoteMover!: AdvancedNoteMover;
   public command_handler!: CommandHandler;
   public historyManager!: HistoryManager;
   public updateManager!: UpdateManager;
@@ -30,8 +30,8 @@ export default class NoteMoverShortcutPlugin extends Plugin {
   public ruleCache!: RuleEvaluationCache;
   public vaultIndexCache!: PluginVaultIndexCache;
   public performanceTrace!: PerformanceTraceRecorder;
-  private settingTab!: NoteMoverShortcutSettingsTab;
-  /** Application-layer facades (use-cases); core logic remains on `noteMover`. */
+  private settingTab!: AdvancedNoteMoverSettingsTab;
+  /** Application-layer facades (use-cases); core logic remains on `advancedNoteMover`. */
   public appServices!: PluginApplicationServices;
 
   async onload() {
@@ -49,17 +49,17 @@ export default class NoteMoverShortcutPlugin extends Plugin {
     this.historyManager = new HistoryManager(this);
     this.historyManager.loadHistoryFromSettings();
     this.updateManager = new UpdateManager(this);
-    this.noteMover = new NoteMoverShortcut(this);
+    this.advancedNoteMover = new AdvancedNoteMover(this);
     this.appServices = createPluginApplicationServices(this);
     this.triggerHandler = new TriggerEventHandler(this);
     this.command_handler = new CommandHandler(this);
     this.command_handler.setup();
 
-    this.addRibbonIcon('book-plus', 'NoteMover', () => {
-      this.noteMover.moveFocusedNoteToDestination();
+    this.addRibbonIcon('book-plus', 'Advanced Note Mover', () => {
+      this.advancedNoteMover.moveFocusedNoteToDestination();
     });
 
-    this.settingTab = new NoteMoverShortcutSettingsTab(this);
+    this.settingTab = new AdvancedNoteMoverSettingsTab(this);
     this.addSettingTab(this.settingTab);
 
     this.triggerHandler.togglePeriodic();

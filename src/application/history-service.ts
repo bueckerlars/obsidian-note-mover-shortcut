@@ -3,10 +3,10 @@ import type {
   BulkOperation,
   TimeFilter,
 } from 'src/types/HistoryEntry';
-import type NoteMoverShortcutPlugin from 'main';
+import type AdvancedNoteMoverPlugin from 'main';
 
 export class HistoryService {
-  constructor(private readonly plugin: NoteMoverShortcutPlugin) {}
+  constructor(private readonly plugin: AdvancedNoteMoverPlugin) {}
 
   getFilteredHistory(filter: TimeFilter): HistoryEntry[] {
     return this.plugin.historyManager.getFilteredHistory(filter);

@@ -3,7 +3,7 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { type OperationType } from '../types/Common';
 import { MovePreview } from '../types/MovePreview';
 import {
@@ -13,10 +13,10 @@ import {
 
 const BULK_CHUNK_SIZE = 50;
 
-export class NoteMoverShortcut {
+export class AdvancedNoteMover {
   private ruleManagerV2: RuleManagerV2;
 
-  constructor(private plugin: NoteMoverShortcutPlugin) {
+  constructor(private plugin: AdvancedNoteMoverPlugin) {
     this.ruleManagerV2 = new RuleManagerV2(
       plugin.app,
       '/',
@@ -89,7 +89,7 @@ export class NoteMoverShortcut {
     skipFilter = false
   ): Promise<boolean> {
     return this.plugin.performanceTrace.recordAsync(
-      'NoteMoverShortcut.moveFileBasedOnTags',
+      'AdvancedNoteMover.moveFileBasedOnTags',
       async () => {
         const { app } = this.plugin;
         const cache = this.plugin.ruleCache;
@@ -173,7 +173,7 @@ export class NoteMoverShortcut {
     signal?: AbortSignal;
   }): Promise<void> {
     await this.plugin.performanceTrace.recordAsync(
-      'NoteMoverShortcut.moveAllFiles',
+      'AdvancedNoteMover.moveAllFiles',
       async () => {
         const { app } = this.plugin;
 
@@ -352,7 +352,7 @@ export class NoteMoverShortcut {
    */
   async generateVaultMovePreview(): Promise<MovePreview> {
     return this.plugin.performanceTrace.recordAsync(
-      'NoteMoverShortcut.generateVaultMovePreview',
+      'AdvancedNoteMover.generateVaultMovePreview',
       async () => {
         const { app } = this.plugin;
 
@@ -369,7 +369,7 @@ export class NoteMoverShortcut {
    */
   async generateActiveNotePreview(): Promise<MovePreview | null> {
     return this.plugin.performanceTrace.recordAsync(
-      'NoteMoverShortcut.generateActiveNotePreview',
+      'AdvancedNoteMover.generateActiveNotePreview',
       async () => {
         const { app } = this.plugin;
         const activeFile = app.workspace.getActiveFile();

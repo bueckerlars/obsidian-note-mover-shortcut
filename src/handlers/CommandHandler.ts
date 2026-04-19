@@ -1,4 +1,4 @@
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import type { MarkdownFileInfo } from 'obsidian';
 import { Editor, MarkdownView } from 'obsidian';
 import { HistoryModal } from '../modals/HistoryModal';
@@ -8,7 +8,7 @@ import { createError, handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
 
 export class CommandHandler {
-  constructor(private plugin: NoteMoverShortcutPlugin) {}
+  constructor(private plugin: AdvancedNoteMoverPlugin) {}
 
   setup(): void {
     // Singe note move command
@@ -19,7 +19,7 @@ export class CommandHandler {
         _editor: Editor,
         _ctx: MarkdownView | MarkdownFileInfo
       ) => {
-        this.plugin.noteMover.moveFocusedNoteToDestination();
+        this.plugin.advancedNoteMover.moveFocusedNoteToDestination();
       },
     });
 
@@ -28,7 +28,7 @@ export class CommandHandler {
       id: 'trigger-note-bulk-move',
       name: 'Move all files in vault',
       callback: () => {
-        this.plugin.noteMover.moveAllFilesInVault();
+        this.plugin.advancedNoteMover.moveAllFilesInVault();
       },
     });
 
@@ -61,7 +61,7 @@ export class CommandHandler {
       callback: async () => {
         try {
           const preview =
-            await this.plugin.noteMover.generateVaultMovePreview();
+            await this.plugin.advancedNoteMover.generateVaultMovePreview();
           new PreviewModal(this.plugin.app, this.plugin, preview).open();
         } catch (error) {
           handleError(error, 'Error generating preview', false);
@@ -82,7 +82,7 @@ export class CommandHandler {
       ) => {
         try {
           const preview =
-            await this.plugin.noteMover.generateActiveNotePreview();
+            await this.plugin.advancedNoteMover.generateActiveNotePreview();
           if (preview) {
             new PreviewModal(this.plugin.app, this.plugin, preview).open();
           } else {
@@ -113,7 +113,7 @@ export class CommandHandler {
           }
 
           // Use centralized function
-          await this.plugin.noteMover.addFileToBlacklist(fileName);
+          await this.plugin.advancedNoteMover.addFileToBlacklist(fileName);
         } catch (error) {
           handleError(error, 'Error adding file to blacklist', false);
           NoticeManager.error(

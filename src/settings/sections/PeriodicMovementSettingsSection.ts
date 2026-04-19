@@ -1,4 +1,4 @@
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { createError, handleError } from 'src/utils/Error';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
@@ -6,7 +6,7 @@ import { MobileUtils } from '../../utils/MobileUtils';
 
 export class TriggerSettingsSection {
   constructor(
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     private containerEl: HTMLElement,
     private refreshDisplay: () => void
   ) {}
@@ -39,12 +39,14 @@ export class TriggerSettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      onEditSetting.settingEl.addClass('noteMover-mobile-optimized');
+      onEditSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const controlEl = onEditSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('noteMover-mobile-toggle-control');
+        (controlEl as HTMLElement).addClass(
+          'advancedNoteMover-mobile-toggle-control'
+        );
       }
     }
 
@@ -71,12 +73,14 @@ export class TriggerSettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      periodicSetting.settingEl.addClass('noteMover-mobile-optimized');
+      periodicSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const controlEl = periodicSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('noteMover-mobile-toggle-control');
+        (controlEl as HTMLElement).addClass(
+          'advancedNoteMover-mobile-toggle-control'
+        );
       }
     }
 
@@ -106,13 +110,13 @@ export class TriggerSettingsSection {
       );
 
     if (isMobile) {
-      cacheSetting.settingEl.addClass('noteMover-mobile-optimized');
+      cacheSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const cacheControlEl = cacheSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (cacheControlEl) {
         (cacheControlEl as HTMLElement).addClass(
-          'noteMover-mobile-toggle-control'
+          'advancedNoteMover-mobile-toggle-control'
         );
       }
     }
@@ -158,17 +162,23 @@ export class TriggerSettingsSection {
 
       // Add mobile optimization classes
       if (isMobile) {
-        intervalSetting.settingEl.addClass('noteMover-mobile-optimized');
+        intervalSetting.settingEl.addClass(
+          'advancedNoteMover-mobile-optimized'
+        );
         const controlEl = intervalSetting.settingEl.querySelector(
           '.setting-item-control'
         );
         if (controlEl) {
-          (controlEl as HTMLElement).addClass('noteMover-mobile-input-control');
+          (controlEl as HTMLElement).addClass(
+            'advancedNoteMover-mobile-input-control'
+          );
         }
         const inputEl =
           intervalSetting.settingEl.querySelector('input[type="text"]');
         if (inputEl) {
-          (inputEl as HTMLElement).addClass('noteMover-mobile-text-input');
+          (inputEl as HTMLElement).addClass(
+            'advancedNoteMover-mobile-text-input'
+          );
         }
       }
     }

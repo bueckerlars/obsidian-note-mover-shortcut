@@ -1,6 +1,6 @@
 {
 	"id": "note-mover-shortcut",
-	"name": "NoteMover shortcut",
+	"name": "Advanced Note Mover",
 	"version": "1.0.0",
 	"minAppVersion": "1.5.0",
 	"description": "Quickly and easily move notes to a predefined folder. Perfect for organizing your notes.",

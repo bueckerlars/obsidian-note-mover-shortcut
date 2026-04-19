@@ -1,4 +1,4 @@
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { DragDropManager } from '../../utils/DragDropManager';
@@ -10,7 +10,7 @@ export class FilterSettingsSection {
   private advancedSuggestInstances: AdvancedSuggest[] = [];
 
   constructor(
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     private containerEl: HTMLElement,
     private refreshDisplay: () => void
   ) {}
@@ -37,19 +37,21 @@ export class FilterSettingsSection {
           this.plugin.settings.settings.filters.filter.push({ value: '' });
           await this.plugin.save_settings();
           // Update RuleManager
-          this.plugin.noteMover.updateRuleManager();
+          this.plugin.advancedNoteMover.updateRuleManager();
           this.refreshDisplay();
         })
     );
 
     // Add mobile optimization classes
     if (isMobile) {
-      addFilterSetting.settingEl.addClass('noteMover-mobile-optimized');
+      addFilterSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const controlEl = addFilterSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
+        (controlEl as HTMLElement).addClass(
+          'advancedNoteMover-mobile-button-control'
+        );
       }
     }
   }
@@ -62,9 +64,9 @@ export class FilterSettingsSection {
 
     // Create a container for filters with drag & drop
     const filtersContainer = document.createElement('div');
-    filtersContainer.className = 'noteMover-filters-container';
+    filtersContainer.className = 'advancedNoteMover-filters-container';
     if (isMobile) {
-      filtersContainer.addClass('noteMover-mobile-filters-container');
+      filtersContainer.addClass('advancedNoteMover-mobile-filters-container');
     }
     this.containerEl.appendChild(filtersContainer);
 
@@ -95,17 +97,17 @@ export class FilterSettingsSection {
               }
               await this.plugin.save_settings();
               // Update RuleManager
-              this.plugin.noteMover.updateRuleManager();
+              this.plugin.advancedNoteMover.updateRuleManager();
             });
           // @ts-ignore
-          cb.containerEl.addClass('noteMover-search');
+          cb.containerEl.addClass('advancedNoteMover-search');
         })
         .addExtraButton(btn =>
           btn.setIcon('cross').onClick(async () => {
             this.plugin.settings.settings.filters.filter.splice(index, 1);
             await this.plugin.save_settings();
             // Update RuleManager
-            this.plugin.noteMover.updateRuleManager();
+            this.plugin.advancedNoteMover.updateRuleManager();
             this.refreshDisplay();
           })
         );
@@ -116,16 +118,18 @@ export class FilterSettingsSection {
 
       // Add mobile optimization classes
       if (isMobile) {
-        s.settingEl.addClass('noteMover-mobile-filter-item');
+        s.settingEl.addClass('advancedNoteMover-mobile-filter-item');
         const controlEl = s.settingEl.querySelector('.setting-item-control');
         if (controlEl) {
           (controlEl as HTMLElement).addClass(
-            'noteMover-mobile-filter-controls'
+            'advancedNoteMover-mobile-filter-controls'
           );
         }
         const inputEl = s.settingEl.querySelector('input[type="search"]');
         if (inputEl) {
-          (inputEl as HTMLElement).addClass('noteMover-mobile-filter-input');
+          (inputEl as HTMLElement).addClass(
+            'advancedNoteMover-mobile-filter-input'
+          );
         }
       }
     });
@@ -151,24 +155,24 @@ export class FilterSettingsSection {
       },
       onSave: async () => {
         await this.plugin.save_settings();
-        this.plugin.noteMover.updateRuleManager();
+        this.plugin.advancedNoteMover.updateRuleManager();
         // Refresh display after settings are fully saved
         this.refreshDisplay();
       },
       itemSelector: '.setting-item',
-      handleSelector: '.noteMover-drag-handle',
+      handleSelector: '.advancedNoteMover-drag-handle',
     });
   }
 
   private addDragHandle(settingEl: HTMLElement, index: number): void {
     const handle = DragDropManager.createDragHandle();
     const handleContainer = document.createElement('div');
-    handleContainer.className = 'noteMover-drag-handle-container';
+    handleContainer.className = 'advancedNoteMover-drag-handle-container';
     handleContainer.appendChild(handle);
 
     // Insert handle at the beginning of the setting
     settingEl.insertBefore(handleContainer, settingEl.firstChild);
-    settingEl.classList.add('noteMover-with-drag-handle');
+    settingEl.classList.add('advancedNoteMover-with-drag-handle');
   }
 
   private reorderFilters(fromIndex: number, toIndex: number): void {

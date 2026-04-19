@@ -1,4 +1,4 @@
-import type NoteMoverShortcutPlugin from 'main';
+import type AdvancedNoteMoverPlugin from 'main';
 import { MoveFileService } from './move-file-service';
 import { PreviewService } from './preview-service';
 import { HistoryService } from './history-service';
@@ -10,7 +10,7 @@ export type PluginApplicationServices = {
 };
 
 export function createPluginApplicationServices(
-  plugin: NoteMoverShortcutPlugin
+  plugin: AdvancedNoteMoverPlugin
 ): PluginApplicationServices {
   return {
     moveFile: new MoveFileService(plugin),

@@ -1,4 +1,4 @@
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { Setting } from 'obsidian';
 import { NoticeManager } from '../../utils/NoticeManager';
 
@@ -7,7 +7,7 @@ import { NoticeManager } from '../../utils/NoticeManager';
  */
 export class PerformanceDebugSettingsSection {
   constructor(
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     private containerEl: HTMLElement,
     private refreshDisplay: () => void
   ) {}
@@ -36,7 +36,7 @@ export class PerformanceDebugSettingsSection {
     new Setting(this.containerEl)
       .setName('Enable performance debug logs')
       .setDesc(
-        'Logs timing spans to the developer console as [NoteMover perf] and records them for export. Disable when not profiling.'
+        'Logs timing spans to the developer console as [Advanced Note Mover perf] and records them for export. Disable when not profiling.'
       )
       .addToggle(toggle =>
         toggle

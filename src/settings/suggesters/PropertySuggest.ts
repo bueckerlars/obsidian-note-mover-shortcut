@@ -133,14 +133,20 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
     const propertyInfo = this.properties.get(value);
     if (propertyInfo) {
       // Create a container for the suggestion
-      const container = el.createDiv({ cls: 'noteMover-property-suggestion' });
+      const container = el.createDiv({
+        cls: 'advancedNoteMover-property-suggestion',
+      });
 
       // Property name
-      const nameEl = container.createDiv({ cls: 'noteMover-property-name' });
+      const nameEl = container.createDiv({
+        cls: 'advancedNoteMover-property-name',
+      });
       nameEl.setText(propertyInfo.name);
 
       // Property type and example
-      const metaEl = container.createDiv({ cls: 'noteMover-property-meta' });
+      const metaEl = container.createDiv({
+        cls: 'advancedNoteMover-property-meta',
+      });
       metaEl.setText(
         `${propertyInfo.type}${propertyInfo.exampleValue ? ` • ${propertyInfo.exampleValue}` : ''}`
       );

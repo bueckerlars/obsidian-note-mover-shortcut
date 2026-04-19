@@ -1,4 +1,4 @@
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { DragDropManager } from '../../utils/DragDropManager';
@@ -10,7 +10,7 @@ export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
 
   constructor(
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     private containerEl: HTMLElement,
     private refreshDisplay: () => void
   ) {}
@@ -20,7 +20,7 @@ export class RulesSettingsSection {
 
     const descUseRules = document.createDocumentFragment();
     descUseRules.append(
-      'The NoteMover will move files to the folder associated with the specified criteria.',
+      'The Advanced Note Mover will move files to the folder associated with the specified criteria.',
       document.createElement('br'),
       'Criteria can be tags, filenames, paths, content, properties, or dates. If multiple rules match, the first one will be applied.'
     );
@@ -70,9 +70,9 @@ export class RulesSettingsSection {
 
     // Create a container for rules with drag & drop
     const rulesContainer = document.createElement('div');
-    rulesContainer.className = 'noteMover-rules-v2-container';
+    rulesContainer.className = 'advancedNoteMover-rules-v2-container';
     if (isMobile) {
-      rulesContainer.addClass('noteMover-mobile-rules-container');
+      rulesContainer.addClass('advancedNoteMover-mobile-rules-container');
     }
     this.containerEl.appendChild(rulesContainer);
 
@@ -87,28 +87,28 @@ export class RulesSettingsSection {
 
       // Create custom layout container
       const customContainer = s.settingEl.createDiv({
-        cls: 'noteMover-rule-v2-custom-container',
+        cls: 'advancedNoteMover-rule-v2-custom-container',
       });
 
       // Add mobile class if on mobile
       if (isMobile) {
-        customContainer.addClass('noteMover-mobile-rule-container');
+        customContainer.addClass('advancedNoteMover-mobile-rule-container');
       }
 
       // Rule name display (left side)
       const nameEl = customContainer.createDiv({
-        cls: 'noteMover-rule-v2-name',
+        cls: 'advancedNoteMover-rule-v2-name',
       });
       nameEl.textContent = rule.name || 'Unnamed Rule';
 
       // Actions container (right side)
       const actionsContainer = customContainer.createDiv({
-        cls: 'noteMover-rule-v2-actions',
+        cls: 'advancedNoteMover-rule-v2-actions',
       });
 
       // Add mobile class if on mobile
       if (isMobile) {
-        actionsContainer.addClass('noteMover-mobile-rule-actions');
+        actionsContainer.addClass('advancedNoteMover-mobile-rule-actions');
       }
 
       // Add delete button to actions container
@@ -147,7 +147,7 @@ export class RulesSettingsSection {
               clonedRule
             );
             await this.plugin.save_settings();
-            this.plugin.noteMover.updateRuleManager();
+            this.plugin.advancedNoteMover.updateRuleManager();
             this.refreshDisplay();
           })
       );
@@ -181,7 +181,7 @@ export class RulesSettingsSection {
 
       // Add drag handle to actions container (rightmost position)
       const handleContainer = actionsContainer.createDiv({
-        cls: 'noteMover-drag-handle-container',
+        cls: 'advancedNoteMover-drag-handle-container',
       });
       const handle = DragDropManager.createDragHandle();
       handleContainer.appendChild(handle);
@@ -203,11 +203,11 @@ export class RulesSettingsSection {
       },
       onSave: async () => {
         await this.plugin.save_settings();
-        this.plugin.noteMover.updateRuleManager();
+        this.plugin.advancedNoteMover.updateRuleManager();
         this.refreshDisplay();
       },
       itemSelector: '.setting-item',
-      handleSelector: '.noteMover-drag-handle',
+      handleSelector: '.advancedNoteMover-drag-handle',
     });
   }
 

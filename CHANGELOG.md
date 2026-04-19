@@ -4,6 +4,7 @@
 
 ### Breaking
 
+- **Rebranding to "Advanced Note Mover"**: The plugin has been renamed from _NoteMover Shortcut_ to **Advanced Note Mover**. The internal plugin ID (`note-mover-shortcut`) is unchanged so existing installations and settings keep working and continue to receive updates. Public classes were renamed accordingly: `NoteMoverShortcutPlugin` → `AdvancedNoteMoverPlugin`, `NoteMoverShortcut` → `AdvancedNoteMover`, `NoteMoverShortcutSettingsTab` → `AdvancedNoteMoverSettingsTab`. CSS class prefixes changed from `noteMover-` to `advancedNoteMover-`; custom CSS snippets targeting the old prefix must be updated.
 - **Legacy Rule V1 removed**: V1 rule types, legacy settings toggles, and duplicate mobile-only settings/modal implementations were dropped. Existing V1 rules are still migrated once on load (with backup) into **Rule V2**.
 
 ### Features

@@ -1,7 +1,7 @@
 import type { App } from 'obsidian';
 import { normalizePath } from 'obsidian';
 
-const LOG_PREFIX = '[NoteMover perf]';
+const LOG_PREFIX = '[Advanced Note Mover perf]';
 
 export type PerformanceTraceEntry = {
   /** Monotonic time origin (ms) */

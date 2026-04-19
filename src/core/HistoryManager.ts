@@ -4,7 +4,7 @@ import {
   TimeFilter,
   RetentionPolicy,
 } from '../types/HistoryEntry';
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { createError, handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
 import { HISTORY_CONSTANTS } from '../config/constants';
@@ -18,7 +18,7 @@ export class HistoryManager {
   private currentBulkOperationId: string | null = null;
   private currentBulkOperationType: OperationType | null = null;
 
-  constructor(private plugin: NoteMoverShortcutPlugin) {}
+  constructor(private plugin: AdvancedNoteMoverPlugin) {}
 
   public loadHistoryFromSettings(): void {
     const historyData = this.plugin.settings.history;

@@ -1,4 +1,4 @@
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { createError, handleError } from 'src/utils/Error';
 import { NoticeManager } from 'src/utils/NoticeManager';
@@ -10,7 +10,7 @@ import { MobileUtils } from '../../utils/MobileUtils';
 
 export class ImportExportSettingsSection {
   constructor(
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     private containerEl: HTMLElement,
     private refreshDisplay: () => void
   ) {}
@@ -34,12 +34,14 @@ export class ImportExportSettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      exportSetting.settingEl.addClass('noteMover-mobile-optimized');
+      exportSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const controlEl = exportSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
+        (controlEl as HTMLElement).addClass(
+          'advancedNoteMover-mobile-button-control'
+        );
       }
     }
 
@@ -58,12 +60,14 @@ export class ImportExportSettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      importSetting.settingEl.addClass('noteMover-mobile-optimized');
+      importSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const controlEl = importSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
+        (controlEl as HTMLElement).addClass(
+          'advancedNoteMover-mobile-button-control'
+        );
       }
     }
   }
@@ -295,7 +299,7 @@ export class ImportExportSettingsSection {
         await this.plugin.save_settings();
 
         // Update RuleManager
-        this.plugin.noteMover.updateRuleManager();
+        this.plugin.advancedNoteMover.updateRuleManager();
 
         // Refresh the settings display
         this.refreshDisplay();

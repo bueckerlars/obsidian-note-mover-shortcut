@@ -16,7 +16,7 @@ export class ConfirmModal extends BaseModal {
 
   constructor(app: App, options: ConfirmModalOptions) {
     super(app, {
-      cssClass: 'noteMover-confirm-modal',
+      cssClass: 'advancedNoteMover-confirm-modal',
       size: 'small',
       ...options,
     });
@@ -35,8 +35,8 @@ export class ConfirmModal extends BaseModal {
     // Message
     const messageEl = contentEl.createEl('div', {
       cls: isMobile
-        ? 'noteMover-confirm-modal-message noteMover-confirm-modal-message-mobile'
-        : 'noteMover-confirm-modal-message',
+        ? 'advancedNoteMover-confirm-modal-message advancedNoteMover-confirm-modal-message-mobile'
+        : 'advancedNoteMover-confirm-modal-message',
     });
     messageEl.innerHTML = this.confirmOptions.message;
 

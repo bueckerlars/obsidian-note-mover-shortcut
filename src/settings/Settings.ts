@@ -1,4 +1,4 @@
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { PluginSettingTab } from 'obsidian';
 import {
   PeriodicMovementSettingsSection,
@@ -11,7 +11,7 @@ import {
 import { DebounceManager } from '../utils/DebounceManager';
 import { MobileUtils } from '../utils/MobileUtils';
 
-export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
+export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   private periodicMovementSettings: PeriodicMovementSettingsSection;
   private filterSettings: FilterSettingsSection;
   private rulesSettings: RulesSettingsSection;
@@ -20,7 +20,7 @@ export class NoteMoverShortcutSettingsTab extends PluginSettingTab {
   private performanceDebugSettings: PerformanceDebugSettingsSection;
   private debounceManager: DebounceManager;
 
-  constructor(private plugin: NoteMoverShortcutPlugin) {
+  constructor(private plugin: AdvancedNoteMoverPlugin) {
     super(plugin.app, plugin);
 
     // Initialize debounce manager

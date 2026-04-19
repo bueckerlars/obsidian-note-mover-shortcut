@@ -19,7 +19,7 @@ export interface SettingsData {
   enableRuleEvaluationCache?: boolean;
   /** When false, vault markdown list / tag / property index cache is bypassed (always fresh scans). Default true. */
   enableVaultIndexCache?: boolean;
-  /** When true, records timing spans and logs `[NoteMover perf]` to the console. */
+  /** When true, records timing spans and logs `[Advanced Note Mover perf]` to the console. */
   enablePerformanceDebug?: boolean;
 }
 

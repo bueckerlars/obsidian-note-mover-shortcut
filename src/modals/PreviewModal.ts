@@ -1,6 +1,6 @@
 import { Setting, App, TFile } from 'obsidian';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
 import { MobileUtils } from '../utils/MobileUtils';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
@@ -13,7 +13,7 @@ export class PreviewModal extends BaseModal {
 
   constructor(
     app: App,
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     movePreview: MovePreview,
     options: BaseModalOptions = {}
   ) {
@@ -35,7 +35,7 @@ export class PreviewModal extends BaseModal {
     const subtitle = `${stats.totalFiles} files analyzed • ${stats.successfulMoves.length} will be moved`;
     contentEl.createEl('p', {
       text: subtitle,
-      cls: 'noteMover-modal-subtitle',
+      cls: 'advancedNoteMover-modal-subtitle',
     });
 
     // Settings info removed - Rules and Filter are always enabled now
@@ -50,7 +50,7 @@ export class PreviewModal extends BaseModal {
     // No files message
     if (stats.totalFiles === 0) {
       contentEl.createEl('div', {
-        cls: 'noteMover-modal-empty',
+        cls: 'advancedNoteMover-modal-empty',
         text: 'No files found to analyze.',
       });
     }
@@ -67,85 +67,85 @@ export class PreviewModal extends BaseModal {
     const section = this.createSection(
       container,
       isMobile
-        ? 'noteMover-preview-section noteMover-preview-section-success noteMover-preview-section-mobile'
-        : 'noteMover-preview-section noteMover-preview-section-success'
+        ? 'advancedNoteMover-preview-section advancedNoteMover-preview-section-success advancedNoteMover-preview-section-mobile'
+        : 'advancedNoteMover-preview-section advancedNoteMover-preview-section-success'
     );
 
     const header = section.createEl('div', {
-      cls: 'noteMover-modal-section-header',
+      cls: 'advancedNoteMover-modal-section-header',
     });
     header.innerHTML = `<h3>✅ Files to be moved (${entries.length})</h3>`;
 
     const list = section.createEl('div', {
       cls: isMobile
-        ? 'noteMover-modal-list noteMover-modal-list-mobile'
-        : 'noteMover-modal-list',
+        ? 'advancedNoteMover-modal-list advancedNoteMover-modal-list-mobile'
+        : 'advancedNoteMover-modal-list',
     });
 
     entries.forEach(entry => {
       const item = list.createEl('div', {
         cls: isMobile
-          ? 'noteMover-modal-list-item noteMover-preview-item-success noteMover-preview-item-mobile'
-          : 'noteMover-modal-list-item noteMover-preview-item-success',
+          ? 'advancedNoteMover-modal-list-item advancedNoteMover-preview-item-success advancedNoteMover-preview-item-mobile'
+          : 'advancedNoteMover-modal-list-item advancedNoteMover-preview-item-success',
       });
 
       const mainInfo = item.createEl('div', {
-        cls: 'noteMover-preview-item-main',
+        cls: 'advancedNoteMover-preview-item-main',
       });
       const fileName = mainInfo.createEl('div', {
-        cls: 'noteMover-preview-item-filename',
+        cls: 'advancedNoteMover-preview-item-filename',
       });
       fileName.textContent = entry.fileName;
 
       const pathInfo = mainInfo.createEl('div', {
         cls: isMobile
-          ? 'noteMover-preview-item-paths noteMover-preview-item-paths-mobile'
-          : 'noteMover-preview-item-paths',
+          ? 'advancedNoteMover-preview-item-paths advancedNoteMover-preview-item-paths-mobile'
+          : 'advancedNoteMover-preview-item-paths',
       });
 
       if (isMobile) {
         // Mobile: Stack paths vertically
         const currentPathEl = pathInfo.createEl('div', {
-          cls: 'noteMover-preview-path-mobile noteMover-preview-path-current',
+          cls: 'advancedNoteMover-preview-path-mobile advancedNoteMover-preview-path-current',
         });
         currentPathEl.textContent = entry.currentPath;
 
         const arrowEl = pathInfo.createEl('div', {
-          cls: 'noteMover-preview-arrow-mobile',
+          cls: 'advancedNoteMover-preview-arrow-mobile',
         });
         arrowEl.textContent = '↓';
 
         const targetPathEl = pathInfo.createEl('div', {
-          cls: 'noteMover-preview-path-mobile noteMover-preview-path-target',
+          cls: 'advancedNoteMover-preview-path-mobile advancedNoteMover-preview-path-target',
         });
         targetPathEl.textContent = entry.targetPath;
       } else {
         // Desktop: Horizontal layout
         pathInfo.innerHTML = `
-          <span class="noteMover-current-path">${entry.currentPath}</span>
-          <span class="noteMover-arrow">→</span>
-          <span class="noteMover-target-path">${entry.targetPath}</span>
+          <span class="advancedNoteMover-current-path">${entry.currentPath}</span>
+          <span class="advancedNoteMover-arrow">→</span>
+          <span class="advancedNoteMover-target-path">${entry.targetPath}</span>
         `;
       }
 
       const details = item.createEl('div', {
         cls: isMobile
-          ? 'noteMover-preview-item-details noteMover-preview-item-details-mobile'
-          : 'noteMover-preview-item-details',
+          ? 'advancedNoteMover-preview-item-details advancedNoteMover-preview-item-details-mobile'
+          : 'advancedNoteMover-preview-item-details',
       });
 
       if (entry.matchedRule) {
         const rule = details.createEl('div', {
-          cls: 'noteMover-preview-item-rule',
+          cls: 'advancedNoteMover-preview-item-rule',
         });
-        rule.innerHTML = `<span class="noteMover-rule-label">Rule:</span> <code>${entry.matchedRule}</code>`;
+        rule.innerHTML = `<span class="advancedNoteMover-rule-label">Rule:</span> <code>${entry.matchedRule}</code>`;
       }
 
       if (entry.tags && entry.tags.length > 0) {
         const tags = details.createEl('div', {
-          cls: 'noteMover-preview-item-tags',
+          cls: 'advancedNoteMover-preview-item-tags',
         });
-        tags.innerHTML = `<span class="noteMover-tags-label">Tags:</span> ${entry.tags.map(tag => `<span class="noteMover-tag">${tag}</span>`).join(' ')}`;
+        tags.innerHTML = `<span class="advancedNoteMover-tags-label">Tags:</span> ${entry.tags.map(tag => `<span class="advancedNoteMover-tag">${tag}</span>`).join(' ')}`;
       }
     });
   }
@@ -156,8 +156,8 @@ export class PreviewModal extends BaseModal {
     const isMobile = MobileUtils.isMobile();
     const footer = container.createEl('div', {
       cls: isMobile
-        ? 'noteMover-modal-footer noteMover-modal-footer-mobile'
-        : 'noteMover-modal-footer',
+        ? 'advancedNoteMover-modal-footer advancedNoteMover-modal-footer-mobile'
+        : 'advancedNoteMover-modal-footer',
     });
     this.actionFooterEl = footer;
 
@@ -227,11 +227,11 @@ export class PreviewModal extends BaseModal {
     if (this.actionFooterEl) {
       this.actionFooterEl.empty();
       const status = this.actionFooterEl.createDiv({
-        cls: 'noteMover-preview-bulk-status',
+        cls: 'advancedNoteMover-preview-bulk-status',
         text: `Moving files… (${successfulEntries.length} planned)`,
       });
       const row = this.actionFooterEl.createDiv({
-        cls: 'noteMover-preview-bulk-actions',
+        cls: 'advancedNoteMover-preview-bulk-actions',
       });
       new Setting(row).addButton(btn =>
         btn.setButtonText('Stop').onClick(() => {

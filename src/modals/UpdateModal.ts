@@ -33,7 +33,7 @@ export class UpdateModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
-      title: `NoteMover updated to version ${currentVersion}!`,
+      title: `Advanced Note Mover updated to version ${currentVersion}!`,
       titleIcon: '🎉',
       cssClass: 'note-mover-update-modal',
       size: 'medium',
@@ -51,12 +51,12 @@ export class UpdateModal extends BaseModal {
     if (this.lastSeenVersion) {
       contentEl.createEl('p', {
         text: `What's new since version ${this.lastSeenVersion}?`,
-        cls: 'noteMover-modal-subtitle',
+        cls: 'advancedNoteMover-modal-subtitle',
       });
     } else {
       contentEl.createEl('p', {
         text: 'Here are the latest changes:',
-        cls: 'noteMover-modal-subtitle',
+        cls: 'advancedNoteMover-modal-subtitle',
       });
     }
 
@@ -64,14 +64,14 @@ export class UpdateModal extends BaseModal {
     const isMobile = MobileUtils.isMobile();
     const changelogContainer = contentEl.createEl('div', {
       cls: isMobile
-        ? 'noteMover-changelog-container noteMover-changelog-container-mobile'
-        : 'noteMover-changelog-container',
+        ? 'advancedNoteMover-changelog-container advancedNoteMover-changelog-container-mobile'
+        : 'advancedNoteMover-changelog-container',
     });
 
     if (this.changelogEntries.length === 0) {
       changelogContainer.createEl('p', {
         text: 'No specific changelog information available.',
-        cls: 'noteMover-no-changelog-text',
+        cls: 'advancedNoteMover-no-changelog-text',
       });
     } else {
       this.renderChangelog(changelogContainer);
@@ -80,22 +80,22 @@ export class UpdateModal extends BaseModal {
     // Footer with links and button
     const footerContainer = contentEl.createEl('div', {
       cls: isMobile
-        ? 'noteMover-modal-footer noteMover-modal-footer-mobile'
-        : 'noteMover-modal-footer',
+        ? 'advancedNoteMover-modal-footer advancedNoteMover-modal-footer-mobile'
+        : 'advancedNoteMover-modal-footer',
     });
 
     // GitHub Link
     const linkContainer = footerContainer.createEl('div', {
       cls: isMobile
-        ? 'noteMover-update-modal-links noteMover-update-modal-links-mobile'
-        : 'noteMover-update-modal-links',
+        ? 'advancedNoteMover-update-modal-links advancedNoteMover-update-modal-links-mobile'
+        : 'advancedNoteMover-update-modal-links',
     });
     const githubLink = linkContainer.createEl('a', {
       text: 'View full changelog on GitHub',
       href: 'https://github.com/bueckerlars/obsidian-note-mover-shortcut/releases',
       cls: isMobile
-        ? 'noteMover-update-modal-github-link noteMover-update-modal-github-link-mobile'
-        : 'noteMover-update-modal-github-link',
+        ? 'advancedNoteMover-update-modal-github-link advancedNoteMover-update-modal-github-link-mobile'
+        : 'advancedNoteMover-update-modal-github-link',
     });
     githubLink.setAttribute('target', '_blank');
 
@@ -155,25 +155,25 @@ export class UpdateModal extends BaseModal {
     this.changelogEntries.forEach(entry => {
       const versionContainer = container.createEl('div', {
         cls: isMobile
-          ? 'noteMover-changelog-version noteMover-changelog-version-mobile'
-          : 'noteMover-changelog-version',
+          ? 'advancedNoteMover-changelog-version advancedNoteMover-changelog-version-mobile'
+          : 'advancedNoteMover-changelog-version',
       });
 
       versionContainer.createEl('h3', {
         text: `Version ${entry.version}`,
-        cls: 'noteMover-changelog-version-title',
+        cls: 'advancedNoteMover-changelog-version-title',
       });
 
       if (entry.changes.features && entry.changes.features.length > 0) {
         const featuresSection = versionContainer.createEl('div', {
-          cls: 'noteMover-changelog-section',
+          cls: 'advancedNoteMover-changelog-section',
         });
         featuresSection.createEl('h4', {
           text: '✨ New Features',
-          cls: 'noteMover-changelog-section-title',
+          cls: 'advancedNoteMover-changelog-section-title',
         });
         const featuresList = featuresSection.createEl('ul', {
-          cls: 'noteMover-changelog-list',
+          cls: 'advancedNoteMover-changelog-list',
         });
         entry.changes.features.forEach(feature => {
           this.renderMarkdownListItem(featuresList, feature);
@@ -182,14 +182,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.improvements && entry.changes.improvements.length > 0) {
         const improvementsSection = versionContainer.createEl('div', {
-          cls: 'noteMover-changelog-section',
+          cls: 'advancedNoteMover-changelog-section',
         });
         improvementsSection.createEl('h4', {
           text: '⚡ Improvements',
-          cls: 'noteMover-changelog-section-title',
+          cls: 'advancedNoteMover-changelog-section-title',
         });
         const improvementsList = improvementsSection.createEl('ul', {
-          cls: 'noteMover-changelog-list',
+          cls: 'advancedNoteMover-changelog-list',
         });
         entry.changes.improvements.forEach(improvement => {
           this.renderMarkdownListItem(improvementsList, improvement);
@@ -198,14 +198,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.bugFixes && entry.changes.bugFixes.length > 0) {
         const bugFixesSection = versionContainer.createEl('div', {
-          cls: 'noteMover-changelog-section',
+          cls: 'advancedNoteMover-changelog-section',
         });
         bugFixesSection.createEl('h4', {
           text: '🐛 Bug Fixes',
-          cls: 'noteMover-changelog-section-title',
+          cls: 'advancedNoteMover-changelog-section-title',
         });
         const bugFixesList = bugFixesSection.createEl('ul', {
-          cls: 'noteMover-changelog-list',
+          cls: 'advancedNoteMover-changelog-list',
         });
         entry.changes.bugFixes.forEach(bugFix => {
           this.renderMarkdownListItem(bugFixesList, bugFix);
@@ -214,14 +214,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.changes && entry.changes.changes.length > 0) {
         const changesSection = versionContainer.createEl('div', {
-          cls: 'noteMover-changelog-section',
+          cls: 'advancedNoteMover-changelog-section',
         });
         changesSection.createEl('h4', {
           text: '🔄 Changes',
-          cls: 'noteMover-changelog-section-title',
+          cls: 'advancedNoteMover-changelog-section-title',
         });
         const changesList = changesSection.createEl('ul', {
-          cls: 'noteMover-changelog-list',
+          cls: 'advancedNoteMover-changelog-list',
         });
         entry.changes.changes.forEach(change => {
           this.renderMarkdownListItem(changesList, change);
@@ -230,14 +230,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.fixes && entry.changes.fixes.length > 0) {
         const fixesSection = versionContainer.createEl('div', {
-          cls: 'noteMover-changelog-section',
+          cls: 'advancedNoteMover-changelog-section',
         });
         fixesSection.createEl('h4', {
           text: '🔧 Fixes',
-          cls: 'noteMover-changelog-section-title',
+          cls: 'advancedNoteMover-changelog-section-title',
         });
         const fixesList = fixesSection.createEl('ul', {
-          cls: 'noteMover-changelog-list',
+          cls: 'advancedNoteMover-changelog-list',
         });
         entry.changes.fixes.forEach(fix => {
           this.renderMarkdownListItem(fixesList, fix);
@@ -246,14 +246,14 @@ export class UpdateModal extends BaseModal {
 
       if (entry.changes.performance && entry.changes.performance.length > 0) {
         const performanceSection = versionContainer.createEl('div', {
-          cls: 'noteMover-changelog-section',
+          cls: 'advancedNoteMover-changelog-section',
         });
         performanceSection.createEl('h4', {
           text: '⚡ Performance',
-          cls: 'noteMover-changelog-section-title',
+          cls: 'advancedNoteMover-changelog-section-title',
         });
         const performanceList = performanceSection.createEl('ul', {
-          cls: 'noteMover-changelog-list',
+          cls: 'advancedNoteMover-changelog-list',
         });
         entry.changes.performance.forEach(performance => {
           this.renderMarkdownListItem(performanceList, performance);
