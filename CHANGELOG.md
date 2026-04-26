@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.7.2...1.0.0)
+
+### Breaking
+
+- **Rebranding to "Advanced Note Mover"**: The plugin has been renamed from _NoteMover Shortcut_ to **Advanced Note Mover**. The internal plugin ID (`note-mover-shortcut`) is unchanged so existing installations and settings keep working and continue to receive updates. Public classes were renamed accordingly: `NoteMoverShortcutPlugin` → `AdvancedNoteMoverPlugin`, `NoteMoverShortcut` → `AdvancedNoteMover`, `NoteMoverShortcutSettingsTab` → `AdvancedNoteMoverSettingsTab`. CSS class prefixes changed from `noteMover-` to `advancedNoteMover-`; custom CSS snippets targeting the old prefix must be updated.
+- **Legacy Rule V1 removed**: V1 rule types, legacy settings toggles, and duplicate mobile-only settings/modal implementations were dropped. Existing V1 rules are still migrated once on load (with backup) into **Rule V2**.
+
+### Features
+
+- **Preview bulk cancel**: While executing moves from the preview modal, you can **Stop** the remaining renames; completed moves stay in history.
+
+### Improvements
+
+- **Rule evaluation cache on by default** for new installs and unset data; existing `false` stays respected.
+- **Lazy `vault.read` for filters**: If a blacklist line uses `content:`, file body is read for that evaluation path only.
+- **Regex warmup**: Rule V2 regex patterns are precompiled when rules are loaded.
+- **Bulk throughput**: Chunked vault moves and preview execution use `requestIdleCallback` when available instead of only `setTimeout(0)`.
+- **Application services**: Thin `MoveFileService`, `PreviewService`, and `HistoryService` facades on the plugin (`appServices`) for clearer layering.
+- **README**: Documented blacklist-only filters and Rule V2-first configuration (removed outdated whitelist / V1 criteria wording).
+
 ## [0.7.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.7.0...0.7.1)
 
 ### Features

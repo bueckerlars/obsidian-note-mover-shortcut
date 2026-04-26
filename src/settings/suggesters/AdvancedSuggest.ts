@@ -1,5 +1,6 @@
 import { App, AbstractInputSuggest, TFolder, TAbstractFile } from 'obsidian';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
+import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 
 export type SuggestType =
   | 'tag'
@@ -36,7 +37,8 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
 
   constructor(
     public app: App,
-    private inputEl: HTMLInputElement
+    private inputEl: HTMLInputElement,
+    private vaultIndexCache?: PluginVaultIndexCache
   ) {
     super(app, inputEl);
     this.metadataExtractor = new MetadataExtractor(app);
@@ -57,7 +59,11 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   }
 
   private loadTags(): void {
-    this.tags = this.metadataExtractor.extractAllTags();
+    if (this.vaultIndexCache) {
+      this.tags = this.vaultIndexCache.getAllTagsCached(this.app);
+    } else {
+      this.tags = this.metadataExtractor.extractAllTags();
+    }
   }
 
   private loadFolders(): void {
@@ -66,7 +72,9 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   }
 
   private loadFileNames(): void {
-    const files = this.app.vault.getMarkdownFiles();
+    const files = this.vaultIndexCache
+      ? this.vaultIndexCache.getMarkdownFilesCached(this.app)
+      : this.app.vault.getMarkdownFiles();
     this.fileNames = files.map(f => f.name);
   }
 
@@ -85,6 +93,17 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   }
 
   private loadPropertyKeysAndValues(): void {
+    if (this.vaultIndexCache) {
+      const { keys, valuesByKey } =
+        this.vaultIndexCache.getPropertyKeysAndValuesCached(this.app);
+      this.propertyKeys = new Set(keys);
+      this.propertyValues = new Map();
+      for (const [key, set] of valuesByKey) {
+        this.propertyValues.set(key, new Set(set));
+      }
+      return;
+    }
+
     const files = this.app.vault.getMarkdownFiles();
     files.forEach(file => {
       const cachedMetadata = this.app.metadataCache.getFileCache(file);

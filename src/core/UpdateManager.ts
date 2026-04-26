@@ -1,17 +1,12 @@
-import { TFile } from 'obsidian';
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { UpdateModal } from '../modals/UpdateModal';
 import { NoticeManager } from '../utils/NoticeManager';
-import { RuleMatcher } from './RuleMatcher';
-import { FileMovementService } from './FileMovementService';
-import { BaseModal } from 'src/modals/BaseModal';
-import { MetadataExtractor } from './MetadataExtractor';
 import { ChangelogEntry, CHANGELOG_ENTRIES } from '../generated/changelog';
 
 export class UpdateManager {
-  private plugin: NoteMoverShortcutPlugin;
+  private plugin: AdvancedNoteMoverPlugin;
 
-  constructor(plugin: NoteMoverShortcutPlugin) {
+  constructor(plugin: AdvancedNoteMoverPlugin) {
     this.plugin = plugin;
   }
 

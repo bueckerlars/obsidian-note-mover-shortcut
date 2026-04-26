@@ -110,17 +110,17 @@ export abstract class BaseModal extends Modal {
     if (modalContainer && this.options.size) {
       // Remove any existing size classes
       modalContainer.classList.remove(
-        'noteMover-modal-size-small',
-        'noteMover-modal-size-medium',
-        'noteMover-modal-size-large'
+        'advancedNoteMover-modal-size-small',
+        'advancedNoteMover-modal-size-medium',
+        'advancedNoteMover-modal-size-large'
       );
       // On mobile, use full-width layout regardless of size option
       if (MobileUtils.isMobile()) {
-        modalContainer.classList.add('noteMover-modal-size-mobile');
+        modalContainer.classList.add('advancedNoteMover-modal-size-mobile');
       } else {
         // Add the appropriate size class for desktop
         modalContainer.classList.add(
-          `noteMover-modal-size-${this.options.size}`
+          `advancedNoteMover-modal-size-${this.options.size}`
         );
       }
     }
@@ -136,20 +136,20 @@ export abstract class BaseModal extends Modal {
 
     if (this.options.titleIcon) {
       const titleContainer = contentEl.createEl('div', {
-        cls: 'noteMover-modal-title-container',
+        cls: 'advancedNoteMover-modal-title-container',
       });
       const titleIcon = titleContainer.createEl('span', {
-        cls: 'noteMover-modal-title-icon',
+        cls: 'advancedNoteMover-modal-title-icon',
       });
       titleIcon.innerHTML = this.options.titleIcon;
       titleContainer.createEl('h2', {
         text: this.options.title,
-        cls: 'noteMover-modal-title',
+        cls: 'advancedNoteMover-modal-title',
       });
     } else {
       contentEl.createEl('h2', {
         text: this.options.title,
-        cls: 'noteMover-modal-title',
+        cls: 'advancedNoteMover-modal-title',
       });
     }
   }
@@ -177,7 +177,7 @@ export abstract class BaseModal extends Modal {
    */
   protected createButtonContainer(
     container: HTMLElement,
-    cssClass = 'noteMover-modal-button-container'
+    cssClass = 'advancedNoteMover-modal-button-container'
   ): HTMLElement {
     return container.createEl('div', { cls: cssClass });
   }
@@ -211,7 +211,7 @@ export abstract class BaseModal extends Modal {
    */
   protected createSection(
     container: HTMLElement,
-    cssClass = 'noteMover-modal-section'
+    cssClass = 'advancedNoteMover-modal-section'
   ): HTMLElement {
     return container.createEl('div', { cls: cssClass });
   }

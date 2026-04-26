@@ -1,90 +1,106 @@
 /* ===== SETTINGS STYLES ===== */
 
+.advancedNoteMover-settings-hint {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
 /* Search Input Styles */
-.noteMover-search {
+.advancedNoteMover-search {
   width: calc(100% - 20px);
 }
 
 /* ===== COMMON MODAL STYLES ===== */
 
+/* Consistent vertical rhythm for plugin modals */
+.note-mover-preview-modal,
+.note-mover-update-modal,
+.note-mover-history-modal,
+.advancedNoteMover-confirm-modal {
+  padding: 20px 0 20px 0;
+  box-sizing: border-box;
+}
+
 /* Modal Size Classes */
-.noteMover-modal-size-small {
+.advancedNoteMover-modal-size-small {
   width: 400px !important;
   min-width: 350px !important;
 }
 
-.noteMover-modal-size-medium {
+.advancedNoteMover-modal-size-medium {
   min-width: 600px !important;
   width: 800px !important;
   max-width: 95vw !important;
 }
 
-.noteMover-modal-size-large {
+.advancedNoteMover-modal-size-large {
   min-width: 700px !important;
   width: 900px !important;
   max-width: 95vw !important;
 }
 
 /* Common Modal Title Styles */
-.noteMover-modal-title-container {
+.advancedNoteMover-modal-title-container {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
 }
 
-.noteMover-modal-title-icon {
+.advancedNoteMover-modal-title-icon {
   font-size: 2em;
   line-height: 1;
 }
 
-.noteMover-modal-title {
+.advancedNoteMover-modal-title {
   margin: 0;
   font-size: 1.6em;
   font-weight: bold;
   color: var(--text-normal);
 }
 
-.noteMover-modal-subtitle {
+.advancedNoteMover-modal-subtitle {
   margin: 0 0 24px 0;
   color: var(--text-muted);
   font-size: 1.1em;
 }
 
 /* Common Button Container Styles */
-.noteMover-modal-button-container {
+.advancedNoteMover-modal-button-container {
   display: flex;
   justify-content: center;
   gap: 16px;
   align-items: center;
 }
 
-.noteMover-modal-button-container .setting-item {
+.advancedNoteMover-modal-button-container .setting-item {
   border: none !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-.noteMover-modal-button-container .setting-item-control {
+.advancedNoteMover-modal-button-container .setting-item-control {
   margin: 0 !important;
 }
 
 /* Common Section Styles */
-.noteMover-modal-section {
+.advancedNoteMover-modal-section {
   margin-bottom: 24px;
 }
 
-.noteMover-modal-section:last-child {
+.advancedNoteMover-modal-section:last-child {
   margin-bottom: 16px;
 }
 
-.noteMover-modal-section-header {
+.advancedNoteMover-modal-section-header {
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.noteMover-modal-section-header h3 {
+.advancedNoteMover-modal-section-header h3 {
   margin: 0;
   font-size: 1.2em;
   font-weight: 600;
@@ -94,7 +110,7 @@
 }
 
 /* Common Footer Styles */
-.noteMover-modal-footer {
+.advancedNoteMover-modal-footer {
   display: flex;
   justify-content: center;
   border-top: 1px solid var(--background-modifier-border);
@@ -103,28 +119,28 @@
 }
 
 /* Update Modal Footer - Centered links, right-aligned button */
-.note-mover-update-modal .noteMover-modal-footer {
+.note-mover-update-modal .advancedNoteMover-modal-footer {
   justify-content: space-between;
   align-items: center;
 }
 
-.note-mover-update-modal .noteMover-update-modal-links {
+.note-mover-update-modal .advancedNoteMover-update-modal-links {
   flex: 1;
   text-align: center;
 }
 
-.note-mover-update-modal .noteMover-modal-button-container {
+.note-mover-update-modal .advancedNoteMover-modal-button-container {
   flex-shrink: 0;
 }
 
 /* Common List Styles */
-.noteMover-modal-list {
+.advancedNoteMover-modal-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.noteMover-modal-list-item {
+.advancedNoteMover-modal-list-item {
   padding: 16px;
   border-radius: 6px;
   border: 1px solid var(--background-modifier-border);
@@ -132,7 +148,7 @@
 }
 
 /* Common Empty State Styles */
-.noteMover-modal-empty {
+.advancedNoteMover-modal-empty {
   text-align: center;
   padding: 48px 24px;
   color: var(--text-muted);
@@ -143,7 +159,7 @@
 }
 
 /* Common Info Box Styles */
-.noteMover-modal-info-box {
+.advancedNoteMover-modal-info-box {
   margin-bottom: 20px;
   padding: 12px 16px;
   background: var(--background-secondary);
@@ -151,49 +167,44 @@
   border: 1px solid var(--background-modifier-border);
 }
 
-.noteMover-modal-info-row {
+.advancedNoteMover-modal-info-row {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
   font-size: 0.9em;
-  color: var(--text-muted);
+  color: var(--text-normal);
+  opacity: 0.8;
 }
 
-.noteMover-modal-info-row span {
+.advancedNoteMover-modal-info-row span {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.noteMover-modal-info-row code {
+.advancedNoteMover-modal-info-row code {
   background: var(--background-primary);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 0.85em;
 }
 
-/* Verlaufshistorie Modal */
-.note-mover-history-modal {
-  padding: 32px 0 20px 0;
-  box-sizing: border-box;
-}
-
 /* Time Filter Container */
-.noteMover-time-filter-container {
+.advancedNoteMover-time-filter-container {
   margin-bottom: 20px;
   padding: 0;
   background: none;
   border: none;
 }
 
-.noteMover-time-filter-container .setting-item {
+.advancedNoteMover-time-filter-container .setting-item {
   margin-bottom: 0;
   border: none !important;
   box-shadow: none !important;
   background: none !important;
 }
 
-.noteMover-time-filter-container .setting-item-name {
+.advancedNoteMover-time-filter-container .setting-item-name {
   font-weight: 600;
   color: var(--text-normal);
   display: flex;
@@ -201,7 +212,7 @@
   height: 100%;
 }
 
-.noteMover-time-filter-container .setting-item-control {
+.advancedNoteMover-time-filter-container .setting-item-control {
   display: flex;
   align-items: center;
   height: 100%;
@@ -209,16 +220,16 @@
 }
 
 /* Retention Policy Settings - Inline layout */
-.setting-item-control .noteMover-retention-value-input {
+.setting-item-control .advancedNoteMover-retention-value-input {
   width: 80px !important;
   margin-right: 8px !important;
 }
 
-.setting-item-control .noteMover-retention-unit-dropdown {
+.setting-item-control .advancedNoteMover-retention-unit-dropdown {
   width: 100px !important;
 }
 
-.noteMover-history-list {
+.advancedNoteMover-history-list {
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -227,12 +238,12 @@
   padding: 0;
 }
 
-.noteMover-history-entry:first-child {
+.advancedNoteMover-history-entry:first-child {
   margin-top: 0;
   border-top: none;
 }
 
-.noteMover-history-entry {
+.advancedNoteMover-history-entry {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -244,11 +255,11 @@
   gap: 16px;
 }
 
-.noteMover-history-entry:last-child {
+.advancedNoteMover-history-entry:last-child {
   border-bottom: none;
 }
 
-.noteMover-history-entry-content {
+.advancedNoteMover-history-entry-content {
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
@@ -256,7 +267,7 @@
   overflow: hidden;
 }
 
-.noteMover-history-entry-info {
+.advancedNoteMover-history-entry-info {
   font-weight: 600;
   font-size: 1em;
   color: var(--text-normal);
@@ -266,8 +277,9 @@
   white-space: nowrap;
 }
 
-.noteMover-history-entry-paths {
-  color: var(--text-muted);
+.advancedNoteMover-history-entry-paths {
+  color: var(--text-normal);
+  opacity: 0.78;
   font-size: 0.92em;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -283,7 +295,7 @@
 }
 
 /* Bulk Operation Styles */
-.noteMover-history-entry.noteMover-bulk-operation {
+.advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 8px;
@@ -294,28 +306,28 @@
   gap: 12px;
 }
 
-.noteMover-history-entry.noteMover-single-operation {
+.advancedNoteMover-history-entry.advancedNoteMover-single-operation {
   border-left: 3px solid var(--interactive-accent);
 }
 
-.noteMover-bulk-header {
+.advancedNoteMover-bulk-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
 }
 
-.noteMover-bulk-operation-info {
+.advancedNoteMover-bulk-operation-info {
   font-weight: 600;
   font-size: 1.1em;
   color: var(--text-normal);
 }
 
-.noteMover-bulk-details {
+.advancedNoteMover-bulk-details {
   margin-top: 8px;
 }
 
-.noteMover-bulk-details summary {
+.advancedNoteMover-bulk-details summary {
   cursor: pointer;
   color: var(--text-muted);
   font-size: 0.9em;
@@ -323,11 +335,11 @@
   user-select: none;
 }
 
-.noteMover-bulk-details summary:hover {
+.advancedNoteMover-bulk-details summary:hover {
   color: var(--text-normal);
 }
 
-.noteMover-bulk-files-list {
+.advancedNoteMover-bulk-files-list {
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -336,20 +348,14 @@
 }
 
 /* Bulk file entries use the same styling as regular history entries */
-.noteMover-history-entry.noteMover-bulk-file-entry {
+.advancedNoteMover-history-entry.advancedNoteMover-bulk-file-entry {
   background: var(--background-primary);
   border-left: 2px solid var(--background-modifier-border);
   margin-bottom: 0;
   border-bottom: 1px solid var(--background-modifier-border-hover);
 }
 
-/* Update Modal Styles */
-.note-mover-update-modal {
-  padding: 32px 0 20px 0;
-  box-sizing: border-box;
-}
-
-.noteMover-changelog-container {
+.advancedNoteMover-changelog-container {
   max-height: 400px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
@@ -359,15 +365,15 @@
   background: var(--background-secondary);
 }
 
-.noteMover-changelog-version {
+.advancedNoteMover-changelog-version {
   margin-bottom: 24px;
 }
 
-.noteMover-changelog-version:last-child {
+.advancedNoteMover-changelog-version:last-child {
   margin-bottom: 0;
 }
 
-.noteMover-changelog-version-title {
+.advancedNoteMover-changelog-version-title {
   margin: 0 0 12px 0;
   font-size: 1.3em;
   font-weight: bold;
@@ -376,104 +382,102 @@
   padding-bottom: 6px;
 }
 
-.noteMover-changelog-section {
+.advancedNoteMover-changelog-section {
   margin-bottom: 16px;
 }
 
-.noteMover-changelog-section:last-child {
+.advancedNoteMover-changelog-section:last-child {
   margin-bottom: 0;
 }
 
-.noteMover-changelog-section-title {
+.advancedNoteMover-changelog-section-title {
   margin: 0 0 8px 0;
   font-size: 1em;
   font-weight: 600;
   color: var(--text-normal);
 }
 
-.noteMover-changelog-list {
+.advancedNoteMover-changelog-list {
   margin: 0;
   padding-left: 20px;
   color: var(--text-normal);
 }
 
-.noteMover-changelog-list li {
+.advancedNoteMover-changelog-list li {
   margin-bottom: 4px;
 }
 
-.noteMover-changelog-list li:last-child {
+.advancedNoteMover-changelog-list li:last-child {
   margin-bottom: 0;
 }
 
-.noteMover-update-modal-links {
+.advancedNoteMover-update-modal-links {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.noteMover-update-modal-github-link {
+.advancedNoteMover-update-modal-github-link {
   color: var(--text-muted);
   text-decoration: none;
   font-size: 0.9em;
   transition: color 0.2s ease;
 }
 
-.noteMover-update-modal-github-link:hover {
+.advancedNoteMover-update-modal-github-link:hover {
   color: var(--text-accent);
   text-decoration: underline;
 }
 
-.noteMover-no-changelog-text {
+.advancedNoteMover-no-changelog-text {
   color: var(--text-muted);
   font-style: italic;
   text-align: center;
   margin: 24px 0;
 }
 
-/* Preview Modal Styles */
-.note-mover-preview-modal {
-  padding: 16px 0 20px 0;
-  box-sizing: border-box;
-}
-
-.noteMover-preview-section {
+.advancedNoteMover-preview-section {
   margin-bottom: 24px;
 }
 
-.noteMover-preview-section:last-child {
+.advancedNoteMover-preview-section:last-child {
   margin-bottom: 16px;
 }
 
-.noteMover-preview-section-success .noteMover-modal-section-header h3 {
+.advancedNoteMover-preview-section-success
+  .advancedNoteMover-modal-section-header
+  h3 {
   color: var(--text-success);
 }
 
-.noteMover-preview-section-blocked .noteMover-modal-section-header h3 {
+.advancedNoteMover-preview-section-blocked
+  .advancedNoteMover-modal-section-header
+  h3 {
   color: var(--text-error);
 }
 
-.noteMover-modal-list-item.noteMover-preview-item-success {
+.advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success {
   border-left: 3px solid var(--text-success);
   background: var(--background-primary-alt);
 }
 
-.noteMover-modal-list-item.noteMover-preview-item-blocked {
+.advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-blocked {
   border-left: 3px solid var(--text-error);
   background: var(--background-primary-alt);
 }
 
-.noteMover-preview-item-main {
+.advancedNoteMover-preview-item-main {
   margin-bottom: 8px;
 }
 
-.noteMover-preview-item-filename {
+.advancedNoteMover-preview-item-filename {
   font-weight: 600;
   font-size: 1em;
   color: var(--text-normal);
   margin-bottom: 4px;
 }
 
-.noteMover-preview-item-paths {
+.advancedNoteMover-preview-item-paths {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -481,47 +485,48 @@
   font-size: 0.85em;
 }
 
-.noteMover-current-path {
-  color: var(--text-muted);
+.advancedNoteMover-current-path {
+  color: var(--text-normal);
+  opacity: 0.78;
 }
 
-.noteMover-arrow {
+.advancedNoteMover-arrow {
   color: var(--text-accent);
   font-weight: bold;
 }
 
-.noteMover-target-path {
+.advancedNoteMover-target-path {
   color: var(--text-success);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.noteMover-preview-item-details {
+.advancedNoteMover-preview-item-details {
   display: flex;
   flex-direction: column;
   gap: 4px;
   font-size: 0.9em;
 }
 
-.noteMover-preview-item-rule,
-.noteMover-preview-item-block-reason,
-.noteMover-preview-item-blocking-filter,
-.noteMover-preview-item-tags {
+.advancedNoteMover-preview-item-rule,
+.advancedNoteMover-preview-item-block-reason,
+.advancedNoteMover-preview-item-blocking-filter,
+.advancedNoteMover-preview-item-tags {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.noteMover-rule-label,
-.noteMover-block-reason-label,
-.noteMover-filter-label,
-.noteMover-tags-label {
+.advancedNoteMover-rule-label,
+.advancedNoteMover-block-reason-label,
+.advancedNoteMover-filter-label,
+.advancedNoteMover-tags-label {
   font-weight: 500;
   color: var(--text-muted);
   min-width: 60px;
 }
 
-.noteMover-preview-item-rule code,
-.noteMover-preview-item-blocking-filter code {
+.advancedNoteMover-preview-item-rule code,
+.advancedNoteMover-preview-item-blocking-filter code {
   background: var(--background-secondary);
   padding: 2px 6px;
   border-radius: 3px;
@@ -529,11 +534,11 @@
   color: var(--text-normal);
 }
 
-.noteMover-preview-item-block-reason {
+.advancedNoteMover-preview-item-block-reason {
   color: var(--text-error);
 }
 
-.noteMover-tag {
+.advancedNoteMover-tag {
   display: inline-block;
   background: var(--background-modifier-border);
   color: var(--text-muted);
@@ -544,18 +549,18 @@
 }
 
 /* Confirm Modal Styles */
-.noteMover-confirm-modal {
+.advancedNoteMover-confirm-modal {
   padding: 24px 0 16px 0;
   box-sizing: border-box;
   text-align: center;
 }
 
-.noteMover-confirm-modal .noteMover-modal-title {
+.advancedNoteMover-confirm-modal .advancedNoteMover-modal-title {
   text-align: center;
   font-size: 1.4em;
 }
 
-.noteMover-confirm-modal-message {
+.advancedNoteMover-confirm-modal-message {
   margin: 0 0 24px 0;
   color: var(--text-muted);
   font-size: 1em;
@@ -563,50 +568,21 @@
   text-align: center;
 }
 
-.noteMover-confirm-modal .noteMover-modal-button-container {
+.advancedNoteMover-confirm-modal .advancedNoteMover-modal-button-container {
   border-top: 1px solid var(--background-modifier-border);
   padding-top: 16px;
 }
 
-.noteMover-confirm-modal .noteMover-modal-button-container button {
+.advancedNoteMover-confirm-modal
+  .advancedNoteMover-modal-button-container
+  button {
   min-width: 80px;
-}
-
-/* Legacy Migration Modal */
-.noteMover-legacy-migration-modal {
-  padding: 16px 24px 24px 24px;
-  box-sizing: border-box;
-}
-
-.noteMover-legacy-migration-modal .noteMover-legacy-migration-message {
-  margin: 0 0 20px 0;
-  padding: 0;
-  color: var(--text-normal);
-  font-size: 0.95em;
-  line-height: 1.5;
-}
-
-.noteMover-legacy-migration-modal .noteMover-legacy-migration-message p {
-  margin: 0 0 10px 0;
-}
-
-.noteMover-legacy-migration-modal .noteMover-legacy-migration-message p:last-child {
-  margin-bottom: 0;
-}
-
-.noteMover-legacy-migration-modal .noteMover-modal-button-container {
-  padding-top: 16px;
-  margin-top: 0;
-}
-
-.noteMover-legacy-migration-modal .setting-item {
-  padding-left: 0;
 }
 
 /* ===== DRAG & DROP STYLES ===== */
 
 /* Drag Handle Styles */
-.noteMover-drag-handle {
+.advancedNoteMover-drag-handle {
   cursor: grab;
   opacity: 0.6;
   transition: opacity 0.2s ease;
@@ -618,18 +594,23 @@
   justify-content: center;
 }
 
-.noteMover-drag-handle:hover {
+.advancedNoteMover-drag-handle:hover {
   opacity: 1;
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.noteMover-drag-handle:active {
+.advancedNoteMover-drag-handle:active {
   cursor: grabbing;
 }
 
+.advancedNoteMover-drag-handle:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 /* Dragging State Styles */
-.setting-item.noteMover-dragging {
+.setting-item.advancedNoteMover-dragging {
   opacity: 0.5;
   transform: rotate(1deg);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -637,21 +618,21 @@
   position: relative;
 }
 
-.setting-item.noteMover-drag-over {
+.setting-item.advancedNoteMover-drag-over {
   border-top: 2px solid var(--interactive-accent) !important;
   background: var(--background-modifier-hover) !important;
 }
 
-.setting-item.noteMover-drag-over-top {
+.setting-item.advancedNoteMover-drag-over-top {
   border-top: 2px solid var(--interactive-accent) !important;
 }
 
-.setting-item.noteMover-drag-over-bottom {
+.setting-item.advancedNoteMover-drag-over-bottom {
   border-bottom: 2px solid var(--interactive-accent) !important;
 }
 
 /* Drag Handle Container */
-.noteMover-drag-handle-container {
+.advancedNoteMover-drag-handle-container {
   display: flex;
   align-items: center;
   margin-right: 4px;
@@ -659,35 +640,36 @@
 }
 
 /* Setting Item with Drag Handle */
-.setting-item.noteMover-with-drag-handle {
+.setting-item.advancedNoteMover-with-drag-handle {
   display: flex;
   align-items: center;
 }
 
-.setting-item.noteMover-with-drag-handle .setting-item-info {
+.setting-item.advancedNoteMover-with-drag-handle .setting-item-info {
   flex: 1;
 }
 
-.setting-item.noteMover-with-drag-handle .setting-item-control {
+.setting-item.advancedNoteMover-with-drag-handle .setting-item-control {
   flex-shrink: 0;
 }
 
 /* ===== RULE V2 STYLES ===== */
 
-.noteMover-rules-v2-container .setting-item {
+.advancedNoteMover-rules-v2-container .setting-item {
   padding: 0;
 }
 
-.noteMover-rule-v2-custom-container {
+.advancedNoteMover-rule-v2-custom-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   gap: 16px;
-  padding: 8px 0;
+  padding: 8px 12px;
+  box-sizing: border-box;
 }
 
-.noteMover-rule-v2-name {
+.advancedNoteMover-rule-v2-name {
   flex: 1;
   padding: 0;
   font-weight: 500;
@@ -698,48 +680,50 @@
   min-width: 0;
 }
 
-.noteMover-rule-v2-actions {
+.advancedNoteMover-rule-v2-actions {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
 }
 
-.noteMover-rule-v2-actions .setting-item-control {
+.advancedNoteMover-rule-v2-actions .setting-item-control {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.noteMover-rule-v2-actions .noteMover-drag-handle-container {
+.advancedNoteMover-rule-v2-actions .advancedNoteMover-drag-handle-container {
   margin-left: 4px;
 }
 
 /* ===== RULE EDITOR MODAL STYLES ===== */
 
 /* Rule Editor - Full width inputs */
-.noteMover-rule-editor-modal .setting-item-control {
+.advancedNoteMover-rule-editor-modal .setting-item-control {
   flex: 1;
   margin-left: 0;
 }
 
-.noteMover-rule-editor-modal .setting-item-control input[type='text'],
-.noteMover-rule-editor-modal .setting-item-control .search-input-container {
+.advancedNoteMover-rule-editor-modal .setting-item-control input[type='text'],
+.advancedNoteMover-rule-editor-modal
+  .setting-item-control
+  .search-input-container {
   width: 100%;
 }
 
-.noteMover-rule-editor-separator {
+.advancedNoteMover-rule-editor-separator {
   margin: 20px 0;
   border: none;
   border-top: 1px solid var(--background-modifier-border);
 }
 
-.noteMover-rule-aggregation-buttons {
+.advancedNoteMover-rule-aggregation-buttons {
   display: flex;
   gap: 8px;
 }
 
-.noteMover-rule-aggregation-button {
+.advancedNoteMover-rule-aggregation-button {
   padding: 6px 16px;
   border: 1px solid var(--background-modifier-border);
   background: var(--background-primary);
@@ -749,34 +733,39 @@
   transition: all 0.2s ease;
 }
 
-.noteMover-rule-aggregation-button:hover {
+.advancedNoteMover-rule-aggregation-button:hover {
   background: var(--background-modifier-hover);
 }
 
-.noteMover-rule-aggregation-button.is-active {
+.advancedNoteMover-rule-aggregation-button.is-active {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   border-color: var(--interactive-accent);
 }
 
-.noteMover-rule-conditions-section {
+.advancedNoteMover-rule-aggregation-button:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.advancedNoteMover-rule-conditions-section {
   margin: 16px 0;
 }
 
-.noteMover-rule-conditions-title {
+.advancedNoteMover-rule-conditions-title {
   margin: 0 0 12px 0;
   font-size: 1.1em;
   font-weight: 600;
 }
 
-.noteMover-rule-triggers-container {
+.advancedNoteMover-rule-triggers-container {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-bottom: 12px;
 }
 
-.noteMover-rule-trigger-row {
+.advancedNoteMover-rule-trigger-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -789,23 +778,23 @@
     transform 0.2s ease;
 }
 
-.noteMover-rule-trigger-row.noteMover-dragging {
+.advancedNoteMover-rule-trigger-row.advancedNoteMover-dragging {
   opacity: 0.5;
 }
 
-.noteMover-rule-trigger-row.noteMover-drag-over-top {
+.advancedNoteMover-rule-trigger-row.advancedNoteMover-drag-over-top {
   border-top: 2px solid var(--interactive-accent);
 }
 
-.noteMover-rule-trigger-row.noteMover-drag-over-bottom {
+.advancedNoteMover-rule-trigger-row.advancedNoteMover-drag-over-bottom {
   border-bottom: 2px solid var(--interactive-accent);
 }
 
-.noteMover-rule-trigger-row .noteMover-drag-handle-container {
+.advancedNoteMover-rule-trigger-row .advancedNoteMover-drag-handle-container {
   flex-shrink: 0;
 }
 
-.noteMover-rule-trigger-delete-btn {
+.advancedNoteMover-rule-trigger-delete-btn {
   flex-shrink: 0;
   padding: 4px;
   cursor: pointer;
@@ -819,30 +808,41 @@
   justify-content: center;
 }
 
-.noteMover-rule-trigger-delete-btn:hover {
+.advancedNoteMover-rule-trigger-delete-btn:hover {
   color: var(--text-error);
   background: var(--background-modifier-hover);
 }
 
-.noteMover-rule-trigger-delete-btn svg {
+.advancedNoteMover-rule-trigger-delete-btn:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.advancedNoteMover-rule-trigger-delete-btn svg {
   flex-shrink: 0;
 }
 
-.noteMover-rule-criteria-type,
-.noteMover-rule-rule-type {
+.advancedNoteMover-rule-criteria-type,
+.advancedNoteMover-rule-rule-type {
   padding: 6px 8px;
   min-width: 150px;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.noteMover-rule-criteria-type:focus,
-.noteMover-rule-rule-type:focus {
+.advancedNoteMover-rule-criteria-type:focus,
+.advancedNoteMover-rule-rule-type:focus {
   outline: none;
+}
+
+.advancedNoteMover-rule-criteria-type:focus-visible,
+.advancedNoteMover-rule-rule-type:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
   border-color: var(--interactive-accent);
 }
 
-.noteMover-rule-trigger-value {
+.advancedNoteMover-rule-trigger-value {
   flex: 1;
   padding: 6px 8px;
   background: transparent;
@@ -851,17 +851,22 @@
   color: var(--text-normal);
 }
 
-.noteMover-rule-trigger-value:hover {
+.advancedNoteMover-rule-trigger-value:hover {
   background: var(--background-modifier-hover);
 }
 
-.noteMover-rule-trigger-value:focus {
+.advancedNoteMover-rule-trigger-value:focus {
   outline: none;
+}
+
+.advancedNoteMover-rule-trigger-value:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
   border-color: var(--interactive-accent);
   background: var(--background-primary);
 }
 
-.noteMover-rule-editor-footer {
+.advancedNoteMover-rule-editor-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -870,57 +875,62 @@
   border-top: 1px solid var(--background-modifier-border);
 }
 
-.noteMover-rule-editor-footer-left,
-.noteMover-rule-editor-footer-right {
+.advancedNoteMover-rule-editor-footer-left,
+.advancedNoteMover-rule-editor-footer-right {
   display: flex;
   gap: 8px;
 }
 
 /* Property Suggestions */
-.noteMover-property-suggestion {
+.advancedNoteMover-property-suggestion {
   display: flex;
   flex-direction: column;
   padding: 4px 8px;
 }
 
-.noteMover-property-name {
+.advancedNoteMover-property-name {
   font-weight: 500;
   color: var(--text-normal);
 }
 
-.noteMover-property-meta {
+.advancedNoteMover-property-meta {
   font-size: 0.85em;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
 /* Property Value Suggestions */
-.noteMover-property-value-suggestion {
+.advancedNoteMover-property-value-suggestion {
   display: flex;
   flex-direction: column;
   padding: 4px 8px;
 }
 
-.noteMover-property-value-text {
+.advancedNoteMover-property-value-text {
   font-weight: 500;
   color: var(--text-normal);
 }
 
-.noteMover-property-value-type {
+.advancedNoteMover-property-value-type {
   font-size: 0.85em;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
 /* Property Name Field - Expand when no value field */
-.noteMover-rule-property-name {
+.advancedNoteMover-rule-property-name {
   flex: 1;
   min-width: 0;
 }
 
+.advancedNoteMover-rule-property-name:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 /* When no value field is present, property name should fill available space */
-.noteMover-rule-trigger-row.noteMover-no-value-field
-  .noteMover-rule-property-name {
+.advancedNoteMover-rule-trigger-row.advancedNoteMover-no-value-field
+  .advancedNoteMover-rule-property-name {
   flex: 1;
   width: 100%;
 }
@@ -928,14 +938,14 @@
 /* ===== NOTICE STYLES ===== */
 
 /* Undo Button Styles */
-.noteMover-notice-undo-button {
+.advancedNoteMover-notice-undo-button {
   margin-left: 10px;
 }
 
 /* ===== MOBILE RESPONSIVE STYLES ===== */
 
 /* Mobile-First Settings Container */
-.noteMover-mobile-settings-container {
+.advancedNoteMover-mobile-settings-container {
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -953,11 +963,11 @@
 }
 
 /* Ensure settings container doesn't interfere with scrolling */
-.is-mobile .vertical-tab-content .noteMover-mobile-settings-container {
+.is-mobile .vertical-tab-content .advancedNoteMover-mobile-settings-container {
   min-height: min-content;
 }
 
-.noteMover-mobile-section-heading {
+.advancedNoteMover-mobile-section-heading {
   font-size: 1.2em;
   font-weight: 600;
   margin-bottom: 12px;
@@ -966,14 +976,7 @@
 }
 
 /* Mobile Section Description */
-.noteMover-mobile-section-description {
-  font-size: 0.9em;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-
-.noteMover-mobile-section-description {
+.advancedNoteMover-mobile-section-description {
   font-size: 0.9em;
   color: var(--text-muted);
   margin-bottom: 12px;
@@ -981,7 +984,7 @@
 }
 
 /* Mobile Section Container */
-.noteMover-mobile-section-container {
+.advancedNoteMover-mobile-section-container {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -989,7 +992,7 @@
 }
 
 /* Mobile Setting Cards */
-.noteMover-mobile-setting-card {
+.advancedNoteMover-mobile-setting-card {
   padding: 12px;
   margin-bottom: 8px;
   border-radius: 8px;
@@ -1000,7 +1003,7 @@
   position: relative;
 }
 
-.noteMover-mobile-setting-header {
+.advancedNoteMover-mobile-setting-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1009,7 +1012,7 @@
   box-sizing: border-box;
 }
 
-.noteMover-mobile-setting-title {
+.advancedNoteMover-mobile-setting-title {
   font-weight: 600;
   font-size: 1em;
   flex: 1;
@@ -1017,7 +1020,7 @@
   margin-right: 12px;
 }
 
-.noteMover-mobile-setting-description {
+.advancedNoteMover-mobile-setting-description {
   font-size: 0.85em;
   color: var(--text-muted);
   margin-top: 4px;
@@ -1025,34 +1028,37 @@
   line-height: 1.4;
 }
 
-.noteMover-mobile-setting-control {
+.advancedNoteMover-mobile-setting-control {
   width: 100%;
   margin-top: 8px;
 }
 
 /* Mobile Toggle Settings */
-.noteMover-mobile-toggle-setting .noteMover-mobile-setting-header {
+.advancedNoteMover-mobile-toggle-setting
+  .advancedNoteMover-mobile-setting-header {
   align-items: center;
   margin-bottom: 0;
 }
 
-.noteMover-mobile-toggle-setting .noteMover-mobile-setting-description {
+.advancedNoteMover-mobile-toggle-setting
+  .advancedNoteMover-mobile-setting-description {
   margin-top: 4px;
   margin-bottom: 0;
 }
 
-.noteMover-mobile-toggle-setting .noteMover-mobile-setting-control {
+.advancedNoteMover-mobile-toggle-setting
+  .advancedNoteMover-mobile-setting-control {
   display: none;
 }
 
-.noteMover-mobile-toggle-container {
+.advancedNoteMover-mobile-toggle-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 48px;
 }
 
-.noteMover-mobile-toggle-switch {
+.advancedNoteMover-mobile-toggle-switch {
   position: relative;
   width: 52px;
   height: 32px;
@@ -1062,14 +1068,14 @@
   z-index: 1;
 }
 
-.noteMover-mobile-toggle-input {
+.advancedNoteMover-mobile-toggle-input {
   opacity: 0;
   width: 0;
   height: 0;
   position: absolute;
 }
 
-.noteMover-mobile-toggle-slider {
+.advancedNoteMover-mobile-toggle-slider {
   position: absolute;
   top: 0;
   left: 0;
@@ -1080,7 +1086,7 @@
   transition: 0.3s;
 }
 
-.noteMover-mobile-toggle-slider:before {
+.advancedNoteMover-mobile-toggle-slider:before {
   position: absolute;
   content: '';
   height: 24px;
@@ -1092,17 +1098,18 @@
   transition: 0.3s;
 }
 
-.noteMover-mobile-toggle-switch.is-active .noteMover-mobile-toggle-slider {
+.advancedNoteMover-mobile-toggle-switch.is-active
+  .advancedNoteMover-mobile-toggle-slider {
   background-color: var(--interactive-accent);
 }
 
-.noteMover-mobile-toggle-switch.is-active
-  .noteMover-mobile-toggle-slider:before {
+.advancedNoteMover-mobile-toggle-switch.is-active
+  .advancedNoteMover-mobile-toggle-slider:before {
   transform: translateX(20px);
 }
 
 /* Mobile Input Settings */
-.noteMover-mobile-input-setting .noteMover-mobile-text-input {
+.advancedNoteMover-mobile-input-setting .advancedNoteMover-mobile-text-input {
   width: 100%;
   min-height: 48px;
   padding: 12px;
@@ -1114,7 +1121,7 @@
   box-sizing: border-box;
 }
 
-.noteMover-mobile-input-label {
+.advancedNoteMover-mobile-input-label {
   font-weight: 500;
   font-size: 0.9em;
   color: var(--text-normal);
@@ -1122,7 +1129,7 @@
 }
 
 /* Mobile Filter Cards */
-.noteMover-mobile-filter-card {
+.advancedNoteMover-mobile-filter-card {
   padding: 12px;
   margin-bottom: 8px;
   border: 1px solid var(--background-modifier-border);
@@ -1132,12 +1139,12 @@
   box-sizing: border-box;
 }
 
-.noteMover-mobile-filters-list-container {
+.advancedNoteMover-mobile-filters-list-container {
   margin-bottom: 12px;
 }
 
 /* Mobile Button Settings */
-.noteMover-mobile-button-setting .noteMover-mobile-action-btn {
+.advancedNoteMover-mobile-button-setting .advancedNoteMover-mobile-action-btn {
   width: 100%;
   min-height: 48px;
   padding: 12px;
@@ -1149,16 +1156,21 @@
   transition: opacity 0.2s ease;
 }
 
-.noteMover-mobile-action-btn:hover {
+.advancedNoteMover-mobile-action-btn:hover {
   opacity: 0.9;
 }
 
-.noteMover-mobile-action-btn:active {
+.advancedNoteMover-mobile-action-btn:active {
   opacity: 0.8;
 }
 
+.advancedNoteMover-mobile-action-btn:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 /* Mobile Rule Cards */
-.noteMover-mobile-rule-card {
+.advancedNoteMover-mobile-rule-card {
   padding: 12px;
   margin-bottom: 8px;
   border: 1px solid var(--background-modifier-border);
@@ -1168,7 +1180,7 @@
   box-sizing: border-box;
 }
 
-.noteMover-mobile-rule-header {
+.advancedNoteMover-mobile-rule-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1177,7 +1189,7 @@
   box-sizing: border-box;
 }
 
-.noteMover-mobile-rule-name {
+.advancedNoteMover-mobile-rule-name {
   font-weight: 600;
   flex: 1;
   margin-right: 12px;
@@ -1185,7 +1197,7 @@
   word-break: break-word;
 }
 
-.noteMover-mobile-rule-toggle {
+.advancedNoteMover-mobile-rule-toggle {
   flex-shrink: 0;
   position: relative;
   width: 52px;
@@ -1193,7 +1205,7 @@
   cursor: pointer;
 }
 
-.noteMover-mobile-rule-toggle .noteMover-mobile-toggle-slider {
+.advancedNoteMover-mobile-rule-toggle .advancedNoteMover-mobile-toggle-slider {
   position: absolute;
   top: 0;
   left: 0;
@@ -1204,7 +1216,8 @@
   transition: 0.3s;
 }
 
-.noteMover-mobile-rule-toggle .noteMover-mobile-toggle-slider:before {
+.advancedNoteMover-mobile-rule-toggle
+  .advancedNoteMover-mobile-toggle-slider:before {
   position: absolute;
   content: '';
   height: 24px;
@@ -1216,33 +1229,35 @@
   transition: 0.3s;
 }
 
-.noteMover-mobile-rule-toggle.is-active .noteMover-mobile-toggle-slider {
+.advancedNoteMover-mobile-rule-toggle.is-active
+  .advancedNoteMover-mobile-toggle-slider {
   background-color: var(--interactive-accent);
 }
 
-.noteMover-mobile-rule-toggle.is-active .noteMover-mobile-toggle-slider:before {
+.advancedNoteMover-mobile-rule-toggle.is-active
+  .advancedNoteMover-mobile-toggle-slider:before {
   transform: translateX(20px);
 }
 
-.noteMover-mobile-rule-actions {
+.advancedNoteMover-mobile-rule-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
 }
 
-.noteMover-mobile-edit-btn {
+.advancedNoteMover-mobile-edit-btn {
   background: var(--interactive-accent) !important;
   color: var(--text-on-accent) !important;
 }
 
-.noteMover-mobile-delete-btn {
+.advancedNoteMover-mobile-delete-btn {
   width: 100%;
   min-height: 48px;
   padding: 12px;
   font-size: 16px;
   border-radius: 6px;
-  border: none;
+  border: 1px solid var(--background-modifier-error);
   cursor: pointer;
   font-weight: 500;
   background: var(--background-modifier-error);
@@ -1250,29 +1265,16 @@
   transition: opacity 0.2s ease;
 }
 
-.noteMover-mobile-delete-btn:hover {
+.advancedNoteMover-mobile-delete-btn:hover {
   opacity: 0.9;
 }
 
-.noteMover-mobile-delete-btn:active {
+.advancedNoteMover-mobile-delete-btn:active {
   opacity: 0.8;
 }
 
-/* Mobile Filter Cards */
-.noteMover-mobile-filter-card {
-  padding: 12px;
-  margin-bottom: 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  background: var(--background-secondary);
-}
-
-.noteMover-mobile-filters-list-container {
-  margin-bottom: 12px;
-}
-
 /* Mobile Rules List Container */
-.noteMover-mobile-rules-list-container {
+.advancedNoteMover-mobile-rules-list-container {
   margin-top: 12px;
   width: 100%;
   display: flex;
@@ -1280,16 +1282,17 @@
 }
 
 /* Mobile Retention Controls */
-.noteMover-mobile-retention-controls {
+.advancedNoteMover-mobile-retention-controls {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
 }
 
-.noteMover-mobile-retention-controls input[type='text'],
-.noteMover-mobile-retention-controls .noteMover-mobile-dropdown,
-.noteMover-mobile-retention-controls select {
+.advancedNoteMover-mobile-retention-controls input[type='text'],
+.advancedNoteMover-mobile-retention-controls .advancedNoteMover-mobile-dropdown,
+.advancedNoteMover-mobile-retention-controls select,
+.advancedNoteMover-mobile-retention-controls .dropdown {
   width: 100%;
   min-height: 48px;
   padding: 12px;
@@ -1301,7 +1304,7 @@
   box-sizing: border-box;
 }
 
-.noteMover-mobile-dropdown {
+.advancedNoteMover-mobile-dropdown {
   width: 100%;
   min-height: 48px;
   padding: 12px;
@@ -1314,69 +1317,69 @@
 }
 
 /* Mobile utility classes */
-.noteMover-mobile-stack {
+.advancedNoteMover-mobile-stack {
   flex-direction: column !important;
 }
 
-.noteMover-mobile-full-width {
+.advancedNoteMover-mobile-full-width {
   width: 100% !important;
 }
 
-.noteMover-mobile-center {
+.advancedNoteMover-mobile-center {
   justify-content: center !important;
   align-items: center !important;
 }
 
 /* Mobile-optimized settings */
-.setting-item.noteMover-mobile-optimized {
+.setting-item.advancedNoteMover-mobile-optimized {
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
 }
 
-.setting-item.noteMover-mobile-optimized .setting-item-name,
-.setting-item.noteMover-mobile-optimized .setting-item-description {
+.setting-item.advancedNoteMover-mobile-optimized .setting-item-name,
+.setting-item.advancedNoteMover-mobile-optimized .setting-item-description {
   width: 100%;
   margin-bottom: 8px;
 }
 
-.setting-item.noteMover-mobile-optimized .setting-item-control {
+.setting-item.advancedNoteMover-mobile-optimized .setting-item-control {
   width: 100%;
   justify-content: center;
   margin-left: 0;
 }
 
 /* Mobile toggle controls */
-.noteMover-mobile-toggle-control {
+.advancedNoteMover-mobile-toggle-control {
   justify-content: center;
   min-height: 44px;
 }
 
-.noteMover-mobile-toggle-control .checkbox-container {
+.advancedNoteMover-mobile-toggle-control .checkbox-container {
   min-width: 44px;
   min-height: 44px;
 }
 
 /* Mobile input controls */
-.noteMover-mobile-input-control {
+.advancedNoteMover-mobile-input-control {
   flex-direction: column;
   gap: 8px;
   width: 100%;
 }
 
-.noteMover-mobile-text-input {
+.advancedNoteMover-mobile-text-input {
   min-height: 44px;
   width: 100%;
   font-size: 16px; /* Prevents zoom on iOS */
 }
 
 /* Mobile button controls */
-.noteMover-mobile-button-control {
+.advancedNoteMover-mobile-button-control {
   width: 100%;
   justify-content: center;
 }
 
-.noteMover-mobile-button-control button {
+.advancedNoteMover-mobile-button-control button {
   min-width: 100%;
   min-height: 44px;
   padding: 12px;
@@ -1384,14 +1387,14 @@
 }
 
 /* Mobile move buttons */
-.noteMover-mobile-move-buttons-container {
+.advancedNoteMover-mobile-move-buttons-container {
   display: flex;
   gap: 8px;
   width: 100%;
   margin-bottom: 8px;
 }
 
-.noteMover-mobile-move-button {
+.advancedNoteMover-mobile-move-button {
   flex: 1;
   min-height: 48px;
   min-width: 44px;
@@ -1407,113 +1410,108 @@
   padding: 0;
 }
 
-.noteMover-mobile-move-button:hover {
+.advancedNoteMover-mobile-move-button:hover {
   background: var(--background-modifier-hover);
   border-color: var(--interactive-accent);
 }
 
-.noteMover-mobile-move-button:active {
+.advancedNoteMover-mobile-move-button:active {
   background: var(--background-modifier-active);
   transform: scale(0.98);
 }
 
-.noteMover-mobile-move-button svg {
+.advancedNoteMover-mobile-move-button svg {
   width: 20px;
   height: 20px;
   stroke: currentColor;
   flex-shrink: 0;
 }
 
-.noteMover-mobile-move-button:disabled {
+.advancedNoteMover-mobile-move-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.noteMover-mobile-move-button[style*='display: none'] {
+.advancedNoteMover-mobile-move-button:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.advancedNoteMover-mobile-move-button[style*='display: none'] {
   display: none !important;
 }
 
 /* Mobile rules container */
-.noteMover-mobile-rules-container
-  .noteMover-rule-v2-custom-container.noteMover-mobile-rule-container {
+.advancedNoteMover-mobile-rules-container
+  .advancedNoteMover-rule-v2-custom-container.advancedNoteMover-mobile-rule-container {
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
 }
 
-.noteMover-mobile-rules-container .noteMover-rule-v2-name {
+.advancedNoteMover-mobile-rules-container .advancedNoteMover-rule-v2-name {
   width: 100%;
   white-space: normal;
   word-break: break-word;
 }
 
-.noteMover-mobile-rules-container
-  .noteMover-rule-v2-actions.noteMover-mobile-rule-actions {
+.advancedNoteMover-mobile-rules-container
+  .advancedNoteMover-rule-v2-actions.advancedNoteMover-mobile-rule-actions {
   width: 100%;
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.noteMover-mobile-rules-container .noteMover-rule-v2-actions .clickable-icon,
-.noteMover-mobile-rules-container
-  .noteMover-rule-v2-actions
+.advancedNoteMover-mobile-rules-container
+  .advancedNoteMover-rule-v2-actions
+  .clickable-icon,
+.advancedNoteMover-mobile-rules-container
+  .advancedNoteMover-rule-v2-actions
   .checkbox-container {
   min-width: 44px;
   min-height: 44px;
 }
 
 /* Mobile rule items (V1) */
-.noteMover-mobile-rule-item {
+.advancedNoteMover-mobile-rule-item {
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
 }
 
-.noteMover-mobile-rule-controls {
+.advancedNoteMover-mobile-rule-controls {
   width: 100%;
   flex-direction: column;
   gap: 8px;
 }
 
-.noteMover-mobile-rule-controls .search-input-container {
+.advancedNoteMover-mobile-rule-controls .search-input-container {
   width: 100%;
 }
 
-.noteMover-mobile-rule-controls input[type='search'] {
+.advancedNoteMover-mobile-rule-controls input[type='search'] {
   min-height: 44px;
   width: 100%;
   font-size: 16px;
 }
 
 /* Mobile filters container */
-.noteMover-mobile-filters-container .noteMover-mobile-filter-item {
+.advancedNoteMover-mobile-filters-container
+  .advancedNoteMover-mobile-filter-item {
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
 }
 
-.noteMover-mobile-filters-container .noteMover-mobile-filter-controls {
+.advancedNoteMover-mobile-filters-container
+  .advancedNoteMover-mobile-filter-controls {
   width: 100%;
   flex-direction: column;
   gap: 8px;
 }
 
-.noteMover-mobile-filter-input {
-  min-height: 44px;
-  width: 100%;
-  font-size: 16px;
-}
-
-/* Mobile retention controls */
-.noteMover-mobile-retention-controls {
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-
-.noteMover-mobile-retention-controls input[type='text'],
-.noteMover-mobile-retention-controls .dropdown {
+.advancedNoteMover-mobile-filter-input {
   min-height: 44px;
   width: 100%;
   font-size: 16px;
@@ -1522,86 +1520,86 @@
 /* Mobile breakpoint: tablets and phones in portrait */
 @media (max-width: 768px) {
   /* Modal Size Adjustments */
-  .noteMover-modal-size-small,
-  .noteMover-modal-size-medium,
-  .noteMover-modal-size-large {
+  .advancedNoteMover-modal-size-small,
+  .advancedNoteMover-modal-size-medium,
+  .advancedNoteMover-modal-size-large {
     width: 100vw !important;
     max-width: 95vw !important;
     min-width: unset !important;
   }
 
   /* Modal Title Adjustments */
-  .noteMover-modal-title-container {
+  .advancedNoteMover-modal-title-container {
     gap: 8px;
     margin-bottom: 12px;
   }
 
-  .noteMover-modal-title {
+  .advancedNoteMover-modal-title {
     font-size: 1.4em;
   }
 
-  .noteMover-modal-title-icon {
+  .advancedNoteMover-modal-title-icon {
     font-size: 1.6em;
   }
 
-  .noteMover-modal-subtitle {
+  .advancedNoteMover-modal-subtitle {
     font-size: 1em;
     margin-bottom: 16px;
   }
 
   /* Button Container - Stack vertically on mobile */
-  .noteMover-modal-button-container {
+  .advancedNoteMover-modal-button-container {
     flex-direction: column;
     gap: 12px;
     width: 100%;
   }
 
-  .noteMover-modal-button-container .setting-item-control button {
+  .advancedNoteMover-modal-button-container .setting-item-control button {
     width: 100% !important;
     min-height: 44px;
     font-size: 1em;
   }
 
   /* Modal Section Adjustments */
-  .noteMover-modal-section {
+  .advancedNoteMover-modal-section {
     margin-bottom: 20px;
   }
 
-  .noteMover-modal-section-header h3 {
+  .advancedNoteMover-modal-section-header h3 {
     font-size: 1.1em;
   }
 
   /* Info Row Adjustments */
-  .noteMover-modal-info-row {
+  .advancedNoteMover-modal-info-row {
     gap: 12px;
     font-size: 0.85em;
   }
 
   /* History Modal Adjustments */
-  .noteMover-history-entry {
+  .advancedNoteMover-history-entry {
     flex-direction: column;
     align-items: flex-start;
     padding: 12px 16px;
     gap: 12px;
   }
 
-  .noteMover-history-entry-content {
+  .advancedNoteMover-history-entry-content {
     width: 100%;
   }
 
-  .noteMover-history-entry-info {
+  .advancedNoteMover-history-entry-info {
     white-space: normal;
     word-break: break-word;
   }
 
-  .noteMover-history-entry-paths {
+  .advancedNoteMover-history-entry-paths {
     white-space: normal;
     word-break: break-word;
   }
 
   /* Scoped to plugin elements only */
-  .noteMover-modal-button-container .setting-item-control,
-  .noteMover-time-filter-container .setting-item-control,
+  .advancedNoteMover-modal-button-container .setting-item-control,
+  .advancedNoteMover-time-filter-container .setting-item-control,
   .note-mover-history-modal .setting-item-control,
   .note-mover-preview-modal .setting-item-control,
   .note-mover-update-modal .setting-item-control,
@@ -1611,8 +1609,8 @@
     justify-content: space-between;
   }
 
-  .noteMover-modal-button-container .setting-item-control button,
-  .noteMover-time-filter-container .setting-item-control button,
+  .advancedNoteMover-modal-button-container .setting-item-control button,
+  .advancedNoteMover-time-filter-container .setting-item-control button,
   .note-mover-history-modal .setting-item-control button,
   .note-mover-preview-modal .setting-item-control button,
   .note-mover-update-modal .setting-item-control button,
@@ -1623,17 +1621,17 @@
   }
 
   /* Bulk Operations Mobile Adjustments */
-  .noteMover-history-entry.noteMover-bulk-operation {
+  .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
     padding: 12px 16px;
   }
 
-  .noteMover-bulk-header {
+  .advancedNoteMover-bulk-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
 
-  .noteMover-bulk-operation-info {
+  .advancedNoteMover-bulk-operation-info {
     width: 100%;
     white-space: normal;
     word-break: break-word;
@@ -1641,29 +1639,29 @@
   }
 
   /* Rule Editor Modal - Stack footer buttons */
-  .noteMover-rule-editor-footer {
+  .advancedNoteMover-rule-editor-footer {
     flex-direction: column;
     gap: 12px;
   }
 
-  .noteMover-rule-editor-footer-left,
-  .noteMover-rule-editor-footer-right {
+  .advancedNoteMover-rule-editor-footer-left,
+  .advancedNoteMover-rule-editor-footer-right {
     width: 100%;
     justify-content: center;
   }
 
-  .noteMover-rule-editor-footer-left button,
-  .noteMover-rule-editor-footer-right button {
+  .advancedNoteMover-rule-editor-footer-left button,
+  .advancedNoteMover-rule-editor-footer-right button {
     min-height: 44px;
     width: 100%;
   }
 
   /* Rule Aggregation Buttons - Stack on mobile */
-  .noteMover-rule-aggregation-buttons {
+  .advancedNoteMover-rule-aggregation-buttons {
     flex-wrap: wrap;
   }
 
-  .noteMover-rule-aggregation-button {
+  .advancedNoteMover-rule-aggregation-button {
     flex: 1 1 30%;
     min-width: 80px;
     min-height: 44px;
@@ -1672,128 +1670,128 @@
   }
 
   /* Trigger Row - Stack elements vertically */
-  .noteMover-rule-trigger-row {
+  .advancedNoteMover-rule-trigger-row {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
     padding: 12px;
   }
 
-  .noteMover-rule-trigger-row .noteMover-drag-handle-container {
+  .advancedNoteMover-rule-trigger-row .advancedNoteMover-drag-handle-container {
     order: -1;
     align-self: flex-end;
     margin-bottom: 4px;
   }
 
-  .noteMover-rule-trigger-delete-btn {
+  .advancedNoteMover-rule-trigger-delete-btn {
     min-width: 44px;
     min-height: 44px;
     padding: 8px;
   }
 
-  .noteMover-rule-criteria-type,
-  .noteMover-rule-rule-type,
-  .noteMover-rule-trigger-value {
+  .advancedNoteMover-rule-criteria-type,
+  .advancedNoteMover-rule-rule-type,
+  .advancedNoteMover-rule-trigger-value {
     width: 100%;
     min-width: unset;
     min-height: 44px;
     padding: 10px;
   }
 
-  .noteMover-rule-property-name {
+  .advancedNoteMover-rule-property-name {
     width: 100%;
     min-height: 44px;
     padding: 10px;
   }
 
   /* Preview Modal Paths - Allow wrapping */
-  .noteMover-preview-item-paths {
+  .advancedNoteMover-preview-item-paths {
     flex-wrap: wrap;
     gap: 8px;
     font-size: 0.8em;
   }
 
-  .noteMover-preview-item-main {
+  .advancedNoteMover-preview-item-main {
     margin-bottom: 12px;
   }
 
-  .noteMover-preview-item-details {
+  .advancedNoteMover-preview-item-details {
     gap: 6px;
     font-size: 0.85em;
   }
 
-  .noteMover-rule-label,
-  .noteMover-block-reason-label,
-  .noteMover-filter-label,
-  .noteMover-tags-label {
+  .advancedNoteMover-rule-label,
+  .advancedNoteMover-block-reason-label,
+  .advancedNoteMover-filter-label,
+  .advancedNoteMover-tags-label {
     min-width: unset;
     width: auto;
   }
 
   /* Preview Item - Adjust layout */
-  .noteMover-modal-list-item.noteMover-preview-item-success,
-  .noteMover-modal-list-item.noteMover-preview-item-blocked {
+  .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success,
+  .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-blocked {
     padding: 12px;
   }
 
   /* Update Modal - Keep footer horizontal on mobile */
-  .note-mover-update-modal .noteMover-modal-footer {
+  .note-mover-update-modal .advancedNoteMover-modal-footer {
     flex-direction: row !important;
     justify-content: space-between !important;
     align-items: center !important;
     padding: 0 16px;
   }
 
-  .note-mover-update-modal .noteMover-update-modal-links {
+  .note-mover-update-modal .advancedNoteMover-update-modal-links {
     flex: 1;
   }
 
-  .note-mover-update-modal .noteMover-modal-button-container {
+  .note-mover-update-modal .advancedNoteMover-modal-button-container {
     flex-direction: row !important;
     width: auto !important;
     flex-shrink: 0;
   }
 
   .note-mover-update-modal
-    .noteMover-modal-button-container
+    .advancedNoteMover-modal-button-container
     .setting-item-control {
     margin: 0 !important;
   }
 
-  .note-mover-update-modal .noteMover-modal-button-container button {
+  .note-mover-update-modal .advancedNoteMover-modal-button-container button {
     width: auto !important;
     min-width: 100px;
     padding: 8px 16px;
   }
 
   /* Time Filter Container Mobile */
-  .noteMover-time-filter-container .setting-item-control {
+  .advancedNoteMover-time-filter-container .setting-item-control {
     width: 100%;
     margin-right: 0;
     margin-top: 8px;
   }
 
-  .noteMover-time-filter-container .setting-item-name {
+  .advancedNoteMover-time-filter-container .setting-item-name {
     width: 100%;
   }
 
   /* Setting items with drag handles - Adjust for mobile */
-  .setting-item.noteMover-with-drag-handle {
+  .setting-item.advancedNoteMover-with-drag-handle {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .setting-item.noteMover-with-drag-handle .setting-item-info {
+  .setting-item.advancedNoteMover-with-drag-handle .setting-item-info {
     width: 100%;
   }
 
-  .setting-item.noteMover-with-drag-handle .setting-item-control {
+  .setting-item.advancedNoteMover-with-drag-handle .setting-item-control {
     width: 100%;
     justify-content: flex-end;
     margin-top: 8px;
   }
 
-  .noteMover-drag-handle {
+  .advancedNoteMover-drag-handle {
     min-width: 44px;
     min-height: 44px;
     padding: 8px;
@@ -1801,48 +1799,50 @@
   }
 
   /* Rule V2 Mobile Layout */
-  .noteMover-rule-v2-custom-container {
+  .advancedNoteMover-rule-v2-custom-container {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-    padding: 12px 0;
+    padding: 12px 12px;
   }
 
-  .noteMover-rule-v2-name {
+  .advancedNoteMover-rule-v2-name {
     width: 100%;
     white-space: normal;
     word-break: break-word;
     font-size: 1em;
   }
 
-  .noteMover-rule-v2-actions {
+  .advancedNoteMover-rule-v2-actions {
     width: 100%;
     justify-content: space-between;
   }
 
-  .noteMover-rule-v2-actions .setting-item-control {
+  .advancedNoteMover-rule-v2-actions .setting-item-control {
     width: 100%;
     justify-content: space-between;
   }
 
-  .noteMover-rule-v2-actions button {
+  .advancedNoteMover-rule-v2-actions button {
     min-width: 44px;
     min-height: 44px;
   }
 
   /* Empty state adjustments */
-  .noteMover-modal-empty {
+  .advancedNoteMover-modal-empty {
     padding: 32px 16px;
     font-size: 1em;
   }
 
   /* Info box mobile adjustments */
-  .noteMover-modal-info-box {
+  .advancedNoteMover-modal-info-box {
     padding: 10px 12px;
   }
 
   /* Confirm modal button adjustments */
-  .noteMover-confirm-modal .noteMover-modal-button-container button {
+  .advancedNoteMover-confirm-modal
+    .advancedNoteMover-modal-button-container
+    button {
     min-width: 100%;
     min-height: 44px;
   }
@@ -1851,89 +1851,89 @@
 /* Small mobile breakpoint: phones */
 @media (max-width: 480px) {
   /* Modal Title - Smaller font for very small screens */
-  .noteMover-modal-title {
+  .advancedNoteMover-modal-title {
     font-size: 1.2em;
   }
 
-  .noteMover-modal-title-icon {
+  .advancedNoteMover-modal-title-icon {
     font-size: 1.4em;
   }
 
-  .noteMover-modal-subtitle {
+  .advancedNoteMover-modal-subtitle {
     font-size: 0.9em;
   }
 
   /* History entries - More compact padding */
-  .noteMover-history-entry {
+  .advancedNoteMover-history-entry {
     padding: 10px 12px;
     gap: 10px;
   }
 
-  .noteMover-history-entry.noteMover-bulk-operation {
+  .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
     padding: 10px 12px;
   }
 
   /* Rule trigger rows - Even more compact */
-  .noteMover-rule-trigger-row {
+  .advancedNoteMover-rule-trigger-row {
     padding: 10px;
     gap: 10px;
   }
 
   /* Smaller inputs but still touch-friendly */
-  .noteMover-rule-criteria-type,
-  .noteMover-rule-rule-type,
-  .noteMover-rule-trigger-value,
-  .noteMover-rule-property-name {
+  .advancedNoteMover-rule-criteria-type,
+  .advancedNoteMover-rule-rule-type,
+  .advancedNoteMover-rule-trigger-value,
+  .advancedNoteMover-rule-property-name {
     font-size: 0.95em;
     padding: 8px;
   }
 
   /* Aggregation buttons - Full width on very small screens */
-  .noteMover-rule-aggregation-button {
+  .advancedNoteMover-rule-aggregation-button {
     flex: 1 1 100%;
     min-width: unset;
   }
 
   /* Footer buttons - Full width */
-  .noteMover-rule-editor-footer-left button,
-  .noteMover-rule-editor-footer-right button {
+  .advancedNoteMover-rule-editor-footer-left button,
+  .advancedNoteMover-rule-editor-footer-right button {
     font-size: 0.95em;
   }
 
   /* Preview paths - Smaller font to fit more */
-  .noteMover-preview-item-paths {
+  .advancedNoteMover-preview-item-paths {
     font-size: 0.75em;
   }
 
   /* Modal list items - More compact */
-  .noteMover-modal-list-item {
+  .advancedNoteMover-modal-list-item {
     padding: 12px;
   }
 
   /* Section headers - Smaller */
-  .noteMover-modal-section-header h3 {
+  .advancedNoteMover-modal-section-header h3 {
     font-size: 1em;
   }
 
-  .noteMover-rule-conditions-title {
+  .advancedNoteMover-rule-conditions-title {
     font-size: 1em;
   }
 
   /* Changelog - Smaller font */
-  .noteMover-changelog-version-title {
+  .advancedNoteMover-changelog-version-title {
     font-size: 1.1em;
   }
 
-  .noteMover-changelog-section-title {
+  .advancedNoteMover-changelog-section-title {
     font-size: 0.95em;
   }
 
-  .noteMover-changelog-list {
+  .advancedNoteMover-changelog-list {
     font-size: 0.9em;
   }
 
   /* Confirm modal message - Smaller font */
-  .noteMover-confirm-modal-message {
+  .advancedNoteMover-confirm-modal-message {
     font-size: 0.95em;
   }
 
@@ -1942,7 +1942,7 @@
   .note-mover-history-modal button,
   .note-mover-preview-modal button,
   .note-mover-update-modal button,
-  .noteMover-confirm-modal button {
+  .advancedNoteMover-confirm-modal button {
     font-size: 0.95em;
   }
 }
@@ -1950,7 +1950,7 @@
 /* ===== MOBILE MODAL STYLES ===== */
 
 /* Base Modal Mobile Styles */
-.is-mobile .modal-container.noteMover-modal-size-mobile {
+.is-mobile .modal-container.advancedNoteMover-modal-size-mobile {
   width: 100% !important;
   max-width: 100% !important;
   margin: 0 !important;
@@ -1961,7 +1961,7 @@
   flex-direction: column;
 }
 
-.is-mobile .modal-container.noteMover-modal-size-mobile .modal-content {
+.is-mobile .modal-container.advancedNoteMover-modal-size-mobile .modal-content {
   padding: 20px 16px !important;
   max-height: 100%;
   flex: 1 1 auto;
@@ -1972,102 +1972,16 @@
   touch-action: pan-y;
 }
 
-/* Mobile Modal Cards - Consistent with Mobile Settings */
-.noteMover-mobile-modal-card {
-  padding: 12px;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  background: var(--background-secondary);
-  border: 1px solid var(--background-modifier-border);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.noteMover-mobile-modal-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.noteMover-mobile-modal-card-title {
-  font-weight: 600;
-  font-size: 1em;
-  flex: 1;
-  color: var(--text-normal);
-  margin-right: 12px;
-}
-
-.noteMover-mobile-modal-card-description {
-  font-size: 0.9em;
-  color: var(--text-muted);
-  margin-top: 4px;
-  margin-bottom: 12px;
-  line-height: 1.5;
-}
-
-.noteMover-mobile-modal-card-content {
-  width: 100%;
-  margin-top: 8px;
-}
-
-/* Mobile Modal Toggle */
-.noteMover-mobile-modal-toggle .noteMover-mobile-modal-card-header {
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.noteMover-mobile-modal-toggle .noteMover-mobile-modal-card-description {
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-
-.noteMover-mobile-modal-toggle .noteMover-mobile-modal-card-content {
-  display: none;
-}
-
-/* Mobile Modal Input */
-.noteMover-mobile-modal-input .noteMover-mobile-modal-card-content {
-  margin-top: 0;
-}
-
-/* Mobile Modal Button */
-.noteMover-mobile-modal-button .noteMover-mobile-modal-card-header {
-  margin-bottom: 8px;
-}
-
-.noteMover-mobile-modal-button .noteMover-mobile-modal-card-content {
-  margin-top: 0;
-}
-
-/* Mobile Modal Section */
-.noteMover-mobile-modal-section {
-  margin-bottom: 24px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.noteMover-mobile-modal-section-title {
-  font-size: 1.1em;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: var(--text-normal);
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.is-mobile .noteMover-rule-editor-modal .modal-content {
+.is-mobile .advancedNoteMover-rule-editor-modal .modal-content {
   padding: 20px 16px !important;
 }
 
 /* Rule Editor Modal Mobile Styles - Consistent padding */
-.is-mobile .noteMover-rule-editor-modal {
+.is-mobile .advancedNoteMover-rule-editor-modal {
   padding: 0 !important;
 }
 
-.is-mobile .noteMover-rule-editor-modal .setting-item {
+.is-mobile .advancedNoteMover-rule-editor-modal .setting-item {
   margin-bottom: 24px;
   padding: 0;
   width: 100%;
@@ -2075,15 +1989,17 @@
 }
 
 /* Ensure all content respects modal padding */
-.is-mobile .noteMover-rule-editor-modal .setting-item,
-.is-mobile .noteMover-rule-editor-modal .noteMover-rule-conditions-section,
-.is-mobile .noteMover-rule-editor-modal hr {
+.is-mobile .advancedNoteMover-rule-editor-modal .setting-item,
+.is-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-rule-conditions-section,
+.is-mobile .advancedNoteMover-rule-editor-modal hr {
   width: 100%;
   box-sizing: border-box;
 }
 
 /* Separator styling for mobile */
-.is-mobile .noteMover-rule-editor-separator {
+.is-mobile .advancedNoteMover-rule-editor-separator {
   margin: 32px 0;
   border: none;
   border-top: 1px solid var(--background-modifier-border);
@@ -2091,181 +2007,46 @@
   width: 100%;
 }
 
-/* Name Setting Mobile */
-.is-mobile .noteMover-rule-name-mobile {
-  margin-bottom: 24px;
-}
-
+/* Destination folder search (mobile rule editor) */
 .is-mobile
-  .noteMover-rule-name-mobile
-  .setting-item-control
-  input[type='text'] {
-  width: 100% !important;
-}
-
-/* Active Toggle Setting Mobile - Horizontal layout with toggle next to text */
-.is-mobile .noteMover-rule-active-toggle-mobile {
-  margin-bottom: 24px;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 16px;
-  padding: 0;
-}
-
-.is-mobile .noteMover-rule-active-toggle-mobile .setting-item-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  order: 1;
-}
-
-.is-mobile .noteMover-rule-active-toggle-mobile .setting-item-name {
-  font-weight: 600;
-  font-size: 1em;
-  margin-bottom: 4px !important;
-  width: auto !important;
-  color: var(--text-normal);
-}
-
-.is-mobile .noteMover-rule-active-toggle-mobile .setting-item-description {
-  font-size: 0.9em;
-  color: var(--text-muted);
-  margin-top: 0;
-  margin-bottom: 0;
-  width: auto !important;
-  line-height: 1.4;
-}
-
-.is-mobile .noteMover-rule-active-toggle-mobile .setting-item-control {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  width: auto !important;
-  margin-left: 0 !important;
-  margin-top: 0 !important;
-  flex-shrink: 0;
-  order: 2;
-  align-self: flex-start;
-  padding-top: 2px; /* Slight offset to align with text baseline */
-}
-
-.is-mobile .noteMover-rule-active-toggle-mobile .checkbox-container {
-  min-height: 32px !important;
-  height: 32px !important;
-  min-width: 52px !important;
-  max-width: 52px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 !important;
-  flex-shrink: 0;
-  padding: 0;
-}
-
-/* Ensure toggle switch itself is properly sized - Obsidian uses .checkbox class */
-.is-mobile .noteMover-rule-active-toggle-mobile .checkbox-container .checkbox {
-  width: 52px !important;
-  height: 32px !important;
-  margin: 0 !important;
-  flex-shrink: 0;
-}
-
-/* Override any Obsidian styles that might affect toggle positioning */
-.is-mobile .noteMover-rule-active-toggle-mobile .setting-item-control {
-  margin-right: 0 !important;
-}
-
-/* Destination Input Mobile - Search Container */
-.noteMover-mobile-modal-card .search-input-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.noteMover-mobile-modal-card .search-input-container::before,
-.noteMover-mobile-modal-card .search-input-container::after {
-  display: none !important;
-  content: none !important;
-}
-
-/* Hide any icons on the left side of the search input */
-.noteMover-mobile-modal-card
-  .search-input-container
-  > svg:not(.search-input-clear-button svg),
-.noteMover-mobile-modal-card
-  .search-input-container
-  > .clickable-icon:not(.search-input-clear-button),
-.noteMover-mobile-modal-card
-  .search-input-container
-  > [class*='icon']:not(.search-input-clear-button),
-.noteMover-mobile-modal-card
-  .search-input-container
-  > *:not(input):not(.search-input-clear-button) {
-  display: none !important;
-}
-
-.noteMover-mobile-modal-card .search-input-container input {
-  padding-left: 16px !important;
-  padding-right: 40px !important;
-  background-image: none !important;
-  background-position: unset !important;
-  flex: 1;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.noteMover-mobile-modal-card
-  .search-input-container
-  .search-input-clear-button {
-  right: 12px !important;
-  left: auto !important;
-  position: absolute !important;
-  z-index: 10;
-}
-
-/* Legacy Destination Input Mobile */
-.is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .setting-item:has(.search-input-container) {
   margin-bottom: 24px;
 }
 
-.is-mobile .noteMover-rule-editor-modal .search-input-container {
+.is-mobile .advancedNoteMover-rule-editor-modal .search-input-container {
   position: relative;
   display: flex;
   align-items: center;
   width: 100%;
 }
 
-.is-mobile .noteMover-rule-editor-modal .search-input-container::before,
-.is-mobile .noteMover-rule-editor-modal .search-input-container::after {
+.is-mobile .advancedNoteMover-rule-editor-modal .search-input-container::before,
+.is-mobile .advancedNoteMover-rule-editor-modal .search-input-container::after {
   display: none !important;
   content: none !important;
 }
 
 .is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .search-input-container
   > svg:not(.search-input-clear-button svg),
 .is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .search-input-container
   > .clickable-icon:not(.search-input-clear-button),
 .is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .search-input-container
   > [class*='icon']:not(.search-input-clear-button),
 .is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .search-input-container
   > *:not(input):not(.search-input-clear-button) {
   display: none !important;
 }
 
-.is-mobile .noteMover-rule-editor-modal .search-input-container input {
+.is-mobile .advancedNoteMover-rule-editor-modal .search-input-container input {
   padding-left: 16px !important;
   padding-right: 40px !important;
   background-image: none !important;
@@ -2276,7 +2057,7 @@
 }
 
 .is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .search-input-container
   .search-input-clear-button {
   right: 12px !important;
@@ -2286,14 +2067,14 @@
 }
 
 /* Match Conditions Section Mobile */
-.is-mobile .noteMover-rule-editor-modal .setting-item-name {
+.is-mobile .advancedNoteMover-rule-editor-modal .setting-item-name {
   font-weight: 600;
   font-size: 1em;
   margin-bottom: 8px;
   color: var(--text-normal);
 }
 
-.is-mobile .noteMover-rule-editor-modal .setting-item-description {
+.is-mobile .advancedNoteMover-rule-editor-modal .setting-item-description {
   font-size: 0.9em;
   color: var(--text-muted);
   margin-top: 4px;
@@ -2302,11 +2083,11 @@
 }
 
 .is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .setting-item-control
   input[type='text'],
 .is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .setting-item-control
   .search-input-container
   input {
@@ -2323,11 +2104,11 @@
 }
 
 .is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .setting-item-control
   input[type='text']:focus,
 .is-mobile
-  .noteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-modal
   .setting-item-control
   .search-input-container
   input:focus {
@@ -2337,306 +2118,46 @@
 }
 
 /* Apply horizontal padding to headings/titles inside modal */
-.is-mobile .noteMover-rule-editor-modal .noteMover-modal-title,
-.is-mobile .noteMover-rule-editor-modal .noteMover-modal-title-container {
+.is-mobile .advancedNoteMover-rule-editor-modal .advancedNoteMover-modal-title,
+.is-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-modal-title-container {
   padding-left: 0;
   padding-right: 0;
   box-sizing: border-box;
   margin-bottom: 24px;
 }
 
-.is-mobile .noteMover-rule-editor-modal .noteMover-modal-title {
+.is-mobile .advancedNoteMover-rule-editor-modal .advancedNoteMover-modal-title {
   font-size: 1.5em;
   font-weight: 600;
   color: var(--text-normal);
 }
 
 /* Ensure section containers respect horizontal padding */
-.is-mobile .noteMover-rule-editor-modal .noteMover-rule-conditions-section {
+.is-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-rule-conditions-section {
   width: 100%;
   box-sizing: border-box;
 }
 
-.is-mobile .noteMover-rule-editor-modal .noteMover-rule-editor-footer {
+.is-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-rule-editor-footer {
   width: 100%;
   box-sizing: border-box;
   padding-top: 8px;
 }
 
-/* Mobile Aggregation Buttons */
-.is-mobile .noteMover-rule-aggregation-buttons-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-top: 12px;
-}
-
-.is-mobile
-  .noteMover-rule-aggregation-buttons-mobile
-  .noteMover-rule-aggregation-button {
-  width: 100%;
-  min-height: 52px;
-  padding: 14px 20px;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  border: 1px solid var(--background-modifier-border);
-}
-
-.is-mobile
-  .noteMover-rule-aggregation-buttons-mobile
-  .noteMover-rule-aggregation-button:active {
-  transform: scale(0.98);
-}
-
-.is-mobile
-  .noteMover-rule-aggregation-buttons-mobile
-  .noteMover-rule-aggregation-button.is-active {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
-  border-color: var(--interactive-accent);
-}
-
-/* Mobile Trigger Cards - Card-based layout */
-.noteMover-mobile-trigger-card {
-  padding: 12px;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  background: var(--background-secondary);
-  border: 1px solid var(--background-modifier-border);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.noteMover-mobile-trigger-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.noteMover-mobile-trigger-move-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.noteMover-mobile-trigger-delete-container {
-  display: flex;
-  align-items: center;
-}
-
-.noteMover-mobile-trigger-delete-btn {
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--background-modifier-error);
-  border-radius: 6px;
-  background: var(--background-modifier-error);
-  color: var(--text-on-accent);
-  cursor: pointer;
-  padding: 0;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.noteMover-mobile-trigger-delete-btn:active {
-  opacity: 0.8;
-  transform: scale(0.95);
-}
-
-.noteMover-mobile-trigger-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-}
-
-/* Field Labels */
-.noteMover-mobile-trigger-field-label {
-  font-size: 0.9em;
-  font-weight: 600;
-  color: var(--text-normal);
-  margin-bottom: 6px;
-  display: block;
-}
-
-.noteMover-mobile-trigger-fields select,
-.noteMover-mobile-trigger-fields input {
-  width: 100%;
-  min-height: 48px;
-  font-size: 16px;
-  padding: 12px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  background: var(--background-primary);
-  color: var(--text-normal);
-  box-sizing: border-box;
-  transition: border-color 0.2s ease;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-.noteMover-mobile-trigger-fields select:focus,
-.noteMover-mobile-trigger-fields input:focus {
-  outline: none;
-  border-color: var(--interactive-accent);
-  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
-}
-
-/* Dropdown styling with indicator */
-.noteMover-mobile-trigger-fields select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 12px;
-  padding-right: 36px;
-}
-
-/* Legacy Mobile Trigger Rows - Keep for backward compatibility */
-.is-mobile .noteMover-rule-trigger-row-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  background: var(--background-secondary);
-  border-radius: 8px;
-  border: 1px solid var(--background-modifier-border);
-  margin-bottom: 16px;
-}
-
-.is-mobile .noteMover-rule-trigger-mobile-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 4px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.is-mobile .noteMover-rule-trigger-move-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.is-mobile .noteMover-rule-trigger-move-btn {
-  min-width: 52px;
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  background: var(--background-primary);
-  cursor: pointer;
-  color: var(--text-normal);
-  padding: 0;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.is-mobile .noteMover-rule-trigger-move-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  background: var(--background-secondary);
-}
-
-.is-mobile .noteMover-rule-trigger-move-btn:not(:disabled):active {
-  background: var(--background-modifier-hover);
-  transform: scale(0.95);
-}
-
-.is-mobile .noteMover-rule-trigger-delete-btn-mobile {
-  min-width: 52px;
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--background-modifier-error);
-  border-radius: 8px;
-  background: var(--background-modifier-error);
-  color: var(--text-on-accent);
-  cursor: pointer;
-  padding: 0;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.is-mobile .noteMover-rule-trigger-delete-btn-mobile:active {
-  opacity: 0.8;
-  transform: scale(0.95);
-}
-
-.is-mobile .noteMover-rule-trigger-fields-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-}
-
-/* Field Labels - Legacy */
-.is-mobile .noteMover-rule-trigger-field-label {
-  font-size: 0.9em;
-  font-weight: 600;
-  color: var(--text-normal);
-  margin-bottom: 6px;
-  display: block;
-}
-
-.is-mobile .noteMover-rule-trigger-fields-mobile select,
-.is-mobile .noteMover-rule-trigger-fields-mobile input {
-  width: 100%;
-  min-height: 48px;
-  font-size: 16px;
-  padding: 12px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  background: var(--background-primary);
-  color: var(--text-normal);
-  box-sizing: border-box;
-  transition: border-color 0.2s ease;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-.is-mobile .noteMover-rule-trigger-fields-mobile select:focus,
-.is-mobile .noteMover-rule-trigger-fields-mobile input:focus {
-  outline: none;
-  border-color: var(--interactive-accent);
-  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.1);
-}
-
-/* Dropdown styling with indicator - Legacy */
-.is-mobile .noteMover-rule-trigger-fields-mobile select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 12px;
-  padding-right: 36px;
-}
-
-.is-mobile .noteMover-rule-trigger-fields-mobile .noteMover-mobile-input {
-  width: 100% !important;
-  min-height: 48px !important;
-  font-size: 16px !important;
-}
-
-.is-mobile .noteMover-rule-conditions-section {
+/* Conditions section spacing (mobile rule editor) */
+.is-mobile .advancedNoteMover-rule-conditions-section {
   margin: 32px 0 24px 0;
   width: 100%;
   box-sizing: border-box;
 }
 
-.is-mobile .noteMover-rule-conditions-title {
+.is-mobile .advancedNoteMover-rule-conditions-title {
   font-size: 1.1em;
   font-weight: 600;
   margin-bottom: 16px;
@@ -2645,123 +2166,17 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-/* Add Condition Button Mobile */
-.noteMover-mobile-modal-button.noteMover-mobile-modal-card:has(
-    .noteMover-mobile-action-btn:contains('+ Add Condition')
-  ) {
-  margin-top: 16px;
-}
-
-.noteMover-mobile-modal-button .noteMover-mobile-action-btn {
-  background: var(--background-primary);
-  border: 2px solid var(--interactive-accent);
-  color: var(--interactive-accent);
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.noteMover-mobile-modal-button .noteMover-mobile-action-btn:active {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
-  transform: scale(0.98);
-}
-
-/* Legacy Add Condition Button */
-.is-mobile .noteMover-rule-add-condition-mobile {
-  margin-top: 8px;
-  margin-bottom: 0;
-}
-
-.is-mobile .noteMover-rule-add-condition-mobile .setting-item-control {
-  width: 100%;
-}
-
-.is-mobile .noteMover-rule-add-condition-mobile button {
-  background: var(--background-primary) !important;
-  border: 2px solid var(--interactive-accent) !important;
-  color: var(--interactive-accent) !important;
-  font-weight: 600 !important;
-  transition: all 0.2s ease !important;
-}
-
-.is-mobile .noteMover-rule-add-condition-mobile button:active {
-  background: var(--interactive-accent) !important;
-  color: var(--text-on-accent) !important;
-  transform: scale(0.98);
-}
-
-.noteMover-rule-editor-footer-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--background-modifier-border);
-  box-sizing: border-box;
-}
-
-.noteMover-rule-editor-footer-mobile .noteMover-mobile-modal-card {
-  margin-bottom: 0;
-}
-
-.noteMover-rule-editor-footer-mobile .noteMover-mobile-action-btn {
-  width: 100%;
-  min-height: 52px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  padding: 14px 20px;
-}
-
-.noteMover-rule-editor-footer-mobile .noteMover-mobile-action-btn:active {
-  transform: scale(0.98);
-}
-
-/* Legacy Footer Styles */
-.is-mobile .noteMover-rule-editor-footer-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--background-modifier-border);
-  box-sizing: border-box;
-}
-
-.is-mobile .noteMover-rule-editor-footer-mobile .setting-item {
-  width: 100%;
-  margin-bottom: 0;
-  padding: 0;
-}
-
-.is-mobile .noteMover-rule-editor-footer-mobile .setting-item button {
-  width: 100%;
-  min-height: 52px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  padding: 14px 20px;
-}
-
-.is-mobile .noteMover-rule-editor-footer-mobile .setting-item button:active {
-  transform: scale(0.98);
-}
-
 /* History Modal Mobile Styles */
 .is-mobile .note-mover-history-modal {
   padding: 16px 0 !important;
 }
 
-.is-mobile .noteMover-time-filter-container-mobile {
+.is-mobile .advancedNoteMover-time-filter-container-mobile {
   margin-bottom: 16px;
 }
 
 .is-mobile
-  .noteMover-time-filter-container-mobile
+  .advancedNoteMover-time-filter-container-mobile
   .setting-item-control
   select {
   min-height: 48px;
@@ -2769,7 +2184,7 @@
   width: 100%;
 }
 
-.is-mobile .noteMover-history-entry-mobile {
+.is-mobile .advancedNoteMover-history-entry-mobile {
   display: flex;
   flex-direction: column;
   padding: 12px;
@@ -2780,12 +2195,12 @@
   gap: 12px;
 }
 
-.is-mobile .noteMover-history-entry-content {
+.is-mobile .advancedNoteMover-history-entry-content {
   width: 100%;
   overflow: visible;
 }
 
-.is-mobile .noteMover-history-entry-info {
+.is-mobile .advancedNoteMover-history-entry-info {
   font-size: 1em;
   margin-bottom: 8px;
   word-break: break-word;
@@ -2793,7 +2208,7 @@
   white-space: normal;
 }
 
-.is-mobile .noteMover-history-entry-paths {
+.is-mobile .advancedNoteMover-history-entry-paths {
   font-size: 0.9em;
   color: var(--text-muted);
   word-break: break-word;
@@ -2802,7 +2217,7 @@
   white-space: normal;
 }
 
-.is-mobile .noteMover-history-entry-buttons-mobile {
+.is-mobile .advancedNoteMover-history-entry-buttons-mobile {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -2810,7 +2225,7 @@
   margin-top: 8px;
 }
 
-.is-mobile .noteMover-history-entry-button-mobile {
+.is-mobile .advancedNoteMover-history-entry-button-mobile {
   width: 100%;
   min-height: 48px;
   padding: 12px;
@@ -2823,25 +2238,25 @@
   font-weight: 500;
 }
 
-.is-mobile .noteMover-history-entry-button-mobile:active {
+.is-mobile .advancedNoteMover-history-entry-button-mobile:active {
   opacity: 0.8;
 }
 
-.is-mobile .noteMover-history-entry-button-warning {
+.is-mobile .advancedNoteMover-history-entry-button-warning {
   background: var(--background-modifier-error);
   color: var(--text-on-accent);
   border-color: var(--background-modifier-error);
 }
 
-.is-mobile .noteMover-bulk-operation {
+.is-mobile .advancedNoteMover-bulk-operation {
   margin-bottom: 16px;
 }
 
-.is-mobile .noteMover-bulk-header {
+.is-mobile .advancedNoteMover-bulk-header {
   margin-bottom: 12px;
 }
 
-.is-mobile .noteMover-bulk-operation-info {
+.is-mobile .advancedNoteMover-bulk-operation-info {
   font-size: 1em;
   margin-bottom: 8px;
   overflow: visible;
@@ -2849,11 +2264,11 @@
   word-break: break-word;
 }
 
-.is-mobile .noteMover-bulk-details {
+.is-mobile .advancedNoteMover-bulk-details {
   margin-top: 12px;
 }
 
-.is-mobile .noteMover-bulk-details summary {
+.is-mobile .advancedNoteMover-bulk-details summary {
   min-height: 48px;
   display: flex;
   align-items: center;
@@ -2865,14 +2280,14 @@
   border: 1px solid var(--background-modifier-border);
 }
 
-.is-mobile .noteMover-bulk-files-list {
+.is-mobile .advancedNoteMover-bulk-files-list {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.is-mobile .noteMover-bulk-file-entry {
+.is-mobile .advancedNoteMover-bulk-file-entry {
   padding: 12px;
   background: var(--background-primary);
   border-radius: 6px;
@@ -2884,17 +2299,17 @@
   padding: 16px 0 !important;
 }
 
-.is-mobile .noteMover-preview-section-mobile {
+.is-mobile .advancedNoteMover-preview-section-mobile {
   margin-bottom: 16px;
 }
 
-.is-mobile .noteMover-modal-list-mobile {
+.is-mobile .advancedNoteMover-modal-list-mobile {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.is-mobile .noteMover-preview-item-mobile {
+.is-mobile .advancedNoteMover-preview-item-mobile {
   padding: 12px;
   background: var(--background-secondary);
   border-radius: 8px;
@@ -2902,56 +2317,56 @@
   margin-bottom: 0;
 }
 
-.is-mobile .noteMover-preview-item-filename {
+.is-mobile .advancedNoteMover-preview-item-filename {
   font-size: 1em;
   font-weight: 600;
   margin-bottom: 8px;
   word-break: break-word;
 }
 
-.is-mobile .noteMover-preview-item-paths-mobile {
+.is-mobile .advancedNoteMover-preview-item-paths-mobile {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-bottom: 12px;
 }
 
-.is-mobile .noteMover-preview-path-mobile {
+.is-mobile .advancedNoteMover-preview-path-mobile {
   font-size: 0.9em;
   color: var(--text-muted);
   word-break: break-word;
   line-height: 1.4;
 }
 
-.is-mobile .noteMover-preview-path-current {
+.is-mobile .advancedNoteMover-preview-path-current {
   color: var(--text-normal);
 }
 
-.is-mobile .noteMover-preview-arrow-mobile {
+.is-mobile .advancedNoteMover-preview-arrow-mobile {
   text-align: center;
   color: var(--text-muted);
   font-size: 1.2em;
   margin: 4px 0;
 }
 
-.is-mobile .noteMover-preview-item-details-mobile {
+.is-mobile .advancedNoteMover-preview-item-details-mobile {
   font-size: 0.9em;
   margin-top: 8px;
 }
 
-.is-mobile .noteMover-modal-footer-mobile {
+.is-mobile .advancedNoteMover-modal-footer-mobile {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 16px;
 }
 
-.is-mobile .noteMover-modal-footer-mobile .setting-item {
+.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item {
   width: 100%;
   margin-bottom: 0;
 }
 
-.is-mobile .noteMover-modal-footer-mobile .setting-item button {
+.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item button {
   width: 100%;
   min-height: 48px;
   font-size: 16px;
@@ -2962,11 +2377,11 @@
   padding: 16px 0 !important;
 }
 
-.is-mobile .noteMover-changelog-container-mobile {
+.is-mobile .advancedNoteMover-changelog-container-mobile {
   margin-bottom: 16px;
 }
 
-.is-mobile .noteMover-changelog-version-mobile {
+.is-mobile .advancedNoteMover-changelog-version-mobile {
   margin-bottom: 16px;
   padding: 12px;
   background: var(--background-secondary);
@@ -2974,32 +2389,32 @@
   border: 1px solid var(--background-modifier-border);
 }
 
-.is-mobile .noteMover-changelog-version-title {
+.is-mobile .advancedNoteMover-changelog-version-title {
   font-size: 1.1em;
   margin-bottom: 12px;
 }
 
-.is-mobile .noteMover-changelog-section {
+.is-mobile .advancedNoteMover-changelog-section {
   margin-bottom: 12px;
 }
 
-.is-mobile .noteMover-changelog-section-title {
+.is-mobile .advancedNoteMover-changelog-section-title {
   font-size: 1em;
   margin-bottom: 8px;
 }
 
-.is-mobile .noteMover-changelog-list {
+.is-mobile .advancedNoteMover-changelog-list {
   font-size: 0.95em;
   line-height: 1.6;
   padding-left: 20px;
 }
 
-.is-mobile .noteMover-update-modal-links-mobile {
+.is-mobile .advancedNoteMover-update-modal-links-mobile {
   margin-bottom: 16px;
   width: 100%;
 }
 
-.is-mobile .noteMover-update-modal-github-link-mobile {
+.is-mobile .advancedNoteMover-update-modal-github-link-mobile {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3015,110 +2430,119 @@
   transition: opacity 0.2s ease;
 }
 
-.is-mobile .noteMover-update-modal-github-link-mobile:active {
+.is-mobile .advancedNoteMover-update-modal-github-link-mobile:active {
   opacity: 0.8;
 }
 
-.is-mobile .noteMover-update-modal-footer-mobile {
+.is-mobile .advancedNoteMover-update-modal-footer-mobile {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.is-mobile .noteMover-update-modal-footer-mobile .setting-item {
+.is-mobile .advancedNoteMover-update-modal-footer-mobile .setting-item {
   width: 100%;
   margin-bottom: 0;
 }
 
-.is-mobile .noteMover-update-modal-footer-mobile .setting-item button {
+.is-mobile .advancedNoteMover-update-modal-footer-mobile .setting-item button {
   width: 100%;
   min-height: 48px;
   font-size: 16px;
 }
 
 /* Confirm Modal Mobile Styles */
-.is-mobile .noteMover-confirm-modal {
+.is-mobile .advancedNoteMover-confirm-modal {
   padding: 16px 0 !important;
 }
 
-.is-mobile .noteMover-confirm-modal-message-mobile {
+.is-mobile .advancedNoteMover-confirm-modal-message-mobile {
   font-size: 1em;
   line-height: 1.6;
   margin-bottom: 16px;
   word-break: break-word;
 }
 
-.is-mobile .noteMover-confirm-modal .setting-item {
+.is-mobile .advancedNoteMover-confirm-modal .setting-item {
   width: 100%;
   margin-bottom: 12px;
 }
 
-.is-mobile .noteMover-confirm-modal .setting-item:last-child {
+.is-mobile .advancedNoteMover-confirm-modal .setting-item:last-child {
   margin-bottom: 0;
 }
 
-.is-mobile .noteMover-confirm-modal .setting-item button {
+.is-mobile .advancedNoteMover-confirm-modal .setting-item button {
   width: 100%;
   min-height: 48px;
   font-size: 16px;
 }
 
 /* Mobile Modal General Improvements */
-.is-mobile .noteMover-modal-title {
+.is-mobile .advancedNoteMover-modal-title {
   font-size: 1.3em;
   margin-bottom: 12px;
 }
 
-.is-mobile .noteMover-modal-subtitle {
+.is-mobile .advancedNoteMover-modal-subtitle {
   font-size: 0.95em;
   margin-bottom: 16px;
   line-height: 1.5;
 }
 
-.is-mobile .noteMover-modal-section-header h3 {
+.is-mobile .advancedNoteMover-modal-section-header h3 {
   font-size: 1.1em;
   margin-bottom: 12px;
 }
 
 /* Optimize for large vertical aspect ratios */
 @media (max-height: 800px) and (orientation: portrait) {
-  .is-mobile .modal-container.noteMover-modal-size-mobile .modal-content {
+  .is-mobile
+    .modal-container.advancedNoteMover-modal-size-mobile
+    .modal-content {
     padding: 16px 12px !important;
   }
 
-  .is-mobile .noteMover-rule-editor-modal .modal-content {
+  .is-mobile .advancedNoteMover-rule-editor-modal .modal-content {
     padding: 16px 12px !important;
   }
 
-  .is-mobile .noteMover-modal-title {
+  .is-mobile .advancedNoteMover-modal-title {
     font-size: 1.2em;
     margin-bottom: 8px;
   }
 
-  .is-mobile .noteMover-modal-subtitle {
+  .is-mobile .advancedNoteMover-modal-subtitle {
     font-size: 0.9em;
     margin-bottom: 12px;
   }
 
-  .is-mobile .noteMover-history-entry-mobile,
-  .is-mobile .noteMover-preview-item-mobile,
-  .is-mobile .noteMover-rule-trigger-row-mobile {
+  .is-mobile .advancedNoteMover-history-entry-mobile,
+  .is-mobile .advancedNoteMover-preview-item-mobile {
     padding: 12px;
     margin-bottom: 12px;
     gap: 12px;
   }
 
-  .is-mobile .noteMover-changelog-version-mobile {
+  .is-mobile .advancedNoteMover-changelog-version-mobile {
     padding: 12px;
     margin-bottom: 12px;
   }
+}
 
-  .is-mobile .noteMover-rule-trigger-fields-mobile {
-    gap: 12px;
-  }
+.advancedNoteMover-preview-bulk-status {
+  margin-bottom: 0.5rem;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
 
-  .is-mobile .noteMover-rule-editor-footer-mobile {
-    margin-top: 16px;
-    padding-top: 16px;
-  }
+.advancedNoteMover-preview-bulk-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Preview modal: full-width footer buttons (replaces inline styles) */
+.note-mover-preview-modal .advancedNoteMover-modal-footer-mobile .setting-item button {
+  width: 100%;
+  min-height: 48px;
 }

@@ -1,5 +1,6 @@
 import { App, AbstractInputSuggest } from 'obsidian';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
+import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 
 export class TagSuggest extends AbstractInputSuggest<string> {
   private tags: Set<string>;
@@ -7,7 +8,8 @@ export class TagSuggest extends AbstractInputSuggest<string> {
 
   constructor(
     app: App,
-    private inputEl: HTMLInputElement
+    private inputEl: HTMLInputElement,
+    private vaultIndexCache?: PluginVaultIndexCache
   ) {
     super(app, inputEl);
     this.tags = new Set();
@@ -16,7 +18,11 @@ export class TagSuggest extends AbstractInputSuggest<string> {
   }
 
   private loadTags(): void {
-    this.tags = this.metadataExtractor.extractAllTags();
+    if (this.vaultIndexCache) {
+      this.tags = this.vaultIndexCache.getAllTagsCached(this.app);
+    } else {
+      this.tags = this.metadataExtractor.extractAllTags();
+    }
   }
 
   getSuggestions(inputStr: string): string[] {

@@ -1,4 +1,4 @@
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { createError, handleError } from 'src/utils/Error';
 import { NoticeManager } from 'src/utils/NoticeManager';
@@ -10,7 +10,7 @@ import { MobileUtils } from '../../utils/MobileUtils';
 
 export class ImportExportSettingsSection {
   constructor(
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     private containerEl: HTMLElement,
     private refreshDisplay: () => void
   ) {}
@@ -23,23 +23,30 @@ export class ImportExportSettingsSection {
     const exportSetting = new Setting(this.containerEl)
       .setName('Export settings')
       .setDesc('Export your current settings as a JSON file')
-      .addButton(btn =>
+      .addButton(btn => {
         btn
           .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.EXPORT_SETTINGS)
           .setCta()
           .onClick(async () => {
-            await this.exportSettings();
-          })
-      );
+            btn.setDisabled(true);
+            try {
+              await this.exportSettings();
+            } finally {
+              btn.setDisabled(false);
+            }
+          });
+      });
 
     // Add mobile optimization classes
     if (isMobile) {
-      exportSetting.settingEl.addClass('noteMover-mobile-optimized');
+      exportSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const controlEl = exportSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
+        (controlEl as HTMLElement).addClass(
+          'advancedNoteMover-mobile-button-control'
+        );
       }
     }
 
@@ -47,23 +54,30 @@ export class ImportExportSettingsSection {
     const importSetting = new Setting(this.containerEl)
       .setName('Import settings')
       .setDesc('Import settings from a JSON file')
-      .addButton(btn =>
+      .addButton(btn => {
         btn
           .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS)
           .setWarning()
           .onClick(async () => {
-            await this.importSettings();
-          })
-      );
+            btn.setDisabled(true);
+            try {
+              await this.importSettings();
+            } finally {
+              btn.setDisabled(false);
+            }
+          });
+      });
 
     // Add mobile optimization classes
     if (isMobile) {
-      importSetting.settingEl.addClass('noteMover-mobile-optimized');
+      importSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const controlEl = importSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
+        (controlEl as HTMLElement).addClass(
+          'advancedNoteMover-mobile-button-control'
+        );
       }
     }
   }
@@ -104,8 +118,9 @@ export class ImportExportSettingsSection {
       // Show success message
       NoticeManager.info(SETTINGS_CONSTANTS.UI_TEXTS.EXPORT_SUCCESS);
     } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       handleError(
-        createError(`Export failed: ${error.message}`),
+        createError(`Export failed: ${msg}`),
         'Export settings',
         false
       );
@@ -216,7 +231,7 @@ export class ImportExportSettingsSection {
           }
 
           if (Array.isArray(s.rules)) {
-            current.settings.rules = s.rules;
+            (current.settings as any).rules = s.rules;
           }
 
           if (s.retentionPolicy) {
@@ -230,17 +245,6 @@ export class ImportExportSettingsSection {
           // Import schemaVersion if present
           if (importedSettings.schemaVersion !== undefined) {
             current.schemaVersion = importedSettings.schemaVersion;
-          }
-
-          // Import enableLegacyRules (or migrate from old enableRuleV2)
-          if (s.enableLegacyRules !== undefined) {
-            current.settings.enableLegacyRules = !!s.enableLegacyRules;
-          } else if ((s as any).enableRuleV2 !== undefined) {
-            current.settings.enableLegacyRules = !(s as any).enableRuleV2;
-          }
-          if (s.legacyMigrationDismissed !== undefined) {
-            current.settings.legacyMigrationDismissed =
-              !!s.legacyMigrationDismissed;
           }
 
           // Import RuleV2 if present
@@ -272,7 +276,8 @@ export class ImportExportSettingsSection {
               .map((v: string) => ({ value: v }));
           }
           if (Array.isArray(sanitizedSettings.rules)) {
-            current.settings.rules = sanitizedSettings.rules;
+            (current.settings as { rules?: unknown[] }).rules =
+              sanitizedSettings.rules;
           }
           if (sanitizedSettings.retentionPolicy) {
             current.settings.retentionPolicy =
@@ -283,29 +288,28 @@ export class ImportExportSettingsSection {
           }
         }
 
-        // Migrate V1 rules to V2 when not in legacy mode
-        if (!current.settings.enableLegacyRules) {
-          if (
-            RuleMigrationService.shouldMigrate(
-              current.settings.rules,
-              current.settings.rulesV2
-            )
-          ) {
-            console.log('Migrating imported Rule V1 to Rule V2...');
-            current.settings.rulesV2 = RuleMigrationService.migrateRules(
-              current.settings.rules
-            );
-            console.log(
-              `Migrated ${current.settings.rulesV2.length} imported rules to V2 format`
-            );
-          }
+        const legacyRules = (current.settings as any).rules;
+        if (
+          Array.isArray(legacyRules) &&
+          RuleMigrationService.shouldMigrate(
+            legacyRules,
+            current.settings.rulesV2 ?? []
+          )
+        ) {
+          console.log('Migrating imported Rule V1 to Rule V2...');
+          current.settings.rulesV2 =
+            RuleMigrationService.migrateRules(legacyRules);
+          (current.settings as any).rules = [];
+          console.log(
+            `Migrated ${(current.settings.rulesV2 ?? []).length} imported rules to V2 format`
+          );
         }
 
         // Save settings
         await this.plugin.save_settings();
 
         // Update RuleManager
-        this.plugin.noteMover.updateRuleManager();
+        this.plugin.advancedNoteMover.updateRuleManager();
 
         // Refresh the settings display
         this.refreshDisplay();
@@ -314,9 +318,10 @@ export class ImportExportSettingsSection {
         NoticeManager.success(SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SUCCESS);
       }
     } catch (error) {
-      if (error.message !== 'File selection cancelled') {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg !== 'File selection cancelled') {
         handleError(
-          createError(`Import failed: ${error.message}`),
+          createError(`Import failed: ${msg}`),
           'Import settings',
           false
         );

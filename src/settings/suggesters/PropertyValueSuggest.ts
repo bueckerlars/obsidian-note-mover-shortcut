@@ -1,15 +1,17 @@
 import { App, AbstractInputSuggest } from 'obsidian';
+import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 
 export class PropertyValueSuggest extends AbstractInputSuggest<string> {
   private propertyName: string;
   private propertyType: 'text' | 'number' | 'checkbox' | 'date' | 'list';
-  private availableValues: Set<string>;
+  private availableValues = new Set<string>();
 
   constructor(
     app: App,
     private inputEl: HTMLInputElement,
     propertyName: string,
-    propertyType: 'text' | 'number' | 'checkbox' | 'date' | 'list'
+    propertyType: 'text' | 'number' | 'checkbox' | 'date' | 'list',
+    private vaultIndexCache?: PluginVaultIndexCache
   ) {
     super(app, inputEl);
     this.propertyName = propertyName;
@@ -22,6 +24,15 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
 
     // Keine Vorschläge für Date-Typ
     if (this.propertyType === 'date') {
+      return;
+    }
+
+    if (this.vaultIndexCache) {
+      this.availableValues = this.vaultIndexCache.getPropertyValueSetCached(
+        this.app,
+        this.propertyName,
+        this.propertyType
+      );
       return;
     }
 
@@ -157,18 +168,18 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
   renderSuggestion(value: string, el: HTMLElement): void {
     // Create a container for the suggestion
     const container = el.createDiv({
-      cls: 'noteMover-property-value-suggestion',
+      cls: 'advancedNoteMover-property-value-suggestion',
     });
 
     // Value text
     const valueEl = container.createDiv({
-      cls: 'noteMover-property-value-text',
+      cls: 'advancedNoteMover-property-value-text',
     });
     valueEl.setText(value);
 
     // Type indicator
     const typeEl = container.createDiv({
-      cls: 'noteMover-property-value-type',
+      cls: 'advancedNoteMover-property-value-type',
     });
     typeEl.setText(`(${this.propertyType})`);
   }

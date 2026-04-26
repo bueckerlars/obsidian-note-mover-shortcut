@@ -12,30 +12,32 @@ import { TagSuggest } from '../settings/suggesters/TagSuggest';
 import { PropertySuggest } from '../settings/suggesters/PropertySuggest';
 import { PropertyValueSuggest } from '../settings/suggesters/PropertyValueSuggest';
 import { DragDropManager } from '../utils/DragDropManager';
-import { MobileUtils } from '../utils/MobileUtils';
 import {
   getOperatorsForCriteriaType,
   getOperatorsForPropertyType,
   getDefaultOperatorForCriteriaType,
-  getAvailablePropertyTypes,
   isRegexOperator,
   operatorRequiresValue,
   getPropertyTypeFromVault,
 } from '../utils/OperatorMapping';
-import {
-  MobileModalInput,
-  MobileModalToggle,
-  MobileModalButton,
-  MobileModalSection,
-  MobileTriggerCard,
-  MobileTriggerCardCallbacks,
-} from './mobile';
+import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault-index-cache';
+import { ConfirmModal } from './ConfirmModal';
+import { NoticeManager } from '../utils/NoticeManager';
+import { SETTINGS_CONSTANTS } from '../config/constants';
+
+function escapeHtmlForConfirm(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 interface RuleEditorModalOptions {
   rule: RuleV2;
   isEditMode: boolean;
   onSave: (rule: RuleV2) => Promise<void>;
   onDelete?: () => Promise<void>;
+  vaultIndexCache?: PluginVaultIndexCache;
 }
 
 export class RuleEditorModal extends BaseModal {
@@ -43,13 +45,12 @@ export class RuleEditorModal extends BaseModal {
   private workingRule: RuleV2;
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
-  private mobileTriggerCards: MobileTriggerCard[] = [];
 
   constructor(app: App, options: RuleEditorModalOptions) {
     super(app, {
       title: 'Rule Editor',
       size: 'large',
-      cssClass: 'noteMover-rule-editor-modal',
+      cssClass: 'advancedNoteMover-rule-editor-modal',
       autoFocus: false, // Disable auto focus to prevent scroll issues on mobile
     });
     this.ruleOptions = options;
@@ -59,55 +60,7 @@ export class RuleEditorModal extends BaseModal {
 
   protected createContent(): void {
     const { contentEl } = this;
-
-    if (MobileUtils.isMobile()) {
-      this.createMobileContent(contentEl);
-    } else {
-      this.createDesktopContent(contentEl);
-    }
-  }
-
-  private createMobileContent(container: HTMLElement): void {
-    // Name Card
-    const nameInput = new MobileModalInput(
-      container,
-      'Name',
-      undefined,
-      'Enter rule name',
-      this.workingRule.name,
-      async value => {
-        this.workingRule.name = value;
-      }
-    );
-
-    // Active Toggle Card
-    new MobileModalToggle(
-      container,
-      'Active',
-      'Enable or disable this rule',
-      this.workingRule.active,
-      async value => {
-        this.workingRule.active = value;
-      }
-    );
-
-    // Match Conditions Card
-    this.createMobileMatchConditions(container);
-
-    // Destination Card
-    this.createMobileDestination(container);
-
-    // Separator
-    container.createEl('hr', { cls: 'noteMover-rule-editor-separator' });
-
-    // Conditions Section
-    this.createMobileConditionsSection(container);
-
-    // Separator
-    container.createEl('hr', { cls: 'noteMover-rule-editor-separator' });
-
-    // Footer Actions
-    this.createMobileFooterActions(container);
+    this.createDesktopContent(contentEl);
   }
 
   private createDesktopContent(container: HTMLElement): void {
@@ -121,13 +74,17 @@ export class RuleEditorModal extends BaseModal {
     this.createDestinationInput(container);
 
     // Separator
-    container.createEl('hr', { cls: 'noteMover-rule-editor-separator' });
+    container.createEl('hr', {
+      cls: 'advancedNoteMover-rule-editor-separator',
+    });
 
     // Conditions Section
     this.createConditionsSection(container);
 
     // Separator
-    container.createEl('hr', { cls: 'noteMover-rule-editor-separator' });
+    container.createEl('hr', {
+      cls: 'advancedNoteMover-rule-editor-separator',
+    });
 
     // Footer Actions
     this.createFooterActions(container);
@@ -156,67 +113,20 @@ export class RuleEditorModal extends BaseModal {
             toggle.setTooltip(value ? 'Rule is active' : 'Rule is inactive');
           })
       );
-
-    // Make text input wider
-    const textInput = setting.controlEl.querySelector('input[type="text"]');
-    if (textInput) {
-      (textInput as HTMLElement).style.width = '100%';
-    }
-  }
-
-  private createMobileMatchConditions(container: HTMLElement): void {
-    const card = container.createDiv({ cls: 'noteMover-mobile-modal-card' });
-    const header = card.createDiv({
-      cls: 'noteMover-mobile-modal-card-header',
-    });
-    header.createDiv({
-      cls: 'noteMover-mobile-modal-card-title',
-      text: 'Match Conditions',
-    });
-    const content = card.createDiv({
-      cls: 'noteMover-mobile-modal-card-content',
-    });
-
-    const buttonContainer = content.createDiv({
-      cls: 'noteMover-rule-aggregation-buttons-mobile',
-    });
-
-    const aggregations: AggregationType[] = ['all', 'any', 'none'];
-    aggregations.forEach(agg => {
-      const button = buttonContainer.createEl('button', {
-        text: agg.charAt(0).toUpperCase() + agg.slice(1),
-        cls: 'noteMover-rule-aggregation-button',
-      });
-
-      if (this.workingRule.aggregation === agg) {
-        button.addClass('is-active');
-      }
-
-      button.onclick = () => {
-        this.workingRule.aggregation = agg;
-        // Update button states
-        buttonContainer
-          .querySelectorAll('.noteMover-rule-aggregation-button')
-          .forEach(btn => {
-            btn.removeClass('is-active');
-          });
-        button.addClass('is-active');
-      };
-    });
   }
 
   private createMatchConditionsSelector(container: HTMLElement): void {
     const setting = new Setting(container).setName('Match Conditions');
 
     const buttonContainer = setting.controlEl.createDiv({
-      cls: 'noteMover-rule-aggregation-buttons',
+      cls: 'advancedNoteMover-rule-aggregation-buttons',
     });
 
     const aggregations: AggregationType[] = ['all', 'any', 'none'];
     aggregations.forEach(agg => {
       const button = buttonContainer.createEl('button', {
         text: agg.charAt(0).toUpperCase() + agg.slice(1),
-        cls: 'noteMover-rule-aggregation-button',
+        cls: 'advancedNoteMover-rule-aggregation-button',
       });
 
       if (this.workingRule.aggregation === agg) {
@@ -227,51 +137,12 @@ export class RuleEditorModal extends BaseModal {
         this.workingRule.aggregation = agg;
         // Update button states
         buttonContainer
-          .querySelectorAll('.noteMover-rule-aggregation-button')
+          .querySelectorAll('.advancedNoteMover-rule-aggregation-button')
           .forEach(btn => {
             btn.removeClass('is-active');
           });
         button.addClass('is-active');
       };
-    });
-  }
-
-  private createMobileDestination(container: HTMLElement): void {
-    const card = container.createDiv({ cls: 'noteMover-mobile-modal-card' });
-    const header = card.createDiv({
-      cls: 'noteMover-mobile-modal-card-header',
-    });
-    header.createDiv({
-      cls: 'noteMover-mobile-modal-card-title',
-      text: 'Destination',
-    });
-    card.createDiv({
-      cls: 'noteMover-mobile-modal-card-description',
-      text: 'Folder or template where files matching this rule will be moved',
-    });
-    card.createDiv({
-      cls: 'noteMover-mobile-modal-card-description',
-      text: 'Supports templates like {{tag.tasks/personal}} or {{property.status}}',
-    });
-    const content = card.createDiv({
-      cls: 'noteMover-mobile-modal-card-content',
-    });
-
-    const searchContainer = content.createDiv({
-      cls: 'search-input-container',
-    });
-    const input = searchContainer.createEl('input', {
-      type: 'text',
-      cls: 'noteMover-mobile-text-input',
-      placeholder:
-        'Example: folder1/folder2 or Personal/Tasks/{{property.status}}',
-      value: this.workingRule.destination,
-    });
-
-    new FolderSuggest(this.app, input);
-
-    input.addEventListener('input', () => {
-      this.workingRule.destination = input.value;
     });
   }
 
@@ -290,68 +161,37 @@ export class RuleEditorModal extends BaseModal {
           .onChange(value => {
             this.workingRule.destination = value;
           });
-        // Make search input wider
-        cb.inputEl.style.width = '100%';
       });
 
     // Move description below the input to give the input more horizontal space
     const descriptionText =
       'Folder or template where files matching this rule will be moved. Supports {{tag.*}} and {{property.*}} placeholders. Type {{tag. or {{property. to get template suggestions.';
     const descriptionEl = container.createDiv({
-      cls: 'noteMover-rule-destination-description',
+      cls: 'advancedNoteMover-rule-destination-description',
       text: descriptionText,
     });
 
     // Visually and accessibly associate the description with the input
-    const descriptionId = 'noteMover-rule-destination-description';
+    const descriptionId = 'advancedNoteMover-rule-destination-description';
     descriptionEl.setAttr('id', descriptionId);
     if (destinationInputEl) {
       destinationInputEl.setAttribute('aria-describedby', descriptionId);
     }
   }
 
-  private createMobileConditionsSection(container: HTMLElement): void {
-    const section = new MobileModalSection(container, 'Conditions');
-    const sectionEl = section.getSectionElement();
-
-    // Triggers container
-    this.triggersContainer = sectionEl.createDiv({
-      cls: 'noteMover-rule-triggers-container',
-    });
-
-    this.renderMobileTriggers();
-
-    // Add Condition Button
-    new MobileModalButton(
-      sectionEl,
-      '',
-      undefined,
-      '+ Add Condition',
-      () => {
-        this.workingRule.triggers.push({
-          criteriaType: 'tag',
-          operator: 'includes item',
-          value: '',
-        });
-        this.renderMobileTriggers();
-      },
-      {}
-    );
-  }
-
   private createConditionsSection(container: HTMLElement): void {
     const section = container.createDiv({
-      cls: 'noteMover-rule-conditions-section',
+      cls: 'advancedNoteMover-rule-conditions-section',
     });
 
     section.createEl('h3', {
       text: 'Conditions:',
-      cls: 'noteMover-rule-conditions-title',
+      cls: 'advancedNoteMover-rule-conditions-title',
     });
 
     // Triggers container
     this.triggersContainer = section.createDiv({
-      cls: 'noteMover-rule-triggers-container',
+      cls: 'advancedNoteMover-rule-triggers-container',
     });
 
     this.renderTriggers();
@@ -367,68 +207,6 @@ export class RuleEditorModal extends BaseModal {
         this.renderTriggers();
       })
     );
-  }
-
-  private renderMobileTriggers(): void {
-    if (!this.triggersContainer) return;
-
-    this.triggersContainer.empty();
-    this.mobileTriggerCards = [];
-
-    this.workingRule.triggers.forEach((trigger, index) => {
-      const callbacks: MobileTriggerCardCallbacks = {
-        onCriteriaTypeChange: () => {
-          this.renderMobileTriggers();
-        },
-        onOperatorChange: () => {
-          this.renderMobileTriggers();
-        },
-        onPropertyNameChange: () => {
-          this.renderMobileTriggers();
-        },
-        onValueChange: () => {
-          // Value change doesn't require re-render
-        },
-        onMoveUp: () => {
-          if (index > 0) {
-            const [movedTrigger] = this.workingRule.triggers.splice(index, 1);
-            this.workingRule.triggers.splice(index - 1, 0, movedTrigger);
-            this.renderMobileTriggers();
-          }
-        },
-        onMoveDown: () => {
-          if (index < this.workingRule.triggers.length - 1) {
-            const [movedTrigger] = this.workingRule.triggers.splice(index, 1);
-            this.workingRule.triggers.splice(index + 1, 0, movedTrigger);
-            this.renderMobileTriggers();
-          }
-        },
-        onDelete: () => {
-          this.workingRule.triggers.splice(index, 1);
-          if (this.workingRule.triggers.length === 0) {
-            this.workingRule.triggers.push({
-              criteriaType: 'tag',
-              operator: 'includes item',
-              value: '',
-            });
-          }
-          this.renderMobileTriggers();
-        },
-        canMoveUp: index > 0,
-        canMoveDown: index < this.workingRule.triggers.length - 1,
-        onRender: () => {
-          this.renderMobileTriggers();
-        },
-      };
-
-      const triggerCard = new MobileTriggerCard(
-        this.triggersContainer!,
-        trigger,
-        callbacks,
-        this.app
-      );
-      this.mobileTriggerCards.push(triggerCard);
-    });
   }
 
   private renderTriggers(): void {
@@ -456,11 +234,13 @@ export class RuleEditorModal extends BaseModal {
     index: number
   ): void {
     // Desktop only
-    const row = container.createDiv({ cls: 'noteMover-rule-trigger-row' });
+    const row = container.createDiv({
+      cls: 'advancedNoteMover-rule-trigger-row',
+    });
 
     // Desktop: Delete button (left side)
     const deleteBtn = row.createEl('button', {
-      cls: 'noteMover-rule-trigger-delete-btn clickable-icon',
+      cls: 'advancedNoteMover-rule-trigger-delete-btn clickable-icon',
     });
     setIcon(deleteBtn, 'x');
     deleteBtn.onclick = () => {
@@ -478,7 +258,7 @@ export class RuleEditorModal extends BaseModal {
 
     // CriteriaType Dropdown
     const criteriaTypeSelect = row.createEl('select', {
-      cls: 'dropdown noteMover-rule-criteria-type',
+      cls: 'dropdown advancedNoteMover-rule-criteria-type',
     });
     const criteriaTypes: CriteriaType[] = [
       'tag',
@@ -517,7 +297,7 @@ export class RuleEditorModal extends BaseModal {
 
     // Operator Dropdown (dynamically populated based on criteriaType)
     const operatorSelect = row.createEl('select', {
-      cls: 'dropdown noteMover-rule-operator',
+      cls: 'dropdown advancedNoteMover-rule-operator',
     });
     this.populateOperatorDropdown(operatorSelect, trigger);
 
@@ -527,7 +307,7 @@ export class RuleEditorModal extends BaseModal {
     if (trigger.criteriaType === 'properties') {
       propertyNameInput = row.createEl('input', {
         type: 'text',
-        cls: 'noteMover-rule-property-name',
+        cls: 'advancedNoteMover-rule-property-name',
         placeholder: 'Property Name',
         value: trigger.propertyName || '',
       });
@@ -541,7 +321,8 @@ export class RuleEditorModal extends BaseModal {
         // Automatische Typ-Erkennung
         const detectedType = getPropertyTypeFromVault(
           this.app,
-          trigger.propertyName
+          trigger.propertyName,
+          this.ruleOptions.vaultIndexCache
         );
         if (detectedType) {
           trigger.propertyType = detectedType;
@@ -555,7 +336,7 @@ export class RuleEditorModal extends BaseModal {
     if (operatorRequiresValue(trigger.operator)) {
       valueInput = row.createEl('input', {
         type: 'text',
-        cls: 'noteMover-rule-trigger-value',
+        cls: 'advancedNoteMover-rule-trigger-value',
         placeholder: trigger.criteriaType === 'tag' ? '#tag' : 'Value',
         value: trigger.value,
       });
@@ -565,7 +346,7 @@ export class RuleEditorModal extends BaseModal {
 
       // Add suggesters based on criteriaType
       if (trigger.criteriaType === 'tag') {
-        new TagSuggest(this.app, valueInput);
+        new TagSuggest(this.app, valueInput, this.ruleOptions.vaultIndexCache);
       } else if (trigger.criteriaType === 'folder') {
         new FolderSuggest(this.app, valueInput);
       } else if (
@@ -578,19 +359,20 @@ export class RuleEditorModal extends BaseModal {
           this.app,
           valueInput,
           trigger.propertyName,
-          trigger.propertyType
+          trigger.propertyType,
+          this.ruleOptions.vaultIndexCache
         );
       }
     }
 
     // Add CSS class to row based on whether value field is present
     if (!operatorRequiresValue(trigger.operator)) {
-      row.addClass('noteMover-no-value-field');
+      row.addClass('advancedNoteMover-no-value-field');
     }
 
     // Drag handle (right side)
     const handleContainer = row.createDiv({
-      cls: 'noteMover-drag-handle-container',
+      cls: 'advancedNoteMover-drag-handle-container',
     });
     const handle = DragDropManager.createDragHandle();
     handleContainer.appendChild(handle);
@@ -644,7 +426,7 @@ export class RuleEditorModal extends BaseModal {
         // Manually move the DOM element
         const items = Array.from(
           this.triggersContainer!.querySelectorAll(
-            '.noteMover-rule-trigger-row'
+            '.advancedNoteMover-rule-trigger-row'
           )
         );
         const movedElement = items[fromIndex] as HTMLElement;
@@ -656,7 +438,7 @@ export class RuleEditorModal extends BaseModal {
           // Insert at the new position
           const allItems = Array.from(
             this.triggersContainer!.querySelectorAll(
-              '.noteMover-rule-trigger-row'
+              '.advancedNoteMover-rule-trigger-row'
             )
           );
 
@@ -674,82 +456,34 @@ export class RuleEditorModal extends BaseModal {
         // No additional action needed
         return Promise.resolve();
       },
-      itemSelector: '.noteMover-rule-trigger-row',
-      handleSelector: '.noteMover-drag-handle',
+      itemSelector: '.advancedNoteMover-rule-trigger-row',
+      handleSelector: '.advancedNoteMover-drag-handle',
     });
-  }
-
-  private createMobileFooterActions(container: HTMLElement): void {
-    const footer = container.createDiv({
-      cls: 'noteMover-rule-editor-footer-mobile',
-    });
-
-    // Remove Rule button (only in edit mode)
-    if (this.ruleOptions.isEditMode && this.ruleOptions.onDelete) {
-      new MobileModalButton(
-        footer,
-        '',
-        undefined,
-        'Remove Rule',
-        async () => {
-          const confirmed = confirm(
-            `Are you sure you want to delete the rule "${this.workingRule.name}"?\n\nThis action cannot be undone.`
-          );
-          if (confirmed && this.ruleOptions.onDelete) {
-            await this.ruleOptions.onDelete();
-            this.close();
-          }
-        },
-        { isDanger: true }
-      );
-    }
-
-    // Cancel button
-    new MobileModalButton(
-      footer,
-      '',
-      undefined,
-      'Cancel',
-      () => {
-        this.close();
-      },
-      {}
-    );
-
-    // Save button
-    new MobileModalButton(
-      footer,
-      '',
-      undefined,
-      'Save',
-      async () => {
-        if (this.validateRule()) {
-          await this.ruleOptions.onSave(this.workingRule);
-          this.close();
-        }
-      },
-      { isPrimary: true }
-    );
   }
 
   private createFooterActions(container: HTMLElement): void {
     const footer = container.createDiv({
-      cls: 'noteMover-rule-editor-footer',
+      cls: 'advancedNoteMover-rule-editor-footer',
     });
 
     // Remove Rule button (only in edit mode)
     if (this.ruleOptions.isEditMode && this.ruleOptions.onDelete) {
       const leftSide = footer.createDiv({
-        cls: 'noteMover-rule-editor-footer-left',
+        cls: 'advancedNoteMover-rule-editor-footer-left',
       });
       new Setting(leftSide).addButton(btn =>
         btn
           .setButtonText('Remove Rule')
           .setWarning()
           .onClick(async () => {
-            const confirmed = confirm(
-              `Are you sure you want to delete the rule "${this.workingRule.name}"?\n\nThis action cannot be undone.`
-            );
+            const safe = escapeHtmlForConfirm(this.workingRule.name);
+            const confirmed = await ConfirmModal.show(this.app, {
+              title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
+              message: `Are you sure you want to delete the rule <strong>"${safe}"</strong>?<br/><br/>This action cannot be undone.`,
+              confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
+              cancelText: 'Cancel',
+              danger: true,
+            });
             if (confirmed && this.ruleOptions.onDelete) {
               await this.ruleOptions.onDelete();
               this.close();
@@ -760,7 +494,7 @@ export class RuleEditorModal extends BaseModal {
 
     // Right side: Cancel and Save
     const rightSide = footer.createDiv({
-      cls: 'noteMover-rule-editor-footer-right',
+      cls: 'advancedNoteMover-rule-editor-footer-right',
     });
 
     new Setting(rightSide)
@@ -785,7 +519,7 @@ export class RuleEditorModal extends BaseModal {
   private validateRule(): boolean {
     // Validate name
     if (!this.workingRule.name || this.workingRule.name.trim() === '') {
-      alert('Rule name cannot be empty.');
+      NoticeManager.error('Rule name cannot be empty.');
       return false;
     }
 
@@ -794,13 +528,13 @@ export class RuleEditorModal extends BaseModal {
       !this.workingRule.destination ||
       this.workingRule.destination.trim() === ''
     ) {
-      alert('Destination folder cannot be empty.');
+      NoticeManager.error('Destination folder cannot be empty.');
       return false;
     }
 
     // Validate triggers
     if (this.workingRule.triggers.length === 0) {
-      alert('At least one condition is required.');
+      NoticeManager.error('At least one condition is required.');
       return false;
     }
 
@@ -811,7 +545,7 @@ export class RuleEditorModal extends BaseModal {
       // Only validate value if the operator requires one
       if (operatorRequiresValue(trigger.operator)) {
         if (!trigger.value || trigger.value.trim() === '') {
-          alert(`Condition ${i + 1}: Value cannot be empty.`);
+          NoticeManager.error(`Condition ${i + 1}: Value cannot be empty.`);
           return false;
         }
 
@@ -820,7 +554,7 @@ export class RuleEditorModal extends BaseModal {
           try {
             new RegExp(trigger.value);
           } catch (e) {
-            alert(
+            NoticeManager.error(
               `Condition ${i + 1}: Invalid regex pattern: ${e instanceof Error ? e.message : 'Unknown error'}`
             );
             return false;

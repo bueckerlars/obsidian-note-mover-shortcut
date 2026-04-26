@@ -1,4 +1,3 @@
-import { Rule } from '../types/Rule';
 import {
   RuleV2,
   Trigger,
@@ -6,6 +5,12 @@ import {
   Operator,
   TextOperator,
 } from '../types/RuleV2';
+
+/** Persisted Rule V1 row (migration input only; never part of the public settings model after load). */
+export interface LegacyRuleV1 {
+  criteria: string;
+  path: string;
+}
 import {
   getDefaultOperatorForCriteriaType,
   getDefaultOperatorForPropertyType,
@@ -23,7 +28,7 @@ export class RuleMigrationService {
    * @param rulesV1 - Array of V1 rules to migrate
    * @returns Array of RuleV2 objects
    */
-  public static migrateRules(rulesV1: Rule[]): RuleV2[] {
+  public static migrateRules(rulesV1: LegacyRuleV1[]): RuleV2[] {
     if (!Array.isArray(rulesV1) || rulesV1.length === 0) {
       return [];
     }
@@ -40,7 +45,10 @@ export class RuleMigrationService {
    * @param index - Rule index for naming
    * @returns RuleV2 object or null if migration fails
    */
-  private static migrateRule(ruleV1: Rule, index: number): RuleV2 | null {
+  private static migrateRule(
+    ruleV1: LegacyRuleV1,
+    index: number
+  ): RuleV2 | null {
     if (!ruleV1 || !ruleV1.criteria || !ruleV1.path) {
       console.warn(
         `[RuleMigration] Rule ${index + 1}: Skipping invalid rule (missing criteria or path)`
@@ -316,7 +324,10 @@ export class RuleMigrationService {
    * @param rulesV2 - V2 rules array
    * @returns true if migration should be performed
    */
-  public static shouldMigrate(rulesV1: Rule[], rulesV2?: RuleV2[]): boolean {
+  public static shouldMigrate(
+    rulesV1: LegacyRuleV1[],
+    rulesV2?: RuleV2[]
+  ): boolean {
     // Migrate if V1 has rules and V2 is empty or undefined
     return (
       Array.isArray(rulesV1) &&

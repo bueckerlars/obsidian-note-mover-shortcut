@@ -1,5 +1,3 @@
-import { App } from 'obsidian';
-
 export interface DragDropItem {
   element: HTMLElement;
   index: number;
@@ -20,35 +18,39 @@ export class DragDropManager {
   private container: HTMLElement;
   private options: DragDropOptions;
 
+  private readonly onDragStartBound: (event: DragEvent) => void;
+  private readonly onDragOverBound: (event: DragEvent) => void;
+  private readonly onDropBound: (event: DragEvent) => void;
+  private readonly onDragEndBound: (event: DragEvent) => void;
+  private readonly onDragEnterBound: (event: DragEvent) => void;
+  private readonly onDragLeaveBound: (event: DragEvent) => void;
+
   constructor(container: HTMLElement, options: DragDropOptions) {
     this.container = container;
     this.options = options;
+    this.onDragStartBound = (e: DragEvent) => this.handleDragStart(e);
+    this.onDragOverBound = (e: DragEvent) => this.handleDragOver(e);
+    this.onDropBound = (e: DragEvent) => this.handleDrop(e);
+    this.onDragEndBound = (e: DragEvent) => this.handleDragEnd(e);
+    this.onDragEnterBound = (e: DragEvent) => this.handleDragEnter(e);
+    this.onDragLeaveBound = (e: DragEvent) => this.handleDragLeave(e);
     this.setupEventListeners();
   }
 
   private setupEventListeners(): void {
-    // Use event delegation for better performance
-    this.container.addEventListener(
-      'dragstart',
-      this.handleDragStart.bind(this)
-    );
-    this.container.addEventListener('dragover', this.handleDragOver.bind(this));
-    this.container.addEventListener('drop', this.handleDrop.bind(this));
-    this.container.addEventListener('dragend', this.handleDragEnd.bind(this));
-    this.container.addEventListener(
-      'dragenter',
-      this.handleDragEnter.bind(this)
-    );
-    this.container.addEventListener(
-      'dragleave',
-      this.handleDragLeave.bind(this)
-    );
+    // Use event delegation for better performance (stable references for removeEventListener)
+    this.container.addEventListener('dragstart', this.onDragStartBound);
+    this.container.addEventListener('dragover', this.onDragOverBound);
+    this.container.addEventListener('drop', this.onDropBound);
+    this.container.addEventListener('dragend', this.onDragEndBound);
+    this.container.addEventListener('dragenter', this.onDragEnterBound);
+    this.container.addEventListener('dragleave', this.onDragLeaveBound);
   }
 
   private handleDragStart(event: DragEvent): void {
     const target = event.target as HTMLElement;
     const handle = target.closest(
-      this.options.handleSelector || '.noteMover-drag-handle'
+      this.options.handleSelector || '.advancedNoteMover-drag-handle'
     );
 
     if (!handle) return;
@@ -67,7 +69,7 @@ export class DragDropManager {
     }
 
     // Add dragging class
-    item.classList.add('noteMover-dragging');
+    item.classList.add('advancedNoteMover-dragging');
   }
 
   private handleDragOver(event: DragEvent): void {
@@ -105,9 +107,9 @@ export class DragDropManager {
     }
 
     if (isAbove) {
-      item.classList.add('noteMover-drag-over-top');
+      item.classList.add('advancedNoteMover-drag-over-top');
     } else {
-      item.classList.add('noteMover-drag-over-bottom');
+      item.classList.add('advancedNoteMover-drag-over-bottom');
     }
   }
 
@@ -124,7 +126,7 @@ export class DragDropManager {
 
       // Only add drag-over class if it's not the same position
       if (targetIndex !== draggedIndex && targetIndex !== draggedIndex + 1) {
-        item.classList.add('noteMover-drag-over');
+        item.classList.add('advancedNoteMover-drag-over');
       }
     }
   }
@@ -141,9 +143,9 @@ export class DragDropManager {
 
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
         item.classList.remove(
-          'noteMover-drag-over',
-          'noteMover-drag-over-top',
-          'noteMover-drag-over-bottom'
+          'advancedNoteMover-drag-over',
+          'advancedNoteMover-drag-over-top',
+          'advancedNoteMover-drag-over-bottom'
         );
       }
     }
@@ -187,7 +189,7 @@ export class DragDropManager {
   private handleDragEnd(event: DragEvent): void {
     // Clean up
     if (this.draggedElement) {
-      this.draggedElement.classList.remove('noteMover-dragging');
+      this.draggedElement.classList.remove('advancedNoteMover-dragging');
     }
 
     this.clearDragOverClasses();
@@ -216,13 +218,13 @@ export class DragDropManager {
 
   private clearDragOverClasses(): void {
     const items = this.container.querySelectorAll(
-      '.noteMover-drag-over, .noteMover-drag-over-top, .noteMover-drag-over-bottom'
+      '.advancedNoteMover-drag-over, .advancedNoteMover-drag-over-top, .advancedNoteMover-drag-over-bottom'
     );
     items.forEach(item => {
       item.classList.remove(
-        'noteMover-drag-over',
-        'noteMover-drag-over-top',
-        'noteMover-drag-over-bottom'
+        'advancedNoteMover-drag-over',
+        'advancedNoteMover-drag-over-top',
+        'advancedNoteMover-drag-over-bottom'
       );
     });
   }
@@ -230,7 +232,7 @@ export class DragDropManager {
   // Public method to create a drag handle
   public static createDragHandle(): HTMLElement {
     const handle = document.createElement('div');
-    handle.className = 'noteMover-drag-handle';
+    handle.className = 'advancedNoteMover-drag-handle';
     handle.innerHTML = '⋮⋮'; // Vertical dots
     handle.setAttribute('draggable', 'true');
     handle.setAttribute('aria-label', 'Drag to reorder');
@@ -244,10 +246,10 @@ export class DragDropManager {
   // Public method to wrap a setting item with drag handle
   public static wrapWithDragHandle(settingItem: HTMLElement): HTMLElement {
     const wrapper = document.createElement('div');
-    wrapper.className = 'setting-item noteMover-with-drag-handle';
+    wrapper.className = 'setting-item advancedNoteMover-with-drag-handle';
 
     const handleContainer = document.createElement('div');
-    handleContainer.className = 'noteMover-drag-handle-container';
+    handleContainer.className = 'advancedNoteMover-drag-handle-container';
     handleContainer.appendChild(this.createDragHandle());
 
     wrapper.appendChild(handleContainer);
@@ -258,26 +260,11 @@ export class DragDropManager {
 
   // Cleanup method
   public destroy(): void {
-    this.container.removeEventListener(
-      'dragstart',
-      this.handleDragStart.bind(this)
-    );
-    this.container.removeEventListener(
-      'dragover',
-      this.handleDragOver.bind(this)
-    );
-    this.container.removeEventListener('drop', this.handleDrop.bind(this));
-    this.container.removeEventListener(
-      'dragend',
-      this.handleDragEnd.bind(this)
-    );
-    this.container.removeEventListener(
-      'dragenter',
-      this.handleDragEnter.bind(this)
-    );
-    this.container.removeEventListener(
-      'dragleave',
-      this.handleDragLeave.bind(this)
-    );
+    this.container.removeEventListener('dragstart', this.onDragStartBound);
+    this.container.removeEventListener('dragover', this.onDragOverBound);
+    this.container.removeEventListener('drop', this.onDropBound);
+    this.container.removeEventListener('dragend', this.onDragEndBound);
+    this.container.removeEventListener('dragenter', this.onDragEnterBound);
+    this.container.removeEventListener('dragleave', this.onDragLeaveBound);
   }
 }

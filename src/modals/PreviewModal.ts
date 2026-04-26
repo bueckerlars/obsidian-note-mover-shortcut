@@ -1,6 +1,6 @@
-import { Setting, App, TFile, Notice } from 'obsidian';
+import { Setting, App, TFile } from 'obsidian';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
 import { MobileUtils } from '../utils/MobileUtils';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
@@ -9,10 +9,11 @@ import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class PreviewModal extends BaseModal {
   private movePreview: MovePreview;
+  private actionFooterEl: HTMLElement | null = null;
 
   constructor(
     app: App,
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     movePreview: MovePreview,
     options: BaseModalOptions = {}
   ) {
@@ -34,7 +35,7 @@ export class PreviewModal extends BaseModal {
     const subtitle = `${stats.totalFiles} files analyzed • ${stats.successfulMoves.length} will be moved`;
     contentEl.createEl('p', {
       text: subtitle,
-      cls: 'noteMover-modal-subtitle',
+      cls: 'advancedNoteMover-modal-subtitle',
     });
 
     // Settings info removed - Rules and Filter are always enabled now
@@ -49,7 +50,7 @@ export class PreviewModal extends BaseModal {
     // No files message
     if (stats.totalFiles === 0) {
       contentEl.createEl('div', {
-        cls: 'noteMover-modal-empty',
+        cls: 'advancedNoteMover-modal-empty',
         text: 'No files found to analyze.',
       });
     }
@@ -66,85 +67,85 @@ export class PreviewModal extends BaseModal {
     const section = this.createSection(
       container,
       isMobile
-        ? 'noteMover-preview-section noteMover-preview-section-success noteMover-preview-section-mobile'
-        : 'noteMover-preview-section noteMover-preview-section-success'
+        ? 'advancedNoteMover-preview-section advancedNoteMover-preview-section-success advancedNoteMover-preview-section-mobile'
+        : 'advancedNoteMover-preview-section advancedNoteMover-preview-section-success'
     );
 
     const header = section.createEl('div', {
-      cls: 'noteMover-modal-section-header',
+      cls: 'advancedNoteMover-modal-section-header',
     });
     header.innerHTML = `<h3>✅ Files to be moved (${entries.length})</h3>`;
 
     const list = section.createEl('div', {
       cls: isMobile
-        ? 'noteMover-modal-list noteMover-modal-list-mobile'
-        : 'noteMover-modal-list',
+        ? 'advancedNoteMover-modal-list advancedNoteMover-modal-list-mobile'
+        : 'advancedNoteMover-modal-list',
     });
 
     entries.forEach(entry => {
       const item = list.createEl('div', {
         cls: isMobile
-          ? 'noteMover-modal-list-item noteMover-preview-item-success noteMover-preview-item-mobile'
-          : 'noteMover-modal-list-item noteMover-preview-item-success',
+          ? 'advancedNoteMover-modal-list-item advancedNoteMover-preview-item-success advancedNoteMover-preview-item-mobile'
+          : 'advancedNoteMover-modal-list-item advancedNoteMover-preview-item-success',
       });
 
       const mainInfo = item.createEl('div', {
-        cls: 'noteMover-preview-item-main',
+        cls: 'advancedNoteMover-preview-item-main',
       });
       const fileName = mainInfo.createEl('div', {
-        cls: 'noteMover-preview-item-filename',
+        cls: 'advancedNoteMover-preview-item-filename',
       });
       fileName.textContent = entry.fileName;
 
       const pathInfo = mainInfo.createEl('div', {
         cls: isMobile
-          ? 'noteMover-preview-item-paths noteMover-preview-item-paths-mobile'
-          : 'noteMover-preview-item-paths',
+          ? 'advancedNoteMover-preview-item-paths advancedNoteMover-preview-item-paths-mobile'
+          : 'advancedNoteMover-preview-item-paths',
       });
 
       if (isMobile) {
         // Mobile: Stack paths vertically
         const currentPathEl = pathInfo.createEl('div', {
-          cls: 'noteMover-preview-path-mobile noteMover-preview-path-current',
+          cls: 'advancedNoteMover-preview-path-mobile advancedNoteMover-preview-path-current',
         });
         currentPathEl.textContent = entry.currentPath;
 
         const arrowEl = pathInfo.createEl('div', {
-          cls: 'noteMover-preview-arrow-mobile',
+          cls: 'advancedNoteMover-preview-arrow-mobile',
         });
         arrowEl.textContent = '↓';
 
         const targetPathEl = pathInfo.createEl('div', {
-          cls: 'noteMover-preview-path-mobile noteMover-preview-path-target',
+          cls: 'advancedNoteMover-preview-path-mobile advancedNoteMover-preview-path-target',
         });
         targetPathEl.textContent = entry.targetPath;
       } else {
         // Desktop: Horizontal layout
         pathInfo.innerHTML = `
-          <span class="noteMover-current-path">${entry.currentPath}</span>
-          <span class="noteMover-arrow">→</span>
-          <span class="noteMover-target-path">${entry.targetPath}</span>
+          <span class="advancedNoteMover-current-path">${entry.currentPath}</span>
+          <span class="advancedNoteMover-arrow">→</span>
+          <span class="advancedNoteMover-target-path">${entry.targetPath}</span>
         `;
       }
 
       const details = item.createEl('div', {
         cls: isMobile
-          ? 'noteMover-preview-item-details noteMover-preview-item-details-mobile'
-          : 'noteMover-preview-item-details',
+          ? 'advancedNoteMover-preview-item-details advancedNoteMover-preview-item-details-mobile'
+          : 'advancedNoteMover-preview-item-details',
       });
 
       if (entry.matchedRule) {
         const rule = details.createEl('div', {
-          cls: 'noteMover-preview-item-rule',
+          cls: 'advancedNoteMover-preview-item-rule',
         });
-        rule.innerHTML = `<span class="noteMover-rule-label">Rule:</span> <code>${entry.matchedRule}</code>`;
+        rule.innerHTML = `<span class="advancedNoteMover-rule-label">Rule:</span> <code>${entry.matchedRule}</code>`;
       }
 
       if (entry.tags && entry.tags.length > 0) {
         const tags = details.createEl('div', {
-          cls: 'noteMover-preview-item-tags',
+          cls: 'advancedNoteMover-preview-item-tags',
         });
-        tags.innerHTML = `<span class="noteMover-tags-label">Tags:</span> ${entry.tags.map(tag => `<span class="noteMover-tag">${tag}</span>`).join(' ')}`;
+        tags.innerHTML = `<span class="advancedNoteMover-tags-label">Tags:</span> ${entry.tags.map(tag => `<span class="advancedNoteMover-tag">${tag}</span>`).join(' ')}`;
       }
     });
   }
@@ -155,9 +156,10 @@ export class PreviewModal extends BaseModal {
     const isMobile = MobileUtils.isMobile();
     const footer = container.createEl('div', {
       cls: isMobile
-        ? 'noteMover-modal-footer noteMover-modal-footer-mobile'
-        : 'noteMover-modal-footer',
+        ? 'advancedNoteMover-modal-footer advancedNoteMover-modal-footer-mobile'
+        : 'advancedNoteMover-modal-footer',
     });
+    this.actionFooterEl = footer;
 
     const buttonContainer = this.createButtonContainer(footer);
 
@@ -165,7 +167,7 @@ export class PreviewModal extends BaseModal {
       // Mobile: Stack buttons vertically
       // Execute moves button (only if there are moves to execute)
       if (this.movePreview.successfulMoves.length > 0) {
-        const executeSetting = new Setting(buttonContainer).addButton(btn => {
+        new Setting(buttonContainer).addButton(btn => {
           btn
             .setButtonText(
               `Move ${this.movePreview.successfulMoves.length} files`
@@ -175,24 +177,14 @@ export class PreviewModal extends BaseModal {
               this.executeMoves();
             });
         });
-        const executeBtn = executeSetting.settingEl.querySelector('button');
-        if (executeBtn) {
-          executeBtn.style.width = '100%';
-          executeBtn.style.minHeight = '48px';
-        }
       }
 
       // Cancel button
-      const cancelSetting = new Setting(buttonContainer).addButton(btn => {
+      new Setting(buttonContainer).addButton(btn => {
         btn.setButtonText('Cancel').onClick(() => {
           this.close();
         });
       });
-      const cancelBtn = cancelSetting.settingEl.querySelector('button');
-      if (cancelBtn) {
-        cancelBtn.style.width = '100%';
-        cancelBtn.style.minHeight = '48px';
-      }
     } else {
       // Desktop: Original horizontal layout
       // Cancel button
@@ -217,17 +209,36 @@ export class PreviewModal extends BaseModal {
   }
 
   private async executeMoves() {
-    this.close();
-
     const successfulEntries = this.movePreview.successfulMoves;
     let movedCount = 0;
     let errorCount = 0;
+    const abortCtl = new AbortController();
 
-    const bulkOperationId =
-      this.plugin.historyManager.startBulkOperation('bulk');
+    if (this.actionFooterEl) {
+      this.actionFooterEl.empty();
+      const status = this.actionFooterEl.createDiv({
+        cls: 'advancedNoteMover-preview-bulk-status',
+        text: `Moving files… (${successfulEntries.length} planned)`,
+      });
+      const row = this.actionFooterEl.createDiv({
+        cls: 'advancedNoteMover-preview-bulk-actions',
+      });
+      new Setting(row).addButton(btn =>
+        btn.setButtonText('Stop').onClick(() => {
+          abortCtl.abort();
+          status.setText('Stopping after current file…');
+        })
+      );
+    }
+
+    this.plugin.historyManager.startBulkOperation('bulk');
 
     try {
-      for (const entry of successfulEntries) {
+      for (let i = 0; i < successfulEntries.length; i++) {
+        const entry = successfulEntries[i];
+        if (abortCtl.signal.aborted) {
+          break;
+        }
         try {
           const file = this.app.vault.getAbstractFileByPath(entry.currentPath);
           if (!(file instanceof TFile) || !entry.targetPath) continue;
@@ -258,12 +269,35 @@ export class PreviewModal extends BaseModal {
           handleError(error, `Error moving file ${entry.fileName}`, false);
           errorCount++;
         }
+        if ((i + 1) % 50 === 0 && i + 1 < successfulEntries.length) {
+          await new Promise<void>(resolve => {
+            const ric = (
+              globalThis as typeof globalThis & {
+                requestIdleCallback?: (
+                  cb: IdleRequestCallback,
+                  opts?: IdleRequestOptions
+                ) => number;
+              }
+            ).requestIdleCallback;
+            if (typeof ric === 'function') {
+              ric(() => resolve(), { timeout: 250 });
+            } else {
+              setTimeout(resolve, 0);
+            }
+          });
+        }
       }
     } finally {
       this.plugin.historyManager.endBulkOperation();
     }
 
-    if (errorCount === 0) {
+    this.close();
+
+    if (abortCtl.signal.aborted) {
+      NoticeManager.info(
+        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).`
+      );
+    } else if (errorCount === 0) {
       NoticeManager.success(`Successfully moved ${movedCount} files!`);
     } else {
       NoticeManager.warning(
