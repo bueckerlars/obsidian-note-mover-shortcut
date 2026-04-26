@@ -1,11 +1,27 @@
 /* ===== SETTINGS STYLES ===== */
 
+.advancedNoteMover-settings-hint {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
 /* Search Input Styles */
 .advancedNoteMover-search {
   width: calc(100% - 20px);
 }
 
 /* ===== COMMON MODAL STYLES ===== */
+
+/* Consistent vertical rhythm for plugin modals */
+.note-mover-preview-modal,
+.note-mover-update-modal,
+.note-mover-history-modal,
+.advancedNoteMover-confirm-modal {
+  padding: 20px 0 20px 0;
+  box-sizing: border-box;
+}
 
 /* Modal Size Classes */
 .advancedNoteMover-modal-size-small {
@@ -156,7 +172,8 @@
   gap: 24px;
   flex-wrap: wrap;
   font-size: 0.9em;
-  color: var(--text-muted);
+  color: var(--text-normal);
+  opacity: 0.8;
 }
 
 .advancedNoteMover-modal-info-row span {
@@ -170,12 +187,6 @@
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 0.85em;
-}
-
-/* Verlaufshistorie Modal */
-.note-mover-history-modal {
-  padding: 32px 0 20px 0;
-  box-sizing: border-box;
 }
 
 /* Time Filter Container */
@@ -267,7 +278,8 @@
 }
 
 .advancedNoteMover-history-entry-paths {
-  color: var(--text-muted);
+  color: var(--text-normal);
+  opacity: 0.78;
   font-size: 0.92em;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -341,12 +353,6 @@
   border-left: 2px solid var(--background-modifier-border);
   margin-bottom: 0;
   border-bottom: 1px solid var(--background-modifier-border-hover);
-}
-
-/* Update Modal Styles */
-.note-mover-update-modal {
-  padding: 32px 0 20px 0;
-  box-sizing: border-box;
 }
 
 .advancedNoteMover-changelog-container {
@@ -430,12 +436,6 @@
   margin: 24px 0;
 }
 
-/* Preview Modal Styles */
-.note-mover-preview-modal {
-  padding: 16px 0 20px 0;
-  box-sizing: border-box;
-}
-
 .advancedNoteMover-preview-section {
   margin-bottom: 24px;
 }
@@ -486,7 +486,8 @@
 }
 
 .advancedNoteMover-current-path {
-  color: var(--text-muted);
+  color: var(--text-normal);
+  opacity: 0.78;
 }
 
 .advancedNoteMover-arrow {
@@ -496,7 +497,7 @@
 
 .advancedNoteMover-target-path {
   color: var(--text-success);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .advancedNoteMover-preview-item-details {
@@ -603,6 +604,11 @@
   cursor: grabbing;
 }
 
+.advancedNoteMover-drag-handle:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 /* Dragging State Styles */
 .setting-item.advancedNoteMover-dragging {
   opacity: 0.5;
@@ -659,7 +665,8 @@
   justify-content: space-between;
   width: 100%;
   gap: 16px;
-  padding: 8px 0;
+  padding: 8px 12px;
+  box-sizing: border-box;
 }
 
 .advancedNoteMover-rule-v2-name {
@@ -736,6 +743,11 @@
   border-color: var(--interactive-accent);
 }
 
+.advancedNoteMover-rule-aggregation-button:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 .advancedNoteMover-rule-conditions-section {
   margin: 16px 0;
 }
@@ -801,6 +813,11 @@
   background: var(--background-modifier-hover);
 }
 
+.advancedNoteMover-rule-trigger-delete-btn:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 .advancedNoteMover-rule-trigger-delete-btn svg {
   flex-shrink: 0;
 }
@@ -816,6 +833,12 @@
 .advancedNoteMover-rule-criteria-type:focus,
 .advancedNoteMover-rule-rule-type:focus {
   outline: none;
+}
+
+.advancedNoteMover-rule-criteria-type:focus-visible,
+.advancedNoteMover-rule-rule-type:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
   border-color: var(--interactive-accent);
 }
 
@@ -834,6 +857,11 @@
 
 .advancedNoteMover-rule-trigger-value:focus {
   outline: none;
+}
+
+.advancedNoteMover-rule-trigger-value:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
   border-color: var(--interactive-accent);
   background: var(--background-primary);
 }
@@ -895,6 +923,11 @@
   min-width: 0;
 }
 
+.advancedNoteMover-rule-property-name:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 /* When no value field is present, property name should fill available space */
 .advancedNoteMover-rule-trigger-row.advancedNoteMover-no-value-field
   .advancedNoteMover-rule-property-name {
@@ -943,13 +976,6 @@
 }
 
 /* Mobile Section Description */
-.advancedNoteMover-mobile-section-description {
-  font-size: 0.9em;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-
 .advancedNoteMover-mobile-section-description {
   font-size: 0.9em;
   color: var(--text-muted);
@@ -1138,6 +1164,11 @@
   opacity: 0.8;
 }
 
+.advancedNoteMover-mobile-action-btn:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 /* Mobile Rule Cards */
 .advancedNoteMover-mobile-rule-card {
   padding: 12px;
@@ -1226,7 +1257,7 @@
   padding: 12px;
   font-size: 16px;
   border-radius: 6px;
-  border: none;
+  border: 1px solid var(--background-modifier-error);
   cursor: pointer;
   font-weight: 500;
   background: var(--background-modifier-error);
@@ -1240,19 +1271,6 @@
 
 .advancedNoteMover-mobile-delete-btn:active {
   opacity: 0.8;
-}
-
-/* Mobile Filter Cards */
-.advancedNoteMover-mobile-filter-card {
-  padding: 12px;
-  margin-bottom: 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  background: var(--background-secondary);
-}
-
-.advancedNoteMover-mobile-filters-list-container {
-  margin-bottom: 12px;
 }
 
 /* Mobile Rules List Container */
@@ -1273,7 +1291,8 @@
 
 .advancedNoteMover-mobile-retention-controls input[type='text'],
 .advancedNoteMover-mobile-retention-controls .advancedNoteMover-mobile-dropdown,
-.advancedNoteMover-mobile-retention-controls select {
+.advancedNoteMover-mobile-retention-controls select,
+.advancedNoteMover-mobile-retention-controls .dropdown {
   width: 100%;
   min-height: 48px;
   padding: 12px;
@@ -1413,6 +1432,11 @@
   cursor: not-allowed;
 }
 
+.advancedNoteMover-mobile-move-button:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
 .advancedNoteMover-mobile-move-button[style*='display: none'] {
   display: none !important;
 }
@@ -1488,20 +1512,6 @@
 }
 
 .advancedNoteMover-mobile-filter-input {
-  min-height: 44px;
-  width: 100%;
-  font-size: 16px;
-}
-
-/* Mobile retention controls */
-.advancedNoteMover-mobile-retention-controls {
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-
-.advancedNoteMover-mobile-retention-controls input[type='text'],
-.advancedNoteMover-mobile-retention-controls .dropdown {
   min-height: 44px;
   width: 100%;
   font-size: 16px;
@@ -1793,7 +1803,7 @@
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-    padding: 12px 0;
+    padding: 12px 12px;
   }
 
   .advancedNoteMover-rule-v2-name {
@@ -2529,4 +2539,10 @@
 .advancedNoteMover-preview-bulk-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+/* Preview modal: full-width footer buttons (replaces inline styles) */
+.note-mover-preview-modal .advancedNoteMover-modal-footer-mobile .setting-item button {
+  width: 100%;
+  min-height: 48px;
 }

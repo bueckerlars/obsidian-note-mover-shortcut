@@ -167,7 +167,7 @@ export class PreviewModal extends BaseModal {
       // Mobile: Stack buttons vertically
       // Execute moves button (only if there are moves to execute)
       if (this.movePreview.successfulMoves.length > 0) {
-        const executeSetting = new Setting(buttonContainer).addButton(btn => {
+        new Setting(buttonContainer).addButton(btn => {
           btn
             .setButtonText(
               `Move ${this.movePreview.successfulMoves.length} files`
@@ -177,24 +177,14 @@ export class PreviewModal extends BaseModal {
               this.executeMoves();
             });
         });
-        const executeBtn = executeSetting.settingEl.querySelector('button');
-        if (executeBtn) {
-          executeBtn.style.width = '100%';
-          executeBtn.style.minHeight = '48px';
-        }
       }
 
       // Cancel button
-      const cancelSetting = new Setting(buttonContainer).addButton(btn => {
+      new Setting(buttonContainer).addButton(btn => {
         btn.setButtonText('Cancel').onClick(() => {
           this.close();
         });
       });
-      const cancelBtn = cancelSetting.settingEl.querySelector('button');
-      if (cancelBtn) {
-        cancelBtn.style.width = '100%';
-        cancelBtn.style.minHeight = '48px';
-      }
     } else {
       // Desktop: Original horizontal layout
       // Cancel button

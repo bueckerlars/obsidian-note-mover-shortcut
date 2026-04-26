@@ -19,12 +19,10 @@ export class FilterSettingsSection {
     // Filter settings
     new Setting(this.containerEl).setName('Filter').setHeading();
 
-    // Add description for blacklist filters
-    new Setting(this.containerEl)
-      .setName('Filter Description')
-      .setDesc(
-        'These are blacklist filters. Files that match any of the specified criteria will be excluded from movement operations.'
-      );
+    // Blacklist filter explanation (description-only row reads clearer than a fake "setting" name)
+    new Setting(this.containerEl).setDesc(
+      'Blacklist filters: files that match any criterion are excluded from move operations.'
+    );
 
     this.addPeriodicMovementFilterArray();
 
@@ -72,6 +70,13 @@ export class FilterSettingsSection {
 
     // Setup drag & drop manager
     this.setupDragDropManager(filtersContainer);
+
+    if (this.plugin.settings.settings.filters.filter.length === 0) {
+      this.containerEl.createEl('p', {
+        cls: 'advancedNoteMover-settings-hint',
+        text: 'No filters are configured. Add one using the control below to exclude files from move operations.',
+      });
+    }
 
     this.plugin.settings.settings.filters.filter.forEach((filter, index) => {
       const s = new Setting(filtersContainer)

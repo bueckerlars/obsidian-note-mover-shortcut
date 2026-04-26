@@ -57,8 +57,8 @@ export const SETTINGS_CONSTANTS = {
   PLACEHOLDER_TEXTS: {
     FOLDER_PATH: 'Example: folder1/folder2',
     INTERVAL: '5',
-    FILTER: 'Filter (z.B. tag:, fileName:, path:, property:, ...)',
-    CRITERIA: 'Criteria (z.B. tag:, fileName:, path:, property:, ...)',
+    FILTER: 'Filter (e.g. tag:, fileName:, path:, property:, ...)',
+    CRITERIA: 'Criteria (e.g. tag:, fileName:, path:, property:, ...)',
     PATH: 'Path',
   } as const,
 
@@ -95,6 +95,9 @@ export const SETTINGS_CONSTANTS = {
     TIME_FILTER_WEEK: 'This Week',
     TIME_FILTER_MONTH: 'This Month',
     TIME_FILTER_LABEL: 'Show entries from:',
+    // Rule / confirm copy
+    DELETE_RULE_TITLE: 'Delete rule',
+    DELETE_RULE_CONFIRM: 'Delete',
     // Retention policy texts
     RETENTION_POLICY_TITLE: 'Retention Policy',
     RETENTION_POLICY_DESC: 'Configure how long history entries should be kept',

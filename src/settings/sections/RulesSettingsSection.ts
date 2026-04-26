@@ -5,6 +5,14 @@ import { DragDropManager } from '../../utils/DragDropManager';
 import { RuleEditorModal } from '../../modals/RuleEditorModal';
 import { RuleV2 } from '../../types/RuleV2';
 import { MobileUtils } from '../../utils/MobileUtils';
+import { ConfirmModal } from '../../modals/ConfirmModal';
+
+function escapeHtmlForConfirm(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -79,6 +87,13 @@ export class RulesSettingsSection {
     // Setup drag & drop manager for V2 rules
     this.setupDragDropManagerV2(rulesContainer);
 
+    if (this.plugin.settings.settings.rulesV2.length === 0) {
+      this.containerEl.createEl('p', {
+        cls: 'advancedNoteMover-settings-hint',
+        text: 'No rules are configured. Add one using the control below.',
+      });
+    }
+
     this.plugin.settings.settings.rulesV2.forEach((rule, index) => {
       const s = new Setting(rulesContainer);
 
@@ -117,10 +132,14 @@ export class RulesSettingsSection {
           .setIcon('trash')
           .setTooltip('Delete rule')
           .onClick(async () => {
-            // Show confirmation dialog
-            const confirmed = confirm(
-              `Are you sure you want to delete the rule "${rule.name}"?\n\nThis action cannot be undone.`
-            );
+            const safe = escapeHtmlForConfirm(rule.name || 'Unnamed Rule');
+            const confirmed = await ConfirmModal.show(this.app, {
+              title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
+              message: `Are you sure you want to delete the rule <strong>"${safe}"</strong>?<br/><br/>This action cannot be undone.`,
+              confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
+              cancelText: 'Cancel',
+              danger: true,
+            });
             if (confirmed) {
               this.plugin.settings.settings.rulesV2!.splice(index, 1);
               await this.plugin.save_settings();

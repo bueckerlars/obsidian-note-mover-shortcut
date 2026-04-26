@@ -21,6 +21,16 @@ import {
   getPropertyTypeFromVault,
 } from '../utils/OperatorMapping';
 import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault-index-cache';
+import { ConfirmModal } from './ConfirmModal';
+import { NoticeManager } from '../utils/NoticeManager';
+import { SETTINGS_CONSTANTS } from '../config/constants';
+
+function escapeHtmlForConfirm(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 interface RuleEditorModalOptions {
   rule: RuleV2;
@@ -103,12 +113,6 @@ export class RuleEditorModal extends BaseModal {
             toggle.setTooltip(value ? 'Rule is active' : 'Rule is inactive');
           })
       );
-
-    // Make text input wider
-    const textInput = setting.controlEl.querySelector('input[type="text"]');
-    if (textInput) {
-      (textInput as HTMLElement).style.width = '100%';
-    }
   }
 
   private createMatchConditionsSelector(container: HTMLElement): void {
@@ -157,8 +161,6 @@ export class RuleEditorModal extends BaseModal {
           .onChange(value => {
             this.workingRule.destination = value;
           });
-        // Make search input wider
-        cb.inputEl.style.width = '100%';
       });
 
     // Move description below the input to give the input more horizontal space
@@ -474,9 +476,14 @@ export class RuleEditorModal extends BaseModal {
           .setButtonText('Remove Rule')
           .setWarning()
           .onClick(async () => {
-            const confirmed = confirm(
-              `Are you sure you want to delete the rule "${this.workingRule.name}"?\n\nThis action cannot be undone.`
-            );
+            const safe = escapeHtmlForConfirm(this.workingRule.name);
+            const confirmed = await ConfirmModal.show(this.app, {
+              title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
+              message: `Are you sure you want to delete the rule <strong>"${safe}"</strong>?<br/><br/>This action cannot be undone.`,
+              confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
+              cancelText: 'Cancel',
+              danger: true,
+            });
             if (confirmed && this.ruleOptions.onDelete) {
               await this.ruleOptions.onDelete();
               this.close();
@@ -512,7 +519,7 @@ export class RuleEditorModal extends BaseModal {
   private validateRule(): boolean {
     // Validate name
     if (!this.workingRule.name || this.workingRule.name.trim() === '') {
-      alert('Rule name cannot be empty.');
+      NoticeManager.error('Rule name cannot be empty.');
       return false;
     }
 
@@ -521,13 +528,13 @@ export class RuleEditorModal extends BaseModal {
       !this.workingRule.destination ||
       this.workingRule.destination.trim() === ''
     ) {
-      alert('Destination folder cannot be empty.');
+      NoticeManager.error('Destination folder cannot be empty.');
       return false;
     }
 
     // Validate triggers
     if (this.workingRule.triggers.length === 0) {
-      alert('At least one condition is required.');
+      NoticeManager.error('At least one condition is required.');
       return false;
     }
 
@@ -538,7 +545,7 @@ export class RuleEditorModal extends BaseModal {
       // Only validate value if the operator requires one
       if (operatorRequiresValue(trigger.operator)) {
         if (!trigger.value || trigger.value.trim() === '') {
-          alert(`Condition ${i + 1}: Value cannot be empty.`);
+          NoticeManager.error(`Condition ${i + 1}: Value cannot be empty.`);
           return false;
         }
 
@@ -547,7 +554,7 @@ export class RuleEditorModal extends BaseModal {
           try {
             new RegExp(trigger.value);
           } catch (e) {
-            alert(
+            NoticeManager.error(
               `Condition ${i + 1}: Invalid regex pattern: ${e instanceof Error ? e.message : 'Unknown error'}`
             );
             return false;

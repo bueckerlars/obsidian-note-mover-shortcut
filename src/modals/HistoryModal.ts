@@ -13,6 +13,10 @@ import AdvancedNoteMoverPlugin from 'main';
 export class HistoryModal extends BaseModal {
   private currentTimeFilter: TimeFilter = 'all';
 
+  private formatHistoryDate(timestamp: number): string {
+    return new Date(timestamp).toLocaleString();
+  }
+
   constructor(
     app: App,
     private historyManager: HistoryManager,
@@ -40,8 +44,9 @@ export class HistoryModal extends BaseModal {
     );
 
     if (history.length === 0 && bulkOperations.length === 0) {
-      contentEl.createEl('p', {
-        text: 'No history entries available for the selected time period.',
+      contentEl.createEl('div', {
+        cls: 'advancedNoteMover-modal-empty',
+        text: 'No history entries for the selected time range.',
       });
       return;
     }
@@ -130,8 +135,7 @@ export class HistoryModal extends BaseModal {
     const headerEl = bulkEntryEl.createEl('div', {
       cls: 'advancedNoteMover-bulk-header',
     });
-    const date = new Date(bulkOp.timestamp);
-    const formattedDate = date.toLocaleString('en-US');
+    const formattedDate = this.formatHistoryDate(bulkOp.timestamp);
 
     const operationTypeText =
       bulkOp.operationType === 'bulk' ? 'Bulk Move' : 'Periodic Move';
@@ -170,8 +174,7 @@ export class HistoryModal extends BaseModal {
       const contentEl = fileEl.createEl('div', {
         cls: 'advancedNoteMover-history-entry-content',
       });
-      const date = new Date(entry.timestamp);
-      const formattedDate = date.toLocaleString('en-US');
+      const formattedDate = this.formatHistoryDate(entry.timestamp);
 
       contentEl.createEl('div', {
         cls: 'advancedNoteMover-history-entry-info',
@@ -313,16 +316,21 @@ export class HistoryModal extends BaseModal {
         .setIcon('undo')
         .setTooltip(`Undo entire ${operationTypeText.toLowerCase()}`)
         .onClick(async () => {
-          const success = await this.historyManager.undoBulkOperation(
-            bulkOp.id
-          );
-          if (success) {
-            this.onOpen();
-          } else {
-            NoticeManager.warning(
-              'Some files could not be moved back. Check console for details.',
-              { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+          button.setDisabled(true);
+          try {
+            const success = await this.historyManager.undoBulkOperation(
+              bulkOp.id
             );
+            if (success) {
+              this.onOpen();
+            } else {
+              NoticeManager.warning(
+                'Some files could not be moved back. Check console for details.',
+                { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+              );
+            }
+          } finally {
+            button.setDisabled(false);
           }
         });
     });
@@ -348,8 +356,7 @@ export class HistoryModal extends BaseModal {
     const contentEl = entryEl.createEl('div', {
       cls: 'advancedNoteMover-history-entry-content',
     });
-    const date = new Date(entry.timestamp);
-    const formattedDate = date.toLocaleString('en-US');
+    const formattedDate = this.formatHistoryDate(entry.timestamp);
 
     contentEl.createEl('div', {
       cls: 'advancedNoteMover-history-entry-info',

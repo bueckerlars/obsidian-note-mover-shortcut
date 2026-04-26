@@ -23,14 +23,19 @@ export class ImportExportSettingsSection {
     const exportSetting = new Setting(this.containerEl)
       .setName('Export settings')
       .setDesc('Export your current settings as a JSON file')
-      .addButton(btn =>
+      .addButton(btn => {
         btn
           .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.EXPORT_SETTINGS)
           .setCta()
           .onClick(async () => {
-            await this.exportSettings();
-          })
-      );
+            btn.setDisabled(true);
+            try {
+              await this.exportSettings();
+            } finally {
+              btn.setDisabled(false);
+            }
+          });
+      });
 
     // Add mobile optimization classes
     if (isMobile) {
@@ -49,14 +54,19 @@ export class ImportExportSettingsSection {
     const importSetting = new Setting(this.containerEl)
       .setName('Import settings')
       .setDesc('Import settings from a JSON file')
-      .addButton(btn =>
+      .addButton(btn => {
         btn
           .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS)
           .setWarning()
           .onClick(async () => {
-            await this.importSettings();
-          })
-      );
+            btn.setDisabled(true);
+            try {
+              await this.importSettings();
+            } finally {
+              btn.setDisabled(false);
+            }
+          });
+      });
 
     // Add mobile optimization classes
     if (isMobile) {
