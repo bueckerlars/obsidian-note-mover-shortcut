@@ -5,6 +5,8 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { MobileUtils } from '../utils/MobileUtils';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
 import { handleError, createError } from '../utils/Error';
+import { performNoteMove } from '../application/perform-note-move';
+import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class PreviewModal extends BaseModal {
@@ -253,18 +255,17 @@ export class PreviewModal extends BaseModal {
             );
           }
 
-          this.plugin.historyManager.markPluginMoveStart();
-          try {
-            await this.app.fileManager.renameFile(file, newPath);
-            this.plugin.historyManager.addEntry({
-              sourcePath: entry.currentPath,
-              destinationPath: newPath,
-              fileName: file.name,
-            });
-            movedCount++;
-          } finally {
-            this.plugin.historyManager.markPluginMoveEnd();
-          }
+          await performNoteMove({
+            app: this.app,
+            historyManager: this.plugin.historyManager,
+            file,
+            originalPath: entry.currentPath,
+            newPath,
+            attachmentSettings: getAttachmentMoveSettings(
+              this.plugin.settings.settings
+            ),
+          });
+          movedCount++;
         } catch (error) {
           handleError(error, `Error moving file ${entry.fileName}`, false);
           errorCount++;

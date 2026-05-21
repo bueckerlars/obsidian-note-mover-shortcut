@@ -3,7 +3,9 @@ import {
   BulkOperation,
   TimeFilter,
   RetentionPolicy,
+  type AttachmentPathMove,
 } from '../types/HistoryEntry';
+import { TFile } from 'obsidian';
 import AdvancedNoteMoverPlugin from 'main';
 import { createError, handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
@@ -291,6 +293,55 @@ export class HistoryManager {
     return now - millisecondsToSubtract;
   }
 
+  /**
+   * Restores co-moved attachments to their original paths (reverse move order).
+   */
+  private async undoAttachmentMoves(
+    attachmentMoves: AttachmentPathMove[] | undefined
+  ): Promise<boolean> {
+    if (!attachmentMoves?.length) {
+      return true;
+    }
+
+    let allOk = true;
+    const reversed = [...attachmentMoves].reverse();
+
+    for (const move of reversed) {
+      const file = this.plugin.app.vault.getAbstractFileByPath(
+        move.destinationPath
+      );
+      if (!(file instanceof TFile)) {
+        console.warn(
+          `[Advanced Note Mover] Attachment undo skipped; not found: ${move.destinationPath}`
+        );
+        allOk = false;
+        continue;
+      }
+
+      const sourceFolder = getParentPath(move.sourcePath);
+      if (
+        sourceFolder &&
+        !(await ensureFolderExists(this.plugin.app, sourceFolder))
+      ) {
+        allOk = false;
+        continue;
+      }
+
+      try {
+        await this.plugin.app.fileManager.renameFile(file, move.sourcePath);
+      } catch (error) {
+        handleError(
+          error,
+          `Error undoing attachment move for ${move.destinationPath}`,
+          false
+        );
+        allOk = false;
+      }
+    }
+
+    return allOk;
+  }
+
   public async undoEntry(entryId: string): Promise<boolean> {
     const entryIndex = this.history.findIndex(entry => entry.id === entryId);
     if (entryIndex === -1) return false;
@@ -326,6 +377,7 @@ export class HistoryManager {
     try {
       this.markPluginMoveStart();
       await this.plugin.app.fileManager.renameFile(file, entry.sourcePath);
+      await this.undoAttachmentMoves(entry.attachmentMoves);
 
       // Remove from individual history
       this.history.splice(entryIndex, 1);
@@ -408,6 +460,7 @@ export class HistoryManager {
       );
       this.markPluginMoveStart();
       await this.plugin.app.fileManager.renameFile(file, entry.sourcePath);
+      await this.undoAttachmentMoves(entry.attachmentMoves);
 
       // Remove the entry from history
       const entryIndex = this.history.findIndex(e => e.id === entry.id);
@@ -548,6 +601,9 @@ export class HistoryManager {
       try {
         this.markPluginMoveStart();
         await this.plugin.app.fileManager.renameFile(file, entry.sourcePath);
+        const attachmentsOk = await this.undoAttachmentMoves(
+          entry.attachmentMoves
+        );
         NoticeManager.success(
           `Successfully moved ${entry.fileName} back to ${entry.sourcePath}`
         );
@@ -558,7 +614,7 @@ export class HistoryManager {
           this.history.splice(historyIndex, 1);
         }
 
-        results.push(true);
+        results.push(attachmentsOk);
       } catch (error) {
         handleError(error, `Error undoing move for ${entry.fileName}`, false);
         results.push(false);

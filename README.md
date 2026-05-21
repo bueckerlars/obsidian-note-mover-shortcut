@@ -12,6 +12,7 @@
 - **Blacklist filters**: exclude notes by tag, path, filename pattern, property, date prefix, or body substring (`content:`).
 - **Commands**: move the active note, move all Markdown notes, previews, history, and “add current file to blacklist.”
 - **Automation**: optional move-on-edit (debounced) and periodic full-vault passes.
+- **Attachment co-move**: optionally move images and other attachments referenced in a note when it moves, preserving relative paths (e.g. `_assets/` next to the note). See settings under Triggers.
 - **Performance options**: rule evaluation cache and vault index cache; optional performance tracing for debugging.
 
 ## Requirements
