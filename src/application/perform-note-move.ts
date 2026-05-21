@@ -7,6 +7,7 @@ import {
 } from './co-move-attachments-on-note-move';
 import type { AttachmentMoveSettings } from '../types/PluginData';
 import type { HistoryManager } from '../core/HistoryManager';
+import { deleteEmptyAssetFoldersAfterMove } from '../domain/attachments/delete-empty-asset-folders';
 
 export interface PerformNoteMoveOptions {
   app: App;
@@ -50,6 +51,13 @@ export async function performNoteMove(
       attachmentMoves = await coMoveAttachmentsAfterNoteRename(app, {
         plans: attachmentPlans,
       });
+
+      if (
+        attachmentSettings.deleteEmptyAssetFolders &&
+        attachmentMoves.length > 0
+      ) {
+        await deleteEmptyAssetFoldersAfterMove(app, attachmentMoves);
+      }
     }
 
     historyManager.addEntry({

@@ -3,6 +3,7 @@ import type { SettingsData, AttachmentMoveSettings } from '../types/PluginData';
 const DEFAULT_ATTACHMENT_SETTINGS: AttachmentMoveSettings = {
   moveWithNote: true,
   skipSharedAttachments: true,
+  deleteEmptyAssetFolders: false,
 };
 
 /** Resolves attachment co-move settings with defaults. */
@@ -16,5 +17,8 @@ export function getAttachmentMoveSettings(
     skipSharedAttachments:
       attachments?.skipSharedAttachments ??
       DEFAULT_ATTACHMENT_SETTINGS.skipSharedAttachments,
+    deleteEmptyAssetFolders:
+      attachments?.deleteEmptyAssetFolders ??
+      DEFAULT_ATTACHMENT_SETTINGS.deleteEmptyAssetFolders,
   };
 }

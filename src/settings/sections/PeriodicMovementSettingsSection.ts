@@ -191,6 +191,7 @@ export class TriggerSettingsSection {
       this.plugin.settings.settings.attachments = {
         moveWithNote: false,
         skipSharedAttachments: true,
+        deleteEmptyAssetFolders: false,
       };
     }
 
@@ -235,6 +236,26 @@ export class TriggerSettingsSection {
 
       if (isMobile) {
         skipSharedSetting.settingEl.addClass(
+          'advancedNoteMover-mobile-optimized'
+        );
+      }
+
+      const deleteEmptySetting = new Setting(this.containerEl)
+        .setName('Delete empty asset folders')
+        .setDesc(
+          'After moving attachments, remove source folders (such as _assets) that no longer contain any files.'
+        )
+        .addToggle(toggle =>
+          toggle
+            .setValue(attachments.deleteEmptyAssetFolders === true)
+            .onChange(async value => {
+              attachments.deleteEmptyAssetFolders = value;
+              await this.plugin.save_settings();
+            })
+        );
+
+      if (isMobile) {
+        deleteEmptySetting.settingEl.addClass(
           'advancedNoteMover-mobile-optimized'
         );
       }

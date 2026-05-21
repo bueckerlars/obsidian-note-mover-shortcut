@@ -14,6 +14,8 @@ export interface PluginData {
 export interface AttachmentMoveSettings {
   moveWithNote: boolean;
   skipSharedAttachments: boolean;
+  /** Remove attachment source folders (e.g. _assets) when empty after a co-move. */
+  deleteEmptyAssetFolders: boolean;
 }
 
 export interface SettingsData {
