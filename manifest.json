@@ -3,7 +3,7 @@
 	"name": "Advanced Note Mover",
 	"version": "1.0.0",
 	"minAppVersion": "1.5.0",
-	"description": "Quickly and easily move notes to a predefined folder. Perfect for organizing your notes.",
+	"description": "Automatically move notes into folders using configurable rules — match on tags, properties, filenames, dates, and more. Supports templates, blacklist filters, preview, attachment co-move, and undo.",
 	"author": "bueckerlars",
 	"isDesktopOnly": false
 }

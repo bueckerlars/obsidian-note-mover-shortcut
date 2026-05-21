@@ -1,77 +1,179 @@
 # Blacklist filters
 
-Blacklist filters are **not** Rule V2 triggers. They are a separate list of strings (`settings.filters.filter[].value`) interpreted by `BlacklistFilterEngine` (`src/domain/filters/blacklist-filter-engine.ts`).
+Blacklist filters are a safety net. They run **before** any rules, and if a note matches even one filter line, it is excluded from all moves — manual, bulk, on-edit, and periodic.
 
-## Semantics
+Think of filters as a set of "never touch these" declarations. Set them up once for your templates, archives, and system notes, and you won't have to worry about rules accidentally moving them.
 
-- The list is an **OR** blacklist: if **any** single filter line matches a file, that file is **excluded** from moves (manual, bulk, periodic, on-edit — whenever filters are not skipped).
-- An **empty** filter list means “no blacklist” — nothing is excluded by filters.
-- Matching uses the same `FileMetadata` object as rules (including `fileContent` when loaded).
+---
+
+## How filters work
+
+The filter list is an **OR** blacklist: a note is blocked if it matches **any** filter line. The order of lines doesn't matter.
+
+An empty filter list means "nothing is excluded by filters" — everything is eligible to be moved by rules.
+
+---
 
 ## Line format
 
-Each non-empty line should match:
+Each line follows this pattern:
 
-```text
-<type>: <rest>
+```
+<type>: <value>
 ```
 
-Leading/trailing spaces around the value depend on the parser: the engine uses a regex `^([a-zA-Z_]+):\s*(.*)$` for the initial split — the type name is **letters and underscore only**.
+For example:
 
-Supported `type` values (lowercase as stored, matching is case-sensitive on the type keyword):
+```
+path: Templates
+tag: #never-move
+fileName: Daily*.md
+property: status:draft
+content: DO NOT MOVE
+created_at: 2026-04
+```
 
-| Type         | Behavior                                                             |
-| ------------ | -------------------------------------------------------------------- |
-| `tag`        | See [Tag matching](#tag-matching).                                   |
-| `fileName`   | See [File name matching](#file-name-matching).                       |
-| `path`       | Exact path **or** any file whose path starts with `value + '/'`.     |
-| `content`    | Substring search in **full file body** (requires read — see below).  |
-| `created_at` | File creation time: `createdAt.toISOString().startsWith(value)`.     |
-| `updated_at` | File modification time: `updatedAt.toISOString().startsWith(value)`. |
-| `property`   | See [Property matching](#property-matching).                         |
+Unknown `type` values are silently ignored (the line never matches anything).
 
-Unknown types → line never matches.
+---
 
-## Tag matching
+## Filter types
 
-`value` is the tag string as stored on files (often including `#`). A file matches if:
+### `path:`
 
-- any tag **equals** `ruleTag`, **or**
-- any tag **starts with** `ruleTag + '/'` (hierarchy prefix).
+Blocks a specific file or everything under a folder.
 
-## File name matching
+- `path: Templates` — blocks `Templates/Note.md` and anything nested under `Templates/`
+- `path: Archive/2020` — blocks everything under `Archive/2020/`
+- `path: Daily Notes/2024-01-01.md` — blocks a specific file
 
-If `pattern` equals the filename → match.
+The match is: the file's vault-relative path equals `value`, **or** the path starts with `value + /`.
 
-Else if the pattern contains `*` or `?` → glob-style: `*` → `.*`, `?` → `.`, other regex specials escaped, **case-insensitive** full-string match.
+---
 
-Else → case-insensitive string equality against the full filename.
+### `tag:`
 
-## Property matching
+Blocks notes that have a specific tag or any subtag under it.
 
-The substring after `property:` is parsed as `key` or `key:value`:
+- `tag: #never-move` — blocks notes tagged `#never-move`
+- `tag: #archive` — blocks notes tagged `#archive`, `#archive/2024`, `#archive/projects`, etc.
 
-- **No `:` in the rest** (or only key): key must exist and value must not be `null`/`undefined`.
-- **`key:value`**: if the frontmatter value is a **list** (detected via list heuristics), any list item must equal `value` (case-insensitive). Otherwise the property stringifies and is compared case-insensitively to `value`.
+A note matches if any of its tags equals `value` exactly, or starts with `value + /` (hierarchy prefix match).
 
-## Content filters and performance
+---
 
-If **any** filter line is a content filter, `filtersNeedContent` (`src/domain/filters/filter-needs-content.ts`) returns true when the trimmed line matches `content:` (case-insensitive). Then `extractFileMetadataV2` is called with **`needsContent: true`**, which performs `vault.read(file)` to populate `fileContent`.
+### `fileName:`
 
-Without `content:` filters, the blacklist can run **without** reading file bodies (faster).
+Blocks notes whose filename matches a pattern.
 
-## Examples
+- `fileName: _index.md` — blocks the exact file named `_index.md`
+- `fileName: Daily*.md` — blocks any file matching the glob (e.g. `Daily Note.md`, `Daily 2026-05-21.md`)
+- `fileName: *.canvas` — blocks all canvas files
 
-| Line                     | Effect                                                          |
-| ------------------------ | --------------------------------------------------------------- |
-| `path: Templates`        | Blocks `Templates/Note.md` and anything under `Templates/`.     |
-| `tag: #never-move`       | Blocks notes with that tag or nested tags under it.             |
-| `fileName: Daily*.md`    | Blocks names matching the glob.                                 |
-| `content: DO NOT MOVE`   | Blocks notes whose raw body contains that substring.            |
-| `property: status:draft` | Blocks when `status` resolves to `draft` (or list contains it). |
-| `created_at: 2026-04`    | Blocks files whose ISO timestamp string starts with `2026-04`.  |
+Pattern rules:
+
+- If the pattern contains `*` or `?`: treated as a glob (`*` → any characters, `?` → any single character), case-insensitive full-filename match.
+- Otherwise: case-insensitive exact equality against the full filename.
+
+---
+
+### `property:`
+
+Blocks notes based on a frontmatter property.
+
+**Check for key presence:**
+
+```
+property: status
+```
+
+Blocks notes where `status` exists and has a non-null/non-undefined value.
+
+**Check for a specific value:**
+
+```
+property: status:draft
+```
+
+Blocks notes where `status` equals `draft` (case-insensitive). If the property is a list, blocks notes where any list item equals `draft`.
+
+---
+
+### `content:`
+
+Blocks notes whose raw file body contains a specific substring.
+
+```
+content: DO NOT MOVE
+content: <!-- archived -->
+```
+
+**Performance note:** content filters require reading the full file body. If any `content:` line is present in your filter list, the plugin must perform a `vault.read()` for each evaluated file. For large vaults, prefer other filter types (tag, path, property) when possible and use `content:` only when necessary.
+
+---
+
+### `created_at:` and `updated_at:`
+
+Blocks notes based on their creation or modification timestamp using an ISO prefix match.
+
+```
+created_at: 2026-04       ← created in April 2026
+updated_at: 2026-05-21    ← last modified on 2026-05-21
+created_at: 2024          ← created any time in 2024
+```
+
+The file's timestamp is formatted as a full ISO string (e.g. `2026-04-15T10:30:00.000Z`). A note matches if that string **starts with** your `value`.
+
+---
+
+## Practical filter setups
+
+### Protect system folders
+
+```
+path: Templates
+path: .obsidian
+path: _attachments
+```
+
+### Protect by tag
+
+```
+tag: #never-move
+tag: #template
+tag: #pinned
+```
+
+### Protect by filename pattern
+
+```
+fileName: _*.md
+fileName: README.md
+fileName: MOC*.md
+```
+
+### Protect drafts
+
+```
+property: status:draft
+property: published:false
+```
+
+### Protect notes with a specific note body marker
+
+```
+content: <!-- do not move -->
+```
+
+---
+
+## Quick command: add current file to blacklist
+
+From the command palette, run **Add current file to blacklist**. This instantly appends `fileName: <current filename>` to your filter list — useful for protecting a specific note without opening settings.
+
+---
 
 ## See also
 
-- [Rules and triggers](rules-and-triggers.md) — filters run before rule matching
-- [Commands, triggers, and internals](commands-triggers-internals.md) — command that appends a filename to the blacklist
+- [Rules and triggers](rules-and-triggers.md) — filters run before any rules are evaluated
+- [Commands and automation](commands-triggers-internals.md) — `add-current-file-to-blacklist` command

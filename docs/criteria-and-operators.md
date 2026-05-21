@@ -1,176 +1,239 @@
 # Criteria and operators
 
-This page matches `RuleMatcherV2Engine` in `src/domain/rules/v2/RuleMatcherV2Engine.ts`. String comparisons for **text criteria** use **case-insensitive** literal matching unless noted. **Regular expressions** are compiled with the **`i`** flag (case-insensitive).
+This page documents every criteria type and its available operators. All string comparisons use **case-insensitive** matching unless noted. Regular expressions are compiled with the `i` flag (case-insensitive).
+
+---
+
+## Quick reference
+
+| Criteria type | What it matches on                  | Operator family                        |
+| ------------- | ----------------------------------- | -------------------------------------- |
+| `fileName`    | Full file name including extension  | Text                                   |
+| `folder`      | Parent folder path (vault-relative) | Text                                   |
+| `extension`   | File extension without dot          | Text                                   |
+| `tag`         | All tags on the note                | List                                   |
+| `links`       | Outgoing wiki-link targets          | List                                   |
+| `embeds`      | Embedded file targets               | List                                   |
+| `headings`    | All heading texts                   | List                                   |
+| `created_at`  | File creation timestamp             | Date                                   |
+| `modified_at` | File modification timestamp         | Date                                   |
+| `properties`  | Any frontmatter property            | Text / Number / List / Date / Checkbox |
+
+---
+
+## Text operators
+
+Used by `fileName`, `folder`, `extension`, and `properties` with `propertyType: text`.
+
+| Operator               | Matches when                                             |
+| ---------------------- | -------------------------------------------------------- |
+| `is`                   | Value equals the operand (exact, case-insensitive)       |
+| `is not`               | Value does not equal the operand                         |
+| `contains`             | Value contains the operand as a substring                |
+| `does not contain`     | Value does not contain the substring                     |
+| `starts with`          | Value begins with the operand                            |
+| `does not starts with` | Value does not begin with the operand                    |
+| `ends with`            | Value ends with the operand                              |
+| `does not ends with`   | Value does not end with the operand                      |
+| `match regex`          | Value matches the regex pattern; invalid pattern → false |
+| `does not match regex` | Value does not match the regex; invalid pattern → true   |
+
+**Examples:**
+
+- `fileName` → `ends with` → `meeting.md` — matches any note whose filename ends in `meeting.md`
+- `folder` → `starts with` → `Projects` — matches notes anywhere under a `Projects` folder
+- `fileName` → `match regex` → `^\d{4}-\d{2}-\d{2}` — matches date-prefixed filenames
 
 ---
 
 ## `fileName`
 
-**Operand:** the note’s `fileName` (full name with extension).
+Operand: the note's full file name including extension (e.g. `My Meeting Note.md`).
 
-**Operators** (text):
-
-| Operator                               | True when                                               |
-| -------------------------------------- | ------------------------------------------------------- |
-| `is`                                   | Name equals `value` (case-insensitive).                 |
-| `is not`                               | Not equal.                                              |
-| `contains`                             | Name contains substring.                                |
-| `does not contain`                     | Does not contain substring.                             |
-| `starts with` / `does not starts with` | Prefix tests.                                           |
-| `ends with` / `does not ends with`     | Suffix tests.                                           |
-| `match regex`                          | Regex matches; invalid regex pattern → **false**.       |
-| `does not match regex`                 | Regex does not match; invalid regex pattern → **true**. |
-
-**Example:** `ends with` + `meeting.md` keeps the suffix match on the full filename.
+Uses **text operators**.
 
 ---
 
 ## `folder`
 
-**Operand:** the **parent path** of the file: all path segments before the final `/` (vault-relative). For a file at the vault root, this is the empty string `""`.
+Operand: the parent folder path of the file (vault-relative, all segments before the final `/`). A note at the vault root has an empty string `""` as its folder.
 
-Same **text operators** as `fileName`.
+Uses **text operators**.
 
-**Example:** file `Projects/2026/Q1/Note.md` → folder operand is `Projects/2026/Q1`.
+**Example:** a file at `Projects/2026/Q1/Note.md` has folder operand `Projects/2026/Q1`.
 
 ---
 
 ## `extension`
 
-**Operand:** the file extension string from Obsidian (e.g. `md`), **without** a leading dot.
+Operand: the file extension **without** a leading dot (e.g. `md`, `canvas`, `base`).
 
-Same **text operators** as `fileName`.
+Uses **text operators**.
+
+---
+
+## List operators
+
+Used by `tag`, `links`, `embeds`, `headings`, and `properties` with `propertyType: list`.
+
+| Operator                | Matches when                                                    |
+| ----------------------- | --------------------------------------------------------------- |
+| `includes item`         | The list contains an item equal to `value`                      |
+| `does not include item` | No item in the list equals `value`                              |
+| `all are`               | At least one item exists, and every item equals `value`         |
+| `all start with`        | At least one item exists, and every item starts with `value`    |
+| `all end with`          | At least one item exists, and every item ends with `value`      |
+| `all match regex`       | At least one item exists, and every item matches the regex      |
+| `any contain`           | At least one item contains `value` as a substring               |
+| `any end with`          | At least one item ends with `value`                             |
+| `any match regex`       | At least one item matches the regex                             |
+| `none contain`          | No item contains `value`                                        |
+| `none start with`       | No item starts with `value`                                     |
+| `none end with`         | No item ends with `value`                                       |
+| `count is`              | Number of items equals `value` (integer)                        |
+| `count is not`          | Number of items does not equal `value`                          |
+| `count is less than`    | Number of items is less than `value`; invalid number → false    |
+| `count is more than`    | Number of items is greater than `value`; invalid number → false |
 
 ---
 
 ## `tag`
 
-**Operand:** the list of tags from Obsidian’s tag index (strings like `#work/project`).
+Operand: the list of tags from Obsidian's tag index (e.g. `#work/project`). Tags include the `#` prefix. All comparisons are case-insensitive.
 
-**Operators** (list):
+Uses **list operators**.
 
-| Operator                                    | True when                                                               |
-| ------------------------------------------- | ----------------------------------------------------------------------- |
-| `includes item`                             | Some tag equals `value` (case-insensitive).                             |
-| `does not include item`                     | No tag equals `value`.                                                  |
-| `all are`                                   | At least one tag, and every tag equals `value` (case-insensitive).      |
-| `all start with`                            | At least one tag, and every tag starts with `value` (case-insensitive). |
-| `all end with`                              | At least one tag, and every tag ends with `value`.                      |
-| `all match regex`                           | At least one tag, every tag matches regex; invalid regex → **false**.   |
-| `any contain`                               | Some tag contains substring.                                            |
-| `any end with`                              | Some tag ends with substring.                                           |
-| `any match regex`                           | Some tag matches regex; invalid regex → **false**.                      |
-| `none contain`                              | No tag contains substring.                                              |
-| `none start with`                           | No tag starts with substring.                                           |
-| `none end with`                             | No tag ends with substring.                                             |
-| `count is` / `count is not`                 | Tag count vs integer in `value`.                                        |
-| `count is less than` / `count is more than` | Numeric comparison; invalid number in `value` → **false**.              |
+**Examples:**
+
+- `includes item` → `#inbox` — note has the exact tag `#inbox`
+- `any contain` → `work` — any tag contains the substring "work" (matches `#work`, `#work/project`, etc.)
+- `none start with` → `#archive` — note has no tags starting with `#archive`
+- `count is more than` → `3` — note has more than 3 tags
 
 ---
 
 ## `links`
 
-**Operand:** outgoing wiki link targets from the metadata cache (strings inside `[[...]]` resolution).
+Operand: outgoing wiki-link targets from Obsidian's metadata cache (text inside `[[…]]`).
 
-**Operators:** same **list** family as `tag`.
+Uses **list operators**.
+
+**Example:** `includes item` → `Projects MOC` — note links to `[[Projects MOC]]`.
 
 ---
 
 ## `embeds`
 
-**Operand:** embed targets from the metadata cache (`![[...]]`).
+Operand: embed targets from Obsidian's metadata cache (text inside `![[…]]`).
 
-**Operators:** same **list** family as `tag`.
+Uses **list operators**.
 
 ---
 
 ## `headings`
 
-**Operand:** array of **heading text** strings from the metadata cache (no `#` prefix in the stored strings).
+Operand: all heading text strings from Obsidian's metadata cache. Headings are stored without `#` prefixes.
 
-**Operators:** implemented with the same **list** engine as `tag` (not plain “text contains one string” unless you use `any contain`).
+Uses **list operators**.
+
+**Example:** `any contain` → `Summary` — note has at least one heading containing the word "Summary".
 
 ---
 
-## `created_at` and `modified_at`
+## Date operators
 
-**Operands:** `createdAt` / `updatedAt` from file stats. If the date is missing (`null`), **all** date operators return **false**.
+Used by `created_at`, `modified_at`, and `properties` with `propertyType: date`.
 
-**Operators** (date) — `value` usage:
+If the date is missing or cannot be parsed, all date operators return **false**.
 
-| Operator                                                | Meaning                                                                      |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `is`                                                    | Exact **timestamp** equality (`getTime`) with parsed `value`.                |
-| `is before` / `is after`                                | Compare full `Date` objects to parsed `value`.                               |
-| `time is before` / `time is after`                      | Compare `getTime()` to parsed `value`.                                       |
-| `time is before now` / `time is after now`              | Compare to current time.                                                     |
-| `date is` / `date is not`                               | Same **calendar day** as parsed `value` / not same day.                      |
-| `date is before` / `date is after`                      | Calendar-day comparison (midnight-normalized internally).                    |
-| `date is today` / `date is not today`                   | Relative to “today” at evaluation time.                                      |
-| `is under X days ago` / `is over X days ago`            | `value` must parse as a number (days). Uses whole-day difference vs **now**. |
-| `day of week is` / `is not`                             | `value` is a **full English weekday name** (`sunday` … `saturday`).          |
-| `day of week is before` / `is after`                    | Compare `getDay()` index to the named weekday.                               |
-| `day of month is` / `is not` / `is before` / `is after` | Numeric day-of-month from `value`.                                           |
-| `month is` / `is not` / `is before` / `is after`        | Month number **1–12** in `value`.                                            |
-| `year is` / `is not` / `is before` / `is after`         | Four-digit year in `value`.                                                  |
+| Operator                                                | Matches when                                                   |
+| ------------------------------------------------------- | -------------------------------------------------------------- |
+| `is`                                                    | Timestamp exactly equals the parsed `value`                    |
+| `is before` / `is after`                                | Full date comparison against parsed `value`                    |
+| `time is before` / `time is after`                      | Timestamp comparison against parsed `value`                    |
+| `time is before now` / `time is after now`              | Comparison against the current time at evaluation              |
+| `date is` / `date is not`                               | Same calendar day as parsed `value`                            |
+| `date is before` / `date is after`                      | Calendar-day comparison (midnight-normalized)                  |
+| `date is today` / `date is not today`                   | Relative to today at evaluation time                           |
+| `is under X days ago`                                   | Whole-day difference from now is less than `value` days        |
+| `is over X days ago`                                    | Whole-day difference from now is greater than `value` days     |
+| `day of week is` / `is not`                             | `value` is a full English weekday name (`sunday` … `saturday`) |
+| `day of week is before` / `is after`                    | Compares weekday index to the named weekday                    |
+| `day of month is` / `is not` / `is before` / `is after` | Day-of-month number from `value`                               |
+| `month is` / `is not` / `is before` / `is after`        | Month number 1–12 in `value`                                   |
+| `year is` / `is not` / `is before` / `is after`         | Four-digit year in `value`                                     |
 
-**Parsing:** `value` is passed to `new Date(value)` for operators that need a reference date; invalid parse → **false** where a reference date is required.
+`value` is passed to `new Date(value)` for operators needing a reference date; an unparseable string results in **false**.
+
+**Examples:**
+
+- `modified_at` → `date is today` — note was modified today
+- `created_at` → `is over X days ago` → `90` — note is older than 90 days
+- `modified_at` → `day of week is` → `saturday` — note was last modified on a Saturday
+- `created_at` → `year is` → `2024` — note was created in 2024
 
 ---
 
 ## `properties`
 
-Requires `propertyName`. Use `propertyType` to select evaluation:
+Match on any frontmatter property. Requires `propertyName` (the frontmatter key) and `propertyType` (what kind of value to expect).
 
-### Base operators (all property types)
+### Base operators (work for all property types)
 
-Evaluated **before** type-specific logic:
+| Operator              | Matches when                                                |
+| --------------------- | ----------------------------------------------------------- |
+| `has any value`       | Property exists and is not null, undefined, or empty string |
+| `has no value`        | Property is null, undefined, or empty string                |
+| `property is present` | Frontmatter contains the key (even if the value is null)    |
+| `property is missing` | Frontmatter does not contain the key                        |
 
-| Operator              | True when                                       |
-| --------------------- | ----------------------------------------------- |
-| `has any value`       | Value is not `null`/`undefined` and not `''`.   |
-| `has no value`        | `null`/`undefined` or `''`.                     |
-| `property is present` | Frontmatter **has** the key (`hasOwnProperty`). |
-| `property is missing` | Key is absent.                                  |
+### `propertyType: text`
 
-### `propertyType: 'text'`
+Casts the value to a string and uses **text operators**.
 
-Uses **text operators** (same as `fileName`) on `String(propertyValue)`.
+**Example:** `properties` → `status` (text) → `is` → `done`
 
-If the value is `null`/`undefined`, type-specific checks return **false** (except base operators above).
+### `propertyType: number`
 
-### `propertyType: 'number'`
+Parses both the property value and `value` as numbers. Invalid values result in **false**.
 
-Parses property and `value` with `Number(...)`; invalid → **false**.
+| Operator                        | Matches when                            |
+| ------------------------------- | --------------------------------------- |
+| `equals` / `does not equal`     | Numeric equality                        |
+| `is less than` / `is more than` | Numeric comparison                      |
+| `is divisible by`               | Modulo — divisor 0 always returns false |
+| `is not divisible by`           | Not divisible                           |
 
-| Operator                                  | Condition                        |
-| ----------------------------------------- | -------------------------------- |
-| `equals` / `does not equal`               | Numeric equality.                |
-| `is less than` / `is more than`           | Numeric order.                   |
-| `is divisible by` / `is not divisible by` | Modulo; divisor `0` → **false**. |
+**Example:** `properties` → `priority` (number) → `is more than` → `2`
 
-### `propertyType: 'list'`
+### `propertyType: list`
 
-The value is normalized to `string[]` via `parseListProperty` (arrays, comma- or newline-separated strings). Then **list operators** (same as `tag`) apply.
+Normalizes the property value to an array of strings (handles native arrays, comma-separated strings, and newline-separated strings). Then uses **list operators**.
 
-### `propertyType: 'date'`
+**Example:** `properties` → `tags` (list) → `includes item` → `work`
 
-Converts property to `Date` (`Date` instance, ISO string, or number timestamp). Invalid/missing → **false**. Then **date operators** (same family as `created_at`) apply to that date.
+### `propertyType: date`
 
-### `propertyType: 'checkbox'`
+Converts the property value to a `Date` (supports Date instances, ISO strings, and timestamps). Invalid or missing → **false**. Then uses **date operators**.
 
-Coerces to boolean with `Boolean(value)`.
+**Example:** `properties` → `due` (date) → `date is before` → `2026-01-01`
 
-| Operator   | True when         |
-| ---------- | ----------------- |
-| `is true`  | Boolean is true.  |
-| `is false` | Boolean is false. |
+### `propertyType: checkbox`
+
+Coerces to boolean.
+
+| Operator   | Matches when             |
+| ---------- | ------------------------ |
+| `is true`  | Property value is truthy |
+| `is false` | Property value is falsy  |
+
+**Example:** `properties` → `published` (checkbox) → `is true`
 
 ---
 
-## Regex performance
+## Regex performance note
 
-The engine **pre-warms** regex patterns for operators that use regex (`warmRegexCacheFromRules`), so repeated matches avoid recompilation on hot paths.
+The engine pre-warms regex patterns for all rules when they are loaded, so repeated rule checks don't recompile patterns on hot paths (important for periodic or on-edit automation).
 
 ---
 

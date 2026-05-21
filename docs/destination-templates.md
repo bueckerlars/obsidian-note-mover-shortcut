@@ -1,66 +1,126 @@
 # Destination templates
 
-Destination strings live in each rule’s `destination` field. If the string contains `{{`, the plugin parses **placeholders** and substitutes them using the note’s **tags** and **frontmatter properties** at move time.
+Instead of a fixed folder path, a rule's destination can include **placeholders** that are filled in from the note's own tags and frontmatter properties at move time. This lets one rule route notes to many different folders based on their content.
 
-Implementation: `src/domain/templates/DestinationTemplate.ts` (`parseDestinationTemplate`, `renderDestinationTemplate`, `validateDestinationTemplate`).
+---
 
 ## Syntax
 
-- Placeholders are wrapped in double braces: `{{ ... }}`.
-- Inner format must be **`tag.<...>`** or **`property.<...>`**, with a **dot** after the prefix.
-- Arbitrary literal text may appear before, between, or after placeholders (static path segments).
+Placeholders are wrapped in double braces: `{{ … }}`.
+
+The inner text must start with `tag.` or `property.`, followed by a key:
+
+```
+{{tag.<key>}}
+{{property.<key>}}
+```
+
+Static path segments can appear before, between, or after placeholders:
+
+```
+Clients/{{property.client}}/Notes
+Archive/{{property.year}}/{{property.project}}
+Areas/{{tag.work}}
+```
 
 ### Valid examples
 
-- `Projects/{{property.client}}/Notes`
-- `Areas/{{tag.work/personal}}`
-- `Inbox/{{property.status}}`
+| Template                             | What it produces                                       |
+| ------------------------------------ | ------------------------------------------------------ |
+| `Projects/{{property.client}}/Notes` | `Projects/Acme/Notes` (if `client: Acme`)              |
+| `Areas/{{tag.work/personal}}`        | `Areas/work/personal` (if tag `#work/personal` exists) |
+| `Archive/{{property.year}}`          | `Archive/2025` (if `year: 2025`)                       |
+| `Inbox/{{property.status}}`          | `Inbox/done` (if `status: done`)                       |
 
-### Invalid examples (parse error)
+### Invalid examples (will fall back to raw string)
 
-- Unclosed `{{` without `}}`
-- Empty `{{}}`
-- Missing key after prefix: `{{tag}}`
-- Unknown prefix (only `tag` and `property` are allowed)
+| Template                    | Problem                                            |
+| --------------------------- | -------------------------------------------------- |
+| `Clients/{{property.client` | Unclosed `{{`                                      |
+| `Clients/{{}}`              | Empty placeholder                                  |
+| `Clients/{{property}}`      | Missing key after prefix                           |
+| `Clients/{{category.foo}}`  | Unknown prefix (only `tag` and `property` allowed) |
 
-On **parse failure** during render, `RuleManagerV2` **falls back to the raw destination string** (safe fallback). The template validator marks such strings invalid for UI/import flows that call `validateDestinationTemplate`.
-
-## `{{tag.<key>}}`
-
-**Resolution** (`resolveTagPlaceholder`):
-
-1. Build a normalized tag to look for: if `<key>` does not start with `#`, it is treated as `#` + key (lowercase).
-2. **Exact match:** if some file tag equals that string (case-insensitive), the placeholder becomes that tag **without** the leading `#`.
-3. **Prefix match:** otherwise, consider tags that equal the normalized key **or** start with `normalizedKey + '/'`. If any exist, pick the **longest** tag string (most specific), strip `#`, and use that as the segment.
-
-**If nothing matches**, the placeholder becomes an **empty string** (the path may collapse to something with `//` or trailing gaps — still a string; if the **entire** destination becomes empty/whitespace after render, the move is skipped).
-
-**Example** (from unit tests): tags `['#tasks/personal']`, template `P/{{property.status}}/{{tag.tasks}}` with `status: Done` → contains `Done` and `tasks/personal`.
+---
 
 ## `{{property.<key>}}`
 
-**Resolution** (`resolvePropertyPlaceholder`):
+Looks up `<key>` in the note's frontmatter.
 
-- Looks up `properties[key]` from frontmatter.
-- Missing key → empty string.
-- `null` / `undefined` → empty string.
-- **String** → used as-is.
-- **Array** → `join(', ')` with comma + space.
-- Other types → `String(value)`.
+| Frontmatter value           | Resolves to                            |
+| --------------------------- | -------------------------------------- |
+| A string                    | The string as-is                       |
+| A number or boolean         | Converted to string                    |
+| An array                    | Items joined with `, ` (comma + space) |
+| Missing, null, or undefined | Empty string                           |
+
+**If the placeholder resolves to an empty string**, that segment of the path is missing. If the _entire_ destination resolves to empty or whitespace, the note is **not moved**.
+
+---
+
+## `{{tag.<key>}}`
+
+Looks for a tag that matches `<key>`, adding a `#` prefix if not present.
+
+Resolution works in two steps:
+
+1. **Exact match**: if any tag on the note equals `#<key>` exactly, the placeholder becomes that tag without the `#`.
+2. **Prefix match**: otherwise, find all tags that equal `#<key>` or start with `#<key>/`. The **longest** (most specific) match is used, stripped of `#`.
+
+**If no tag matches**, the placeholder becomes an empty string.
+
+**Examples:**
+
+| Note's tags             | Template          | Resolves to                                  |
+| ----------------------- | ----------------- | -------------------------------------------- |
+| `#tasks/personal`       | `{{tag.tasks}}`   | `tasks/personal` (prefix match, longest tag) |
+| `#work`, `#work/design` | `{{tag.work}}`    | `work/design` (longest match)                |
+| `#inbox`                | `{{tag.tasks}}`   | `` (empty — no match)                        |
+| `#project/alpha`        | `{{tag.project}}` | `project/alpha`                              |
+
+---
 
 ## Combining static and dynamic segments
 
-You can mix literals and placeholders:
+You can freely mix literal segments and placeholders:
 
-`Archive/{{property.year}}/{{property.project}}`
+```
+Archive/{{property.year}}/{{property.project}}
+```
 
-If `year` is empty, you may get `Archive//...` — consider fixing frontmatter or using a rule that only matches when properties exist.
+If `year: 2025` and `project: Atlas`, this resolves to `Archive/2025/Atlas`.
 
-## Interaction with rules
+If `year` is missing, you get `Archive//Atlas` — a valid path with an empty segment. To avoid this, add a trigger condition that requires the property to have a value:
 
-Templates are applied **after** a rule matches. They do not affect **which** rule wins; they only compute the folder path for that rule’s destination.
+- Trigger: `properties` → `year` (text) → `has any value`
+
+This ensures the rule only matches (and only moves) notes where `year` is set.
+
+---
+
+## Multiple placeholders for nested organization
+
+```
+{{property.year}}/{{property.client}}/{{property.project}}
+```
+
+This creates a three-level hierarchy purely from frontmatter. Notes with matching properties are filed exactly where they belong. Notes with any missing property resolve to a path with empty segments — consider gating the rule with `has any value` triggers for each property.
+
+---
+
+## When the destination resolves to empty
+
+If a rendered destination is empty or whitespace, the note is **not moved**. No error is shown; the note is simply skipped. This is intentional — it prevents notes with missing metadata from being dropped at the vault root.
+
+---
+
+## Templates and rule matching
+
+Templates are applied **after** a rule matches. They do not affect _which_ rule wins — they only compute the final folder path. This means you can have a rule with a broad trigger (e.g. `tag includes item #client`) and a narrow template (using `{{property.client}}`). Every note with that tag is caught by the rule; the property value determines exactly where it lands.
+
+---
 
 ## See also
 
-- [Rules and triggers](rules-and-triggers.md)
-- [Criteria and operators](criteria-and-operators.md) — `properties` triggers for gating on frontmatter before moving
+- [Rules and triggers](rules-and-triggers.md) — how rules match before templates are applied
+- [Criteria and operators](criteria-and-operators.md) — using `has any value` to gate on properties
