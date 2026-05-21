@@ -1,6 +1,7 @@
 import { TFile } from 'obsidian';
 import AdvancedNoteMoverPlugin from 'main';
 import { DebounceManager } from '../utils/DebounceManager';
+import { isMovableVaultFile } from '../domain/vault/movable-vault-files';
 
 export class TriggerEventHandler {
   private periodicIntervalId: number | null = null;
@@ -55,7 +56,7 @@ export class TriggerEventHandler {
     if (this.plugin.settings.settings.triggers.enableOnEditTrigger) {
       this.plugin.registerEvent(
         this.plugin.app.vault.on('modify', async file => {
-          if (file instanceof TFile && file.extension === 'md') {
+          if (file instanceof TFile && isMovableVaultFile(file)) {
             // Use debounced handler to prevent excessive processing
             this.debouncedHandleOnEdit(file);
           }

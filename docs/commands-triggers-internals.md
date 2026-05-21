@@ -4,27 +4,39 @@
 
 Registered in `src/handlers/CommandHandler.ts`:
 
-| Command ID                      | Name                                | Action                                                                                       |
-| ------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------- |
-| `trigger-note-movement`         | Move active note to note folder     | Moves the **active** Markdown file using rules + filters; shows a notice with optional undo. |
-| `trigger-note-bulk-move`        | Move all files in vault             | Scans Markdown files (via vault index cache) and attempts moves per file.                    |
-| `show-history`                  | Show history                        | Opens the history modal (undo, retention UI in settings).                                    |
-| `preview-bulk-movement`         | Preview bulk movement for all files | Opens preview modal for **all** Markdown files (rules on, filters on).                       |
-| `preview-note-movement`         | Preview active note movement        | Preview for the active file only.                                                            |
-| `add-current-file-to-blacklist` | Add current file to blacklist       | Appends `fileName: <name>` to the filter list if not already present.                        |
+| Command ID                      | Name                                | Action                                                                                                                  |
+| ------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `trigger-note-movement`         | Move active note to note folder     | Moves the **active** movable file (`.md`, `.canvas`, `.base`) using rules + filters; shows a notice with optional undo. |
+| `trigger-note-bulk-move`        | Move all files in vault             | Scans movable files (via vault index cache) and attempts moves per file.                                                |
+| `show-history`                  | Show history                        | Opens the history modal (undo, retention UI in settings).                                                               |
+| `preview-bulk-movement`         | Preview bulk movement for all files | Opens preview modal for **all** movable files (rules on, filters on).                                                   |
+| `preview-note-movement`         | Preview active note movement        | Preview for the active movable file only.                                                                               |
+| `add-current-file-to-blacklist` | Add current file to blacklist       | Appends `fileName: <name>` to the filter list if not already present.                                                   |
 
 The ribbon icon **book-plus** calls the same path as **Move active note**.
+
+Active-file commands use `checkCallback` so they appear when a note, canvas, or base file is focused (not only in the Markdown editor).
 
 ## Triggers (automation)
 
 Configured under **Triggers** in settings (`TriggerSettings` in `src/types/PluginData.ts`):
 
-| Setting                  | Behavior                                                                                                                                                              |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enableOnEditTrigger`    | Registers `vault.on('modify')` for `.md` files; after **2s debounce**, runs the same single-file move pipeline for the changed file. Also marks the rule cache dirty. |
-| `enablePeriodicMovement` | `setInterval` every `periodicMovementInterval` **minutes** to run a **full-vault** move pass (same per-file move as bulk).                                            |
+| Setting                  | Behavior                                                                                                                                                                                            |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enableOnEditTrigger`    | Registers `vault.on('modify')` for movable files (`.md`, `.canvas`, `.base`); after **2s debounce**, runs the same single-file move pipeline for the changed file. Also marks the rule cache dirty. |
+| `enablePeriodicMovement` | `setInterval` every `periodicMovementInterval` **minutes** to run a **full-vault** move pass (same per-file move as bulk).                                                                          |
 
-Only **Markdown** (`.md`) files trigger on-edit handling.
+## Movable file types
+
+Bulk, periodic, preview, and on-edit scans include:
+
+- **Markdown** (`.md`)
+- **Canvas** (`.canvas`, JSON Canvas format)
+- **Bases** (`.base`)
+
+Other vault files (images, PDFs, etc.) are **not** moved by bulk/periodic passes.
+
+For canvas and base files, rule criteria based on tags, properties, links, or headings usually do not apply (Obsidian’s metadata cache is markdown-oriented). Use `fileName`, `folder`, or `extension` rules for those file types.
 
 ## Move pipeline (single file)
 
@@ -59,7 +71,7 @@ Reasons for not moving include: blacklist hit, no matching rule, empty template 
 ## Import / export and performance settings
 
 - **Import/Export** — settings JSON (see settings tab implementation).
-- `enableVaultIndexCache` — when not `false`, markdown file lists can be cached for large vault operations.
+- `enableVaultIndexCache` — when not `false`, movable and markdown file lists can be cached for large vault operations.
 - `enablePerformanceDebug` — when `true`, `PerformanceTraceRecorder` logs timing spans to the console for profiling.
 
 ## See also

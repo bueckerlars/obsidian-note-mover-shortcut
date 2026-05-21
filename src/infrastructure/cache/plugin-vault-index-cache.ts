@@ -2,21 +2,30 @@ import type { App, Plugin } from 'obsidian';
 import { TAbstractFile, TFile, getAllTags } from 'obsidian';
 import { parseListProperty } from '../../domain/property/parseListProperty';
 import { isListProperty } from '../../domain/property/isListProperty';
+import {
+  getMovableVaultFiles,
+  isMovableVaultFile,
+} from '../../domain/vault/movable-vault-files';
 import type { PerformanceTraceRecorder } from '../debug/performance-trace';
 
 const METADATA_INDEX_INVALIDATE_MS = 400;
 
 /**
- * Central vault index cache: markdown file list + derived tag/property indices.
+ * Central vault index cache: movable file list (md/canvas/base) for moves,
+ * markdown-only list for tag/property suggesters, and derived tag/property indices.
  * Invalidated via vault events (see registerVaultEventHooks) and debounced metadata updates.
  */
 export class PluginVaultIndexCache {
   private cacheEnabledResolver: () => boolean = () => true;
   private perf: PerformanceTraceRecorder | null = null;
 
+  private movableListGeneration = 0;
+  private cachedMovableFiles: TFile[] | null = null;
+  private movableListFilledAtGeneration = -1;
+
   private markdownListGeneration = 0;
   private cachedMarkdownFiles: TFile[] | null = null;
-  private listFilledAtGeneration = -1;
+  private markdownListFilledAtGeneration = -1;
 
   private indicesGeneration = 0;
   private tagSet: Set<string> | null = null;
@@ -53,12 +62,21 @@ export class PluginVaultIndexCache {
   }
 
   /**
-   * Markdown paths changed (create / delete / rename). Refreshes file list and derived indices.
+   * Movable paths changed (create / delete / rename). Refreshes bulk-move file list.
+   */
+  invalidateMovableFileList(): void {
+    this.movableListGeneration++;
+    this.cachedMovableFiles = null;
+    this.movableListFilledAtGeneration = -1;
+  }
+
+  /**
+   * Markdown paths changed. Refreshes suggester file list and derived tag/property indices.
    */
   invalidateMarkdownList(): void {
     this.markdownListGeneration++;
     this.cachedMarkdownFiles = null;
-    this.listFilledAtGeneration = -1;
+    this.markdownListFilledAtGeneration = -1;
     this.bumpIndicesGenerationImmediate();
   }
 
@@ -83,6 +101,29 @@ export class PluginVaultIndexCache {
     this.propertySuggestBundle = null;
   }
 
+  getMovableFilesCached(app: App): TFile[] {
+    return this.traceSync(
+      'PluginVaultIndexCache.getMovableFilesCached',
+      () => {
+        if (!this.cacheEnabledResolver()) {
+          return getMovableVaultFiles(app);
+        }
+        if (
+          this.cachedMovableFiles !== null &&
+          this.movableListFilledAtGeneration === this.movableListGeneration
+        ) {
+          return this.cachedMovableFiles;
+        }
+        const files = getMovableVaultFiles(app);
+        this.cachedMovableFiles = files;
+        this.movableListFilledAtGeneration = this.movableListGeneration;
+        return files;
+      },
+      { cacheEnabled: this.cacheEnabledResolver() }
+    );
+  }
+
+  /** Markdown-only list for tag/property suggesters (not used for bulk moves). */
   getMarkdownFilesCached(app: App): TFile[] {
     return this.traceSync(
       'PluginVaultIndexCache.getMarkdownFilesCached',
@@ -92,13 +133,13 @@ export class PluginVaultIndexCache {
         }
         if (
           this.cachedMarkdownFiles !== null &&
-          this.listFilledAtGeneration === this.markdownListGeneration
+          this.markdownListFilledAtGeneration === this.markdownListGeneration
         ) {
           return this.cachedMarkdownFiles;
         }
         const files = app.vault.getMarkdownFiles();
         this.cachedMarkdownFiles = files;
-        this.listFilledAtGeneration = this.markdownListGeneration;
+        this.markdownListFilledAtGeneration = this.markdownListGeneration;
         return files;
       },
       { cacheEnabled: this.cacheEnabledResolver() }
@@ -349,7 +390,7 @@ export class PluginVaultIndexCache {
   attachMetadataInvalidationListeners(plugin: Plugin & { app: App }): void {
     plugin.registerEvent(
       plugin.app.metadataCache.on('changed', (file: TAbstractFile) => {
-        if (file instanceof TFile && file.extension === 'md') {
+        if (file instanceof TFile && isMovableVaultFile(file)) {
           this.scheduleMetadataDerivedInvalidate();
         }
       })
