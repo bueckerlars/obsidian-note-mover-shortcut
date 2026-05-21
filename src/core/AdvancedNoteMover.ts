@@ -173,11 +173,11 @@ export class AdvancedNoteMover {
       async () => {
         const { app } = this.plugin;
 
-        const files = this.plugin.vaultIndexCache.getMarkdownFilesCached(app);
+        const files = this.plugin.vaultIndexCache.getMovableFilesCached(app);
 
         if (files.length === 0) {
           if (options.showNotifications && options.operationType === 'bulk') {
-            NoticeManager.info('No markdown files found in vault');
+            NoticeManager.info('No movable files found in vault');
           }
           return;
         }
@@ -352,7 +352,7 @@ export class AdvancedNoteMover {
       async () => {
         const { app } = this.plugin;
 
-        const files = this.plugin.vaultIndexCache.getMarkdownFilesCached(app);
+        const files = this.plugin.vaultIndexCache.getMovableFilesCached(app);
 
         return await this.ruleManagerV2.generateMovePreview(files, true, true);
       },

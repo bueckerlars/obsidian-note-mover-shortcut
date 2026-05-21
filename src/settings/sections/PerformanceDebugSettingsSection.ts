@@ -18,7 +18,7 @@ export class PerformanceDebugSettingsSection {
     new Setting(this.containerEl)
       .setName('Enable vault index cache')
       .setDesc(
-        'Caches the markdown file list and derived tag/property indices. Turn off to always scan the vault (useful for debugging stale suggestions).'
+        'Caches movable file lists (notes, canvases, bases) and derived tag/property indices from markdown. Turn off to always scan the vault (useful for debugging stale suggestions).'
       )
       .addToggle(toggle =>
         toggle
@@ -28,6 +28,7 @@ export class PerformanceDebugSettingsSection {
           .onChange(async value => {
             this.plugin.settings.settings.enableVaultIndexCache = value;
             await this.plugin.save_settings();
+            this.plugin.vaultIndexCache.invalidateMovableFileList();
             this.plugin.vaultIndexCache.invalidateMarkdownList();
             this.refreshDisplay();
           })
