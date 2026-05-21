@@ -46,8 +46,9 @@ For canvas and base files, rule criteria based on tags, properties, links, or he
 2. `RuleManagerV2.moveFileBasedOnTags` → metadata + blacklist + first matching rule + destination resolution.
 3. If result is `null`, **no move**.
 4. If target path equals current path, **no move**.
-5. `ensureFolderExists` for the target folder, then `app.fileManager.renameFile`.
-6. History entry recorded; notices/undo wired for the focused-note command.
+5. `ensureFolderExists` for the target folder, then `performNoteMove` (`src/application/perform-note-move.ts`).
+6. **Optional attachment co-move** (when `settings.attachments.moveWithNote` is enabled): before the note rename, referenced attachments under the note folder are collected from the metadata cache; after the note rename, each attachment is moved to the same relative path beside the new note location (e.g. `Folder A/_assets/x.png` → `Folder B/_assets/x.png`). Shared attachments can be skipped via `skipSharedAttachments`. When `deleteEmptyAssetFolders` is enabled, empty source attachment folders (e.g. `Folder A/_assets`) are removed after the co-move.
+7. History entry recorded (including `attachmentMoves` when applicable); notices/undo restore the note and co-moved attachments.
 
 ## Rule evaluation cache
 

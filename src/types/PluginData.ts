@@ -11,6 +11,13 @@ export interface PluginData {
   schemaVersion?: number;
 }
 
+export interface AttachmentMoveSettings {
+  moveWithNote: boolean;
+  skipSharedAttachments: boolean;
+  /** Remove attachment source folders (e.g. _assets) when empty after a co-move. */
+  deleteEmptyAssetFolders: boolean;
+}
+
 export interface SettingsData {
   triggers: TriggerSettings;
   filters: FilterSettings;
@@ -21,6 +28,7 @@ export interface SettingsData {
   enableVaultIndexCache?: boolean;
   /** When true, records timing spans and logs `[Advanced Note Mover perf]` to the console. */
   enablePerformanceDebug?: boolean;
+  attachments?: AttachmentMoveSettings;
 }
 
 export interface HistoryData {

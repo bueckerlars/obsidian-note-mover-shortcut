@@ -105,6 +105,28 @@ export async function validateAndRepairPluginData(
     plugin.settings.settings.enablePerformanceDebug = false;
   }
 
+  if (!plugin.settings.settings.attachments) {
+    plugin.settings.settings.attachments = {
+      moveWithNote: false,
+      skipSharedAttachments: true,
+      deleteEmptyAssetFolders: false,
+    };
+  } else {
+    if (plugin.settings.settings.attachments.moveWithNote === undefined) {
+      plugin.settings.settings.attachments.moveWithNote = false;
+    }
+    if (
+      plugin.settings.settings.attachments.skipSharedAttachments === undefined
+    ) {
+      plugin.settings.settings.attachments.skipSharedAttachments = true;
+    }
+    if (
+      plugin.settings.settings.attachments.deleteEmptyAssetFolders === undefined
+    ) {
+      plugin.settings.settings.attachments.deleteEmptyAssetFolders = false;
+    }
+  }
+
   if (!Array.isArray(plugin.settings.settings.rulesV2)) {
     plugin.settings.settings.rulesV2 = [];
   }
@@ -212,6 +234,11 @@ export function buildDefaultSettingsData(): SettingsData {
     enableRuleEvaluationCache: true,
     enableVaultIndexCache: true,
     enablePerformanceDebug: false,
+    attachments: {
+      moveWithNote: true,
+      skipSharedAttachments: true,
+      deleteEmptyAssetFolders: false,
+    },
   } as SettingsData;
 }
 

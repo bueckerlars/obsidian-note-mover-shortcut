@@ -3,6 +3,8 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
+import { performNoteMove } from '../application/perform-note-move';
+import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import AdvancedNoteMoverPlugin from 'main';
 import { type OperationType } from '../types/Common';
 import { MovePreview } from '../types/MovePreview';
@@ -138,19 +140,16 @@ export class AdvancedNoteMover {
             );
           }
 
-          this.plugin.historyManager.markPluginMoveStart();
-
-          try {
-            await app.fileManager.renameFile(file, newPath);
-
-            this.plugin.historyManager.addEntry({
-              sourcePath: originalPath,
-              destinationPath: newPath,
-              fileName: file.name,
-            });
-          } finally {
-            this.plugin.historyManager.markPluginMoveEnd();
-          }
+          await performNoteMove({
+            app,
+            historyManager: this.plugin.historyManager,
+            file,
+            originalPath,
+            newPath,
+            attachmentSettings: getAttachmentMoveSettings(
+              this.plugin.settings.settings
+            ),
+          });
 
           return true;
         } catch (error) {

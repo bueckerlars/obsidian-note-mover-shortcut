@@ -9,6 +9,7 @@
 
 ### Features
 
+- **Move attachments with note** ([#77](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/77)): Optional co-move of referenced attachment files in the note folder subtree when a markdown note is moved (preserves relative paths such as `_assets/`). Configurable in Triggers; off by default on upgrade, on for new installs. Undo restores co-moved attachments.
 - **Preview bulk cancel**: While executing moves from the preview modal, you can **Stop** the remaining renames; completed moves stay in history.
 
 ### Improvements
