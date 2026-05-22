@@ -45,7 +45,7 @@ The **rule evaluation cache** (on by default) makes periodic passes efficient: f
 
 ## Attachment co-move
 
-Configured in **Settings → Triggers → Move attachments with note**.
+Configured in **Settings → Attachments → Move attachments with note**.
 
 When enabled, moving a Markdown note also moves referenced attachments that live in the same folder subtree. The relative path structure is preserved — attachments in `_assets/` next to the note move to `_assets/` next to the new note location.
 

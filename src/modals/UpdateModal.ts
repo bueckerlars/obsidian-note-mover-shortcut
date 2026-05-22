@@ -7,18 +7,7 @@ import {
 } from 'obsidian';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
-
-interface ChangelogEntry {
-  version: string;
-  changes: {
-    features?: string[];
-    bugFixes?: string[];
-    improvements?: string[];
-    changes?: string[];
-    fixes?: string[];
-    performance?: string[];
-  };
-}
+import type { ChangelogEntry } from '../generated/changelog';
 
 export class UpdateModal extends BaseModal {
   private currentVersion: string;
@@ -163,6 +152,22 @@ export class UpdateModal extends BaseModal {
         text: `Version ${entry.version}`,
         cls: 'advancedNoteMover-changelog-version-title',
       });
+
+      if (entry.changes.breaking && entry.changes.breaking.length > 0) {
+        const breakingSection = versionContainer.createEl('div', {
+          cls: 'advancedNoteMover-changelog-section advancedNoteMover-changelog-section-breaking',
+        });
+        breakingSection.createEl('h4', {
+          text: '⚠️ Breaking Changes',
+          cls: 'advancedNoteMover-changelog-section-title',
+        });
+        const breakingList = breakingSection.createEl('ul', {
+          cls: 'advancedNoteMover-changelog-list',
+        });
+        entry.changes.breaking.forEach(item => {
+          this.renderMarkdownListItem(breakingList, item);
+        });
+      }
 
       if (entry.changes.features && entry.changes.features.length > 0) {
         const featuresSection = versionContainer.createEl('div', {

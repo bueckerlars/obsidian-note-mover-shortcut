@@ -132,7 +132,7 @@ Both options are off by default — enable them in **Settings → Triggers**.
 
 When a note moves, its referenced attachments (images, PDFs, etc.) can move with it. The plugin preserves relative paths — so if your images live in an `_assets/` folder next to your note, they'll appear in an `_assets/` folder beside the note's new location. Optionally, empty source attachment folders are cleaned up after the move.
 
-Enable in **Settings → Triggers → Move attachments with note**.
+Enable in **Settings → Attachments → Move attachments with note**.
 
 ### Canvas and Base support
 

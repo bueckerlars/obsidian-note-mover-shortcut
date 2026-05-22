@@ -22,6 +22,7 @@ Open **Settings → Community plugins → Advanced Note Mover**. The settings ta
 | **Triggers**            | Automation: move-on-edit and periodic full-vault passes |
 | **Filter**              | Blacklist lines — notes that should never be moved      |
 | **Rules**               | Your named routing rules                                |
+| **Attachments**         | Co-move images and files referenced by a note           |
 | **History**             | View and undo past moves                                |
 | **Import / Export**     | Backup and restore your configuration                   |
 | **Performance / debug** | Caching options and performance tracing                 |

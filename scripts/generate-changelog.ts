@@ -4,6 +4,7 @@ import * as path from 'path';
 interface ChangelogEntry {
   version: string;
   changes: {
+    breaking?: string[];
     features?: string[];
     bugFixes?: string[];
     improvements?: string[];
@@ -20,6 +21,7 @@ function parseChangelog(content: string): ChangelogEntry[] {
   let currentVersion = '';
   let currentChanges: ChangelogEntry['changes'] = {};
   let currentSection:
+    | 'breaking'
     | 'features'
     | 'bugFixes'
     | 'improvements'
@@ -50,6 +52,11 @@ function parseChangelog(content: string): ChangelogEntry[] {
     }
 
     // Recognize section headers
+    if (line.startsWith('### Breaking')) {
+      currentSection = 'breaking';
+      currentChanges.breaking = [];
+      continue;
+    }
     if (line.startsWith('### Features')) {
       currentSection = 'features';
       currentChanges.features = [];
@@ -108,6 +115,7 @@ function generateChangelogFile(entries: ChangelogEntry[]): string {
 export interface ChangelogEntry {
   version: string;
   changes: {
+    breaking?: string[];
     features?: string[];
     bugFixes?: string[];
     improvements?: string[];
