@@ -46,7 +46,7 @@ export class UpdateManager {
       currentVersion
     );
 
-    // UpdateModal anzeigen
+    // Show update modal
     const updateModal = new UpdateModal(
       this.plugin.app,
       currentVersion,
@@ -63,7 +63,7 @@ export class UpdateManager {
   }
 
   /**
-   * Vergleicht zwei Versionsstrings
+   * Compares two version strings
    * @param current The current version
    * @param last The last seen version
    * @returns true if current is newer than last
@@ -107,7 +107,7 @@ export class UpdateManager {
       );
     } catch (error) {
       NoticeManager.error(
-        `Fehler beim Laden des Changelogs: ${error instanceof Error ? error.message : String(error)}`
+        `Error loading changelog: ${error instanceof Error ? error.message : String(error)}`
       );
       return [];
     }

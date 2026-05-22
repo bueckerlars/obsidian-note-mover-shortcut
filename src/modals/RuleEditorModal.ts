@@ -312,7 +312,7 @@ export class RuleEditorModal extends BaseModal {
         value: trigger.propertyName || '',
       });
 
-      // PropertySuggest hinzufügen
+      // Attach PropertySuggest
       new PropertySuggest(this.app, propertyNameInput);
 
       propertyNameInput.oninput = () => {
@@ -326,12 +326,12 @@ export class RuleEditorModal extends BaseModal {
         );
         if (detectedType) {
           trigger.propertyType = detectedType;
-          this.renderTriggers(); // Re-render für Operator-Update
+          this.renderTriggers(); // Re-render to update operator dropdown
         }
       };
     }
 
-    // Value Input (nur wenn Operator einen Wert benötigt)
+    // Value input (only when operator requires a value)
     let valueInput: HTMLInputElement | null = null;
     if (operatorRequiresValue(trigger.operator)) {
       valueInput = row.createEl('input', {
@@ -354,7 +354,7 @@ export class RuleEditorModal extends BaseModal {
         trigger.propertyName &&
         trigger.propertyType
       ) {
-        // PropertyValueSuggest für Properties mit bekanntem Typ
+        // PropertyValueSuggest when property type is known
         new PropertyValueSuggest(
           this.app,
           valueInput,

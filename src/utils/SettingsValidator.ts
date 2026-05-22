@@ -715,8 +715,8 @@ export class SettingsValidator {
         return false;
       }
 
-      // PropertyType ist optional - wird automatisch erkannt
-      // Aber wenn vorhanden, muss es valide sein
+      // PropertyType is optional — detected automatically
+      // If present, it must be valid
       if (trigger.propertyType) {
         const validPropertyTypes = [
           'text',
@@ -783,7 +783,7 @@ export class SettingsValidator {
       }
     }
 
-    // Validate value (nur wenn Operator einen Wert benötigt)
+    // Validate value (only when operator requires a value)
     if (operatorRequiresValue(trigger.operator)) {
       if (!this.validateStringField(trigger.value, `${path}.value`, result)) {
         return false;

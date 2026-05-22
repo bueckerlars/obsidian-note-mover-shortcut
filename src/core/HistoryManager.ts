@@ -94,7 +94,7 @@ export class HistoryManager {
   }
 
   /**
-   * Markiert den Start einer Plugin-internen Verschiebung
+   * Marks the start of an internal plugin move
    */
   public markPluginMoveStart(): void {
     this.isPluginMove = true;

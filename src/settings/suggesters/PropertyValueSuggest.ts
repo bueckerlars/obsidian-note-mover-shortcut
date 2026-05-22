@@ -22,7 +22,7 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
   private loadAvailableValues(): void {
     this.availableValues = new Set();
 
-    // Keine Vorschläge für Date-Typ
+    // No suggestions for date type
     if (this.propertyType === 'date') {
       return;
     }
@@ -88,7 +88,7 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
         break;
 
       case 'date':
-        // Keine Vorschläge für Date-Typ
+        // No suggestions for date type
         break;
     }
   }
@@ -147,7 +147,7 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
   }
 
   getSuggestions(inputStr: string): string[] {
-    // Keine Vorschläge für Date-Typ
+    // No suggestions for date type
     if (this.propertyType === 'date') {
       return [];
     }

@@ -148,7 +148,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     );
     if (!typeMatch || query.trim() === '') {
       this.selectedType = null;
-      // Typ-Suggestions anzeigen
+      // Show type suggestions
       return SUGGEST_TYPES.filter(
         t =>
           query.trim() === '' ||
