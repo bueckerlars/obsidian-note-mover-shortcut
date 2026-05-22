@@ -1,5 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { App, Setting } from 'obsidian';
+import { Setting } from 'obsidian';
 import { createError, handleError } from 'src/utils/Error';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { MobileUtils } from '../../utils/MobileUtils';
@@ -84,45 +84,6 @@ export class TriggerSettingsSection {
       }
     }
 
-    // Rule Evaluation Cache (beta)
-    const cacheDesc = document.createDocumentFragment();
-    cacheDesc.append(
-      'Cache rule evaluation results so unchanged files are not re-evaluated on every periodic or on-edit run.',
-      document.createElement('br'),
-      'This significantly improves performance for vaults with many files and rules.'
-    );
-
-    const cacheSetting = new Setting(this.containerEl)
-      .setName('Enable rule evaluation cache')
-      .setDesc(cacheDesc)
-      .addToggle(toggle =>
-        toggle
-          .setValue(
-            this.plugin.settings.settings.enableRuleEvaluationCache ?? true
-          )
-          .onChange(async value => {
-            this.plugin.settings.settings.enableRuleEvaluationCache = value;
-            await this.plugin.save_settings();
-            if (!value) {
-              this.plugin.ruleCache.invalidateAll();
-            }
-          })
-      );
-
-    if (isMobile) {
-      cacheSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const cacheControlEl = cacheSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (cacheControlEl) {
-        (cacheControlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-toggle-control'
-        );
-      }
-    }
-
-    this.addAttachmentMoveSettings(isMobile);
-
     if (this.plugin.settings.settings.triggers.enablePeriodicMovement) {
       const intervalSetting = new Setting(this.containerEl)
         .setName('Periodic movement interval')
@@ -184,85 +145,5 @@ export class TriggerSettingsSection {
         }
       }
     }
-  }
-
-  private addAttachmentMoveSettings(isMobile: boolean): void {
-    if (!this.plugin.settings.settings.attachments) {
-      this.plugin.settings.settings.attachments = {
-        moveWithNote: false,
-        skipSharedAttachments: true,
-        deleteEmptyAssetFolders: false,
-      };
-    }
-
-    const attachments = this.plugin.settings.settings.attachments;
-
-    const moveWithNoteDesc =
-      'When a markdown note is moved, also move images and other attachments referenced in the note that live in the note folder or its subfolders (e.g. _assets/). Relative link structure is preserved.';
-
-    const moveWithNoteSetting = new Setting(this.containerEl)
-      .setName('Move attachments with note')
-      .setDesc(moveWithNoteDesc)
-      .addToggle(toggle =>
-        toggle
-          .setValue(attachments.moveWithNote === true)
-          .onChange(async value => {
-            attachments.moveWithNote = value;
-            await this.plugin.save_settings();
-            this.refreshDisplay();
-          })
-      );
-
-    if (isMobile) {
-      moveWithNoteSetting.settingEl.addClass(
-        'advancedNoteMover-mobile-optimized'
-      );
-    }
-
-    if (attachments.moveWithNote) {
-      const skipSharedSetting = new Setting(this.containerEl)
-        .setName('Skip shared attachments')
-        .setDesc(
-          'Do not move attachment files that are also linked from other notes. Prevents breaking references elsewhere in the vault.'
-        )
-        .addToggle(toggle =>
-          toggle
-            .setValue(attachments.skipSharedAttachments !== false)
-            .onChange(async value => {
-              attachments.skipSharedAttachments = value;
-              await this.plugin.save_settings();
-            })
-        );
-
-      if (isMobile) {
-        skipSharedSetting.settingEl.addClass(
-          'advancedNoteMover-mobile-optimized'
-        );
-      }
-
-      const deleteEmptySetting = new Setting(this.containerEl)
-        .setName('Delete empty asset folders')
-        .setDesc(
-          'After moving attachments, remove source folders (such as _assets) that no longer contain any files.'
-        )
-        .addToggle(toggle =>
-          toggle
-            .setValue(attachments.deleteEmptyAssetFolders === true)
-            .onChange(async value => {
-              attachments.deleteEmptyAssetFolders = value;
-              await this.plugin.save_settings();
-            })
-        );
-
-      if (isMobile) {
-        deleteEmptySetting.settingEl.addClass(
-          'advancedNoteMover-mobile-optimized'
-        );
-      }
-    }
-  }
-
-  private get app(): App {
-    return this.plugin.app;
   }
 }

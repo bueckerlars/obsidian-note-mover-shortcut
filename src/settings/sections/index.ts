@@ -1,4 +1,5 @@
 export { TriggerSettingsSection as PeriodicMovementSettingsSection } from './PeriodicMovementSettingsSection';
+export { AttachmentsSettingsSection } from './AttachmentsSettingsSection';
 export { FilterSettingsSection } from './FilterSettingsSection';
 export { RulesSettingsSection } from './RulesSettingsSection';
 export { HistorySettingsSection } from './HistorySettingsSection';

@@ -2,6 +2,7 @@ import AdvancedNoteMoverPlugin from 'main';
 import { PluginSettingTab } from 'obsidian';
 import {
   PeriodicMovementSettingsSection,
+  AttachmentsSettingsSection,
   FilterSettingsSection,
   RulesSettingsSection,
   HistorySettingsSection,
@@ -13,6 +14,7 @@ import { MobileUtils } from '../utils/MobileUtils';
 
 export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   private periodicMovementSettings: PeriodicMovementSettingsSection;
+  private attachmentsSettings: AttachmentsSettingsSection;
   private filterSettings: FilterSettingsSection;
   private rulesSettings: RulesSettingsSection;
   private historySettings: HistorySettingsSection;
@@ -35,6 +37,11 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
 
     // Initialize section classes
     this.periodicMovementSettings = new PeriodicMovementSettingsSection(
+      plugin,
+      this.containerEl,
+      debouncedDisplay
+    );
+    this.attachmentsSettings = new AttachmentsSettingsSection(
       plugin,
       this.containerEl,
       debouncedDisplay
@@ -87,6 +94,11 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
       this.containerEl,
       debouncedDisplay
     );
+    this.attachmentsSettings = new AttachmentsSettingsSection(
+      this.plugin,
+      this.containerEl,
+      debouncedDisplay
+    );
     this.filterSettings = new FilterSettingsSection(
       this.plugin,
       this.containerEl,
@@ -119,6 +131,8 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.rulesSettings.addRulesSetting();
     this.rulesSettings.addRulesArray();
     this.rulesSettings.addAddRuleButtonSetting();
+
+    this.attachmentsSettings.addAttachmentSettings();
 
     this.historySettings.addHistorySettings();
 

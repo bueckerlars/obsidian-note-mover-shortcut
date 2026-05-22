@@ -15,6 +15,30 @@ export class PerformanceDebugSettingsSection {
   addPerformanceDebugSettings(): void {
     new Setting(this.containerEl).setName('Performance').setHeading();
 
+    const cacheDesc = document.createDocumentFragment();
+    cacheDesc.append(
+      'Cache rule evaluation results so unchanged files are not re-evaluated on every periodic or on-edit run.',
+      document.createElement('br'),
+      'This significantly improves performance for vaults with many files and rules.'
+    );
+
+    new Setting(this.containerEl)
+      .setName('Enable rule evaluation cache')
+      .setDesc(cacheDesc)
+      .addToggle(toggle =>
+        toggle
+          .setValue(
+            this.plugin.settings.settings.enableRuleEvaluationCache ?? true
+          )
+          .onChange(async value => {
+            this.plugin.settings.settings.enableRuleEvaluationCache = value;
+            await this.plugin.save_settings();
+            if (!value) {
+              this.plugin.ruleCache.invalidateAll();
+            }
+          })
+      );
+
     new Setting(this.containerEl)
       .setName('Enable vault index cache')
       .setDesc(
