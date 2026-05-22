@@ -1,4 +1,4 @@
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SETTINGS_CONSTANTS, HISTORY_CONSTANTS } from '../../config/constants';
@@ -7,7 +7,7 @@ import { MobileUtils } from '../../utils/MobileUtils';
 
 export class HistorySettingsSection {
   constructor(
-    private plugin: NoteMoverShortcutPlugin,
+    private plugin: AdvancedNoteMoverPlugin,
     private containerEl: HTMLElement
   ) {}
 
@@ -43,12 +43,16 @@ export class HistorySettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      clearHistorySetting.settingEl.addClass('noteMover-mobile-optimized');
+      clearHistorySetting.settingEl.addClass(
+        'advancedNoteMover-mobile-optimized'
+      );
       const controlEl = clearHistorySetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
+        (controlEl as HTMLElement).addClass(
+          'advancedNoteMover-mobile-button-control'
+        );
       }
     }
   }
@@ -104,13 +108,13 @@ export class HistorySettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      retentionSetting.settingEl.addClass('noteMover-mobile-optimized');
+      retentionSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const controlEl = retentionSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
         (controlEl as HTMLElement).addClass(
-          'noteMover-mobile-retention-controls'
+          'advancedNoteMover-mobile-retention-controls'
         );
       }
     }
@@ -132,12 +136,14 @@ export class HistorySettingsSection {
 
     // Add mobile optimization classes
     if (isMobile) {
-      cleanupSetting.settingEl.addClass('noteMover-mobile-optimized');
+      cleanupSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
       const controlEl = cleanupSetting.settingEl.querySelector(
         '.setting-item-control'
       );
       if (controlEl) {
-        (controlEl as HTMLElement).addClass('noteMover-mobile-button-control');
+        (controlEl as HTMLElement).addClass(
+          'advancedNoteMover-mobile-button-control'
+        );
       }
     }
   }

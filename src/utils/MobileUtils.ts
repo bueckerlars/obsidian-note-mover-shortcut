@@ -79,7 +79,7 @@ export class MobileUtils {
     }
 
     const button = container.createEl('button', {
-      cls: `noteMover-mobile-move-button noteMover-mobile-move-${direction}-button`,
+      cls: `advancedNoteMover-mobile-move-button advancedNoteMover-mobile-move-${direction}-button`,
     });
 
     const iconName = direction === 'up' ? 'chevron-up' : 'chevron-down';
@@ -107,7 +107,7 @@ export class MobileUtils {
     options: { isPrimary?: boolean; isDanger?: boolean } = {}
   ): HTMLButtonElement {
     const button = container.createEl('button', {
-      cls: 'noteMover-mobile-action-btn',
+      cls: 'advancedNoteMover-mobile-action-btn',
       text: text,
     });
 
@@ -116,7 +116,7 @@ export class MobileUtils {
       button.style.background = 'var(--interactive-accent)';
       button.style.color = 'var(--text-on-accent)';
     } else if (options.isDanger) {
-      button.addClass('noteMover-mobile-delete-btn');
+      button.addClass('advancedNoteMover-mobile-delete-btn');
     }
 
     button.addEventListener('click', async () => {

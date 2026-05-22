@@ -113,12 +113,12 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
         break;
       }
       case 'tagTemplate': {
-        el.addClass('noteMover-template-suggestion');
+        el.addClass('advancedNoteMover-template-suggestion');
         el.setText(value.value);
         break;
       }
       case 'propertyTemplate': {
-        el.addClass('noteMover-template-suggestion');
+        el.addClass('advancedNoteMover-template-suggestion');
         el.setText(value.value);
         break;
       }

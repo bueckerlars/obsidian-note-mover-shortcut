@@ -1,5 +1,4 @@
 import { BulkOperation, HistoryEntry, RetentionPolicy } from './HistoryEntry';
-import { Rule } from './Rule';
 import { RuleV2 } from './RuleV2';
 
 /**
@@ -12,15 +11,24 @@ export interface PluginData {
   schemaVersion?: number;
 }
 
+export interface AttachmentMoveSettings {
+  moveWithNote: boolean;
+  skipSharedAttachments: boolean;
+  /** Remove attachment source folders (e.g. _assets) when empty after a co-move. */
+  deleteEmptyAssetFolders: boolean;
+}
+
 export interface SettingsData {
   triggers: TriggerSettings;
   filters: FilterSettings;
-  rules: Rule[];
   retentionPolicy: RetentionPolicy;
-  enableLegacyRules?: boolean;
-  legacyMigrationDismissed?: boolean;
   rulesV2?: RuleV2[];
   enableRuleEvaluationCache?: boolean;
+  /** When false, vault markdown list / tag / property index cache is bypassed (always fresh scans). Default true. */
+  enableVaultIndexCache?: boolean;
+  /** When true, records timing spans and logs `[Advanced Note Mover perf]` to the console. */
+  enablePerformanceDebug?: boolean;
+  attachments?: AttachmentMoveSettings;
 }
 
 export interface HistoryData {

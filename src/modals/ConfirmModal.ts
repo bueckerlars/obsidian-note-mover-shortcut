@@ -13,10 +13,11 @@ export interface ConfirmModalOptions extends BaseModalOptions {
 export class ConfirmModal extends BaseModal {
   private confirmOptions: ConfirmModalOptions;
   private resolvePromise: (value: boolean) => void = () => {};
+  private hasResolved = false;
 
   constructor(app: App, options: ConfirmModalOptions) {
     super(app, {
-      cssClass: 'noteMover-confirm-modal',
+      cssClass: 'advancedNoteMover-confirm-modal',
       size: 'small',
       ...options,
     });
@@ -35,8 +36,8 @@ export class ConfirmModal extends BaseModal {
     // Message
     const messageEl = contentEl.createEl('div', {
       cls: isMobile
-        ? 'noteMover-confirm-modal-message noteMover-confirm-modal-message-mobile'
-        : 'noteMover-confirm-modal-message',
+        ? 'advancedNoteMover-confirm-modal-message advancedNoteMover-confirm-modal-message-mobile'
+        : 'advancedNoteMover-confirm-modal-message',
     });
     messageEl.innerHTML = this.confirmOptions.message;
 
@@ -48,6 +49,7 @@ export class ConfirmModal extends BaseModal {
           .setButtonText(this.confirmOptions.confirmText || 'OK')
           .setCta()
           .onClick(() => {
+            this.hasResolved = true;
             this.resolvePromise(true);
             this.close();
           });
@@ -66,6 +68,7 @@ export class ConfirmModal extends BaseModal {
         btn
           .setButtonText(this.confirmOptions.cancelText || 'Cancel')
           .onClick(() => {
+            this.hasResolved = true;
             this.resolvePromise(false);
             this.close();
           });
@@ -84,6 +87,7 @@ export class ConfirmModal extends BaseModal {
         buttonContainer,
         this.confirmOptions.cancelText || 'Cancel',
         () => {
+          this.hasResolved = true;
           this.resolvePromise(false);
           this.close();
         }
@@ -94,6 +98,7 @@ export class ConfirmModal extends BaseModal {
         buttonContainer,
         this.confirmOptions.confirmText || 'OK',
         () => {
+          this.hasResolved = true;
           this.resolvePromise(true);
           this.close();
         },
@@ -106,9 +111,12 @@ export class ConfirmModal extends BaseModal {
   }
 
   onClose() {
+    // Resolve only if not already handled by a button (e.g. Esc / overlay)
+    if (!this.hasResolved) {
+      this.resolvePromise(false);
+    }
+    this.hasResolved = true;
     super.onClose();
-    // Ensure promise is resolved even if modal is closed without clicking a button
-    this.resolvePromise(false);
   }
 
   /**

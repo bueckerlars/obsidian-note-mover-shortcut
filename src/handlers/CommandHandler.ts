@@ -1,21 +1,29 @@
-import NoteMoverShortcutPlugin from 'main';
-import { Editor, MarkdownView, Notice } from 'obsidian';
+import AdvancedNoteMoverPlugin from 'main';
 import { HistoryModal } from '../modals/HistoryModal';
-import { UpdateModal } from '../modals/UpdateModal';
 import { PreviewModal } from '../modals/PreviewModal';
-import { createError, handleError } from '../utils/Error';
+import { handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
+import { isMovableVaultFile } from '../domain/vault/movable-vault-files';
 
 export class CommandHandler {
-  constructor(private plugin: NoteMoverShortcutPlugin) {}
+  constructor(private plugin: AdvancedNoteMoverPlugin) {}
+
+  private hasActiveMovableFile(): boolean {
+    const file = this.plugin.app.workspace.getActiveFile();
+    return file != null && isMovableVaultFile(file);
+  }
 
   setup(): void {
     // Singe note move command
     this.plugin.addCommand({
       id: 'trigger-note-movement',
       name: 'Move active note to note folder',
-      editorCallback: (editor: Editor, view: MarkdownView) => {
-        this.plugin.noteMover.moveFocusedNoteToDestination();
+      checkCallback: (checking: boolean) => {
+        if (checking) {
+          return this.hasActiveMovableFile();
+        }
+        this.plugin.advancedNoteMover.moveFocusedNoteToDestination();
+        return true;
       },
     });
 
@@ -24,7 +32,7 @@ export class CommandHandler {
       id: 'trigger-note-bulk-move',
       name: 'Move all files in vault',
       callback: () => {
-        this.plugin.noteMover.moveAllFilesInVault();
+        this.plugin.advancedNoteMover.moveAllFilesInVault();
       },
     });
 
@@ -41,15 +49,6 @@ export class CommandHandler {
       },
     });
 
-    // Update modal command (for testing/manual trigger)
-    this.plugin.addCommand({
-      id: 'show-update-modal',
-      name: 'Show update modal',
-      callback: () => {
-        this.plugin.updateManager.showUpdateModal(true);
-      },
-    });
-
     // Preview bulk movement command
     this.plugin.addCommand({
       id: 'preview-bulk-movement',
@@ -57,7 +56,7 @@ export class CommandHandler {
       callback: async () => {
         try {
           const preview =
-            await this.plugin.noteMover.generateVaultMovePreview();
+            await this.plugin.advancedNoteMover.generateVaultMovePreview();
           new PreviewModal(this.plugin.app, this.plugin, preview).open();
         } catch (error) {
           handleError(error, 'Error generating preview', false);
@@ -72,21 +71,27 @@ export class CommandHandler {
     this.plugin.addCommand({
       id: 'preview-note-movement',
       name: 'Preview active note movement',
-      editorCallback: async (editor: Editor, view: MarkdownView) => {
-        try {
-          const preview =
-            await this.plugin.noteMover.generateActiveNotePreview();
-          if (preview) {
-            new PreviewModal(this.plugin.app, this.plugin, preview).open();
-          } else {
-            NoticeManager.warning('No active note to preview.');
-          }
-        } catch (error) {
-          handleError(error, 'Error generating preview', false);
-          NoticeManager.error(
-            `Error generating preview: ${error instanceof Error ? error.message : String(error)}`
-          );
+      checkCallback: (checking: boolean) => {
+        if (checking) {
+          return this.hasActiveMovableFile();
         }
+        void (async () => {
+          try {
+            const preview =
+              await this.plugin.advancedNoteMover.generateActiveNotePreview();
+            if (preview) {
+              new PreviewModal(this.plugin.app, this.plugin, preview).open();
+            } else {
+              NoticeManager.warning('No active file to preview.');
+            }
+          } catch (error) {
+            handleError(error, 'Error generating preview', false);
+            NoticeManager.error(
+              `Error generating preview: ${error instanceof Error ? error.message : String(error)}`
+            );
+          }
+        })();
+        return true;
       },
     });
 
@@ -94,22 +99,28 @@ export class CommandHandler {
     this.plugin.addCommand({
       id: 'add-current-file-to-blacklist',
       name: 'Add current file to blacklist',
-      editorCallback: async (editor: Editor, view: MarkdownView) => {
-        try {
-          const fileName = view.file?.name;
-          if (!fileName) {
-            NoticeManager.warning('No active file to add to blacklist.');
-            return;
-          }
-
-          // Use centralized function
-          await this.plugin.noteMover.addFileToBlacklist(fileName);
-        } catch (error) {
-          handleError(error, 'Error adding file to blacklist', false);
-          NoticeManager.error(
-            `Error adding file to blacklist: ${error instanceof Error ? error.message : String(error)}`
-          );
+      checkCallback: (checking: boolean) => {
+        if (checking) {
+          return this.hasActiveMovableFile();
         }
+        void (async () => {
+          try {
+            const file = this.plugin.app.workspace.getActiveFile();
+            const fileName = file?.name;
+            if (!fileName) {
+              NoticeManager.warning('No active file to add to blacklist.');
+              return;
+            }
+
+            await this.plugin.advancedNoteMover.addFileToBlacklist(fileName);
+          } catch (error) {
+            handleError(error, 'Error adding file to blacklist', false);
+            NoticeManager.error(
+              `Error adding file to blacklist: ${error instanceof Error ? error.message : String(error)}`
+            );
+          }
+        })();
+        return true;
       },
     });
   }

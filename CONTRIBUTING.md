@@ -1,6 +1,6 @@
-# Contributing to NoteMover Shortcut
+# Contributing to Advanced Note Mover
 
-Thank you for your interest in contributing to NoteMover Shortcut! This document provides guidelines and instructions for contributing to this project.
+Thank you for your interest in contributing to Advanced Note Mover! This document provides guidelines and instructions for contributing to this project.
 
 ## Getting Started
 
@@ -172,6 +172,7 @@ Before submitting your PR, ensure:
 
 ```bash
 # All checks pass
+npm test
 npm run lint
 npm run format:check
 npm run type-check
@@ -200,4 +201,4 @@ If you have questions or need help, please:
 - Provide constructive feedback
 - Help others learn and grow
 
-Thank you for contributing to NoteMover Shortcut! 🎉
+Thank you for contributing to Advanced Note Mover! 🎉

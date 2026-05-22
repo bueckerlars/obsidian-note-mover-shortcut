@@ -2,6 +2,8 @@ import { App, TFile } from 'obsidian';
 import { getAllTags } from 'obsidian';
 import { FileMetadata } from '../types/Common';
 import { handleError } from '../utils/Error';
+import { parseListProperty as parseListPropertyDomain } from '../domain/property/parseListProperty';
+import { isListProperty as isListPropertyDomain } from '../domain/property/isListProperty';
 
 /**
  * Extracts and provides standardized access to file metadata
@@ -144,30 +146,7 @@ export class MetadataExtractor {
    * @returns Array of individual values
    */
   public parseListProperty(value: any): string[] {
-    if (value === null || value === undefined) {
-      return [];
-    }
-
-    // If it's already an array, return it as strings
-    if (Array.isArray(value)) {
-      return value
-        .map(item => String(item).trim())
-        .filter(item => item.length > 0);
-    }
-
-    // If it's a string, try to parse it as comma-separated values
-    if (typeof value === 'string') {
-      // Handle both comma-separated and newline-separated values
-      const values = value
-        .split(/[,\n]/)
-        .map(item => item.trim())
-        .filter(item => item.length > 0);
-
-      return values;
-    }
-
-    // For other types, convert to string
-    return [String(value).trim()].filter(item => item.length > 0);
+    return parseListPropertyDomain(value);
   }
 
   /**
@@ -177,20 +156,7 @@ export class MetadataExtractor {
    * @returns True if the value represents multiple items
    */
   public isListProperty(value: any): boolean {
-    if (value === null || value === undefined) {
-      return false;
-    }
-
-    if (Array.isArray(value)) {
-      return value.length > 1;
-    }
-
-    if (typeof value === 'string') {
-      // Check if it contains separators (comma or newline)
-      return /[,\n]/.test(value) && value.split(/[,\n]/).length > 1;
-    }
-
-    return false;
+    return isListPropertyDomain(value);
   }
 
   /**
@@ -198,9 +164,13 @@ export class MetadataExtractor {
    * Includes additional fields: extension, links, embeds, headings
    *
    * @param file - TFile to extract metadata from
+   * @param needsContent - When true, reads file body (for blacklist `content:` filters).
    * @returns Complete FileMetadata with V2 fields
    */
-  public async extractFileMetadataV2(file: TFile): Promise<FileMetadata> {
+  public async extractFileMetadataV2(
+    file: TFile,
+    needsContent = false
+  ): Promise<FileMetadata> {
     try {
       const fileName = file.name;
       const filePath = file.path;
@@ -241,12 +211,21 @@ export class MetadataExtractor {
         }
       }
 
+      let fileContent = '';
+      if (needsContent) {
+        try {
+          fileContent = await this.app.vault.read(file);
+        } catch {
+          // optional
+        }
+      }
+
       return {
         fileName,
         filePath,
         tags,
         properties,
-        fileContent: '',
+        fileContent,
         createdAt,
         updatedAt,
         extension,

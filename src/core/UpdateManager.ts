@@ -1,17 +1,12 @@
-import { TFile } from 'obsidian';
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { UpdateModal } from '../modals/UpdateModal';
 import { NoticeManager } from '../utils/NoticeManager';
-import { RuleMatcher } from './RuleMatcher';
-import { FileMovementService } from './FileMovementService';
-import { BaseModal } from 'src/modals/BaseModal';
-import { MetadataExtractor } from './MetadataExtractor';
 import { ChangelogEntry, CHANGELOG_ENTRIES } from '../generated/changelog';
 
 export class UpdateManager {
-  private plugin: NoteMoverShortcutPlugin;
+  private plugin: AdvancedNoteMoverPlugin;
 
-  constructor(plugin: NoteMoverShortcutPlugin) {
+  constructor(plugin: AdvancedNoteMoverPlugin) {
     this.plugin = plugin;
   }
 
@@ -51,7 +46,7 @@ export class UpdateManager {
       currentVersion
     );
 
-    // UpdateModal anzeigen
+    // Show update modal
     const updateModal = new UpdateModal(
       this.plugin.app,
       currentVersion,
@@ -68,7 +63,7 @@ export class UpdateManager {
   }
 
   /**
-   * Vergleicht zwei Versionsstrings
+   * Compares two version strings
    * @param current The current version
    * @param last The last seen version
    * @returns true if current is newer than last
@@ -112,7 +107,7 @@ export class UpdateManager {
       );
     } catch (error) {
       NoticeManager.error(
-        `Fehler beim Laden des Changelogs: ${error instanceof Error ? error.message : String(error)}`
+        `Error loading changelog: ${error instanceof Error ? error.message : String(error)}`
       );
       return [];
     }

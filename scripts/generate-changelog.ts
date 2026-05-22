@@ -4,6 +4,7 @@ import * as path from 'path';
 interface ChangelogEntry {
   version: string;
   changes: {
+    breaking?: string[];
     features?: string[];
     bugFixes?: string[];
     improvements?: string[];
@@ -20,6 +21,7 @@ function parseChangelog(content: string): ChangelogEntry[] {
   let currentVersion = '';
   let currentChanges: ChangelogEntry['changes'] = {};
   let currentSection:
+    | 'breaking'
     | 'features'
     | 'bugFixes'
     | 'improvements'
@@ -32,6 +34,8 @@ function parseChangelog(content: string): ChangelogEntry[] {
     // Recognize version header (e.g. "## [0.2.1]" or "## [0.1.6]")
     const versionMatch = line.match(/^##\s*\[?(\d+\.\d+\.\d+)\]?/);
     if (versionMatch) {
+      const nextVersion = versionMatch[1];
+      if (!nextVersion) continue;
       // Save previous version if exists
       if (currentVersion) {
         entries.push({
@@ -41,13 +45,18 @@ function parseChangelog(content: string): ChangelogEntry[] {
       }
 
       // Start new version
-      currentVersion = versionMatch[1];
+      currentVersion = nextVersion;
       currentChanges = {};
       currentSection = null;
       continue;
     }
 
     // Recognize section headers
+    if (line.startsWith('### Breaking')) {
+      currentSection = 'breaking';
+      currentChanges.breaking = [];
+      continue;
+    }
     if (line.startsWith('### Features')) {
       currentSection = 'features';
       currentChanges.features = [];
@@ -106,6 +115,7 @@ function generateChangelogFile(entries: ChangelogEntry[]): string {
 export interface ChangelogEntry {
   version: string;
   changes: {
+    breaking?: string[];
     features?: string[];
     bugFixes?: string[];
     improvements?: string[];

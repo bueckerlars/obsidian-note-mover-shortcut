@@ -1,6 +1,7 @@
 import { TFile } from 'obsidian';
-import NoteMoverShortcutPlugin from 'main';
+import AdvancedNoteMoverPlugin from 'main';
 import { DebounceManager } from '../utils/DebounceManager';
+import { isMovableVaultFile } from '../domain/vault/movable-vault-files';
 
 export class TriggerEventHandler {
   private periodicIntervalId: number | null = null;
@@ -8,7 +9,7 @@ export class TriggerEventHandler {
   private debounceManager: DebounceManager;
   private debouncedHandleOnEdit: (file: TFile) => void;
 
-  constructor(private plugin: NoteMoverShortcutPlugin) {
+  constructor(private plugin: AdvancedNoteMoverPlugin) {
     this.debounceManager = new DebounceManager();
     // Initialize debounced handler after debounceManager is created
     this.debouncedHandleOnEdit = this.debounceManager.debounce(
@@ -35,7 +36,7 @@ export class TriggerEventHandler {
         this.plugin.settings.settings.triggers.periodicMovementInterval;
       this.periodicIntervalId = window.setInterval(
         async () => {
-          await this.plugin.noteMover.moveAllFilesInVaultPeriodic();
+          await this.plugin.advancedNoteMover.moveAllFilesInVaultPeriodic();
         },
         minutes * (60 * 1000)
       );
@@ -55,7 +56,7 @@ export class TriggerEventHandler {
     if (this.plugin.settings.settings.triggers.enableOnEditTrigger) {
       this.plugin.registerEvent(
         this.plugin.app.vault.on('modify', async file => {
-          if (file instanceof TFile && file.extension === 'md') {
+          if (file instanceof TFile && isMovableVaultFile(file)) {
             // Use debounced handler to prevent excessive processing
             this.debouncedHandleOnEdit(file);
           }
@@ -76,13 +77,13 @@ export class TriggerEventHandler {
    * @param file - The specific TFile that was modified
    */
   private async handleOnEdit(file: TFile): Promise<void> {
-    if (this.plugin.settings.settings.enableRuleEvaluationCache) {
+    if (this.plugin.settings.settings.enableRuleEvaluationCache !== false) {
       // Ensure the file is marked dirty so the cache check re-evaluates it.
       // The vault event listener in main.ts does the same, but listener
       // ordering is not guaranteed.
       this.plugin.ruleCache.markDirty(file.path);
     }
-    await this.plugin.noteMover.moveFileBasedOnTags(file, '/', false);
+    await this.plugin.advancedNoteMover.moveFileBasedOnTags(file, '/', false);
   }
 
   /**

@@ -1,4 +1,3 @@
-import { Rule } from '../types/Rule';
 import { RuleV2 } from '../types/RuleV2';
 import { Filter } from '../types/PluginData';
 
@@ -24,18 +23,8 @@ export class RuleEvaluationCache {
    * Recompute the rules hash from the current configuration.
    * Must be called whenever rules or filters change.
    */
-  public updateRulesHash(
-    rules: Rule[],
-    rulesV2: RuleV2[],
-    filters: Filter[],
-    enableLegacyRules: boolean
-  ): void {
-    const newHash = this.computeRulesHash(
-      rules,
-      rulesV2,
-      filters,
-      enableLegacyRules
-    );
+  public updateRulesHash(rulesV2: RuleV2[], filters: Filter[]): void {
+    const newHash = this.computeRulesHash(rulesV2, filters);
     if (newHash !== this.currentRulesHash) {
       this.currentRulesHash = newHash;
       this.invalidateAll();
@@ -103,14 +92,9 @@ export class RuleEvaluationCache {
     this.dirtyFiles.clear();
   }
 
-  private computeRulesHash(
-    rules: Rule[],
-    rulesV2: RuleV2[],
-    filters: Filter[],
-    enableLegacyRules: boolean
-  ): string {
+  private computeRulesHash(rulesV2: RuleV2[], filters: Filter[]): string {
     try {
-      return JSON.stringify({ enableLegacyRules, rules, rulesV2, filters });
+      return JSON.stringify({ rulesV2, filters });
     } catch {
       return '';
     }

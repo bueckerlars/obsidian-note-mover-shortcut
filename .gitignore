@@ -27,5 +27,3 @@ coverage
 
 # Exclude generated files
 src/generated/
-
-docs

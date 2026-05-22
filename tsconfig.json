@@ -4,15 +4,19 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
-    "target": "ES6",
+    "target": "ES2022",
+    "moduleResolution": "Bundler",
     "allowJs": true,
-    "noImplicitAny": true,
-    "moduleResolution": "node",
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "noUncheckedIndexedAccess": false,
+    "verbatimModuleSyntax": false,
+    "skipLibCheck": true,
     "importHelpers": true,
     "isolatedModules": true,
-    "strictNullChecks": true,
     "esModuleInterop": true,
-    "lib": ["DOM", "ES5", "ES6", "ES7"]
+    "lib": ["DOM", "ES2022"],
+    "types": ["node", "vitest/globals"]
   },
   "include": ["**/*.ts"]
 }
