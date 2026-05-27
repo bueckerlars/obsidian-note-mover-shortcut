@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.0...1.0.1)
+
+### Fixes
+
+- **Nested tag matching for rules** ([#83](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/83)): Tag triggers now use hierarchical matching for parent/child tags. A rule for `#tag` matches `#tag` and nested tags like `#tag/tag1`, but not sibling-prefix tags like `#tag1`. This applies to `includes item`, `does not include item`, `all start with`, and `none start with` for tag criteria. Blacklist tag matching now shares the same hierarchy logic to keep behavior consistent.
+
 ## [1.0.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/0.7.2...1.0.0)
 
 ### Breaking
