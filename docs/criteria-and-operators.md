@@ -105,9 +105,11 @@ Uses **list operators**.
 
 **Examples:**
 
-- `includes item` → `#inbox` — note has the exact tag `#inbox`
-- `any contain` → `work` — any tag contains the substring "work" (matches `#work`, `#work/project`, etc.)
-- `none start with` → `#archive` — note has no tags starting with `#archive`
+- `includes item` → `#inbox` — note has `#inbox` or any nested tag under it (e.g. `#inbox/todo`); does **not** match unrelated tags like `#inbox2` (hierarchy uses `/`, not substring prefix)
+- `does not include item` → `#archive` — note has neither `#archive` nor any tag under `#archive/…`
+- `all start with` → `#project` — every tag on the note is `#project` or a nested child (`#project/…`)
+- `none start with` → `#archive` — note has no `#archive` tag and no tag under `#archive/…` (does not treat `#archive2024` as a match)
+- `any contain` → `work` — any tag contains the substring "work" (matches `#work`, `#work/project`, etc.; substring, not hierarchy)
 - `count is more than` → `3` — note has more than 3 tags
 
 ---

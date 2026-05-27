@@ -28,6 +28,18 @@ describe('BlacklistFilterEngine', () => {
     ).toBe(false);
   });
 
+  it('blocks nested child tags under parent filter', () => {
+    expect(
+      engine.evaluateFilter(meta({ tags: ['#parent/child'] }), ['tag: #parent'])
+    ).toBe(false);
+  });
+
+  it('does not block sibling prefix tags', () => {
+    expect(
+      engine.evaluateFilter(meta({ tags: ['#tag1'] }), ['tag: #tag'])
+    ).toBe(true);
+  });
+
   it('getFilterMatchDetails returns blocking filter', () => {
     const d = engine.getFilterMatchDetails(meta({ tags: ['#x'] }), ['tag: #x']);
     expect(d.passes).toBe(false);

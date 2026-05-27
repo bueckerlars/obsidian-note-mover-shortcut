@@ -1,6 +1,7 @@
 import type { FileMetadata } from '../../types/Common';
 import { parseListProperty } from '../property/parseListProperty';
 import { isListProperty } from '../property/isListProperty';
+import { noteHasTag } from '../tags/tag-hierarchy';
 
 /**
  * Blacklist filter strings (tag:, fileName:, path:, …) and V1-style criteria evaluation.
@@ -20,10 +21,7 @@ export class BlacklistFilterEngine {
   }
 
   matchTag(fileTags: string[], ruleTag: string): boolean {
-    if (fileTags.includes(ruleTag)) {
-      return true;
-    }
-    return fileTags.some(fileTag => fileTag.startsWith(ruleTag + '/'));
+    return noteHasTag(fileTags, ruleTag);
   }
 
   matchFileName(fileName: string, pattern: string): boolean {

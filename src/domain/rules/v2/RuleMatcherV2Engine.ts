@@ -14,6 +14,7 @@ import {
   CheckboxPropertyOperator,
 } from '../../../types/RuleV2';
 import { parseListProperty } from '../../property/parseListProperty';
+import { noteHasTag, tagEqualsOrIsChildOf } from '../../tags/tag-hierarchy';
 
 /**
  * Pure Rule V2 matching engine (no Obsidian dependencies).
@@ -125,7 +126,7 @@ export class RuleMatcherV2Engine {
         );
 
       case 'tag':
-        return this.evaluateListOperator(
+        return this.evaluateTagOperator(
           metadata.tags,
           trigger.operator as ListOperator,
           trigger.value
@@ -250,6 +251,35 @@ export class RuleMatcherV2Engine {
 
       default:
         return false; // Unknown operator
+    }
+  }
+
+  /**
+   * Evaluates tag operators with hierarchical nested-tag semantics.
+   */
+  private evaluateTagOperator(
+    tags: string[],
+    operator: ListOperator,
+    expected: string
+  ): boolean {
+    switch (operator) {
+      case 'includes item':
+        return noteHasTag(tags, expected);
+
+      case 'does not include item':
+        return !noteHasTag(tags, expected);
+
+      case 'all start with':
+        return (
+          tags.length > 0 &&
+          tags.every(tag => tagEqualsOrIsChildOf(tag, expected))
+        );
+
+      case 'none start with':
+        return !tags.some(tag => tagEqualsOrIsChildOf(tag, expected));
+
+      default:
+        return this.evaluateListOperator(tags, operator, expected);
     }
   }
 
