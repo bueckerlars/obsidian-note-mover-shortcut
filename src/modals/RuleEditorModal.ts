@@ -163,6 +163,8 @@ export class RuleEditorModal extends BaseModal {
           });
       });
 
+    setting.settingEl.addClass('advancedNoteMover-rule-destination-setting');
+
     // Move description below the input to give the input more horizontal space
     const descriptionText =
       'Folder or template where files matching this rule will be moved. Supports {{tag.*}} and {{property.*}} placeholders. Type {{tag. or {{property. to get template suggestions.';

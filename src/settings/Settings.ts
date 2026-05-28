@@ -73,7 +73,13 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.containerEl.empty();
 
     // Add mobile-specific classes to container
+    this.containerEl.addClass('advancedNoteMover-settings-root');
     MobileUtils.addMobileClass(this.containerEl);
+    if (MobileUtils.isMobile()) {
+      this.containerEl
+        .closest('.vertical-tab-content')
+        ?.addClass('advancedNoteMover-settings-vertical-tab');
+    }
 
     // Clean up existing section instances before creating new ones
     this.cleanupExistingSections();

@@ -165,49 +165,20 @@ export class PreviewModal extends BaseModal {
 
     const buttonContainer = this.createButtonContainer(footer);
 
-    if (isMobile) {
-      // Mobile: Stack buttons vertically
-      // Execute moves button (only if there are moves to execute)
-      if (this.movePreview.successfulMoves.length > 0) {
-        new Setting(buttonContainer).addButton(btn => {
-          btn
-            .setButtonText(
-              `Move ${this.movePreview.successfulMoves.length} files`
-            )
-            .setCta()
-            .onClick(() => {
-              this.executeMoves();
-            });
-        });
-      }
-
-      // Cancel button
-      new Setting(buttonContainer).addButton(btn => {
-        btn.setButtonText('Cancel').onClick(() => {
-          this.close();
-        });
-      });
-    } else {
-      // Desktop: Original horizontal layout
-      // Cancel button
-      this.createButton(buttonContainer, 'Cancel', () => {
-        this.close();
-      });
-
-      // Execute moves button (only if there are moves to execute)
-      if (this.movePreview.successfulMoves.length > 0) {
-        this.createButton(
-          buttonContainer,
-          `Move ${this.movePreview.successfulMoves.length} files`,
-          () => {
-            this.executeMoves();
-          },
-          {
-            isPrimary: true,
-          }
-        );
-      }
+    if (this.movePreview.successfulMoves.length > 0) {
+      this.createButton(
+        buttonContainer,
+        `Move ${this.movePreview.successfulMoves.length} files`,
+        () => {
+          this.executeMoves();
+        },
+        { isPrimary: true }
+      );
     }
+
+    this.createButton(buttonContainer, 'Cancel', () => {
+      this.close();
+    });
   }
 
   private async executeMoves() {
