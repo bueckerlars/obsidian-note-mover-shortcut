@@ -1,7 +1,17 @@
-import { Modal, App, Setting, ButtonComponent } from 'obsidian';
+import { Modal, App, setIcon } from 'obsidian';
 import { MobileUtils } from '../utils/MobileUtils';
 
 export type ModalSize = 'small' | 'medium' | 'large';
+
+/** Inline dimensions override Obsidian core modal width rules (which use !important). */
+const MODAL_SIZE_DIMENSIONS: Record<
+  ModalSize,
+  { width: string; minWidth: string; maxWidth?: string }
+> = {
+  small: { width: '400px', minWidth: '350px' },
+  medium: { width: '800px', minWidth: '600px', maxWidth: '95vw' },
+  large: { width: '900px', minWidth: '700px', maxWidth: '95vw' },
+};
 
 export interface BaseModalOptions {
   title?: string;
@@ -45,7 +55,7 @@ export abstract class BaseModal extends Modal {
       if (this.contentEl) {
         this.contentEl.scrollTop = 0;
       }
-      const modalContainer = this.contentEl?.parentElement;
+      const modalContainer = this.modalEl;
       if (modalContainer) {
         modalContainer.scrollTop = 0;
         // Also try scrolling the modal's parent if it exists
@@ -70,6 +80,7 @@ export abstract class BaseModal extends Modal {
   }
 
   onClose() {
+    this.clearModalSizeStyles();
     this.clearContent();
   }
 
@@ -95,9 +106,8 @@ export abstract class BaseModal extends Modal {
    * Add mobile-specific CSS classes to modal container and content
    */
   protected addMobileClasses(): void {
-    const modalContainer = this.contentEl.parentElement;
-    if (modalContainer) {
-      MobileUtils.addMobileClass(modalContainer);
+    if (this.modalEl) {
+      MobileUtils.addMobileClass(this.modalEl);
       MobileUtils.addMobileClass(this.contentEl);
     }
   }
@@ -106,24 +116,66 @@ export abstract class BaseModal extends Modal {
    * Set modal size based on options using CSS classes
    */
   protected setModalSize(): void {
-    const modalContainer = this.contentEl.parentElement;
-    if (modalContainer && this.options.size) {
-      // Remove any existing size classes
-      modalContainer.classList.remove(
-        'advancedNoteMover-modal-size-small',
-        'advancedNoteMover-modal-size-medium',
-        'advancedNoteMover-modal-size-large'
-      );
-      // On mobile, use full-width layout regardless of size option
-      if (MobileUtils.isMobile()) {
-        modalContainer.classList.add('advancedNoteMover-modal-size-mobile');
-      } else {
-        // Add the appropriate size class for desktop
-        modalContainer.classList.add(
-          `advancedNoteMover-modal-size-${this.options.size}`
-        );
-      }
+    const modalContainer = this.modalEl;
+    if (!modalContainer || !this.options.size) {
+      return;
     }
+
+    this.clearModalSizeStyles();
+
+    // On mobile, use full-width layout regardless of size option
+    if (MobileUtils.isMobile()) {
+      modalContainer.classList.add('advancedNoteMover-modal-size-mobile');
+      modalContainer.style.setProperty('width', '100%', 'important');
+      modalContainer.style.setProperty('max-width', '100%', 'important');
+      modalContainer.style.setProperty('margin', '0', 'important');
+      modalContainer.style.setProperty('border-radius', '0', 'important');
+      modalContainer.style.setProperty('max-height', '100vh', 'important');
+      modalContainer.style.setProperty('height', '100vh', 'important');
+      return;
+    }
+
+    const size = this.options.size;
+    modalContainer.classList.add(`advancedNoteMover-modal-size-${size}`);
+
+    const dimensions = MODAL_SIZE_DIMENSIONS[size];
+    modalContainer.style.setProperty('width', dimensions.width, 'important');
+    modalContainer.style.setProperty(
+      'min-width',
+      dimensions.minWidth,
+      'important'
+    );
+    if (dimensions.maxWidth) {
+      modalContainer.style.setProperty(
+        'max-width',
+        dimensions.maxWidth,
+        'important'
+      );
+    }
+  }
+
+  /**
+   * Remove size classes and inline overrides from the modal shell
+   */
+  protected clearModalSizeStyles(): void {
+    const modalContainer = this.modalEl;
+    if (!modalContainer) {
+      return;
+    }
+
+    modalContainer.classList.remove(
+      'advancedNoteMover-modal-size-small',
+      'advancedNoteMover-modal-size-medium',
+      'advancedNoteMover-modal-size-large',
+      'advancedNoteMover-modal-size-mobile'
+    );
+    modalContainer.style.removeProperty('width');
+    modalContainer.style.removeProperty('min-width');
+    modalContainer.style.removeProperty('max-width');
+    modalContainer.style.removeProperty('margin');
+    modalContainer.style.removeProperty('border-radius');
+    modalContainer.style.removeProperty('max-height');
+    modalContainer.style.removeProperty('height');
   }
 
   /**
@@ -183,7 +235,7 @@ export abstract class BaseModal extends Modal {
   }
 
   /**
-   * Create a button with consistent styling
+   * Create a footer/action button (plain mod-button, not wrapped in Setting)
    */
   protected createButton(
     container: HTMLElement,
@@ -195,15 +247,23 @@ export abstract class BaseModal extends Modal {
       icon?: string;
       tooltip?: string;
     } = {}
-  ): void {
-    new Setting(container).addButton((btn: ButtonComponent) => {
-      btn.setButtonText(text);
-      if (options.icon) btn.setIcon(options.icon);
-      if (options.tooltip) btn.setTooltip(options.tooltip);
-      if (options.isWarning) btn.setWarning();
-      if (options.isPrimary) btn.setCta();
-      btn.onClick(onClick);
-    });
+  ): HTMLButtonElement {
+    const button = container.createEl('button', { text, cls: 'mod-button' });
+    if (options.isPrimary) {
+      button.addClass('mod-cta');
+    }
+    if (options.isWarning) {
+      button.addClass('mod-warning');
+    }
+    if (options.icon) {
+      button.empty();
+      setIcon(button, options.icon);
+    }
+    if (options.tooltip) {
+      button.setAttr('aria-label', options.tooltip);
+    }
+    button.addEventListener('click', onClick);
+    return button;
   }
 
   /**
