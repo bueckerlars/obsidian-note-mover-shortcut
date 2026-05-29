@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.1...1.0.2)
+
+### Fixes
+
+- **Modal layout regressions** ([#88](https://github.com/bueckerlars/obsidian-note-mover-shortcut/pull/88)): CSS lint cleanup replaces `!important` and `:has` with scoped selectors, restores modal sizing via `modalEl`, and aligns preview footer buttons without `Setting` wrappers.
+
+### Improvements
+
+- **Release artifact attestations** ([#89](https://github.com/bueckerlars/obsidian-note-mover-shortcut/pull/89)): The GitHub release workflow now attests `main.js` and `styles.css` for supply-chain verification.
+- **Dev tooling refresh** ([#87](https://github.com/bueckerlars/obsidian-note-mover-shortcut/pull/87)): Replaced deprecated dev dependencies with lighter alternatives (`lint-staged` → `nano-staged`, `builtin-modules` → Node `builtinModules`) and updated the lockfile.
+
 ## [1.0.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.0...1.0.1)
 
 ### Fixes
