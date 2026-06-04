@@ -163,7 +163,7 @@ Route notes that link to your "Projects MOC" to the Projects folder:
 
 ### Move canvas files to a dedicated folder
 
-Canvas files don't have tags or properties, so use the extension:
+By extension (all canvases):
 
 | Field       | Value                         |
 | ----------- | ----------------------------- |
@@ -171,6 +171,15 @@ Canvas files don't have tags or properties, so use the extension:
 | Trigger     | `extension` → `is` → `canvas` |
 | Aggregation | `any`                         |
 | Destination | `Canvases`                    |
+
+By tag on a **text card** you created on the canvas (the `.canvas` file is moved, not the card alone):
+
+| Field       | Value                              |
+| ----------- | ---------------------------------- |
+| Name        | `Inbox canvases`                   |
+| Trigger     | `tag` → `includes item` → `#inbox` |
+| Aggregation | `any`                              |
+| Destination | `Canvases/Inbox`                   |
 
 ---
 
