@@ -6,7 +6,8 @@ import { combinePath, ensureFolderExists } from '../utils/PathUtils';
 import { performNoteMove } from '../application/perform-note-move';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import AdvancedNoteMoverPlugin from 'main';
-import { type OperationType } from '../types/Common';
+import { type FileMoveResult, type OperationType } from '../types/Common';
+import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
 import {
   SETTINGS_CONSTANTS,
@@ -15,8 +16,12 @@ import {
 
 const BULK_CHUNK_SIZE = 50;
 
+const MOVE_NOTICE_DEDUPE_MS = 3000;
+
 export class AdvancedNoteMover {
   private ruleManagerV2: RuleManagerV2;
+  private readonly filesMoveInFlight = new Set<string>();
+  private readonly lastMoveNoticeAtByFileName = new Map<string, number>();
 
   constructor(private plugin: AdvancedNoteMoverPlugin) {
     this.ruleManagerV2 = new RuleManagerV2(
@@ -85,7 +90,7 @@ export class AdvancedNoteMover {
     file: TFile,
     defaultFolder: string,
     skipFilter = false
-  ): Promise<boolean> {
+  ): Promise<FileMoveResult> {
     return this.plugin.performanceTrace.recordAsync(
       'AdvancedNoteMover.moveFileBasedOnTags',
       async () => {
@@ -96,16 +101,21 @@ export class AdvancedNoteMover {
         const originalPath = file.path;
         const mtime = file.stat?.mtime ?? 0;
 
+        if (this.filesMoveInFlight.has(originalPath)) {
+          return { moved: false };
+        }
+        this.filesMoveInFlight.add(originalPath);
+
         // Fast path: if the cache is enabled and already knows the result for
         // this file, skip the expensive rule evaluation entirely.
         if (cacheEnabled && !cache.needsEvaluation(originalPath, mtime)) {
           const cachedDest = cache.getCachedDestination(originalPath);
           if (cachedDest === null || cachedDest === undefined) {
-            return false; // No rule matched last time and nothing changed
+            return this.finishFileMove(originalPath, file, { moved: false });
           }
           const cachedPath = combinePath(cachedDest, file.name);
           if (originalPath === cachedPath) {
-            return false; // Already in correct folder
+            return this.finishFileMove(originalPath, file, { moved: false });
           }
         }
 
@@ -124,14 +134,14 @@ export class AdvancedNoteMover {
           }
 
           if (result === null) {
-            return false;
+            return this.finishFileMove(originalPath, file, { moved: false });
           }
           targetFolder = result;
 
           const newPath = combinePath(targetFolder, file.name);
 
           if (originalPath === newPath) {
-            return false;
+            return this.finishFileMove(originalPath, file, { moved: false });
           }
 
           if (!(await ensureFolderExists(app, targetFolder))) {
@@ -151,10 +161,12 @@ export class AdvancedNoteMover {
             ),
           });
 
-          return true;
+          const moveResult = { moved: true, targetFolder } as const;
+          this.maybeNotifySingleFileMove(file, targetFolder);
+          return this.finishFileMove(originalPath, file, moveResult);
         } catch (error) {
           handleError(error, `Error moving file '${file.path}'`);
-          return false;
+          return this.finishFileMove(originalPath, file, { moved: false });
         }
       },
       { path: file.path, skipFilter }
@@ -194,8 +206,8 @@ export class AdvancedNoteMover {
               break;
             }
             try {
-              const wasMoved = await this.moveFileBasedOnTags(files[i], '/');
-              if (wasMoved) {
+              const moveResult = await this.moveFileBasedOnTags(files[i], '/');
+              if (moveResult.moved) {
                 successCount++;
               }
             } catch (error) {
@@ -306,40 +318,35 @@ export class AdvancedNoteMover {
     }
 
     try {
-      // Move file using rules and filters
       await this.moveFileBasedOnTags(file, '/', false);
-
-      // Create notice with undo button
-      NoticeManager.showWithUndo(
-        'info',
-        `Note "${file.name}" has been moved`,
-        async () => {
-          try {
-            NoticeManager.info(
-              `Attempting to undo move for file: ${file.name}`
-            );
-            const success = await this.plugin.historyManager.undoLastMove(
-              file.name
-            );
-            if (success) {
-              NoticeManager.success(`Note "${file.name}" has been moved back`, {
-                duration: 3000,
-              });
-            } else {
-              NoticeManager.warning(`Could not undo move for "${file.name}"`, {
-                duration: 3000,
-              });
-            }
-          } catch (error) {
-            handleError(error, 'Error in undo button click handler', false);
-          }
-        },
-        'Undo'
-      );
     } catch (error) {
       handleError(error, 'moveFocusedNoteToDestination', false);
       return;
     }
+  }
+
+  private finishFileMove(
+    originalPath: string,
+    file: TFile,
+    result: FileMoveResult
+  ): FileMoveResult {
+    this.filesMoveInFlight.delete(originalPath);
+    this.filesMoveInFlight.delete(file.path);
+    return result;
+  }
+
+  private maybeNotifySingleFileMove(file: TFile, targetFolder: string): void {
+    if (this.plugin.historyManager.isBulkOperationInProgress()) {
+      return;
+    }
+
+    const now = Date.now();
+    const lastAt = this.lastMoveNoticeAtByFileName.get(file.name);
+    if (lastAt !== undefined && now - lastAt < MOVE_NOTICE_DEDUPE_MS) {
+      return;
+    }
+    this.lastMoveNoticeAtByFileName.set(file.name, now);
+    showSingleFileMoveNotice(file, targetFolder);
   }
 
   /**

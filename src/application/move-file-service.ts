@@ -1,5 +1,6 @@
 import type { TFile } from 'obsidian';
 import type AdvancedNoteMoverPlugin from 'main';
+import type { FileMoveResult } from '../types/Common';
 
 /**
  * Application use-case: move files using configured rules (delegates to core).
@@ -15,7 +16,7 @@ export class MoveFileService {
     file: TFile,
     defaultFolder: string,
     skipFilter = false
-  ): Promise<boolean> {
+  ): Promise<FileMoveResult> {
     return this.plugin.advancedNoteMover.moveFileBasedOnTags(
       file,
       defaultFolder,

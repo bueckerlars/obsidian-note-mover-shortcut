@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.3...1.0.4)
+
+### Improvements
+
+- **Move confirmation toasts** ([#86](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/86)): Single-file moves (command, ribbon icon, and on-edit trigger) now show a success notice when a note is actually moved, e.g. `"My Note" moved to tasks/personal`. No toast when no rule matched or the file was already in the target folder.
+
 ## [1.0.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.2...1.0.3)
 
 ### Fixes
