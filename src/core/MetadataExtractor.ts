@@ -1,9 +1,10 @@
 import { App, TFile } from 'obsidian';
 import { getAllTags } from 'obsidian';
 import { FileMetadata } from '../types/Common';
-import { handleError } from '../utils/Error';
+import { extractMetadataFromCanvasFile } from '../domain/canvas/canvas-file-metadata';
 import { parseListProperty as parseListPropertyDomain } from '../domain/property/parseListProperty';
 import { isListProperty as isListPropertyDomain } from '../domain/property/isListProperty';
+import { handleError } from '../utils/Error';
 
 /**
  * Extracts and provides standardized access to file metadata
@@ -180,11 +181,11 @@ export class MetadataExtractor {
         file.stat && file.stat.mtime ? new Date(file.stat.mtime) : null;
 
       const fileCache = this.app.metadataCache.getFileCache(file);
-      const tags = getAllTags(fileCache || {}) || [];
-      const properties = fileCache?.frontmatter || {};
+      let tags = getAllTags(fileCache || {}) || [];
+      let properties = fileCache?.frontmatter || {};
       const extension = file.extension || '';
 
-      const links: string[] = [];
+      let links: string[] = [];
       if (fileCache?.links) {
         for (const link of fileCache.links) {
           if (link.link && typeof link.link === 'string') {
@@ -193,7 +194,7 @@ export class MetadataExtractor {
         }
       }
 
-      const embeds: string[] = [];
+      let embeds: string[] = [];
       if (fileCache?.embeds) {
         for (const embed of fileCache.embeds) {
           if (embed.link && typeof embed.link === 'string') {
@@ -202,7 +203,7 @@ export class MetadataExtractor {
         }
       }
 
-      const headings: string[] = [];
+      let headings: string[] = [];
       if (fileCache?.headings) {
         for (const heading of fileCache.headings) {
           if (heading.heading && typeof heading.heading === 'string') {
@@ -212,12 +213,22 @@ export class MetadataExtractor {
       }
 
       let fileContent = '';
-      if (needsContent) {
+      const mustReadCanvas = extension === 'canvas';
+      if (needsContent || mustReadCanvas) {
         try {
           fileContent = await this.app.vault.read(file);
         } catch {
           // optional
         }
+      }
+
+      if (mustReadCanvas && fileContent) {
+        const canvasMeta = extractMetadataFromCanvasFile(this.app, fileContent);
+        tags = mergeUniqueStrings(tags, canvasMeta.tags);
+        properties = { ...properties, ...canvasMeta.properties };
+        links = mergeUniqueStrings(links, canvasMeta.links);
+        embeds = mergeUniqueStrings(embeds, canvasMeta.embeds);
+        headings = mergeUniqueStrings(headings, canvasMeta.headings);
       }
 
       return {
@@ -255,4 +266,11 @@ export class MetadataExtractor {
       };
     }
   }
+}
+
+function mergeUniqueStrings(existing: string[], extra: string[]): string[] {
+  if (extra.length === 0) {
+    return existing;
+  }
+  return [...new Set([...existing, ...extra])];
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.2...1.0.3)
+
+### Fixes
+
+- **Canvas tag and content rules** ([#76](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/76)): Tag, property, link, heading, and embed criteria now apply to `.canvas` files by aggregating metadata from **text cards** on the board (inline `#tags`, frontmatter, wikilinks) and from **file cards** that reference vault notes. The canvas file itself is still what moves when a rule matches—matching the workflow of creating a note on the canvas and routing the canvas by its card content.
+
 ## [1.0.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.1...1.0.2)
 
 ### Fixes

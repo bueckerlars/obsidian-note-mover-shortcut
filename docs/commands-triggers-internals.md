@@ -71,7 +71,7 @@ The following file types are processed by all commands (active, bulk, periodic, 
 
 Images, PDFs, and other attachment files are **not** moved directly — only as part of attachment co-move when enabled.
 
-**Canvas and Base notes:** Obsidian's metadata cache is Markdown-oriented, so tag, property, link, heading, and embed criteria typically do not apply to `.canvas` and `.base` files. Use `fileName`, `folder`, or `extension` rules for these types.
+**Canvas notes:** Tag, property, link, heading, and embed criteria are evaluated from **cards inside the canvas** — inline text cards (markdown with `#tags`, frontmatter, wikilinks) and **file** cards that reference vault notes (metadata is taken from those notes). The `.canvas` file itself is still what gets moved. **Base** (`.base`) files have no card content; use `fileName`, `folder`, or `extension` rules for them.
 
 ---
 

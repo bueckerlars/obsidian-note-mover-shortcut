@@ -21,7 +21,7 @@ import { createPluginApplicationServices } from 'src/application/plugin-applicat
 import type { PluginApplicationServices } from 'src/application/plugin-application-services';
 
 export default class AdvancedNoteMoverPlugin extends Plugin {
-  public settings!: PluginData;
+  declare settings: PluginData;
   public advancedNoteMover!: AdvancedNoteMover;
   public command_handler!: CommandHandler;
   public historyManager!: HistoryManager;

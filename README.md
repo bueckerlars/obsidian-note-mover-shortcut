@@ -136,7 +136,7 @@ Enable in **Settings → Attachments → Move attachments with note**.
 
 ### Canvas and Base support
 
-`.canvas` and `.base` files are treated as movable alongside Markdown notes. Active-file commands and bulk/periodic passes include them. For these file types, use `fileName`, `folder`, or `extension` rules — tag and property criteria don't apply since Obsidian's metadata cache is Markdown-oriented.
+`.canvas` and `.base` files are treated as movable alongside Markdown notes. Active-file commands and bulk/periodic passes include them. For **canvas** files, tag/property/link rules also consider **cards inside the canvas** (text you create on the board and notes you embed as file cards). For **base** files, use `fileName`, `folder`, or `extension` rules.
 
 ### Import / export
 
