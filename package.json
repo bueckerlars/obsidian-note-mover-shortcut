@@ -15,7 +15,9 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run --config vitest.config.mjs",
     "test:watch": "vitest --config vitest.config.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prelint": "npm run generate-changelog",
+    "pretype-check": "npm run generate-changelog"
   },
   "keywords": [],
   "author": "bueckerlars",
