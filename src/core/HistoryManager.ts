@@ -107,6 +107,16 @@ export class HistoryManager {
     this.isPluginMove = false;
   }
 
+  /** True while the plugin is performing a rename (suppress duplicate on-edit work). */
+  public isPluginMoveInProgress(): boolean {
+    return this.isPluginMove;
+  }
+
+  /** True during bulk or periodic vault-wide move loops. */
+  public isBulkOperationInProgress(): boolean {
+    return this.currentBulkOperationId !== null;
+  }
+
   /**
    * Adds a history entry, but only if it's not an internal plugin move
    */

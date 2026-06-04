@@ -11,6 +11,11 @@ export type NotificationType =
 
 export type OperationType = 'single' | 'bulk' | 'periodic';
 
+/** Result of attempting to move one file via rules. */
+export type FileMoveResult =
+  | { moved: false }
+  | { moved: true; targetFolder: string };
+
 /**
  * Complete metadata extracted from a file for rule matching and processing
  */

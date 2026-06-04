@@ -1,3 +1,4 @@
+import type { EventRef } from 'obsidian';
 import { TFile } from 'obsidian';
 import AdvancedNoteMoverPlugin from 'main';
 import { DebounceManager } from '../utils/DebounceManager';
@@ -5,7 +6,7 @@ import { isMovableVaultFile } from '../domain/vault/movable-vault-files';
 
 export class TriggerEventHandler {
   private periodicIntervalId: number | null = null;
-  private onEditUnregister: (() => void) | null = null;
+  private onModifyEventRef: EventRef | null = null;
   private debounceManager: DebounceManager;
   private debouncedHandleOnEdit: (file: TFile) => void;
 
@@ -44,26 +45,20 @@ export class TriggerEventHandler {
   }
 
   public toggleOnEditListener(): void {
-    // Unregister existing listener
-    if (this.onEditUnregister) {
-      this.onEditUnregister();
-      this.onEditUnregister = null;
+    if (this.onModifyEventRef) {
+      this.plugin.app.vault.offref(this.onModifyEventRef);
+      this.onModifyEventRef = null;
     }
 
-    // Cancel any pending debounced operations
     this.debounceManager.cancel('onEdit');
 
     if (this.plugin.settings.settings.triggers.enableOnEditTrigger) {
-      this.plugin.registerEvent(
-        this.plugin.app.vault.on('modify', async file => {
-          if (file instanceof TFile && isMovableVaultFile(file)) {
-            // Use debounced handler to prevent excessive processing
-            this.debouncedHandleOnEdit(file);
-          }
-        })
-      );
-      // For testing purposes, we'll store a mock function
-      this.onEditUnregister = () => {};
+      this.onModifyEventRef = this.plugin.app.vault.on('modify', file => {
+        if (file instanceof TFile && isMovableVaultFile(file)) {
+          this.debouncedHandleOnEdit(file);
+        }
+      });
+      this.plugin.registerEvent(this.onModifyEventRef);
     }
   }
 
@@ -77,6 +72,10 @@ export class TriggerEventHandler {
    * @param file - The specific TFile that was modified
    */
   private async handleOnEdit(file: TFile): Promise<void> {
+    if (this.plugin.historyManager.isPluginMoveInProgress()) {
+      return;
+    }
+
     if (this.plugin.settings.settings.enableRuleEvaluationCache !== false) {
       // Ensure the file is marked dirty so the cache check re-evaluates it.
       // The vault event listener in main.ts does the same, but listener
