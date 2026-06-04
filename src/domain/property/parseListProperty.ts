@@ -1,3 +1,5 @@
+import { stringifyUnknown } from '../../utils/stringify-unknown';
+
 /**
  * Normalizes frontmatter list values to string[] (pure domain helper).
  */
@@ -19,5 +21,5 @@ export function parseListProperty(value: unknown): string[] {
       .filter(item => item.length > 0);
   }
 
-  return [String(value).trim()].filter(item => item.length > 0);
+  return [stringifyUnknown(value).trim()].filter(item => item.length > 0);
 }

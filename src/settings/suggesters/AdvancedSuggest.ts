@@ -1,4 +1,4 @@
-import { App, AbstractInputSuggest, TFolder, TAbstractFile } from 'obsidian';
+import { App, AbstractInputSuggest, TFolder } from 'obsidian';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 
@@ -32,7 +32,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   private propertyValues: Map<string, Set<string>> = new Map();
   private metadataExtractor: MetadataExtractor;
   private refreshDataHandler: () => void;
-  private refreshTimerId: ReturnType<typeof setTimeout> | null = null;
+  private refreshTimerId: number | null = null;
   private dataLoaded = false;
 
   constructor(
@@ -46,9 +46,9 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     // Create debounced handler for cleanup
     this.refreshDataHandler = () => {
       if (this.refreshTimerId !== null) {
-        clearTimeout(this.refreshTimerId);
+        window.clearTimeout(this.refreshTimerId);
       }
-      this.refreshTimerId = setTimeout(() => {
+      this.refreshTimerId = window.setTimeout(() => {
         this.refreshTimerId = null;
         this.refreshData();
       }, REFRESH_DEBOUNCE_MS);
@@ -68,7 +68,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
 
   private loadFolders(): void {
     const abstractFiles = this.app.vault.getAllLoadedFiles();
-    this.folders = abstractFiles.filter(f => f instanceof TFolder) as TFolder[];
+    this.folders = abstractFiles.filter(f => f instanceof TFolder);
   }
 
   private loadFileNames(): void {
@@ -237,7 +237,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
    */
   public destroy(): void {
     if (this.refreshTimerId !== null) {
-      clearTimeout(this.refreshTimerId);
+      window.clearTimeout(this.refreshTimerId);
       this.refreshTimerId = null;
     }
     this.app.metadataCache.off('changed', this.refreshDataHandler);

@@ -1,5 +1,9 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
+import type { PluginData, SettingsData } from '../../types/PluginData';
+import type { RetentionPolicy } from '../../types/HistoryEntry';
+import type { LegacyRuleV1 } from '../../core/RuleMigrationService';
+import type { LegacySettingsFields } from '../../infrastructure/persistence/plugin-settings-controller';
 import { createError, handleError } from 'src/utils/Error';
 import { NoticeManager } from 'src/utils/NoticeManager';
 import { ConfirmModal } from '../../modals/ConfirmModal';
@@ -17,7 +21,7 @@ export class ImportExportSettingsSection {
 
   addImportExportSettings(): void {
     const isMobile = MobileUtils.isMobile();
-    new Setting(this.containerEl).setName('Import/Export').setHeading();
+    new Setting(this.containerEl).setName('Import/export').setHeading();
 
     // Export Settings Button
     const exportSetting = new Setting(this.containerEl)
@@ -27,13 +31,15 @@ export class ImportExportSettingsSection {
         btn
           .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.EXPORT_SETTINGS)
           .setCta()
-          .onClick(async () => {
-            btn.setDisabled(true);
-            try {
-              await this.exportSettings();
-            } finally {
-              btn.setDisabled(false);
-            }
+          .onClick(() => {
+            void (async () => {
+              btn.setDisabled(true);
+              try {
+                await this.exportSettings();
+              } finally {
+                btn.setDisabled(false);
+              }
+            })();
           });
       });
 
@@ -57,14 +63,16 @@ export class ImportExportSettingsSection {
       .addButton(btn => {
         btn
           .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS)
-          .setWarning()
-          .onClick(async () => {
-            btn.setDisabled(true);
-            try {
-              await this.importSettings();
-            } finally {
-              btn.setDisabled(false);
-            }
+          .setDestructive()
+          .onClick(() => {
+            void (async () => {
+              btn.setDisabled(true);
+              try {
+                await this.importSettings();
+              } finally {
+                btn.setDisabled(false);
+              }
+            })();
           });
       });
 
@@ -85,15 +93,11 @@ export class ImportExportSettingsSection {
   private async exportSettings(): Promise<void> {
     try {
       // Build export object without history
-      const settingsToExport: any = {
+      const settingsToExport: Partial<PluginData> = {
         settings: this.plugin.settings.settings,
         lastSeenVersion: this.plugin.settings.lastSeenVersion,
+        schemaVersion: this.plugin.settings.schemaVersion,
       };
-
-      // schemaVersion is at root level
-      if (this.plugin.settings.schemaVersion) {
-        settingsToExport.schemaVersion = this.plugin.settings.schemaVersion;
-      }
 
       // Convert to JSON string with proper formatting
       const jsonString = JSON.stringify(settingsToExport, null, 2);
@@ -103,14 +107,14 @@ export class ImportExportSettingsSection {
       const url = URL.createObjectURL(blob);
 
       // Create download link
-      const link = document.createElement('a');
+      const link = activeDocument.createElement('a');
       link.href = url;
       link.download = `note-mover-settings-${new Date().toISOString().split('T')[0]}.json`;
 
       // Trigger download
-      document.body.appendChild(link);
+      activeDocument.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      activeDocument.body.removeChild(link);
 
       // Clean up
       URL.revokeObjectURL(url);
@@ -130,17 +134,17 @@ export class ImportExportSettingsSection {
   private async importSettings(): Promise<void> {
     try {
       // Create file input element
-      const input = document.createElement('input');
+      const input = activeDocument.createElement('input');
       input.type = 'file';
       input.accept = '.json';
-      input.style.display = 'none';
+      input.classList.add('advancedNoteMover-hidden-file-input');
 
       // Add to DOM temporarily
-      document.body.appendChild(input);
+      activeDocument.body.appendChild(input);
 
       // Handle file selection
       const file = await new Promise<File>((resolve, reject) => {
-        input.onchange = e => {
+        input.onchange = (e: Event) => {
           const target = e.target as HTMLInputElement;
           if (target.files && target.files[0]) {
             resolve(target.files[0]);
@@ -152,16 +156,16 @@ export class ImportExportSettingsSection {
       });
 
       // Clean up input element
-      document.body.removeChild(input);
+      activeDocument.body.removeChild(input);
 
       // Read file content
       const fileContent = await this.readFileAsText(file);
 
       // Parse JSON
-      let importedSettings: any;
+      let importedSettings: unknown;
       try {
         importedSettings = JSON.parse(fileContent);
-      } catch (parseError) {
+      } catch {
         handleError(
           createError(SETTINGS_CONSTANTS.UI_TEXTS.INVALID_FILE),
           'Import settings',
@@ -199,63 +203,76 @@ export class ImportExportSettingsSection {
         const current = this.plugin.settings;
 
         // If imported in new PluginData shape, apply directly
-        if (
+        const pluginImport =
           importedSettings &&
           typeof importedSettings === 'object' &&
+          'settings' in importedSettings &&
           importedSettings.settings &&
           typeof importedSettings.settings === 'object'
-        ) {
-          const s = importedSettings.settings;
+            ? (importedSettings as Partial<PluginData>)
+            : null;
 
-          if (s.triggers && typeof s.triggers === 'object') {
-            if (s.triggers.enablePeriodicMovement !== undefined) {
+        if (pluginImport?.settings) {
+          const s = pluginImport.settings as unknown as Record<string, unknown>;
+
+          const triggers = s.triggers;
+          if (triggers && typeof triggers === 'object') {
+            const t = triggers as Record<string, unknown>;
+            if (t.enablePeriodicMovement !== undefined) {
               current.settings.triggers.enablePeriodicMovement =
-                !!s.triggers.enablePeriodicMovement;
+                !!t.enablePeriodicMovement;
             }
-            if (s.triggers.periodicMovementInterval !== undefined) {
+            if (t.periodicMovementInterval !== undefined) {
               current.settings.triggers.periodicMovementInterval = Number(
-                s.triggers.periodicMovementInterval
+                t.periodicMovementInterval
               );
             }
-            if (s.triggers.enableOnEditTrigger !== undefined) {
+            if (t.enableOnEditTrigger !== undefined) {
               current.settings.triggers.enableOnEditTrigger =
-                !!s.triggers.enableOnEditTrigger;
+                !!t.enableOnEditTrigger;
             }
           }
 
-          if (s.filters && typeof s.filters === 'object') {
-            const arr = Array.isArray(s.filters.filter) ? s.filters.filter : [];
+          const filters = s.filters;
+          if (filters && typeof filters === 'object') {
+            const f = filters as { filter?: unknown };
+            const arr = Array.isArray(f.filter) ? f.filter : [];
             current.settings.filters.filter = arr
-              .filter((f: any) => f && typeof f.value === 'string')
-              .map((f: any) => ({ value: String(f.value) }));
+              .filter(
+                (item): item is { value: string } =>
+                  !!item &&
+                  typeof item === 'object' &&
+                  'value' in item &&
+                  typeof (item as { value: unknown }).value === 'string'
+              )
+              .map(item => ({ value: item.value }));
           }
 
           if (Array.isArray(s.rules)) {
-            (current.settings as any).rules = s.rules;
+            (current.settings as SettingsData & LegacySettingsFields).rules =
+              s.rules as LegacyRuleV1[];
           }
 
-          if (s.retentionPolicy) {
-            current.settings.retentionPolicy = s.retentionPolicy;
+          if (s.retentionPolicy && typeof s.retentionPolicy === 'object') {
+            current.settings.retentionPolicy =
+              s.retentionPolicy as RetentionPolicy;
           }
 
-          if (importedSettings.lastSeenVersion !== undefined) {
-            current.lastSeenVersion = importedSettings.lastSeenVersion;
+          if (pluginImport.lastSeenVersion !== undefined) {
+            current.lastSeenVersion = pluginImport.lastSeenVersion;
           }
 
-          // Import schemaVersion if present
-          if (importedSettings.schemaVersion !== undefined) {
-            current.schemaVersion = importedSettings.schemaVersion;
+          if (pluginImport.schemaVersion !== undefined) {
+            current.schemaVersion = pluginImport.schemaVersion;
           }
 
-          // Import RuleV2 if present
-          if (s.rulesV2 !== undefined) {
-            current.settings.rulesV2 = s.rulesV2;
+          if (Array.isArray(s.rulesV2)) {
+            current.settings.rulesV2 = s.rulesV2 as SettingsData['rulesV2'];
           }
         } else {
           // Legacy import path: sanitize and map into new structure
-          const sanitizedSettings = SettingsValidator.sanitizeSettings(
-            importedSettings
-          ) as any;
+          const sanitizedSettings =
+            SettingsValidator.sanitizeSettings(importedSettings);
 
           if (sanitizedSettings.enablePeriodicMovement !== undefined) {
             current.settings.triggers.enablePeriodicMovement =
@@ -272,23 +289,28 @@ export class ImportExportSettingsSection {
           }
           if (Array.isArray(sanitizedSettings.filter)) {
             current.settings.filters.filter = sanitizedSettings.filter
-              .filter((v: any) => typeof v === 'string')
+              .filter((v: unknown) => typeof v === 'string')
               .map((v: string) => ({ value: v }));
           }
           if (Array.isArray(sanitizedSettings.rules)) {
-            (current.settings as { rules?: unknown[] }).rules =
-              sanitizedSettings.rules;
+            (current.settings as SettingsData & LegacySettingsFields).rules =
+              sanitizedSettings.rules as LegacyRuleV1[];
           }
-          if (sanitizedSettings.retentionPolicy) {
+          if (
+            sanitizedSettings.retentionPolicy &&
+            typeof sanitizedSettings.retentionPolicy === 'object'
+          ) {
             current.settings.retentionPolicy =
-              sanitizedSettings.retentionPolicy;
+              sanitizedSettings.retentionPolicy as RetentionPolicy;
           }
-          if (sanitizedSettings.lastSeenVersion !== undefined) {
+          if (typeof sanitizedSettings.lastSeenVersion === 'string') {
             current.lastSeenVersion = sanitizedSettings.lastSeenVersion;
           }
         }
 
-        const legacyRules = (current.settings as any).rules;
+        const legacyRules = (
+          current.settings as SettingsData & LegacySettingsFields
+        ).rules;
         if (
           Array.isArray(legacyRules) &&
           RuleMigrationService.shouldMigrate(
@@ -296,11 +318,11 @@ export class ImportExportSettingsSection {
             current.settings.rulesV2 ?? []
           )
         ) {
-          console.log('Migrating imported Rule V1 to Rule V2...');
+          console.debug('Migrating imported Rule V1 to Rule V2...');
           current.settings.rulesV2 =
             RuleMigrationService.migrateRules(legacyRules);
-          (current.settings as any).rules = [];
-          console.log(
+          (current.settings as SettingsData & LegacySettingsFields).rules = [];
+          console.debug(
             `Migrated ${(current.settings.rulesV2 ?? []).length} imported rules to V2 format`
           );
         }

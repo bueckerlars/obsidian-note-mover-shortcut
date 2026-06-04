@@ -22,7 +22,7 @@ export class CommandHandler {
         if (checking) {
           return this.hasActiveMovableFile();
         }
-        this.plugin.advancedNoteMover.moveFocusedNoteToDestination();
+        void this.plugin.advancedNoteMover.moveFocusedNoteToDestination();
         return true;
       },
     });
@@ -32,7 +32,7 @@ export class CommandHandler {
       id: 'trigger-note-bulk-move',
       name: 'Move all files in vault',
       callback: () => {
-        this.plugin.advancedNoteMover.moveAllFilesInVault();
+        void this.plugin.advancedNoteMover.moveAllFilesInVault();
       },
     });
 

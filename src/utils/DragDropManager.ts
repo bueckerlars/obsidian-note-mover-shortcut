@@ -1,7 +1,7 @@
 export interface DragDropItem {
   element: HTMLElement;
   index: number;
-  data: any;
+  data: unknown;
 }
 
 export interface DragDropOptions {
@@ -14,7 +14,7 @@ export interface DragDropOptions {
 export class DragDropManager {
   private draggedElement: HTMLElement | null = null;
   private draggedIndex = -1;
-  private draggedData: any = null;
+  private draggedData: unknown = null;
   private container: HTMLElement;
   private options: DragDropOptions;
 
@@ -179,7 +179,7 @@ export class DragDropManager {
 
       // Save if callback provided
       if (this.options.onSave) {
-        this.options.onSave();
+        void this.options.onSave();
       }
     }
 
@@ -207,7 +207,7 @@ export class DragDropManager {
     return items.indexOf(item);
   }
 
-  private getItemData(item: HTMLElement): any {
+  private getItemData(item: HTMLElement): unknown {
     // Extract data from the item if needed
     // This can be customized based on requirements
     return {
@@ -231,9 +231,9 @@ export class DragDropManager {
 
   // Public method to create a drag handle
   public static createDragHandle(): HTMLElement {
-    const handle = document.createElement('div');
+    const handle = activeDocument.createElement('div');
     handle.className = 'advancedNoteMover-drag-handle';
-    handle.innerHTML = '⋮⋮'; // Vertical dots
+    handle.textContent = '⋮⋮';
     handle.setAttribute('draggable', 'true');
     handle.setAttribute('aria-label', 'Drag to reorder');
     handle.setAttribute('role', 'button');
@@ -245,10 +245,10 @@ export class DragDropManager {
 
   // Public method to wrap a setting item with drag handle
   public static wrapWithDragHandle(settingItem: HTMLElement): HTMLElement {
-    const wrapper = document.createElement('div');
+    const wrapper = activeDocument.createElement('div');
     wrapper.className = 'setting-item advancedNoteMover-with-drag-handle';
 
-    const handleContainer = document.createElement('div');
+    const handleContainer = activeDocument.createElement('div');
     handleContainer.className = 'advancedNoteMover-drag-handle-container';
     handleContainer.appendChild(this.createDragHandle());
 

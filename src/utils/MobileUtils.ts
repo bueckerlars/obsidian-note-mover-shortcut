@@ -85,8 +85,8 @@ export class MobileUtils {
     const iconName = direction === 'up' ? 'chevron-up' : 'chevron-down';
     setIcon(button, iconName);
 
-    button.addEventListener('click', async () => {
-      await onClick();
+    button.addEventListener('click', () => {
+      void onClick();
     });
 
     return button;
@@ -112,15 +112,13 @@ export class MobileUtils {
     });
 
     if (options.isPrimary) {
-      button.addClass('mod-cta');
-      button.style.background = 'var(--interactive-accent)';
-      button.style.color = 'var(--text-on-accent)';
+      button.addClass('mod-cta', 'advancedNoteMover-mobile-action-btn-primary');
     } else if (options.isDanger) {
       button.addClass('advancedNoteMover-mobile-delete-btn');
     }
 
-    button.addEventListener('click', async () => {
-      await onClick();
+    button.addEventListener('click', () => {
+      void onClick();
     });
 
     return button;

@@ -1,6 +1,5 @@
-import { HistoryEntry, BulkOperation } from '../types/HistoryEntry';
 import { PluginData } from '../types/PluginData';
-import { RuleV2, Trigger, CriteriaType, Operator } from '../types/RuleV2';
+import { CriteriaType, Operator } from '../types/RuleV2';
 import { validateDestinationTemplate } from '../domain/templates/DestinationTemplate';
 import {
   getOperatorsForCriteriaType,
@@ -10,6 +9,7 @@ import {
   isRegexOperator,
   operatorRequiresValue,
 } from './OperatorMapping';
+import { stringifyUnknown } from './stringify-unknown';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -17,11 +17,15 @@ export interface ValidationResult {
   warnings: string[];
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
+
 export class SettingsValidator {
   /**
    * Validates a complete settings object
    */
-  static validateSettings(settings: any): ValidationResult {
+  static validateSettings(settings: unknown): ValidationResult {
     const result: ValidationResult = {
       isValid: true,
       errors: [],
@@ -37,7 +41,7 @@ export class SettingsValidator {
 
     // Detect and validate by shape
     if (this.looksLikePluginData(settings)) {
-      return this.validatePluginData(settings as PluginData);
+      return this.validatePluginData(settings);
     }
 
     // Flat legacy JSON (pre–PluginData export shape)
@@ -48,8 +52,8 @@ export class SettingsValidator {
    * Quick shape check for new PluginData export/import format
    */
   private static looksLikePluginData(
-    value: any
-  ): value is PluginData | { settings: any } {
+    value: unknown
+  ): value is PluginData | { settings: unknown } {
     if (!value || typeof value !== 'object') return false;
     if (
       'settings' in value &&
@@ -57,10 +61,10 @@ export class SettingsValidator {
       typeof value.settings === 'object'
     ) {
       // ensure at least one of the new sub-keys exists
-      const s = value.settings;
+      const s = value.settings as Record<string, unknown>;
       return (
-        ('triggers' in s && typeof s.triggers === 'object') ||
-        ('filters' in s && typeof s.filters === 'object') ||
+        (typeof s.triggers === 'object' && s.triggers !== null) ||
+        (typeof s.filters === 'object' && s.filters !== null) ||
         Array.isArray(s.rulesV2)
       );
     }
@@ -70,12 +74,18 @@ export class SettingsValidator {
   /**
    * Validate flat legacy settings JSON (historical export format without nested `settings`).
    */
-  private static validateLegacySettings(settings: any): ValidationResult {
+  private static validateLegacySettings(settings: unknown): ValidationResult {
     const result: ValidationResult = {
       isValid: true,
       errors: [],
       warnings: [],
     };
+
+    if (!isRecord(settings)) {
+      result.errors.push('Settings must be a valid object');
+      result.isValid = false;
+      return result;
+    }
 
     // Legacy required string fields no longer exist; treat them as optional if present
     const legacyOptionalStringFields = ['destination', 'inboxLocation'];
@@ -162,22 +172,28 @@ export class SettingsValidator {
   /**
    * Validate new PluginData import/export shape
    */
-  private static validatePluginData(data: any): ValidationResult {
+  private static validatePluginData(data: unknown): ValidationResult {
     const result: ValidationResult = {
       isValid: true,
       errors: [],
       warnings: [],
     };
 
+    if (!isRecord(data)) {
+      result.errors.push('Settings must be a valid object');
+      result.isValid = false;
+      return result;
+    }
+
     const settings = data.settings;
-    if (!settings || typeof settings !== 'object') {
+    if (!isRecord(settings)) {
       result.errors.push('Field "settings" is required and must be an object');
       result.isValid = false;
       return result;
     }
 
     // triggers
-    if (!settings.triggers || typeof settings.triggers !== 'object') {
+    if (!isRecord(settings.triggers)) {
       result.errors.push(
         'Field "settings.triggers" is required and must be an object'
       );
@@ -208,23 +224,20 @@ export class SettingsValidator {
     }
 
     // filters
-    if (!settings.filters || typeof settings.filters !== 'object') {
+    if (!isRecord(settings.filters)) {
       result.errors.push(
         'Field "settings.filters" is required and must be an object'
       );
       result.isValid = false;
     } else {
-      const f = settings.filters;
+      const f = settings.filters as { filter?: unknown[] };
       if (!Array.isArray(f.filter)) {
         result.errors.push('Field "settings.filters.filter" must be an array');
         result.isValid = false;
       } else {
         for (let i = 0; i < f.filter.length; i++) {
-          if (
-            !f.filter[i] ||
-            typeof f.filter[i] !== 'object' ||
-            typeof f.filter[i].value !== 'string'
-          ) {
+          const item = f.filter[i];
+          if (!isRecord(item) || typeof item.value !== 'string') {
             result.errors.push(
               `Filter item at index ${i} must be an object with string 'value'`
             );
@@ -251,8 +264,7 @@ export class SettingsValidator {
     if (settings.retentionPolicy !== undefined) {
       const rp = settings.retentionPolicy;
       if (
-        !rp ||
-        typeof rp !== 'object' ||
+        !isRecord(rp) ||
         typeof rp.value !== 'number' ||
         (rp.unit !== 'days' && rp.unit !== 'weeks' && rp.unit !== 'months')
       ) {
@@ -283,7 +295,7 @@ export class SettingsValidator {
    * Validates a string field
    */
   private static validateStringField(
-    value: any,
+    value: unknown,
     fieldName: string,
     result: ValidationResult,
     required = true
@@ -305,7 +317,7 @@ export class SettingsValidator {
    * Validates a boolean field
    */
   private static validateBooleanField(
-    value: any,
+    value: unknown,
     fieldName: string,
     result: ValidationResult,
     required = true
@@ -327,7 +339,7 @@ export class SettingsValidator {
    * Validates the periodic movement interval
    */
   private static validateIntervalField(
-    value: any,
+    value: unknown,
     result: ValidationResult
   ): boolean {
     if (value === undefined || value === null) {
@@ -354,7 +366,7 @@ export class SettingsValidator {
    * Validates the filter array
    */
   private static validateFilterArray(
-    value: any,
+    value: unknown,
     result: ValidationResult
   ): boolean {
     if (value === undefined || value === null) {
@@ -381,7 +393,7 @@ export class SettingsValidator {
    * Validates the rules array
    */
   private static validateRulesArray(
-    value: any,
+    value: unknown,
     result: ValidationResult
   ): boolean {
     if (value === undefined || value === null) {
@@ -406,11 +418,11 @@ export class SettingsValidator {
    * Validates a single rule
    */
   private static validateRule(
-    rule: any,
+    rule: unknown,
     index: number,
     result: ValidationResult
   ): boolean {
-    if (!rule || typeof rule !== 'object') {
+    if (!isRecord(rule)) {
       result.errors.push(`Rule at index ${index} must be an object`);
       return false;
     }
@@ -436,7 +448,7 @@ export class SettingsValidator {
    * Validates the history array (optional)
    */
   private static validateHistoryArray(
-    value: any,
+    value: unknown,
     result: ValidationResult
   ): boolean {
     if (!Array.isArray(value)) {
@@ -444,8 +456,8 @@ export class SettingsValidator {
     }
 
     for (let i = 0; i < value.length; i++) {
-      const entry = value[i];
-      if (!entry || typeof entry !== 'object') {
+      const entry: unknown = value[i];
+      if (!isRecord(entry)) {
         return false;
       }
 
@@ -467,7 +479,7 @@ export class SettingsValidator {
    * Validates the bulk operations array (optional)
    */
   private static validateBulkOperationsArray(
-    value: any,
+    value: unknown,
     result: ValidationResult
   ): boolean {
     if (!Array.isArray(value)) {
@@ -475,8 +487,8 @@ export class SettingsValidator {
     }
 
     for (let i = 0; i < value.length; i++) {
-      const operation = value[i];
-      if (!operation || typeof operation !== 'object') {
+      const operation: unknown = value[i];
+      if (!isRecord(operation)) {
         return false;
       }
 
@@ -496,8 +508,11 @@ export class SettingsValidator {
   /**
    * Creates a clean settings object with only valid fields
    */
-  static sanitizeSettings(settings: any): Record<string, unknown> {
-    const sanitized: any = {};
+  static sanitizeSettings(settings: unknown): Record<string, unknown> {
+    const sanitized: Record<string, unknown> = {};
+    if (!isRecord(settings)) {
+      return sanitized;
+    }
 
     // Copy valid fields
     const validFields = [
@@ -537,7 +552,10 @@ export class SettingsValidator {
    * @param result - ValidationResult to accumulate errors/warnings
    * @returns true if validation passes, false otherwise
    */
-  static validateRulesV2Array(rulesV2: any, result: ValidationResult): boolean {
+  static validateRulesV2Array(
+    rulesV2: unknown,
+    result: ValidationResult
+  ): boolean {
     if (!rulesV2) {
       // rulesV2 is optional, so missing is OK
       return true;
@@ -565,11 +583,11 @@ export class SettingsValidator {
    * @returns true if validation passes, false otherwise
    */
   private static validateRuleV2(
-    rule: any,
+    rule: unknown,
     index: number,
     result: ValidationResult
   ): boolean {
-    if (!rule || typeof rule !== 'object') {
+    if (!isRecord(rule)) {
       result.errors.push(`RuleV2 at index ${index} must be an object`);
       return false;
     }
@@ -593,7 +611,9 @@ export class SettingsValidator {
     }
 
     // Validate destination template syntax (lenient: only syntax, no semantics)
-    const templateValidation = validateDestinationTemplate(rule.destination);
+    const templateValidation = validateDestinationTemplate(
+      String(rule.destination)
+    );
     if (!templateValidation.isValid) {
       for (const error of templateValidation.errors) {
         result.errors.push(`rulesV2[${index}].destination: ${error}`);
@@ -661,14 +681,14 @@ export class SettingsValidator {
    * @returns true if validation passes, false otherwise
    */
   private static validateTrigger(
-    trigger: any,
+    trigger: unknown,
     ruleIndex: number,
     triggerIndex: number,
     result: ValidationResult
   ): boolean {
     const path = `rulesV2[${ruleIndex}].triggers[${triggerIndex}]`;
 
-    if (!trigger || typeof trigger !== 'object') {
+    if (!isRecord(trigger)) {
       result.errors.push(`${path} must be an object`);
       return false;
     }
@@ -692,7 +712,7 @@ export class SettingsValidator {
       );
       return false;
     }
-    if (!validCriteriaTypes.includes(trigger.criteriaType)) {
+    if (!validCriteriaTypes.includes(trigger.criteriaType as CriteriaType)) {
       result.errors.push(
         `${path}.criteriaType must be one of: ${validCriteriaTypes.join(', ')}`
       );
@@ -725,7 +745,9 @@ export class SettingsValidator {
           'date',
           'list',
         ];
-        if (!validPropertyTypes.includes(trigger.propertyType)) {
+        if (
+          !validPropertyTypes.includes(stringifyUnknown(trigger.propertyType))
+        ) {
           result.errors.push(
             `${path}.propertyType must be one of: ${validPropertyTypes.join(', ')}`
           );
@@ -737,22 +759,25 @@ export class SettingsValidator {
       if (trigger.propertyType) {
         if (
           !isOperatorValidForPropertyType(
-            trigger.operator,
-            trigger.propertyType
+            trigger.operator as Operator,
+            stringifyUnknown(trigger.propertyType)
           )
         ) {
           const validOperators = getOperatorsForPropertyType(
-            trigger.propertyType
+            stringifyUnknown(trigger.propertyType)
           );
           result.errors.push(
-            `${path}.operator '${trigger.operator}' is not valid for propertyType '${trigger.propertyType}'. Valid operators: ${validOperators.join(', ')}`
+            `${path}.operator '${String(trigger.operator)}' is not valid for propertyType '${stringifyUnknown(trigger.propertyType)}'. Valid operators: ${validOperators.join(', ')}`
           );
           return false;
         }
       } else {
         const propertyTypes = ['text', 'number', 'checkbox', 'date', 'list'];
         const isValidForAnyPropertyType = propertyTypes.some(propertyType =>
-          isOperatorValidForPropertyType(trigger.operator, propertyType)
+          isOperatorValidForPropertyType(
+            trigger.operator as Operator,
+            propertyType
+          )
         );
         if (!isValidForAnyPropertyType) {
           const validOperators = Array.from(
@@ -771,10 +796,13 @@ export class SettingsValidator {
     } else {
       // Check if operator is valid for the criteria type
       if (
-        !isOperatorValidForCriteriaType(trigger.operator, trigger.criteriaType)
+        !isOperatorValidForCriteriaType(
+          trigger.operator as Operator,
+          trigger.criteriaType as CriteriaType
+        )
       ) {
         const validOperators = getOperatorsForCriteriaType(
-          trigger.criteriaType
+          trigger.criteriaType as CriteriaType
         );
         result.errors.push(
           `${path}.operator '${trigger.operator}' is not valid for criteriaType '${trigger.criteriaType}'. Valid operators: ${validOperators.join(', ')}`
@@ -784,7 +812,7 @@ export class SettingsValidator {
     }
 
     // Validate value (only when operator requires a value)
-    if (operatorRequiresValue(trigger.operator)) {
+    if (operatorRequiresValue(trigger.operator as Operator)) {
       if (!this.validateStringField(trigger.value, `${path}.value`, result)) {
         return false;
       }
@@ -800,24 +828,31 @@ export class SettingsValidator {
    * @param result - ValidationResult to accumulate errors/warnings
    */
   private static compileRegexInRuleV2(
-    rule: any,
+    rule: unknown,
     index: number,
     result: ValidationResult
   ): void {
+    if (!isRecord(rule) || !Array.isArray(rule.triggers)) {
+      return;
+    }
+
     let hasInvalidRegex = false;
 
     for (let j = 0; j < rule.triggers.length; j++) {
-      const trigger = rule.triggers[j];
-      if (isRegexOperator(trigger.operator)) {
+      const trigger: unknown = rule.triggers[j];
+      if (!isRecord(trigger)) {
+        continue;
+      }
+      if (isRegexOperator(trigger.operator as Operator)) {
         try {
           // Try to compile the regex
-          new RegExp(trigger.value);
+          new RegExp(stringifyUnknown(trigger.value));
         } catch (error) {
           hasInvalidRegex = true;
           const errorMsg =
             error instanceof Error ? error.message : 'Unknown error';
           result.errors.push(
-            `RuleV2 at index ${index}, trigger ${j}: Invalid regex pattern '${trigger.value}': ${errorMsg}`
+            `RuleV2 at index ${index}, trigger ${j}: Invalid regex pattern '${stringifyUnknown(trigger.value)}': ${errorMsg}`
           );
         }
       }

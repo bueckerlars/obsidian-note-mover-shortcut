@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 
+# Generated changelog is gitignored; ensure it exists before lint/type-check.
+npm run generate-changelog
+
 # Run nano-staged
 npx nano-staged
 

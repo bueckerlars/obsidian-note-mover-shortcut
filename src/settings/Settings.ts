@@ -1,5 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { PluginSettingTab } from 'obsidian';
+import { PluginSettingTab, type SettingDefinitionItem } from 'obsidian';
 import {
   PeriodicMovementSettingsSection,
   AttachmentsSettingsSection,
@@ -33,7 +33,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     // Create debounced display function
     const debouncedDisplay = this.debounceManager.debounce(
       'display',
-      () => this.display(),
+      () => this.renderSettingsTab(),
       150 // 150ms delay to prevent rapid refreshes
     );
 
@@ -72,7 +72,15 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.updateSettings = new UpdateSettingsSection(plugin, this.containerEl);
   }
 
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    return [];
+  }
+
   display(): void {
+    this.renderSettingsTab();
+  }
+
+  private renderSettingsTab(): void {
     this.containerEl.empty();
 
     // Add mobile-specific classes to container
@@ -93,7 +101,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     // Create debounced display function for this display call
     const debouncedDisplay = this.debounceManager.debounce(
       'display',
-      () => this.display(),
+      () => this.renderSettingsTab(),
       150 // 150ms delay to prevent rapid refreshes
     );
 
@@ -160,12 +168,11 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
    * Ensure filter array exists without removing empty rules during display
    */
   private ensureArraysExist(): void {
-    if (!Array.isArray(this.plugin.settings.settings?.filters?.filter)) {
-      (this.plugin.settings as any).settings =
-        this.plugin.settings.settings || ({} as any);
-      (this.plugin.settings.settings as any).filters =
-        this.plugin.settings.settings.filters || ({} as any);
-      (this.plugin.settings.settings.filters as any).filter = [];
+    if (!this.plugin.settings.settings.filters) {
+      this.plugin.settings.settings.filters = { filter: [] };
+    }
+    if (!Array.isArray(this.plugin.settings.settings.filters.filter)) {
+      this.plugin.settings.settings.filters.filter = [];
     }
   }
 

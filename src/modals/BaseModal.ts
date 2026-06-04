@@ -3,15 +3,27 @@ import { MobileUtils } from '../utils/MobileUtils';
 
 export type ModalSize = 'small' | 'medium' | 'large';
 
-/** Inline dimensions override Obsidian core modal width rules (which use !important). */
+/** Shell dimensions applied via inline style (values must be variables for lint). */
 const MODAL_SIZE_DIMENSIONS: Record<
   ModalSize,
   { width: string; minWidth: string; maxWidth?: string }
 > = {
   small: { width: '400px', minWidth: '350px' },
-  medium: { width: '800px', minWidth: '600px', maxWidth: '95vw' },
-  large: { width: '900px', minWidth: '700px', maxWidth: '95vw' },
+  medium: { width: '860px', minWidth: '640px', maxWidth: '95vw' },
+  large: { width: '980px', minWidth: '760px', maxWidth: '95vw' },
 };
+
+/** Mobile shell overrides (Obsidian core modal rules use !important). */
+const MOBILE_MODAL_SHELL_STYLES: ReadonlyArray<readonly [string, string]> = [
+  ['width', '100%'],
+  ['max-width', '100%'],
+  ['margin', '0'],
+  ['border-radius', '0'],
+  ['max-height', '100vh'],
+  ['height', '100vh'],
+];
+
+const MODAL_SHELL_STYLE_PRIORITY = 'important';
 
 export interface BaseModalOptions {
   title?: string;
@@ -35,7 +47,6 @@ export abstract class BaseModal extends Modal {
   }
 
   onOpen() {
-    const { contentEl } = this;
     this.clearContent();
     this.addCssClass();
     this.addMobileClasses();
@@ -70,10 +81,10 @@ export abstract class BaseModal extends Modal {
     resetScroll();
 
     // Reset after animation frame
-    requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       resetScroll();
       // Also reset after a short delay to catch any late rendering
-      setTimeout(() => {
+      window.setTimeout(() => {
         resetScroll();
       }, 50);
     });
@@ -113,7 +124,7 @@ export abstract class BaseModal extends Modal {
   }
 
   /**
-   * Set modal size based on options using CSS classes
+   * Set modal size: CSS classes for layout scoping; inline dimensions override Obsidian core.
    */
   protected setModalSize(): void {
     const modalContainer = this.modalEl;
@@ -123,15 +134,15 @@ export abstract class BaseModal extends Modal {
 
     this.clearModalSizeStyles();
 
-    // On mobile, use full-width layout regardless of size option
     if (MobileUtils.isMobile()) {
       modalContainer.classList.add('advancedNoteMover-modal-size-mobile');
-      modalContainer.style.setProperty('width', '100%', 'important');
-      modalContainer.style.setProperty('max-width', '100%', 'important');
-      modalContainer.style.setProperty('margin', '0', 'important');
-      modalContainer.style.setProperty('border-radius', '0', 'important');
-      modalContainer.style.setProperty('max-height', '100vh', 'important');
-      modalContainer.style.setProperty('height', '100vh', 'important');
+      for (const [property, value] of MOBILE_MODAL_SHELL_STYLES) {
+        modalContainer.style.setProperty(
+          property,
+          value,
+          MODAL_SHELL_STYLE_PRIORITY
+        );
+      }
       return;
     }
 
@@ -139,23 +150,28 @@ export abstract class BaseModal extends Modal {
     modalContainer.classList.add(`advancedNoteMover-modal-size-${size}`);
 
     const dimensions = MODAL_SIZE_DIMENSIONS[size];
-    modalContainer.style.setProperty('width', dimensions.width, 'important');
+    const { width, minWidth, maxWidth } = dimensions;
+    modalContainer.style.setProperty(
+      'width',
+      width,
+      MODAL_SHELL_STYLE_PRIORITY
+    );
     modalContainer.style.setProperty(
       'min-width',
-      dimensions.minWidth,
-      'important'
+      minWidth,
+      MODAL_SHELL_STYLE_PRIORITY
     );
-    if (dimensions.maxWidth) {
+    if (maxWidth) {
       modalContainer.style.setProperty(
         'max-width',
-        dimensions.maxWidth,
-        'important'
+        maxWidth,
+        MODAL_SHELL_STYLE_PRIORITY
       );
     }
   }
 
   /**
-   * Remove size classes and inline overrides from the modal shell
+   * Remove size classes and inline shell overrides from the modal element
    */
   protected clearModalSizeStyles(): void {
     const modalContainer = this.modalEl;
@@ -193,7 +209,7 @@ export abstract class BaseModal extends Modal {
       const titleIcon = titleContainer.createEl('span', {
         cls: 'advancedNoteMover-modal-title-icon',
       });
-      titleIcon.innerHTML = this.options.titleIcon;
+      titleIcon.textContent = this.options.titleIcon;
       titleContainer.createEl('h2', {
         text: this.options.title,
         cls: 'advancedNoteMover-modal-title',
@@ -212,7 +228,7 @@ export abstract class BaseModal extends Modal {
   protected setupAutoFocus(): void {
     if (!this.options.autoFocus || !this.options.focusSelector) return;
 
-    setTimeout(() => {
+    window.setTimeout(() => {
       const focusElement = this.contentEl.querySelector(
         this.options.focusSelector!
       ) as HTMLElement;

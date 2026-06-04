@@ -38,29 +38,24 @@ export class HistoryManager {
   }
 
   private async saveHistory(): Promise<void> {
-    // Update plugin settings with current history and bulk operations
-    const settingsAny = this.plugin.settings as any;
-    const currentHistory = settingsAny.history;
-
     if (
-      !currentHistory ||
-      typeof currentHistory !== 'object' ||
-      Array.isArray(currentHistory)
+      !this.plugin.settings.history ||
+      typeof this.plugin.settings.history !== 'object' ||
+      Array.isArray(this.plugin.settings.history)
     ) {
-      settingsAny.history = { history: [], bulkOperations: [] };
+      this.plugin.settings.history = { history: [], bulkOperations: [] };
     }
 
-    // Ensure sub-structures exist and are arrays
-    if (!Array.isArray(settingsAny.history.history)) {
-      settingsAny.history.history = [];
+    if (!Array.isArray(this.plugin.settings.history.history)) {
+      this.plugin.settings.history.history = [];
     }
-    if (!Array.isArray(settingsAny.history.bulkOperations)) {
-      settingsAny.history.bulkOperations = [];
+    if (!Array.isArray(this.plugin.settings.history.bulkOperations)) {
+      this.plugin.settings.history.bulkOperations = [];
     }
 
-    settingsAny.history.history = this.history;
-    settingsAny.history.bulkOperations = this.bulkOperations;
-    await (this.plugin as any).save_settings();
+    this.plugin.settings.history.history = this.history;
+    this.plugin.settings.history.bulkOperations = this.bulkOperations;
+    await this.plugin.save_settings();
   }
 
   public addEntry(entry: Omit<HistoryEntry, 'id' | 'timestamp'>): void {
@@ -90,7 +85,7 @@ export class HistoryManager {
       this.history.pop();
     }
 
-    this.saveHistory();
+    void this.saveHistory();
   }
 
   /**
@@ -172,32 +167,31 @@ export class HistoryManager {
       return this.getHistory();
     }
 
-    const now = Date.now();
     let cutoffTime: number;
 
     switch (timeFilter) {
-      case 'today':
-        // Start of today
+      case 'today': {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         cutoffTime = today.getTime();
         break;
-      case 'week':
-        // Start of this week (Monday)
+      }
+      case 'week': {
         const week = new Date();
         const dayOfWeek = week.getDay();
-        const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday is 0, so 6 days to Monday
+        const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
         week.setDate(week.getDate() - daysToMonday);
         week.setHours(0, 0, 0, 0);
         cutoffTime = week.getTime();
         break;
-      case 'month':
-        // Start of this month
+      }
+      case 'month': {
         const month = new Date();
         month.setDate(1);
         month.setHours(0, 0, 0, 0);
         cutoffTime = month.getTime();
         break;
+      }
       default:
         return this.getHistory();
     }
@@ -215,16 +209,16 @@ export class HistoryManager {
       return this.getBulkOperations();
     }
 
-    const now = Date.now();
     let cutoffTime: number;
 
     switch (timeFilter) {
-      case 'today':
+      case 'today': {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         cutoffTime = today.getTime();
         break;
-      case 'week':
+      }
+      case 'week': {
         const week = new Date();
         const dayOfWeek = week.getDay();
         const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
@@ -232,12 +226,14 @@ export class HistoryManager {
         week.setHours(0, 0, 0, 0);
         cutoffTime = week.getTime();
         break;
-      case 'month':
+      }
+      case 'month': {
         const month = new Date();
         month.setDate(1);
         month.setHours(0, 0, 0, 0);
         cutoffTime = month.getTime();
         break;
+      }
       default:
         return this.getBulkOperations();
     }
@@ -250,7 +246,7 @@ export class HistoryManager {
    */
   public async cleanupOldEntries(): Promise<void> {
     const retentionPolicy =
-      (this.plugin.settings.settings?.retentionPolicy as RetentionPolicy) ||
+      this.plugin.settings.settings?.retentionPolicy ||
       HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY;
     const cutoffTime = this.calculateRetentionCutoffTime(retentionPolicy);
 
@@ -538,7 +534,7 @@ export class HistoryManager {
 
     this.currentBulkOperationId = null;
     this.currentBulkOperationType = null;
-    this.saveHistory();
+    void this.saveHistory();
   }
 
   /**

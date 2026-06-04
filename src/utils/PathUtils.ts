@@ -14,7 +14,7 @@ export function sanitizePathSegment(segment: string): string {
 
   s = s.replace(/\[\[([^\]]+)\]\]/g, (_m, inner: string) => {
     const piece = inner.includes('|')
-      ? inner.split('|')[0]!.trim()
+      ? inner.split('|')[0].trim()
       : inner.trim();
     return piece;
   });

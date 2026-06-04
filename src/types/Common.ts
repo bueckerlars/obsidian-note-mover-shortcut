@@ -23,7 +23,7 @@ export interface FileMetadata {
   fileName: string;
   filePath: string;
   tags: string[];
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   fileContent: string;
   createdAt: Date | null;
   updatedAt: Date | null;

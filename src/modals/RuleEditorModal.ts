@@ -1,4 +1,4 @@
-import { App, Setting, DropdownComponent, setIcon } from 'obsidian';
+import { App, Setting, setIcon } from 'obsidian';
 import { BaseModal } from './BaseModal';
 import {
   RuleV2,
@@ -24,13 +24,7 @@ import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault
 import { ConfirmModal } from './ConfirmModal';
 import { NoticeManager } from '../utils/NoticeManager';
 import { SETTINGS_CONSTANTS } from '../config/constants';
-
-function escapeHtmlForConfirm(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
+import { toMarkdownInlineCode } from '../utils/markdown-confirm';
 
 interface RuleEditorModalOptions {
   rule: RuleV2;
@@ -55,7 +49,7 @@ export class RuleEditorModal extends BaseModal {
     });
     this.ruleOptions = options;
     // Create a working copy of the rule
-    this.workingRule = JSON.parse(JSON.stringify(options.rule));
+    this.workingRule = structuredClone(options.rule);
   }
 
   protected createContent(): void {
@@ -92,7 +86,7 @@ export class RuleEditorModal extends BaseModal {
 
   private createNameAndActiveRow(container: HTMLElement): void {
     // Desktop: Original layout
-    const setting = new Setting(container)
+    new Setting(container)
       .setName('Name')
       .addText(text =>
         text
@@ -116,7 +110,7 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createMatchConditionsSelector(container: HTMLElement): void {
-    const setting = new Setting(container).setName('Match Conditions');
+    const setting = new Setting(container).setName('Match conditions');
 
     const buttonContainer = setting.controlEl.createDiv({
       cls: 'advancedNoteMover-rule-aggregation-buttons',
@@ -147,12 +141,9 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createDestinationInput(container: HTMLElement): void {
-    let destinationInputEl: any = null;
-
     const setting = new Setting(container)
       .setName('Destination')
       .addSearch(cb => {
-        destinationInputEl = cb.inputEl;
         new FolderSuggest(this.app, cb.inputEl);
         cb.setPlaceholder(
           'Example: Personal/Tasks/{{property.status}} or {{tag.tasks/personal}}/Incoming'
@@ -176,9 +167,9 @@ export class RuleEditorModal extends BaseModal {
     // Visually and accessibly associate the description with the input
     const descriptionId = 'advancedNoteMover-rule-destination-description';
     descriptionEl.setAttr('id', descriptionId);
-    if (destinationInputEl) {
-      destinationInputEl.setAttribute('aria-describedby', descriptionId);
-    }
+    setting.settingEl
+      .querySelector('input')
+      ?.setAttribute('aria-describedby', descriptionId);
   }
 
   private createConditionsSection(container: HTMLElement): void {
@@ -199,8 +190,8 @@ export class RuleEditorModal extends BaseModal {
     this.renderTriggers();
 
     // Add Condition Button
-    const addButtonSetting = new Setting(section).addButton(btn =>
-      btn.setButtonText('+ Add Condition').onClick(() => {
+    new Setting(section).addButton(btn =>
+      btn.setButtonText('+ add condition').onClick(() => {
         this.workingRule.triggers.push({
           criteriaType: 'tag',
           operator: 'includes item',
@@ -475,21 +466,23 @@ export class RuleEditorModal extends BaseModal {
       });
       new Setting(leftSide).addButton(btn =>
         btn
-          .setButtonText('Remove Rule')
-          .setWarning()
-          .onClick(async () => {
-            const safe = escapeHtmlForConfirm(this.workingRule.name);
-            const confirmed = await ConfirmModal.show(this.app, {
-              title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
-              message: `Are you sure you want to delete the rule <strong>"${safe}"</strong>?<br/><br/>This action cannot be undone.`,
-              confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
-              cancelText: 'Cancel',
-              danger: true,
-            });
-            if (confirmed && this.ruleOptions.onDelete) {
-              await this.ruleOptions.onDelete();
-              this.close();
-            }
+          .setButtonText('Remove rule')
+          .setDestructive()
+          .onClick(() => {
+            void (async () => {
+              const ruleLabel = toMarkdownInlineCode(this.workingRule.name);
+              const confirmed = await ConfirmModal.show(this.app, {
+                title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
+                message: `Are you sure you want to delete the rule ${ruleLabel}?\n\nThis action cannot be undone.`,
+                confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
+                cancelText: 'Cancel',
+                danger: true,
+              });
+              if (confirmed && this.ruleOptions.onDelete) {
+                await this.ruleOptions.onDelete();
+                this.close();
+              }
+            })();
           })
       );
     }

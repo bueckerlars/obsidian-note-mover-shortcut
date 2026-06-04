@@ -61,7 +61,7 @@ export class FilterSettingsSection {
     const isMobile = MobileUtils.isMobile();
 
     // Create a container for filters with drag & drop
-    const filtersContainer = document.createElement('div');
+    const filtersContainer = activeDocument.createElement('div');
     filtersContainer.className = 'advancedNoteMover-filters-container';
     if (isMobile) {
       filtersContainer.addClass('advancedNoteMover-mobile-filters-container');
@@ -90,7 +90,7 @@ export class FilterSettingsSection {
           // Track the instance for cleanup
           this.advancedSuggestInstances.push(advancedSuggest);
           cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER)
-            .setValue((filter?.value as string) || '')
+            .setValue(filter?.value || '')
             .onChange(async value => {
               // Don't save empty filters
               if (!value || value.trim() === '') {
@@ -104,8 +104,7 @@ export class FilterSettingsSection {
               // Update RuleManager
               this.plugin.advancedNoteMover.updateRuleManager();
             });
-          // @ts-ignore
-          cb.containerEl.addClass('advancedNoteMover-search');
+          cb.inputEl.classList.add('advancedNoteMover-search');
         })
         .addExtraButton(btn =>
           btn.setIcon('cross').onClick(async () => {
@@ -144,7 +143,7 @@ export class FilterSettingsSection {
     const list = this.plugin.settings.settings.filters.filter;
     const newIndex = Math.max(0, Math.min(list.length - 1, index + direction));
     [list[index], list[newIndex]] = [list[newIndex], list[index]];
-    this.plugin.save_settings();
+    void this.plugin.save_settings();
     this.refreshDisplay();
   }
 
@@ -171,7 +170,7 @@ export class FilterSettingsSection {
 
   private addDragHandle(settingEl: HTMLElement, index: number): void {
     const handle = DragDropManager.createDragHandle();
-    const handleContainer = document.createElement('div');
+    const handleContainer = activeDocument.createElement('div');
     handleContainer.className = 'advancedNoteMover-drag-handle-container';
     handleContainer.appendChild(handle);
 

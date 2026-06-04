@@ -2,7 +2,6 @@ import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SETTINGS_CONSTANTS, HISTORY_CONSTANTS } from '../../config/constants';
-import { RetentionPolicy } from '../../types/HistoryEntry';
 import { MobileUtils } from '../../utils/MobileUtils';
 
 export class HistorySettingsSection {
@@ -25,7 +24,7 @@ export class HistorySettingsSection {
       .addButton(btn =>
         btn
           .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY)
-          .setWarning()
+          .setDestructive()
           .onClick(async () => {
             const confirmed = await ConfirmModal.show(this.app, {
               title: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_TITLE,
@@ -64,7 +63,7 @@ export class HistorySettingsSection {
     if (!this.plugin.settings.settings.retentionPolicy) {
       this.plugin.settings.settings.retentionPolicy = {
         ...HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
-      } as RetentionPolicy;
+      };
     }
 
     const retentionPolicy = this.plugin.settings.settings.retentionPolicy;
@@ -80,8 +79,8 @@ export class HistorySettingsSection {
           .onChange(async (value: string) => {
             const numValue = parseInt(value);
             if (!isNaN(numValue) && numValue > 0) {
-              this.plugin.settings.settings.retentionPolicy!.value = numValue;
-              await (this.plugin as any).save_settings();
+              this.plugin.settings.settings.retentionPolicy.value = numValue;
+              await this.plugin.save_settings();
             }
           })
       )
@@ -98,11 +97,11 @@ export class HistorySettingsSection {
           )
           .setValue(retentionPolicy.unit)
           .onChange(async (value: string) => {
-            this.plugin.settings.settings.retentionPolicy!.unit = value as
+            this.plugin.settings.settings.retentionPolicy.unit = value as
               | 'days'
               | 'weeks'
               | 'months';
-            await (this.plugin as any).save_settings();
+            await this.plugin.save_settings();
           })
       );
 

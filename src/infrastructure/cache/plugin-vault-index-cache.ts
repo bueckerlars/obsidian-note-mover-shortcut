@@ -42,7 +42,7 @@ export class PluginVaultIndexCache {
     valuesByKey: Map<string, Set<string>>;
   } | null = null;
 
-  private metadataDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private metadataDebounceTimer: number | null = null;
 
   /** When resolver returns false, all reads bypass in-memory indices. */
   setCacheEnabledResolver(resolver: () => boolean): void {
@@ -85,9 +85,9 @@ export class PluginVaultIndexCache {
    */
   scheduleMetadataDerivedInvalidate(): void {
     if (this.metadataDebounceTimer !== null) {
-      clearTimeout(this.metadataDebounceTimer);
+      window.clearTimeout(this.metadataDebounceTimer);
     }
-    this.metadataDebounceTimer = setTimeout(() => {
+    this.metadataDebounceTimer = window.setTimeout(() => {
       this.metadataDebounceTimer = null;
       this.bumpIndicesGenerationImmediate();
     }, METADATA_INDEX_INVALIDATE_MS);
@@ -201,7 +201,7 @@ export class PluginVaultIndexCache {
           for (const file of files) {
             const cache = app.metadataCache.getFileCache(file);
             if (cache?.frontmatter?.[propertyName] !== undefined) {
-              const raw = cache.frontmatter[propertyName];
+              const raw: unknown = cache.frontmatter[propertyName];
               this.addPropertySampleToSet(values, raw, propertyType);
             }
           }
@@ -225,7 +225,7 @@ export class PluginVaultIndexCache {
         for (const file of files) {
           const cache = app.metadataCache.getFileCache(file);
           if (cache?.frontmatter?.[propertyName] !== undefined) {
-            const raw = cache.frontmatter[propertyName];
+            const raw: unknown = cache.frontmatter[propertyName];
             this.addPropertySampleToSet(values, raw, propertyType);
           }
         }

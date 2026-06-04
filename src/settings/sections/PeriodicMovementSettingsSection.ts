@@ -30,7 +30,7 @@ export class TriggerSettingsSection {
             this.plugin.settings.settings.triggers.enableOnEditTrigger = value;
             await this.plugin.save_settings();
             // Activate/Deactivate on-edit listener
-            (this.plugin as any).triggerHandler?.toggleOnEditListener();
+            this.plugin.triggerHandler.toggleOnEditListener();
 
             // Force refresh display
             this.refreshDisplay();
@@ -64,7 +64,7 @@ export class TriggerSettingsSection {
               value;
             await this.plugin.save_settings();
             // Toggle interval based on the new value via TriggerEventHandler
-            (this.plugin as any).triggerHandler?.togglePeriodic();
+            this.plugin.triggerHandler.togglePeriodic();
 
             // Force refresh display
             this.refreshDisplay();
@@ -119,7 +119,7 @@ export class TriggerSettingsSection {
                 interval;
               await this.plugin.save_settings();
               // If periodic is enabled, restart interval via handler
-              (this.plugin as any).triggerHandler?.togglePeriodic();
+              this.plugin.triggerHandler.togglePeriodic();
             })
         );
 

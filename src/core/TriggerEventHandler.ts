@@ -15,12 +15,14 @@ export class TriggerEventHandler {
     // Initialize debounced handler after debounceManager is created
     this.debouncedHandleOnEdit = this.debounceManager.debounce(
       'onEdit',
-      async (file: TFile) => {
-        try {
-          await this.handleOnEdit(file);
-        } catch (error) {
-          console.error('Error in debounced handleOnEdit:', error);
-        }
+      (file: TFile) => {
+        void (async () => {
+          try {
+            await this.handleOnEdit(file);
+          } catch (error) {
+            console.error('Error in debounced handleOnEdit:', error);
+          }
+        })();
       },
       2000 // 2 seconds delay - allows for rapid typing without excessive processing
     );
@@ -36,8 +38,8 @@ export class TriggerEventHandler {
       const minutes =
         this.plugin.settings.settings.triggers.periodicMovementInterval;
       this.periodicIntervalId = window.setInterval(
-        async () => {
-          await this.plugin.advancedNoteMover.moveAllFilesInVaultPeriodic();
+        () => {
+          void this.plugin.advancedNoteMover.moveAllFilesInVaultPeriodic();
         },
         minutes * (60 * 1000)
       );
