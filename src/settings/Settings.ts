@@ -8,6 +8,7 @@ import {
   HistorySettingsSection,
   ImportExportSettingsSection,
   PerformanceDebugSettingsSection,
+  UpdateSettingsSection,
 } from './sections';
 import { DebounceManager } from '../utils/DebounceManager';
 import { MobileUtils } from '../utils/MobileUtils';
@@ -20,6 +21,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   private historySettings: HistorySettingsSection;
   private importExportSettings: ImportExportSettingsSection;
   private performanceDebugSettings: PerformanceDebugSettingsSection;
+  private updateSettings: UpdateSettingsSection;
   private debounceManager: DebounceManager;
 
   constructor(private plugin: AdvancedNoteMoverPlugin) {
@@ -67,6 +69,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
       this.containerEl,
       debouncedDisplay
     );
+    this.updateSettings = new UpdateSettingsSection(plugin, this.containerEl);
   }
 
   display(): void {
@@ -129,6 +132,10 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
       this.containerEl,
       debouncedDisplay
     );
+    this.updateSettings = new UpdateSettingsSection(
+      this.plugin,
+      this.containerEl
+    );
 
     this.periodicMovementSettings.addTriggerSettings();
 
@@ -145,6 +152,8 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.importExportSettings.addImportExportSettings();
 
     this.performanceDebugSettings.addPerformanceDebugSettings();
+
+    this.updateSettings.addUpdateSettings();
   }
 
   /**

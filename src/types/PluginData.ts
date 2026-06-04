@@ -28,6 +28,8 @@ export interface SettingsData {
   enableVaultIndexCache?: boolean;
   /** When true, records timing spans and logs `[Advanced Note Mover perf]` to the console. */
   enablePerformanceDebug?: boolean;
+  /** When true (default), show the changelog modal once after a plugin version update. */
+  showReleaseNotesOnUpdate?: boolean;
   attachments?: AttachmentMoveSettings;
 }
 
