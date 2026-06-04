@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.0.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.5...1.0.6)
+
+### Fixes
+
+- **Plugin review feedback**: Address Obsidian community plugin review findings — confirmation dialogs no longer use `innerHTML`; messages are rendered with `MarkdownRenderer`. DOM access uses `activeDocument`, notices use `Notice.messageEl`, and async handlers use explicit `void` where fire-and-forget is intended.
+
+### Improvements
+
+- **Sentence-case UI**: Settings and modals follow Obsidian sentence-case guidelines (e.g. "Match conditions", "Import/export", "+ add rule", "Add to blacklist").
+- **Confirmation dialogs**: Clear-history, import, and delete-rule prompts use Markdown (rule names in inline code). Destructive actions use `setDestructive()` instead of warning styling.
+- **Modal sizing**: Desktop modal dimensions are applied on `modalEl` in `BaseModal` instead of global CSS size classes, keeping layout scoped and compatible with Obsidian ESLint rules.
+- **Settings persistence**: History save/load and settings validation use typed `PluginData` / `SettingsData` instead of `any` casts; migration logs use `console.debug`.
+- **Minimum Obsidian version**: Raised to **1.13.0** (`manifest.json` / `versions.json`).
+- **Dev tooling**: ESLint 9 flat config with `eslint-plugin-obsidianmd`, GitHub Actions CI (lint, type-check, tests), and changelog generation before lint/type-check and in CI.
+
 ## [1.0.5](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.4...1.0.5)
 
 ### Fixes
