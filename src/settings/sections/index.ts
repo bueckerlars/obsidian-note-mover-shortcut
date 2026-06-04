@@ -5,3 +5,4 @@ export { RulesSettingsSection } from './RulesSettingsSection';
 export { HistorySettingsSection } from './HistorySettingsSection';
 export { ImportExportSettingsSection } from './ImportExportSettingsSection';
 export { PerformanceDebugSettingsSection } from './PerformanceDebugSettingsSection';
+export { UpdateSettingsSection } from './UpdateSettingsSection';

@@ -105,6 +105,22 @@ export async function validateAndRepairPluginData(
     plugin.settings.settings.enablePerformanceDebug = false;
   }
 
+  if (plugin.settings.settings.showReleaseNotesOnUpdate === undefined) {
+    plugin.settings.settings.showReleaseNotesOnUpdate = true;
+  }
+
+  if (!plugin.settings.lastSeenVersion) {
+    const nestedLastSeen = (
+      plugin.settings.settings as { lastSeenVersion?: string }
+    ).lastSeenVersion;
+    if (typeof nestedLastSeen === 'string' && nestedLastSeen.trim() !== '') {
+      plugin.settings.lastSeenVersion = nestedLastSeen.trim();
+      delete (plugin.settings.settings as { lastSeenVersion?: string })
+        .lastSeenVersion;
+      await savePersistedSettings(plugin);
+    }
+  }
+
   if (!plugin.settings.settings.attachments) {
     plugin.settings.settings.attachments = {
       moveWithNote: false,
@@ -234,6 +250,7 @@ export function buildDefaultSettingsData(): SettingsData {
     enableRuleEvaluationCache: true,
     enableVaultIndexCache: true,
     enablePerformanceDebug: false,
+    showReleaseNotesOnUpdate: true,
     attachments: {
       moveWithNote: true,
       skipSharedAttachments: true,

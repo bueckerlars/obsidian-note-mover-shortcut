@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.5](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.4...1.0.5)
+
+### Fixes
+
+- **Release notes on every startup** ([#92](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/92)): The update changelog modal no longer opens on every Obsidian start when `lastSeenVersion` was missing or stored only under `settings`. It now appears only after the installed plugin version is newer than the last seen version. Legacy `lastSeenVersion` values nested in `settings` are migrated to the root `PluginData` field and saved immediately so the migration does not repeat on each load.
+
+### Improvements
+
+- **Show release notes after plugin update** ([#92](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/92)): New toggle under **Settings → Updates** (on by default). Turn it off to skip the changelog modal after updates; the plugin still records the current version quietly.
+
 ## [1.0.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.3...1.0.4)
 
 ### Improvements

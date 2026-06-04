@@ -2,6 +2,10 @@ import AdvancedNoteMoverPlugin from 'main';
 import { UpdateModal } from '../modals/UpdateModal';
 import { NoticeManager } from '../utils/NoticeManager';
 import { ChangelogEntry, CHANGELOG_ENTRIES } from '../generated/changelog';
+import {
+  isNewerVersion,
+  shouldOfferReleaseNotes,
+} from '../utils/version-compare';
 
 export class UpdateManager {
   private plugin: AdvancedNoteMoverPlugin;
@@ -11,18 +15,23 @@ export class UpdateManager {
   }
 
   /**
-   * Checks if the plugin has been updated and shows the UpdateModal
+   * Checks if the plugin has been updated and shows the UpdateModal when appropriate.
    */
   async checkForUpdates(): Promise<void> {
     const currentVersion = this.plugin.manifest.version;
-    const lastSeenVersion = this.plugin.settings.lastSeenVersion;
+    const lastSeenVersion = this.getLastSeenVersion();
 
-    // On first start or when a new version is detected
-    if (
-      !lastSeenVersion ||
-      this.isNewerVersion(currentVersion, lastSeenVersion)
-    ) {
-      await this.showUpdateModal();
+    if (shouldOfferReleaseNotes(lastSeenVersion, currentVersion)) {
+      if (this.isReleaseNotesEnabled()) {
+        await this.showUpdateModal();
+      } else {
+        await this.markVersionSeen(currentVersion);
+      }
+      return;
+    }
+
+    if (!lastSeenVersion?.trim()) {
+      await this.markVersionSeen(currentVersion);
     }
   }
 
@@ -32,7 +41,7 @@ export class UpdateManager {
    */
   async showUpdateModal(forceShow = false): Promise<void> {
     const currentVersion = this.plugin.manifest.version;
-    let lastSeenVersion = this.plugin.settings.lastSeenVersion;
+    let lastSeenVersion = this.getLastSeenVersion();
 
     // For manual invocation (forceShow), use an older version as base,
     // to ensure relevant information is displayed
@@ -57,36 +66,21 @@ export class UpdateManager {
 
     // Only mark version as "seen" on automatic call
     if (!forceShow) {
-      this.plugin.settings.lastSeenVersion = currentVersion;
-      await this.plugin.save_settings();
+      await this.markVersionSeen(currentVersion);
     }
   }
 
-  /**
-   * Compares two version strings
-   * @param current The current version
-   * @param last The last seen version
-   * @returns true if current is newer than last
-   */
-  private isNewerVersion(current: string, last: string): boolean {
-    const parseVersion = (version: string): number[] => {
-      return version.split('.').map(v => parseInt(v) || 0);
-    };
+  private isReleaseNotesEnabled(): boolean {
+    return this.plugin.settings.settings.showReleaseNotesOnUpdate !== false;
+  }
 
-    const currentParts = parseVersion(current);
-    const lastParts = parseVersion(last);
+  private getLastSeenVersion(): string | undefined {
+    return this.plugin.settings.lastSeenVersion;
+  }
 
-    // Ensure same length for comparison
-    const maxLength = Math.max(currentParts.length, lastParts.length);
-    while (currentParts.length < maxLength) currentParts.push(0);
-    while (lastParts.length < maxLength) lastParts.push(0);
-
-    for (let i = 0; i < maxLength; i++) {
-      if (currentParts[i] > lastParts[i]) return true;
-      if (currentParts[i] < lastParts[i]) return false;
-    }
-
-    return false; // Versions are equal
+  private async markVersionSeen(version: string): Promise<void> {
+    this.plugin.settings.lastSeenVersion = version;
+    await this.plugin.save_settings();
   }
 
   /**
@@ -169,8 +163,8 @@ export class UpdateManager {
 
     // Version must be between fromVersion (exclusive) and toVersion (inclusive)
     return (
-      this.isNewerVersion(version, fromVersion) &&
-      (version === toVersion || this.isNewerVersion(toVersion, version))
+      isNewerVersion(version, fromVersion) &&
+      (version === toVersion || isNewerVersion(toVersion, version))
     );
   }
 }
