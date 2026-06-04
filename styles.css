@@ -23,23 +23,7 @@
   box-sizing: border-box;
 }
 
-/* Modal Size Classes (BaseModal also sets inline !important widths on .modal-container) */
-.modal-container.advancedNoteMover-modal-size-small {
-  width: 400px !important;
-  min-width: 350px !important;
-}
-
-.modal-container.advancedNoteMover-modal-size-medium {
-  min-width: 640px !important;
-  width: 860px !important;
-  max-width: 95vw !important;
-}
-
-.modal-container.advancedNoteMover-modal-size-large {
-  min-width: 760px !important;
-  width: 980px !important;
-  max-width: 95vw !important;
-}
+/* Desktop modal dimensions: set inline on .modal-container in BaseModal.ts (Obsidian core uses !important). Size classes below scope layout rules only. */
 
 /* Common Modal Title Styles */
 .advancedNoteMover-modal-title-container {
