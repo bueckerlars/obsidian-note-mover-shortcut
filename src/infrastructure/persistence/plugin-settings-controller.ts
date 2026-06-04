@@ -117,6 +117,7 @@ export async function validateAndRepairPluginData(
       plugin.settings.lastSeenVersion = nestedLastSeen.trim();
       delete (plugin.settings.settings as { lastSeenVersion?: string })
         .lastSeenVersion;
+      await savePersistedSettings(plugin);
     }
   }
 
