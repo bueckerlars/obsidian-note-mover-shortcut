@@ -23,7 +23,7 @@
   box-sizing: border-box;
 }
 
-/* Desktop modal dimensions: set inline on .modal-container in BaseModal.ts (Obsidian core uses !important). Size classes below scope layout rules only. */
+/* Desktop modal dimensions: applied inline on modalEl in BaseModal.ts (classes scope layout only). */
 
 /* Common Modal Title Styles */
 .advancedNoteMover-modal-title-container {

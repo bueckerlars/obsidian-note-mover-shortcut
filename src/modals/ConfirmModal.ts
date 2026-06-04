@@ -1,9 +1,10 @@
-import { App, Setting } from 'obsidian';
+import { App, Component, MarkdownRenderer, Setting } from 'obsidian';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 
 export interface ConfirmModalOptions extends BaseModalOptions {
   title: string;
+  /** Markdown body (rendered via MarkdownRenderer). */
   message: string;
   confirmText?: string;
   cancelText?: string;
@@ -14,6 +15,7 @@ export class ConfirmModal extends BaseModal {
   private confirmOptions: ConfirmModalOptions;
   private resolvePromise: (value: boolean) => void = () => {};
   private hasResolved = false;
+  private readonly messageRenderComponent = new Component();
 
   constructor(app: App, options: ConfirmModalOptions) {
     super(app, {
@@ -33,13 +35,18 @@ export class ConfirmModal extends BaseModal {
     const { contentEl } = this;
     const isMobile = MobileUtils.isMobile();
 
-    // Message
     const messageEl = contentEl.createEl('div', {
       cls: isMobile
         ? 'advancedNoteMover-confirm-modal-message advancedNoteMover-confirm-modal-message-mobile'
         : 'advancedNoteMover-confirm-modal-message',
     });
-    messageEl.innerHTML = this.confirmOptions.message;
+    void MarkdownRenderer.render(
+      this.app,
+      this.confirmOptions.message,
+      messageEl,
+      '',
+      this.messageRenderComponent
+    );
 
     if (isMobile) {
       // Mobile: Stack buttons vertically, full-width
@@ -101,6 +108,7 @@ export class ConfirmModal extends BaseModal {
   }
 
   onClose() {
+    this.messageRenderComponent.unload();
     // Resolve only if not already handled by a button (e.g. Esc / overlay)
     if (!this.hasResolved) {
       this.resolvePromise(false);

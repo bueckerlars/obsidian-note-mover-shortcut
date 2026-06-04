@@ -68,7 +68,7 @@ export const SETTINGS_CONSTANTS = {
     CLEAR_HISTORY: 'Clear history',
     CLEAR_HISTORY_TITLE: 'Clear History',
     CLEAR_HISTORY_MESSAGE:
-      'Are you sure you want to clear the history?<br/><br/>This action cannot be undone.',
+      'Are you sure you want to clear the history?\n\nThis action cannot be undone.',
     CLEAR_HISTORY_CONFIRM: 'Clear History',
     CLEAR_HISTORY_CANCEL: 'Cancel',
     EXPORT_SETTINGS: 'Export Settings',
@@ -80,7 +80,7 @@ export const SETTINGS_CONSTANTS = {
     EXPORT_SETTINGS_CANCEL: 'Cancel',
     IMPORT_SETTINGS_TITLE: 'Import Settings',
     IMPORT_SETTINGS_MESSAGE:
-      'This will replace your current settings with the imported ones.<br/><br/>This action cannot be undone. Make sure you have a backup of your current settings.',
+      'This will replace your current settings with the imported ones.\n\nThis action cannot be undone. Make sure you have a backup of your current settings.',
     IMPORT_SETTINGS_CONFIRM: 'Import',
     IMPORT_SETTINGS_CANCEL: 'Cancel',
     IMPORT_SUCCESS: 'Settings imported successfully',

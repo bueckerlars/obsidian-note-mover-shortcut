@@ -47,26 +47,6 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/settings/Settings.ts'],
-    rules: {
-      '@typescript-eslint/no-deprecated': 'off',
-    },
-  },
-  {
-    files: ['src/modals/BaseModal.ts'],
-    rules: {
-      // Obsidian core modal sizing uses !important; inline overrides are required.
-      'obsidianmd/no-static-styles-assignment': 'off',
-    },
-  },
-  {
-    files: ['src/modals/ConfirmModal.ts'],
-    rules: {
-      '@microsoft/sdl/no-inner-html': 'off',
-      'no-unsanitized/property': 'off',
-    },
-  },
-  {
     files: ['src/modals/UpdateModal.ts'],
     rules: {
       // Changelog section headings use intentional title-style casing.

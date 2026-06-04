@@ -6,13 +6,7 @@ import { RuleEditorModal } from '../../modals/RuleEditorModal';
 import { RuleV2 } from '../../types/RuleV2';
 import { MobileUtils } from '../../utils/MobileUtils';
 import { ConfirmModal } from '../../modals/ConfirmModal';
-
-function escapeHtmlForConfirm(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
+import { toMarkdownInlineCode } from '../../utils/markdown-confirm';
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -132,10 +126,10 @@ export class RulesSettingsSection {
           .setIcon('trash')
           .setTooltip('Delete rule')
           .onClick(async () => {
-            const safe = escapeHtmlForConfirm(rule.name || 'Unnamed Rule');
+            const ruleLabel = toMarkdownInlineCode(rule.name || 'Unnamed Rule');
             const confirmed = await ConfirmModal.show(this.app, {
               title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
-              message: `Are you sure you want to delete the rule <strong>"${safe}"</strong>?<br/><br/>This action cannot be undone.`,
+              message: `Are you sure you want to delete the rule ${ruleLabel}?\n\nThis action cannot be undone.`,
               confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
               cancelText: 'Cancel',
               danger: true,
