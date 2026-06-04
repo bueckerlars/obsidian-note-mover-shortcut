@@ -5,10 +5,7 @@ import {
   ListOperator,
   DateOperator,
   BasePropertyOperator,
-  TextPropertyOperator,
   NumberPropertyOperator,
-  ListPropertyOperator,
-  DatePropertyOperator,
   CheckboxPropertyOperator,
 } from '../types/RuleV2';
 import { App } from 'obsidian';
@@ -345,7 +342,7 @@ export function getPropertyTypeFromVault(
   const files = vaultIndexCache
     ? vaultIndexCache.getMarkdownFilesCached(app)
     : app.vault.getMarkdownFiles();
-  const valueSamples: any[] = [];
+  const valueSamples: unknown[] = [];
   const maxSamples = vaultIndexCache
     ? PROPERTY_TYPE_INFERENCE_MAX_SAMPLES
     : Infinity;
@@ -375,7 +372,7 @@ export function getPropertyTypeFromVault(
  * @returns Inferred property type
  */
 export function inferPropertyTypeFromSamples(
-  samples: any[]
+  samples: unknown[]
 ): 'text' | 'number' | 'checkbox' | 'date' | 'list' {
   const typeCounts = {
     text: 0,
@@ -427,7 +424,7 @@ export function inferPropertyTypeFromSamples(
  * @returns Inferred property type
  */
 export function inferPropertyTypeFromValue(
-  value: any
+  value: unknown
 ): 'text' | 'number' | 'checkbox' | 'date' | 'list' {
   if (value === null || value === undefined) {
     return 'text'; // Default fallback
@@ -564,7 +561,7 @@ function isDateString(value: string): boolean {
  * @param value - Value to check
  * @returns true if value appears to be a list
  */
-function isListProperty(value: any): boolean {
+function isListProperty(value: unknown): boolean {
   if (Array.isArray(value)) {
     return true;
   }

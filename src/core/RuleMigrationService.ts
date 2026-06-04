@@ -18,6 +18,7 @@ import {
   isOperatorValidForPropertyType,
   operatorRequiresValue,
 } from '../utils/OperatorMapping';
+import { stringifyUnknown } from '../utils/stringify-unknown';
 
 /**
  * Service for migrating Rule V1 to Rule V2 format
@@ -172,7 +173,7 @@ export class RuleMigrationService {
       active: true,
     };
 
-    console.log(
+    console.debug(
       `[RuleMigration] Rule ${index + 1}: Successfully migrated "${ruleV1.criteria}" -> "${migratedRule.name}"`
     );
 
@@ -356,8 +357,9 @@ export class RuleMigrationService {
 
       for (const trigger of rule.triggers) {
         // Check if trigger has ruleType instead of operator (legacy format)
-        if ((trigger as any).ruleType && !trigger.operator) {
-          const ruleType = (trigger as any).ruleType;
+        const legacyTrigger = trigger as Trigger & { ruleType?: string };
+        if (legacyTrigger.ruleType && !trigger.operator) {
+          const ruleType = legacyTrigger.ruleType;
 
           // Map ruleType to operator based on criteriaType
           const operator = this.mapRuleTypeToOperator(
@@ -367,7 +369,7 @@ export class RuleMigrationService {
 
           if (operator) {
             trigger.operator = operator;
-            delete (trigger as any).ruleType;
+            delete legacyTrigger.ruleType;
             migrated = true;
           }
         }
@@ -390,8 +392,7 @@ export class RuleMigrationService {
     if (typeof value === 'string') {
       return value;
     }
-    // Convert other types to string (number, boolean, object, etc.)
-    return String(value);
+    return stringifyUnknown(value);
   }
 
   /**

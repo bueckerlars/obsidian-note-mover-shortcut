@@ -24,22 +24,22 @@ export class NoticeManager {
     const duration =
       options.duration ?? NOTIFICATION_CONSTANTS.DEFAULT_DURATIONS[type];
     const notice = new Notice('', duration);
-    const noticeEl = notice.noticeEl;
+    const noticeEl = notice.messageEl;
 
     // Add title
-    const title = document.createElement('b');
+    const title = activeDocument.createElement('b');
     title.textContent = NOTIFICATION_CONSTANTS.DEFAULT_TITLES[type];
     noticeEl.appendChild(title);
-    noticeEl.appendChild(document.createElement('br'));
+    noticeEl.appendChild(activeDocument.createElement('br'));
 
     // Add message
-    const messageEl = document.createElement('span');
-    messageEl.textContent = message;
-    noticeEl.appendChild(messageEl);
+    const messageSpan = activeDocument.createElement('span');
+    messageSpan.textContent = message;
+    noticeEl.appendChild(messageSpan);
 
     // Add undo button if requested
     if (options.showUndoButton && options.onUndo) {
-      const undoButton = document.createElement('button');
+      const undoButton = activeDocument.createElement('button');
       undoButton.textContent = options.undoText ?? 'Undo';
       undoButton.className = 'mod-warning advancedNoteMover-notice-undo-button';
       undoButton.onclick = () => {

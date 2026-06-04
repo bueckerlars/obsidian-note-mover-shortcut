@@ -2,6 +2,7 @@ import type { FileMetadata } from '../../types/Common';
 import { parseListProperty } from '../property/parseListProperty';
 import { isListProperty } from '../property/isListProperty';
 import { noteHasTag } from '../tags/tag-hierarchy';
+import { stringifyUnknown } from '../../utils/stringify-unknown';
 
 /**
  * Blacklist filter strings (tag:, fileName:, path:, …) and V1-style criteria evaluation.
@@ -71,7 +72,7 @@ export class BlacklistFilterEngine {
       return listItems.some(item => item.toLowerCase() === expectedValueLower);
     }
 
-    const actualValueStr = String(actualValue).toLowerCase();
+    const actualValueStr = stringifyUnknown(actualValue).toLowerCase();
     const expectedValueStr = expectedValue.toLowerCase();
     return actualValueStr === expectedValueStr;
   }

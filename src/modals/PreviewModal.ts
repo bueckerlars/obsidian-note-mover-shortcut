@@ -76,7 +76,9 @@ export class PreviewModal extends BaseModal {
     const header = section.createEl('div', {
       cls: 'advancedNoteMover-modal-section-header',
     });
-    header.innerHTML = `<h3>✅ Files to be moved (${entries.length})</h3>`;
+    header.createEl('h3', {
+      text: `✅ Files to be moved (${entries.length})`,
+    });
 
     const list = section.createEl('div', {
       cls: isMobile
@@ -123,11 +125,18 @@ export class PreviewModal extends BaseModal {
         targetPathEl.textContent = entry.targetPath;
       } else {
         // Desktop: Horizontal layout
-        pathInfo.innerHTML = `
-          <span class="advancedNoteMover-current-path">${entry.currentPath}</span>
-          <span class="advancedNoteMover-arrow">→</span>
-          <span class="advancedNoteMover-target-path">${entry.targetPath}</span>
-        `;
+        pathInfo.createSpan({
+          cls: 'advancedNoteMover-current-path',
+          text: entry.currentPath,
+        });
+        pathInfo.createSpan({
+          cls: 'advancedNoteMover-arrow',
+          text: ' → ',
+        });
+        pathInfo.createSpan({
+          cls: 'advancedNoteMover-target-path',
+          text: entry.targetPath ?? '',
+        });
       }
 
       const details = item.createEl('div', {
@@ -140,14 +149,24 @@ export class PreviewModal extends BaseModal {
         const rule = details.createEl('div', {
           cls: 'advancedNoteMover-preview-item-rule',
         });
-        rule.innerHTML = `<span class="advancedNoteMover-rule-label">Rule:</span> <code>${entry.matchedRule}</code>`;
+        rule.createSpan({
+          cls: 'advancedNoteMover-rule-label',
+          text: 'Rule:',
+        });
+        rule.createEl('code', { text: entry.matchedRule ?? '' });
       }
 
       if (entry.tags && entry.tags.length > 0) {
         const tags = details.createEl('div', {
           cls: 'advancedNoteMover-preview-item-tags',
         });
-        tags.innerHTML = `<span class="advancedNoteMover-tags-label">Tags:</span> ${entry.tags.map(tag => `<span class="advancedNoteMover-tag">${tag}</span>`).join(' ')}`;
+        tags.createSpan({
+          cls: 'advancedNoteMover-tags-label',
+          text: 'Tags:',
+        });
+        for (const tag of entry.tags) {
+          tags.createSpan({ cls: 'advancedNoteMover-tag', text: ` ${tag}` });
+        }
       }
     });
   }
@@ -170,7 +189,7 @@ export class PreviewModal extends BaseModal {
         buttonContainer,
         `Move ${this.movePreview.successfulMoves.length} files`,
         () => {
-          this.executeMoves();
+          void this.executeMoves();
         },
         { isPrimary: true }
       );
@@ -243,18 +262,11 @@ export class PreviewModal extends BaseModal {
         }
         if ((i + 1) % 50 === 0 && i + 1 < successfulEntries.length) {
           await new Promise<void>(resolve => {
-            const ric = (
-              globalThis as typeof globalThis & {
-                requestIdleCallback?: (
-                  cb: IdleRequestCallback,
-                  opts?: IdleRequestOptions
-                ) => number;
-              }
-            ).requestIdleCallback;
+            const ric = window.requestIdleCallback;
             if (typeof ric === 'function') {
               ric(() => resolve(), { timeout: 250 });
             } else {
-              setTimeout(resolve, 0);
+              window.setTimeout(resolve, 0);
             }
           });
         }

@@ -34,30 +34,36 @@ export async function loadPersistedSettings(
   await validateAndRepairPluginData(plugin);
 }
 
+export type LegacySettingsFields = {
+  rules?: LegacyRuleV1[];
+  enableLegacyRules?: boolean;
+  legacyMigrationDismissed?: boolean;
+  enableRuleV2?: boolean;
+};
+
 export async function savePersistedSettings(
   plugin: PluginWithPersistedSettings
 ): Promise<void> {
-  const settingsAny = plugin.settings as any;
-  const currentHistory = settingsAny.history;
-
   if (
-    !currentHistory ||
-    typeof currentHistory !== 'object' ||
-    Array.isArray(currentHistory)
+    !plugin.settings.history ||
+    typeof plugin.settings.history !== 'object' ||
+    Array.isArray(plugin.settings.history)
   ) {
-    settingsAny.history = { history: [], bulkOperations: [] } as HistoryData;
+    plugin.settings.history = { history: [], bulkOperations: [] };
   }
-  if (!Array.isArray(settingsAny.history.history)) {
-    settingsAny.history.history = [];
+  if (!Array.isArray(plugin.settings.history.history)) {
+    plugin.settings.history.history = [];
   }
-  if (!Array.isArray(settingsAny.history.bulkOperations)) {
-    settingsAny.history.bulkOperations = [];
+  if (!Array.isArray(plugin.settings.history.bulkOperations)) {
+    plugin.settings.history.bulkOperations = [];
   }
 
-  const s = plugin.settings.settings as any;
-  delete s.rules;
-  delete s.enableLegacyRules;
-  delete s.legacyMigrationDismissed;
+  const settings = plugin.settings.settings as SettingsData &
+    LegacySettingsFields;
+  delete settings.rules;
+  delete settings.enableLegacyRules;
+  delete settings.legacyMigrationDismissed;
+  delete settings.enableRuleV2;
 
   await plugin.saveData(plugin.settings);
 }
@@ -72,12 +78,13 @@ export async function validateAndRepairPluginData(
     plugin.settings.history = {
       history: [],
       bulkOperations: [],
-    } as HistoryData;
+    };
   }
 
-  const settingsAny = plugin.settings.settings as any;
-  if (!Array.isArray(settingsAny.rules)) {
-    settingsAny.rules = [];
+  const settingsWithLegacy = plugin.settings.settings as SettingsData &
+    LegacySettingsFields;
+  if (!Array.isArray(settingsWithLegacy.rules)) {
+    settingsWithLegacy.rules = [];
   }
   if (!plugin.settings.settings.filters) {
     plugin.settings.settings.filters = { filter: [] };
@@ -86,12 +93,12 @@ export async function validateAndRepairPluginData(
     plugin.settings.settings.filters.filter = [];
   }
 
-  if (settingsAny.enableRuleV2 !== undefined) {
-    delete settingsAny.enableRuleV2;
+  if (settingsWithLegacy.enableRuleV2 !== undefined) {
+    delete settingsWithLegacy.enableRuleV2;
     await savePersistedSettings(plugin);
   }
-  delete settingsAny.enableLegacyRules;
-  delete settingsAny.legacyMigrationDismissed;
+  delete settingsWithLegacy.enableLegacyRules;
+  delete settingsWithLegacy.legacyMigrationDismissed;
 
   if (plugin.settings.settings.enableRuleEvaluationCache === undefined) {
     plugin.settings.settings.enableRuleEvaluationCache = true;
@@ -151,12 +158,13 @@ export async function validateAndRepairPluginData(
     plugin.settings.schemaVersion = 1;
   }
 
-  const legacyRules = Array.isArray(settingsAny.rules) ? settingsAny.rules : [];
-  settingsAny.rules = legacyRules.filter(
-    (rule: any) =>
-      rule &&
-      rule.criteria &&
-      rule.path &&
+  const legacyRules = Array.isArray(settingsWithLegacy.rules)
+    ? settingsWithLegacy.rules
+    : [];
+  settingsWithLegacy.rules = legacyRules.filter(
+    rule =>
+      Boolean(rule?.criteria) &&
+      Boolean(rule?.path) &&
       String(rule.criteria).trim() !== '' &&
       String(rule.path).trim() !== ''
   );
@@ -168,21 +176,21 @@ export async function validateAndRepairPluginData(
 
   if (
     RuleMigrationService.shouldMigrate(
-      settingsAny.rules,
+      settingsWithLegacy.rules ?? [],
       plugin.settings.settings.rulesV2 ?? []
     )
   ) {
-    console.log('Migrating Rule V1 to Rule V2...');
+    console.debug('Migrating Rule V1 to Rule V2...');
     plugin.settings.settings.rulesV2 = RuleMigrationService.migrateRules(
-      settingsAny.rules
+      settingsWithLegacy.rules ?? []
     );
-    console.log(
+    console.debug(
       `Migrated ${(plugin.settings.settings.rulesV2 ?? []).length} rules to V2 format`
     );
-    settingsAny.rules = [];
+    settingsWithLegacy.rules = [];
     await savePersistedSettings(plugin);
   } else {
-    settingsAny.rules = [];
+    settingsWithLegacy.rules = [];
   }
 
   if (
@@ -193,7 +201,9 @@ export async function validateAndRepairPluginData(
       plugin.settings.settings.rulesV2
     );
     if (migrated) {
-      console.log('Migrated RuleV2 triggers from ruleType to operator format');
+      console.debug(
+        'Migrated RuleV2 triggers from ruleType to operator format'
+      );
       await savePersistedSettings(plugin);
     }
 
@@ -201,7 +211,7 @@ export async function validateAndRepairPluginData(
       plugin.settings.settings.rulesV2
     );
     if (repaired) {
-      console.log(
+      console.debug(
         'Repaired RuleV2 properties triggers with missing propertyName'
       );
       await savePersistedSettings(plugin);
@@ -233,7 +243,7 @@ export async function validateAndRepairPluginData(
 }
 
 export function buildDefaultSettingsData(): SettingsData {
-  const defaults = SETTINGS_CONSTANTS.DEFAULT_SETTINGS as any;
+  const defaults = SETTINGS_CONSTANTS.DEFAULT_SETTINGS;
   return {
     triggers: {
       enablePeriodicMovement: !!defaults.enablePeriodicMovement,
@@ -242,7 +252,7 @@ export function buildDefaultSettingsData(): SettingsData {
     },
     filters: {
       filter: Array.isArray(defaults.filter)
-        ? (defaults.filter as string[]).map(v => ({ value: v }) as Filter)
+        ? defaults.filter.map(v => ({ value: v }))
         : [],
     },
     retentionPolicy: defaults.retentionPolicy,
@@ -256,55 +266,76 @@ export function buildDefaultSettingsData(): SettingsData {
       skipSharedAttachments: true,
       deleteEmptyAssetFolders: false,
     },
-  } as SettingsData;
+  };
 }
 
-function migrateFromLegacy(legacy: any): PluginData {
-  const defaults = SETTINGS_CONSTANTS.DEFAULT_SETTINGS as any;
+function isLegacySettingsRecord(
+  legacy: unknown
+): legacy is Record<string, unknown> {
+  return legacy !== null && typeof legacy === 'object';
+}
+
+function migrateFromLegacy(legacy: unknown): PluginData {
+  const defaults = SETTINGS_CONSTANTS.DEFAULT_SETTINGS;
+  const legacyRecord = isLegacySettingsRecord(legacy) ? legacy : {};
 
   const enablePeriodicMovement =
-    legacy?.enablePeriodicMovement ?? defaults.enablePeriodicMovement ?? false;
+    legacyRecord.enablePeriodicMovement ??
+    defaults.enablePeriodicMovement ??
+    false;
   const periodicMovementInterval =
-    legacy?.periodicMovementInterval ?? defaults.periodicMovementInterval ?? 5;
+    legacyRecord.periodicMovementInterval ??
+    defaults.periodicMovementInterval ??
+    5;
   const enableOnEditTrigger =
-    legacy?.enableOnEditTrigger ?? defaults.enableOnEditTrigger ?? false;
-  const retentionPolicy = legacy?.retentionPolicy ?? defaults.retentionPolicy;
+    legacyRecord.enableOnEditTrigger ?? defaults.enableOnEditTrigger ?? false;
+  const retentionPolicy =
+    (legacyRecord.retentionPolicy as
+      | SettingsData['retentionPolicy']
+      | undefined) ?? defaults.retentionPolicy;
 
-  const rules: LegacyRuleV1[] = Array.isArray(legacy?.rules)
-    ? legacy.rules
+  const rules: LegacyRuleV1[] = Array.isArray(legacyRecord.rules)
+    ? (legacyRecord.rules as LegacyRuleV1[])
     : [];
-  const filterValues: string[] = Array.isArray(legacy?.filter)
-    ? legacy.filter
+  const filterValues: string[] = Array.isArray(legacyRecord.filter)
+    ? (legacyRecord.filter as string[])
     : [];
   const filters: Filter[] = filterValues
     .filter(v => typeof v === 'string')
     .map(v => ({ value: v }));
 
-  const historyArray = Array.isArray(legacy?.history) ? legacy.history : [];
-  const bulkOps = Array.isArray(legacy?.bulkOperations)
-    ? legacy.bulkOperations
+  const historyArray = Array.isArray(legacyRecord.history)
+    ? (legacyRecord.history as HistoryData['history'])
+    : [];
+  const bulkOps = Array.isArray(legacyRecord.bulkOperations)
+    ? (legacyRecord.bulkOperations as HistoryData['bulkOperations'])
     : [];
 
+  const settings: SettingsData & LegacySettingsFields = {
+    triggers: {
+      enablePeriodicMovement: Boolean(enablePeriodicMovement),
+      periodicMovementInterval: Number(periodicMovementInterval),
+      enableOnEditTrigger: Boolean(enableOnEditTrigger),
+    },
+    filters: { filter: filters },
+    rules,
+    rulesV2: [],
+    retentionPolicy,
+    enableRuleEvaluationCache: true,
+    enableVaultIndexCache: true,
+    enablePerformanceDebug: false,
+  };
+
   const data: PluginData = {
-    settings: {
-      triggers: {
-        enablePeriodicMovement,
-        periodicMovementInterval,
-        enableOnEditTrigger,
-      },
-      filters: { filter: filters },
-      rules,
-      rulesV2: [],
-      retentionPolicy,
-      enableRuleEvaluationCache: true,
-      enableVaultIndexCache: true,
-      enablePerformanceDebug: false,
-    } as unknown as SettingsData,
+    settings,
     history: {
       history: historyArray,
       bulkOperations: bulkOps,
     },
-    lastSeenVersion: legacy?.lastSeenVersion,
+    lastSeenVersion:
+      typeof legacyRecord.lastSeenVersion === 'string'
+        ? legacyRecord.lastSeenVersion
+        : undefined,
     schemaVersion: 1,
   };
 
@@ -315,11 +346,10 @@ async function backupLegacyDataJson(
   plugin: PluginWithPersistedSettings
 ): Promise<void> {
   try {
-    const configDir = (plugin.app.vault as any).configDir || '.obsidian';
-    const adapter: any = plugin.app.vault.adapter as any;
+    const configDir = plugin.app.vault.configDir;
+    const adapter = plugin.app.vault.adapter;
     const dataPath = `${configDir}/plugins/${plugin.manifest.id}/data.json`;
-    const exists = await adapter.exists?.(dataPath);
-    if (!exists) return;
+    if (!(await adapter.exists(dataPath))) return;
     const iso = new Date().toISOString().replace(/[:.]/g, '-');
     const backupPath = `${configDir}/plugins/${plugin.manifest.id}/data.backup.${iso}.json`;
     const content = await adapter.read(dataPath);

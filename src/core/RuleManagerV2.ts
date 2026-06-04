@@ -1,8 +1,7 @@
 import { App, TFile } from 'obsidian';
-import { NoticeManager } from '../utils/NoticeManager';
 import { RuleV2 } from '../types/RuleV2';
 import { PreviewEntry, MovePreview } from '../types/MovePreview';
-import { createError, handleError } from '../utils/Error';
+import { handleError } from '../utils/Error';
 import {
   combinePath,
   DESTINATION_PATH_BLOCK_REASONS,

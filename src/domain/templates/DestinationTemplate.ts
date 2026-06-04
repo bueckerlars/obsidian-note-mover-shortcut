@@ -1,3 +1,5 @@
+import { stringifyUnknown } from '../../utils/stringify-unknown';
+
 export type TemplateSegment =
   | {
       kind: 'text';
@@ -25,7 +27,7 @@ export interface DestinationTemplateContext {
   /**
    * Frontmatter / properties object as returned by MetadataExtractor.
    */
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
 }
 
 const PLACEHOLDER_START = '{{';
@@ -257,7 +259,7 @@ function stripTagHash(tag: string): string {
 
 function resolvePropertyPlaceholder(
   key: string,
-  properties: Record<string, any>
+  properties: Record<string, unknown>
 ): string {
   if (!properties || typeof properties !== 'object') {
     return '';
@@ -282,5 +284,5 @@ function resolvePropertyPlaceholder(
     return value.join(', ');
   }
 
-  return String(value);
+  return stringifyUnknown(value);
 }

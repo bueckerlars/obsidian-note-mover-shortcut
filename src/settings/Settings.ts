@@ -160,12 +160,11 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
    * Ensure filter array exists without removing empty rules during display
    */
   private ensureArraysExist(): void {
-    if (!Array.isArray(this.plugin.settings.settings?.filters?.filter)) {
-      (this.plugin.settings as any).settings =
-        this.plugin.settings.settings || ({} as any);
-      (this.plugin.settings.settings as any).filters =
-        this.plugin.settings.settings.filters || ({} as any);
-      (this.plugin.settings.settings.filters as any).filter = [];
+    if (!this.plugin.settings.settings.filters) {
+      this.plugin.settings.settings.filters = { filter: [] };
+    }
+    if (!Array.isArray(this.plugin.settings.settings.filters.filter)) {
+      this.plugin.settings.settings.filters.filter = [];
     }
   }
 

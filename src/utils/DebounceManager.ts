@@ -10,26 +10,26 @@ export class DebounceManager {
    * @param func Function to debounce
    * @param delay Delay in milliseconds
    */
-  debounce<T extends (...args: any[]) => any>(
+  debounce<T extends unknown[]>(
     key: string,
-    func: T,
+    func: (...args: T) => void,
     delay = 100
-  ): T {
-    return ((...args: Parameters<T>) => {
+  ): (...args: T) => void {
+    return (...args: T) => {
       // Clear existing timeout for this key
       const existingTimeout = this.timeouts.get(key);
       if (existingTimeout) {
-        clearTimeout(existingTimeout);
+        window.clearTimeout(existingTimeout);
       }
 
       // Set new timeout
-      const timeout = setTimeout(() => {
+      const timeout = window.setTimeout(() => {
         func(...args);
         this.timeouts.delete(key);
-      }, delay) as unknown as number;
+      }, delay);
 
       this.timeouts.set(key, timeout);
-    }) as T;
+    };
   }
 
   /**
@@ -39,7 +39,7 @@ export class DebounceManager {
   cancel(key: string): void {
     const timeout = this.timeouts.get(key);
     if (timeout) {
-      clearTimeout(timeout);
+      window.clearTimeout(timeout);
       this.timeouts.delete(key);
     }
   }
@@ -48,7 +48,7 @@ export class DebounceManager {
    * Cancel all debounced function calls
    */
   cancelAll(): void {
-    this.timeouts.forEach(timeout => clearTimeout(timeout));
+    this.timeouts.forEach(timeout => window.clearTimeout(timeout));
     this.timeouts.clear();
   }
 

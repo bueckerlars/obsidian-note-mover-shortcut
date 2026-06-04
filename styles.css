@@ -23,22 +23,22 @@
   box-sizing: border-box;
 }
 
-/* Modal Size Classes */
+/* Modal Size Classes (BaseModal also sets inline !important widths on .modal-container) */
 .modal-container.advancedNoteMover-modal-size-small {
-  width: 400px;
-  min-width: 350px;
+  width: 400px !important;
+  min-width: 350px !important;
 }
 
 .modal-container.advancedNoteMover-modal-size-medium {
-  min-width: 600px;
-  width: 800px;
-  max-width: 95vw;
+  min-width: 640px !important;
+  width: 860px !important;
+  max-width: 95vw !important;
 }
 
 .modal-container.advancedNoteMover-modal-size-large {
-  min-width: 700px;
-  width: 900px;
-  max-width: 95vw;
+  min-width: 760px !important;
+  width: 980px !important;
+  max-width: 95vw !important;
 }
 
 /* Common Modal Title Styles */
@@ -2565,6 +2565,20 @@ body.is-mobile .modal-content.note-mover-update-modal {
 .is-mobile .advancedNoteMover-update-modal-links-mobile {
   margin-bottom: 16px;
   width: 100%;
+}
+
+.advancedNoteMover-hidden-file-input {
+  display: none;
+}
+
+.advancedNoteMover-mobile-action-btn-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.is-mobile .advancedNoteMover-bulk-undo-setting-mobile button {
+  width: 100%;
+  min-height: 48px;
 }
 
 .is-mobile .advancedNoteMover-update-modal-github-link-mobile {

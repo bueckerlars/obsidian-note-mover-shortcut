@@ -92,7 +92,7 @@ export class HistoryModal extends BaseModal {
         : 'advancedNoteMover-time-filter-container',
     });
 
-    const setting = new Setting(filterContainer)
+    new Setting(filterContainer)
       .setName(SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_LABEL)
       .addDropdown(dropdown => {
         dropdown
@@ -105,13 +105,6 @@ export class HistoryModal extends BaseModal {
             this.currentTimeFilter = value as TimeFilter;
             this.refreshContent();
           });
-
-        // Mobile: Make dropdown larger
-        if (isMobile) {
-          const selectEl = dropdown.selectEl;
-          selectEl.style.minHeight = '48px';
-          selectEl.style.fontSize = '16px';
-        }
       });
   }
 
@@ -204,14 +197,14 @@ export class HistoryModal extends BaseModal {
             entry.destinationPath
           );
           if (file && file instanceof TFile) {
-            this.app.workspace.getLeaf().openFile(file);
+            void this.app.workspace.getLeaf().openFile(file);
             this.close();
           } else {
             const sourceFile = this.app.vault.getAbstractFileByPath(
               entry.sourcePath
             );
             if (sourceFile && sourceFile instanceof TFile) {
-              this.app.workspace.getLeaf().openFile(sourceFile);
+              void this.app.workspace.getLeaf().openFile(sourceFile);
               this.close();
             } else {
               NoticeManager.error(`Could not find file ${entry.fileName}`, {
@@ -226,27 +219,27 @@ export class HistoryModal extends BaseModal {
           cls: 'advancedNoteMover-history-entry-button-mobile',
           text: 'Undo',
         });
-        undoBtn.onclick = async () => {
-          const success = await this.historyManager.undoEntry(entry.id);
-          if (success) {
-            this.onOpen();
-          } else {
-            NoticeManager.error(
-              `Could not undo move for ${entry.fileName}. File may have been moved or deleted.`,
-              { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
-            );
-          }
+        undoBtn.onclick = () => {
+          void (async () => {
+            const success = await this.historyManager.undoEntry(entry.id);
+            if (success) {
+              this.onOpen();
+            } else {
+              NoticeManager.error(
+                `Could not undo move for ${entry.fileName}. File may have been moved or deleted.`,
+                { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+              );
+            }
+          })();
         };
 
         // Blacklist button
         const blacklistBtn = buttonsContainer.createEl('button', {
           cls: 'advancedNoteMover-history-entry-button-mobile advancedNoteMover-history-entry-button-warning',
-          text: 'Add to Blacklist',
+          text: 'Add to blacklist',
         });
-        blacklistBtn.onclick = async () => {
-          await this.plugin.advancedNoteMover.addFileToBlacklist(
-            entry.fileName
-          );
+        blacklistBtn.onclick = () => {
+          void this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);
         };
       } else {
         // Desktop: Original horizontal layout
@@ -260,14 +253,14 @@ export class HistoryModal extends BaseModal {
                   entry.destinationPath
                 );
                 if (file && file instanceof TFile) {
-                  this.app.workspace.getLeaf().openFile(file);
+                  void this.app.workspace.getLeaf().openFile(file);
                   this.close();
                 } else {
                   const sourceFile = this.app.vault.getAbstractFileByPath(
                     entry.sourcePath
                   );
                   if (sourceFile && sourceFile instanceof TFile) {
-                    this.app.workspace.getLeaf().openFile(sourceFile);
+                    void this.app.workspace.getLeaf().openFile(sourceFile);
                     this.close();
                   } else {
                     NoticeManager.error(
@@ -315,33 +308,32 @@ export class HistoryModal extends BaseModal {
         .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL)
         .setIcon('undo')
         .setTooltip(`Undo entire ${operationTypeText.toLowerCase()}`)
-        .onClick(async () => {
-          button.setDisabled(true);
-          try {
-            const success = await this.historyManager.undoBulkOperation(
-              bulkOp.id
-            );
-            if (success) {
-              this.onOpen();
-            } else {
-              NoticeManager.warning(
-                'Some files could not be moved back. Check console for details.',
-                { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+        .onClick(() => {
+          void (async () => {
+            button.setDisabled(true);
+            try {
+              const success = await this.historyManager.undoBulkOperation(
+                bulkOp.id
               );
+              if (success) {
+                this.onOpen();
+              } else {
+                NoticeManager.warning(
+                  'Some files could not be moved back. Check console for details.',
+                  { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+                );
+              }
+            } finally {
+              button.setDisabled(false);
             }
-          } finally {
-            button.setDisabled(false);
-          }
+          })();
         });
     });
 
-    // Mobile: Make button full-width
     if (MobileUtils.isMobile()) {
-      const buttonEl = bulkUndoSetting.settingEl.querySelector('button');
-      if (buttonEl) {
-        buttonEl.style.width = '100%';
-        buttonEl.style.minHeight = '48px';
-      }
+      bulkUndoSetting.settingEl.addClass(
+        'advancedNoteMover-bulk-undo-setting-mobile'
+      );
     }
   }
 
@@ -384,14 +376,14 @@ export class HistoryModal extends BaseModal {
           entry.destinationPath
         );
         if (file && file instanceof TFile) {
-          this.app.workspace.getLeaf().openFile(file);
+          void this.app.workspace.getLeaf().openFile(file);
           this.close();
         } else {
           const sourceFile = this.app.vault.getAbstractFileByPath(
             entry.sourcePath
           );
           if (sourceFile && sourceFile instanceof TFile) {
-            this.app.workspace.getLeaf().openFile(sourceFile);
+            void this.app.workspace.getLeaf().openFile(sourceFile);
             this.close();
           } else {
             NoticeManager.error(`Could not find file ${entry.fileName}`, {
@@ -406,20 +398,22 @@ export class HistoryModal extends BaseModal {
         cls: 'advancedNoteMover-history-entry-button-mobile',
         text: 'Undo',
       });
-      undoBtn.onclick = async () => {
-        const success = await this.historyManager.undoEntry(entry.id);
-        if (success) {
-          this.onOpen();
-        }
+      undoBtn.onclick = () => {
+        void (async () => {
+          const success = await this.historyManager.undoEntry(entry.id);
+          if (success) {
+            this.onOpen();
+          }
+        })();
       };
 
       // Blacklist button
       const blacklistBtn = buttonsContainer.createEl('button', {
         cls: 'advancedNoteMover-history-entry-button-mobile advancedNoteMover-history-entry-button-warning',
-        text: 'Add to Blacklist',
+        text: 'Add to blacklist',
       });
-      blacklistBtn.onclick = async () => {
-        await this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);
+      blacklistBtn.onclick = () => {
+        void this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);
       };
     } else {
       // Desktop: Original horizontal layout
@@ -433,14 +427,14 @@ export class HistoryModal extends BaseModal {
                 entry.destinationPath
               );
               if (file && file instanceof TFile) {
-                this.app.workspace.getLeaf().openFile(file);
+                void this.app.workspace.getLeaf().openFile(file);
                 this.close();
               } else {
                 const sourceFile = this.app.vault.getAbstractFileByPath(
                   entry.sourcePath
                 );
                 if (sourceFile && sourceFile instanceof TFile) {
-                  this.app.workspace.getLeaf().openFile(sourceFile);
+                  void this.app.workspace.getLeaf().openFile(sourceFile);
                   this.close();
                 } else {
                   NoticeManager.error(`Could not find file ${entry.fileName}`, {

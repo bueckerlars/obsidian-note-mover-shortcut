@@ -41,13 +41,13 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
     for (const file of files) {
       const cache = this.app.metadataCache.getFileCache(file);
       if (cache?.frontmatter?.[this.propertyName] !== undefined) {
-        const value = cache.frontmatter[this.propertyName];
+        const value: unknown = cache.frontmatter[this.propertyName];
         this.addValueToSuggestions(value);
       }
     }
   }
 
-  private addValueToSuggestions(value: any): void {
+  private addValueToSuggestions(value: unknown): void {
     switch (this.propertyType) {
       case 'text':
         if (typeof value === 'string' && value.trim()) {
@@ -116,7 +116,7 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
     );
   }
 
-  private isListProperty(value: any): boolean {
+  private isListProperty(value: unknown): boolean {
     if (Array.isArray(value)) {
       return true;
     }

@@ -26,10 +26,10 @@ export class RulesSettingsSection {
   addRulesSetting(): void {
     new Setting(this.containerEl).setName('Rules').setHeading();
 
-    const descUseRules = document.createDocumentFragment();
+    const descUseRules = activeDocument.createDocumentFragment();
     descUseRules.append(
       'The Advanced Note Mover will move files to the folder associated with the specified criteria.',
-      document.createElement('br'),
+      activeDocument.createElement('br'),
       'Criteria can be tags, filenames, paths, content, properties, or dates. If multiple rules match, the first one will be applied.'
     );
 
@@ -39,7 +39,7 @@ export class RulesSettingsSection {
   addAddRuleButtonSetting(): void {
     new Setting(this.containerEl).addButton(btn =>
       btn
-        .setButtonText('+ Add Rule')
+        .setButtonText('+ add rule')
         .setCta()
         .onClick(() => {
           this.openRuleEditorModal(null);
@@ -77,7 +77,7 @@ export class RulesSettingsSection {
     const isMobile = MobileUtils.isMobile();
 
     // Create a container for rules with drag & drop
-    const rulesContainer = document.createElement('div');
+    const rulesContainer = activeDocument.createElement('div');
     rulesContainer.className = 'advancedNoteMover-rules-v2-container';
     if (isMobile) {
       rulesContainer.addClass('advancedNoteMover-mobile-rules-container');
@@ -251,9 +251,7 @@ export class RulesSettingsSection {
 
     if (isEditMode) {
       // Edit mode: clone existing rule
-      rule = JSON.parse(
-        JSON.stringify(this.plugin.settings.settings.rulesV2![ruleIndex])
-      );
+      rule = structuredClone(this.plugin.settings.settings.rulesV2![ruleIndex]);
     } else {
       // Create mode: new rule
       rule = {
@@ -281,7 +279,7 @@ export class RulesSettingsSection {
 
         if (isEditMode) {
           // Update existing rule
-          this.plugin.settings.settings.rulesV2[ruleIndex!] = updatedRule;
+          this.plugin.settings.settings.rulesV2[ruleIndex] = updatedRule;
         } else {
           // Add new rule
           this.plugin.settings.settings.rulesV2.push(updatedRule);
@@ -292,7 +290,7 @@ export class RulesSettingsSection {
       },
       onDelete: isEditMode
         ? async () => {
-            this.plugin.settings.settings.rulesV2!.splice(ruleIndex!, 1);
+            this.plugin.settings.settings.rulesV2!.splice(ruleIndex, 1);
             await this.plugin.save_settings();
             this.refreshDisplay();
           }

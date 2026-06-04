@@ -56,7 +56,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
     this.command_handler.setup();
 
     this.addRibbonIcon('book-plus', 'Advanced Note Mover', () => {
-      this.advancedNoteMover.moveFocusedNoteToDestination();
+      void this.advancedNoteMover.moveFocusedNoteToDestination();
     });
 
     this.settingTab = new AdvancedNoteMoverSettingsTab(this);
@@ -71,7 +71,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
     this.syncRuleCacheHash();
 
     this.app.workspace.onLayoutReady(() => {
-      this.updateManager.checkForUpdates();
+      void this.updateManager.checkForUpdates();
     });
   }
 

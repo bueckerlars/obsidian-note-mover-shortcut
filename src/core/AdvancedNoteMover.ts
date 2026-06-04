@@ -221,18 +221,11 @@ export class AdvancedNoteMover {
             // Yield to the UI thread periodically to prevent freezing
             if ((i + 1) % BULK_CHUNK_SIZE === 0 && i + 1 < files.length) {
               await new Promise<void>(resolve => {
-                const ric = (
-                  globalThis as typeof globalThis & {
-                    requestIdleCallback?: (
-                      cb: IdleRequestCallback,
-                      opts?: IdleRequestOptions
-                    ) => number;
-                  }
-                ).requestIdleCallback;
+                const ric = window.requestIdleCallback;
                 if (typeof ric === 'function') {
                   ric(() => resolve(), { timeout: 250 });
                 } else {
-                  setTimeout(resolve, 0);
+                  window.setTimeout(resolve, 0);
                 }
               });
             }
@@ -250,22 +243,24 @@ export class AdvancedNoteMover {
               NoticeManager.showWithUndo(
                 'info',
                 `Bulk Operation: ${successMessage}`,
-                async () => {
-                  const success =
-                    await this.plugin.historyManager.undoBulkOperation(
-                      bulkOperationId
-                    );
-                  if (success) {
-                    NoticeManager.success(
-                      `Bulk operation undone: ${successCount} files moved back`,
-                      { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
-                    );
-                  } else {
-                    NoticeManager.warning(
-                      `Could not undo all moves. Check individual files in history.`,
-                      { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
-                    );
-                  }
+                () => {
+                  void (async () => {
+                    const success =
+                      await this.plugin.historyManager.undoBulkOperation(
+                        bulkOperationId
+                      );
+                    if (success) {
+                      NoticeManager.success(
+                        `Bulk operation undone: ${successCount} files moved back`,
+                        { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+                      );
+                    } else {
+                      NoticeManager.warning(
+                        `Could not undo all moves. Check individual files in history.`,
+                        { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+                      );
+                    }
+                  })();
                 },
                 SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL
               );

@@ -1,6 +1,7 @@
 import { App, AbstractInputSuggest } from 'obsidian';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
 import { inferPropertyTypeFromSamples } from '../../utils/OperatorMapping';
+import { stringifyUnknown } from '../../utils/stringify-unknown';
 
 export type PropertyType = 'text' | 'number' | 'checkbox' | 'date' | 'list';
 
@@ -16,7 +17,7 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
   private properties: Map<string, PropertyInfo>;
   private metadataExtractor: MetadataExtractor;
   private refreshDataHandler: () => void;
-  private refreshTimerId: ReturnType<typeof setTimeout> | null = null;
+  private refreshTimerId: number | null = null;
   private dataLoaded = false;
 
   constructor(
@@ -30,9 +31,9 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
     // Create debounced handler for cleanup
     this.refreshDataHandler = () => {
       if (this.refreshTimerId !== null) {
-        clearTimeout(this.refreshTimerId);
+        window.clearTimeout(this.refreshTimerId);
       }
-      this.refreshTimerId = setTimeout(() => {
+      this.refreshTimerId = window.setTimeout(() => {
         this.refreshTimerId = null;
         this.refreshData();
       }, REFRESH_DEBOUNCE_MS);
@@ -47,7 +48,7 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
     const files = this.app.vault.getMarkdownFiles();
 
     // First pass: collect all property values
-    const propertyValues = new Map<string, any[]>();
+    const propertyValues = new Map<string, unknown[]>();
 
     files.forEach(file => {
       const cachedMetadata = this.app.metadataCache.getFileCache(file);
@@ -90,7 +91,7 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
     return typeHierarchy.indexOf(newType) > typeHierarchy.indexOf(currentType);
   }
 
-  private getExampleValue(value: any): string {
+  private getExampleValue(value: unknown): string {
     if (value === null || value === undefined) {
       return '';
     }
@@ -99,7 +100,7 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
       return value.slice(0, 2).join(', ') + (value.length > 2 ? '...' : '');
     }
 
-    const str = String(value);
+    const str = stringifyUnknown(value);
     return str.length > 20 ? str.substring(0, 20) + '...' : str;
   }
 
@@ -186,7 +187,7 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
    */
   public destroy(): void {
     if (this.refreshTimerId !== null) {
-      clearTimeout(this.refreshTimerId);
+      window.clearTimeout(this.refreshTimerId);
       this.refreshTimerId = null;
     }
     this.app.metadataCache.off('changed', this.refreshDataHandler);

@@ -9,8 +9,8 @@ const MODAL_SIZE_DIMENSIONS: Record<
   { width: string; minWidth: string; maxWidth?: string }
 > = {
   small: { width: '400px', minWidth: '350px' },
-  medium: { width: '800px', minWidth: '600px', maxWidth: '95vw' },
-  large: { width: '900px', minWidth: '700px', maxWidth: '95vw' },
+  medium: { width: '860px', minWidth: '640px', maxWidth: '95vw' },
+  large: { width: '980px', minWidth: '760px', maxWidth: '95vw' },
 };
 
 export interface BaseModalOptions {
@@ -35,7 +35,6 @@ export abstract class BaseModal extends Modal {
   }
 
   onOpen() {
-    const { contentEl } = this;
     this.clearContent();
     this.addCssClass();
     this.addMobileClasses();
@@ -70,10 +69,10 @@ export abstract class BaseModal extends Modal {
     resetScroll();
 
     // Reset after animation frame
-    requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       resetScroll();
       // Also reset after a short delay to catch any late rendering
-      setTimeout(() => {
+      window.setTimeout(() => {
         resetScroll();
       }, 50);
     });
@@ -123,9 +122,9 @@ export abstract class BaseModal extends Modal {
 
     this.clearModalSizeStyles();
 
-    // On mobile, use full-width layout regardless of size option
     if (MobileUtils.isMobile()) {
       modalContainer.classList.add('advancedNoteMover-modal-size-mobile');
+      /* Obsidian core modal rules use !important; inline overrides are required. */
       modalContainer.style.setProperty('width', '100%', 'important');
       modalContainer.style.setProperty('max-width', '100%', 'important');
       modalContainer.style.setProperty('margin', '0', 'important');
@@ -193,7 +192,7 @@ export abstract class BaseModal extends Modal {
       const titleIcon = titleContainer.createEl('span', {
         cls: 'advancedNoteMover-modal-title-icon',
       });
-      titleIcon.innerHTML = this.options.titleIcon;
+      titleIcon.textContent = this.options.titleIcon;
       titleContainer.createEl('h2', {
         text: this.options.title,
         cls: 'advancedNoteMover-modal-title',
@@ -212,7 +211,7 @@ export abstract class BaseModal extends Modal {
   protected setupAutoFocus(): void {
     if (!this.options.autoFocus || !this.options.focusSelector) return;
 
-    setTimeout(() => {
+    window.setTimeout(() => {
       const focusElement = this.contentEl.querySelector(
         this.options.focusSelector!
       ) as HTMLElement;

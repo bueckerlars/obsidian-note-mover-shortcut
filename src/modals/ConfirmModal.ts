@@ -44,27 +44,22 @@ export class ConfirmModal extends BaseModal {
     if (isMobile) {
       // Mobile: Stack buttons vertically, full-width
       // Confirm button first (primary action)
-      const confirmSetting = new Setting(contentEl).addButton(btn => {
-        btn
-          .setButtonText(this.confirmOptions.confirmText || 'OK')
-          .setCta()
-          .onClick(() => {
-            this.hasResolved = true;
-            this.resolvePromise(true);
-            this.close();
-          });
+      new Setting(contentEl).addButton(btn => {
+        btn.setButtonText(this.confirmOptions.confirmText || 'OK');
         if (this.confirmOptions.danger) {
-          btn.setWarning();
+          btn.setDestructive().setCta();
+        } else {
+          btn.setCta();
         }
+        btn.onClick(() => {
+          this.hasResolved = true;
+          this.resolvePromise(true);
+          this.close();
+        });
       });
-      const confirmBtn = confirmSetting.settingEl.querySelector('button');
-      if (confirmBtn) {
-        confirmBtn.style.width = '100%';
-        confirmBtn.style.minHeight = '48px';
-      }
 
       // Cancel button
-      const cancelSetting = new Setting(contentEl).addButton(btn => {
+      new Setting(contentEl).addButton(btn => {
         btn
           .setButtonText(this.confirmOptions.cancelText || 'Cancel')
           .onClick(() => {
@@ -73,11 +68,6 @@ export class ConfirmModal extends BaseModal {
             this.close();
           });
       });
-      const cancelBtn = cancelSetting.settingEl.querySelector('button');
-      if (cancelBtn) {
-        cancelBtn.style.width = '100%';
-        cancelBtn.style.minHeight = '48px';
-      }
     } else {
       // Desktop: Original horizontal layout
       const buttonContainer = this.createButtonContainer(contentEl);

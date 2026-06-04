@@ -131,7 +131,7 @@ export class MetadataExtractor {
         const fileCache = this.app.metadataCache.getFileCache(file);
         const fileTags = getAllTags(fileCache || {}) || [];
         fileTags.forEach(tag => tags.add(tag));
-      } catch (error) {
+      } catch {
         // Silently ignore files that can't be processed
       }
     });
@@ -146,7 +146,7 @@ export class MetadataExtractor {
    * @param value - The property value to parse
    * @returns Array of individual values
    */
-  public parseListProperty(value: any): string[] {
+  public parseListProperty(value: unknown): string[] {
     return parseListPropertyDomain(value);
   }
 
@@ -156,7 +156,7 @@ export class MetadataExtractor {
    * @param value - The property value to check
    * @returns True if the value represents multiple items
    */
-  public isListProperty(value: any): boolean {
+  public isListProperty(value: unknown): boolean {
     return isListPropertyDomain(value);
   }
 

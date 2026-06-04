@@ -26,10 +26,10 @@ export function extractMetadataFromMarkdownSnippet(
 
   if (fmInfo.exists && fmInfo.frontmatter.trim() !== '') {
     try {
-      const frontmatter = parseYaml(fmInfo.frontmatter);
-      if (frontmatter && typeof frontmatter === 'object') {
-        Object.assign(properties, frontmatter as Record<string, unknown>);
-        const fmTags = parseFrontMatterTags(frontmatter);
+      const parsed: unknown = parseYaml(fmInfo.frontmatter);
+      if (parsed && typeof parsed === 'object') {
+        Object.assign(properties, parsed as Record<string, unknown>);
+        const fmTags = parseFrontMatterTags(parsed);
         if (fmTags) {
           fmTags.forEach(t => tags.add(t));
         }

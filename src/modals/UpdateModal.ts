@@ -1,10 +1,4 @@
-import {
-  Setting,
-  App,
-  ButtonComponent,
-  MarkdownRenderer,
-  Component,
-} from 'obsidian';
+import { Setting, App, MarkdownRenderer, Component } from 'obsidian';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import type { ChangelogEntry } from '../generated/changelog';
@@ -88,19 +82,9 @@ export class UpdateModal extends BaseModal {
     });
     githubLink.setAttribute('target', '_blank');
 
-    // Mobile: Make link larger and more touch-friendly
-    if (isMobile) {
-      githubLink.style.minHeight = '48px';
-      githubLink.style.display = 'flex';
-      githubLink.style.alignItems = 'center';
-      githubLink.style.justifyContent = 'center';
-      githubLink.style.padding = '12px';
-    }
-
     // Close button
     if (isMobile) {
-      // Mobile: Full-width button
-      const closeSetting = new Setting(footerContainer).addButton(btn => {
+      new Setting(footerContainer).addButton(btn => {
         btn
           .setButtonText('Close')
           .setCta()
@@ -108,11 +92,6 @@ export class UpdateModal extends BaseModal {
             this.close();
           });
       });
-      const closeBtn = closeSetting.settingEl.querySelector('button');
-      if (closeBtn) {
-        closeBtn.style.width = '100%';
-        closeBtn.style.minHeight = '48px';
-      }
     } else {
       // Desktop: Original layout
       const buttonContainer = this.createButtonContainer(footerContainer);
@@ -131,7 +110,8 @@ export class UpdateModal extends BaseModal {
 
   private renderMarkdownListItem(container: HTMLElement, markdown: string) {
     const item = container.createEl('li');
-    MarkdownRenderer.renderMarkdown(
+    void MarkdownRenderer.render(
+      this.app,
       markdown,
       item,
       '',

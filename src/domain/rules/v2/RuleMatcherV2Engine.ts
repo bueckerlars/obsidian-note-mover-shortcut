@@ -15,6 +15,7 @@ import {
 } from '../../../types/RuleV2';
 import { parseListProperty } from '../../property/parseListProperty';
 import { noteHasTag, tagEqualsOrIsChildOf } from '../../tags/tag-hierarchy';
+import { stringifyUnknown } from '../../../utils/stringify-unknown';
 
 /**
  * Pure Rule V2 matching engine (no Obsidian dependencies).
@@ -99,7 +100,7 @@ export class RuleMatcherV2Engine {
           trigger.value
         );
 
-      case 'folder':
+      case 'folder': {
         // Extract folder from filePath
         const folder =
           metadata.filePath.split('/').slice(0, -1).join('/') || '';
@@ -108,23 +109,23 @@ export class RuleMatcherV2Engine {
           trigger.operator as TextOperator,
           trigger.value
         );
-
-      case 'extension':
+      }
+      case 'extension': {
         const extension = metadata.extension || '';
         return this.evaluateTextOperator(
           extension,
           trigger.operator as TextOperator,
           trigger.value
         );
-
-      case 'headings':
+      }
+      case 'headings': {
         const headings = metadata.headings || [];
         return this.evaluateListOperator(
           headings,
           trigger.operator as ListOperator,
           trigger.value
         );
-
+      }
       case 'tag':
         return this.evaluateTagOperator(
           metadata.tags,
@@ -132,22 +133,22 @@ export class RuleMatcherV2Engine {
           trigger.value
         );
 
-      case 'links':
+      case 'links': {
         const links = metadata.links || [];
         return this.evaluateListOperator(
           links,
           trigger.operator as ListOperator,
           trigger.value
         );
-
-      case 'embeds':
+      }
+      case 'embeds': {
         const embeds = metadata.embeds || [];
         return this.evaluateListOperator(
           embeds,
           trigger.operator as ListOperator,
           trigger.value
         );
-
+      }
       case 'created_at':
         return this.evaluateDateOperator(
           metadata.createdAt,
@@ -241,14 +242,14 @@ export class RuleMatcherV2Engine {
       case 'does not ends with':
         return !valueLower.endsWith(expectedLower);
 
-      case 'match regex':
+      case 'match regex': {
         const regex = this.getRegex(expected);
         return regex !== null ? regex.test(value) : false;
-
-      case 'does not match regex':
+      }
+      case 'does not match regex': {
         const regexNot = this.getRegex(expected);
         return regexNot !== null ? !regexNot.test(value) : true;
-
+      }
       default:
         return false; // Unknown operator
     }
@@ -323,26 +324,26 @@ export class RuleMatcherV2Engine {
           items.every(item => item.toLowerCase().endsWith(expectedLower))
         );
 
-      case 'all match regex':
+      case 'all match regex': {
         const regexAll = this.getRegex(expected);
         return (
           regexAll !== null &&
           items.length > 0 &&
           items.every(item => regexAll.test(item))
         );
-
+      }
       case 'any contain':
         return items.some(item => item.toLowerCase().includes(expectedLower));
 
       case 'any end with':
         return items.some(item => item.toLowerCase().endsWith(expectedLower));
 
-      case 'any match regex':
+      case 'any match regex': {
         const regexAny = this.getRegex(expected);
         return regexAny !== null
           ? items.some(item => regexAny.test(item))
           : false;
-
+      }
       case 'none contain':
         return !items.some(item => item.toLowerCase().includes(expectedLower));
 
@@ -354,22 +355,22 @@ export class RuleMatcherV2Engine {
       case 'none end with':
         return !items.some(item => item.toLowerCase().endsWith(expectedLower));
 
-      case 'count is':
+      case 'count is': {
         const count = this.parseNumericValue(expected);
         return count !== null && items.length === count;
-
-      case 'count is not':
+      }
+      case 'count is not': {
         const countNot = this.parseNumericValue(expected);
         return countNot !== null && items.length !== countNot;
-
-      case 'count is less than':
+      }
+      case 'count is less than': {
         const countLess = this.parseNumericValue(expected);
         return countLess !== null && items.length < countLess;
-
-      case 'count is more than':
+      }
+      case 'count is more than': {
         const countMore = this.parseNumericValue(expected);
         return countMore !== null && items.length > countMore;
-
+      }
       default:
         return false; // Unknown operator
     }
@@ -435,18 +436,18 @@ export class RuleMatcherV2Engine {
       case 'date is not today':
         return !this.isSameDate(date, now);
 
-      case 'is under X days ago':
+      case 'is under X days ago': {
         const daysUnder = this.parseNumericValue(expected);
         return daysUnder !== null
           ? this.isDaysAgo(date, daysUnder, 'under')
           : false;
-
-      case 'is over X days ago':
+      }
+      case 'is over X days ago': {
         const daysOver = this.parseNumericValue(expected);
         return daysOver !== null
           ? this.isDaysAgo(date, daysOver, 'over')
           : false;
-
+      }
       case 'day of week is':
         return this.isDayOfWeek(date, expected);
 
@@ -459,54 +460,54 @@ export class RuleMatcherV2Engine {
       case 'day of week is after':
         return this.isDayOfWeekAfter(date, expected);
 
-      case 'day of month is':
+      case 'day of month is': {
         const dayOfMonth = this.parseNumericValue(expected);
         return dayOfMonth !== null && date.getDate() === dayOfMonth;
-
-      case 'day of month is not':
+      }
+      case 'day of month is not': {
         const dayOfMonthNot = this.parseNumericValue(expected);
         return dayOfMonthNot !== null && date.getDate() !== dayOfMonthNot;
-
-      case 'day of month is before':
+      }
+      case 'day of month is before': {
         const dayOfMonthBefore = this.parseNumericValue(expected);
         return dayOfMonthBefore !== null && date.getDate() < dayOfMonthBefore;
-
-      case 'day of month is after':
+      }
+      case 'day of month is after': {
         const dayOfMonthAfter = this.parseNumericValue(expected);
         return dayOfMonthAfter !== null && date.getDate() > dayOfMonthAfter;
-
-      case 'month is':
+      }
+      case 'month is': {
         const month = this.parseNumericValue(expected);
         return month !== null && date.getMonth() + 1 === month; // getMonth() is 0-based
-
-      case 'month is not':
+      }
+      case 'month is not': {
         const monthNot = this.parseNumericValue(expected);
         return monthNot !== null && date.getMonth() + 1 !== monthNot;
-
-      case 'month is before':
+      }
+      case 'month is before': {
         const monthBefore = this.parseNumericValue(expected);
         return monthBefore !== null && date.getMonth() + 1 < monthBefore;
-
-      case 'month is after':
+      }
+      case 'month is after': {
         const monthAfter = this.parseNumericValue(expected);
         return monthAfter !== null && date.getMonth() + 1 > monthAfter;
-
-      case 'year is':
+      }
+      case 'year is': {
         const year = this.parseNumericValue(expected);
         return year !== null && date.getFullYear() === year;
-
-      case 'year is not':
+      }
+      case 'year is not': {
         const yearNot = this.parseNumericValue(expected);
         return yearNot !== null && date.getFullYear() !== yearNot;
-
-      case 'year is before':
+      }
+      case 'year is before': {
         const yearBefore = this.parseNumericValue(expected);
         return yearBefore !== null && date.getFullYear() < yearBefore;
-
-      case 'year is after':
+      }
+      case 'year is after': {
         const yearAfter = this.parseNumericValue(expected);
         return yearAfter !== null && date.getFullYear() > yearAfter;
-
+      }
       default:
         return false; // Unknown operator
     }
@@ -520,7 +521,7 @@ export class RuleMatcherV2Engine {
    * @returns True if property condition is met
    */
   private evaluatePropertyOperator(
-    properties: Record<string, any>,
+    properties: Record<string, unknown>,
     trigger: Trigger
   ): boolean {
     if (!trigger.propertyName) {
@@ -547,10 +548,10 @@ export class RuleMatcherV2Engine {
         );
 
       case 'property is present':
-        return properties.hasOwnProperty(trigger.propertyName);
+        return Object.hasOwn(properties, trigger.propertyName);
 
       case 'property is missing':
-        return !properties.hasOwnProperty(trigger.propertyName);
+        return !Object.hasOwn(properties, trigger.propertyName);
     }
 
     // Handle type-specific operators
@@ -599,7 +600,7 @@ export class RuleMatcherV2Engine {
    * Evaluates text property operators
    */
   private evaluateTextPropertyOperator(
-    value: any,
+    value: unknown,
     operator: TextPropertyOperator,
     expected: string
   ): boolean {
@@ -607,7 +608,7 @@ export class RuleMatcherV2Engine {
       return false;
     }
 
-    const valueStr = String(value);
+    const valueStr = stringifyUnknown(value);
     return this.evaluateTextOperator(
       valueStr,
       operator as TextOperator,
@@ -619,7 +620,7 @@ export class RuleMatcherV2Engine {
    * Evaluates number property operators
    */
   private evaluateNumberPropertyOperator(
-    value: any,
+    value: unknown,
     operator: NumberPropertyOperator,
     expected: string
   ): boolean {
@@ -662,7 +663,7 @@ export class RuleMatcherV2Engine {
    * Evaluates list property operators
    */
   private evaluateListPropertyOperator(
-    value: any,
+    value: unknown,
     operator: ListPropertyOperator,
     expected: string
   ): boolean {
@@ -682,7 +683,7 @@ export class RuleMatcherV2Engine {
    * Evaluates date property operators
    */
   private evaluateDatePropertyOperator(
-    value: any,
+    value: unknown,
     operator: DatePropertyOperator,
     expected: string
   ): boolean {
@@ -711,7 +712,7 @@ export class RuleMatcherV2Engine {
    * Evaluates checkbox property operators
    */
   private evaluateCheckboxPropertyOperator(
-    value: any,
+    value: unknown,
     operator: CheckboxPropertyOperator,
     expected: string
   ): boolean {
@@ -748,7 +749,7 @@ export class RuleMatcherV2Engine {
       const regex = new RegExp(pattern, 'i'); // Case insensitive
       this.regexCache.set(pattern, regex);
       return regex;
-    } catch (error) {
+    } catch {
       // Invalid regex pattern - don't cache and return null
       return null;
     }
