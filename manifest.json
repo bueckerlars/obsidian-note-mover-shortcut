@@ -1,7 +1,7 @@
 {
 	"id": "note-mover-shortcut",
 	"name": "Advanced Note Mover",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"minAppVersion": "1.5.7",
 	"description": "Automatically move notes into folders using configurable rules — match on tags, properties, filenames, dates, and more. Supports templates, blacklist filters, preview, attachment co-move, and undo.",
 	"author": "bueckerlars",
