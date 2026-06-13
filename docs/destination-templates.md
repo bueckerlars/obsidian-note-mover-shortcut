@@ -58,6 +58,43 @@ Looks up `<key>` in the note's frontmatter.
 
 ---
 
+## Date property components
+
+For date frontmatter properties, append a component suffix to extract parts of the date at move time:
+
+```
+{{property.<key>.<component>}}
+```
+
+Supported components:
+
+| Component   | Example output (`created: 2025-06-13`) | Notes                              |
+| ----------- | -------------------------------------- | ---------------------------------- |
+| `year`      | `2025`                                 | 4-digit year                       |
+| `month`     | `06`                                   | Zero-padded month (01–12)          |
+| `day`       | `13`                                   | Zero-padded day (01–31)            |
+| `iso`       | `2025-06-13`                           | Normalized ISO date (time ignored) |
+| `monthName` | `June`                                 | English full month name            |
+| `dayOfWeek` | `friday`                               | Lowercase English day name         |
+
+### Examples
+
+| Template                                                       | Frontmatter           | Resolves to       |
+| -------------------------------------------------------------- | --------------------- | ----------------- |
+| `Archive/{{property.created.year}}`                            | `created: 2025-06-13` | `Archive/2025`    |
+| `Journal/{{property.created.year}}/{{property.created.month}}` | `created: 2025-06-13` | `Journal/2025/06` |
+| `Days/{{property.created.dayOfWeek}}`                          | `created: 2025-06-13` | `Days/friday`     |
+
+Type `{{property.<dateProperty>.` in the destination field to get component suggestions for date properties discovered in your vault.
+
+### Literal property keys take precedence
+
+If a frontmatter key exactly matches the full placeholder path (including the suffix), the raw property value is used instead of date extraction. For example, if you have a property literally named `created.year`, then `{{property.created.year}}` resolves to that property's value — not the year from `created`.
+
+To gate moves on a date property, add a trigger: `properties` → `created` (date) → `has any value`.
+
+---
+
 ## `{{tag.<key>}}`
 
 Looks for a tag that matches `<key>`, adding a `#` prefix if not present.

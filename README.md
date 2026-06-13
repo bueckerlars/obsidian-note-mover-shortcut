@@ -86,11 +86,12 @@ Match notes on almost any piece of metadata:
 
 ### Dynamic destination templates
 
-Instead of a static folder path, use `{{tag.…}}` and `{{property.…}}` placeholders to build the destination from the note's own metadata:
+Instead of a static folder path, use `{{tag.…}}` and `{{property.…}}` placeholders to build the destination from the note's own metadata. Date properties also support components such as `Archive/{{property.created.year}}`:
 
 ```
 Clients/{{property.client}}/Notes
 Projects/{{property.year}}/{{tag.project}}
+Archive/{{property.created.year}}/{{property.created.month}}
 ```
 
 The placeholder resolves at move time — if the note has `client: Acme` in its frontmatter, it goes to `Clients/Acme/Notes`. If the value is missing, the note is not moved.

@@ -25,4 +25,34 @@ describe('DestinationTemplate', () => {
     expect(out).toContain('Done');
     expect(out).toContain('tasks/personal');
   });
+
+  it('renders date property components', () => {
+    const out = renderDestinationTemplate('Archive/{{property.created.year}}', {
+      tags: [],
+      properties: { created: '2025-06-13' },
+    });
+    expect(out).toBe('Archive/2025');
+  });
+
+  it('renders monthName and day date components', () => {
+    const out = renderDestinationTemplate(
+      '{{property.created.monthName}}/{{property.created.day}}',
+      {
+        tags: [],
+        properties: { created: '2025-06-13' },
+      }
+    );
+    expect(out).toBe('June/13');
+  });
+
+  it('prefers literal property keys over date components', () => {
+    const out = renderDestinationTemplate('X/{{property.created.year}}', {
+      tags: [],
+      properties: {
+        'created.year': 'manual',
+        created: '2025-06-13',
+      },
+    });
+    expect(out).toBe('X/manual');
+  });
 });
