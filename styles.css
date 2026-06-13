@@ -924,26 +924,30 @@
   align-items: center;
   margin-top: 20px;
   padding-top: 16px;
+  padding-bottom: 4px;
   border-top: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
-}
-
-.advancedNoteMover-rule-editor-footer .setting-item {
-  border: none;
-  padding: 0;
-  margin: 0;
+  position: sticky;
+  bottom: 0;
+  background: var(--background-primary);
+  z-index: 2;
 }
 
 .advancedNoteMover-rule-editor-footer-left,
 .advancedNoteMover-rule-editor-footer-right {
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 
-.advancedNoteMover-rule-editor-footer-left .setting-item-control,
-.advancedNoteMover-rule-editor-footer-right .setting-item-control {
-  flex: 0 0 auto;
-  width: auto;
+.advancedNoteMover-rule-editor-footer-left
+  .advancedNoteMover-modal-button-container {
+  justify-content: flex-start;
+}
+
+.advancedNoteMover-rule-editor-footer-right
+  .advancedNoteMover-modal-button-container {
+  justify-content: flex-end;
 }
 
 /* Property Suggestions */
