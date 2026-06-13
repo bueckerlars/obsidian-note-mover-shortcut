@@ -98,6 +98,9 @@ export const SETTINGS_CONSTANTS = {
     // Rule / confirm copy
     DELETE_RULE_TITLE: 'Delete rule',
     DELETE_RULE_CONFIRM: 'Delete',
+    DISCARD_CHANGES_TITLE: 'Unsaved changes',
+    DISCARD_CHANGES_MESSAGE: 'You have unsaved changes. Discard them?',
+    DISCARD_CHANGES_CONFIRM: 'Discard',
     // Retention policy texts
     RETENTION_POLICY_TITLE: 'Retention Policy',
     RETENTION_POLICY_DESC: 'Configure how long history entries should be kept',

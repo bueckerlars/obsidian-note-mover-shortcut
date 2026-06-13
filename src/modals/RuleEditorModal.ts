@@ -37,6 +37,8 @@ interface RuleEditorModalOptions {
 export class RuleEditorModal extends BaseModal {
   private ruleOptions: RuleEditorModalOptions;
   private workingRule: RuleV2;
+  private originalRule: RuleV2;
+  private isForceClosing = false;
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
 
@@ -48,8 +50,8 @@ export class RuleEditorModal extends BaseModal {
       autoFocus: false, // Disable auto focus to prevent scroll issues on mobile
     });
     this.ruleOptions = options;
-    // Create a working copy of the rule
     this.workingRule = structuredClone(options.rule);
+    this.originalRule = structuredClone(options.rule);
   }
 
   protected createContent(): void {
@@ -456,59 +458,98 @@ export class RuleEditorModal extends BaseModal {
 
   private createFooterActions(container: HTMLElement): void {
     const footer = container.createDiv({
-      cls: 'advancedNoteMover-rule-editor-footer',
+      cls: 'advancedNoteMover-rule-editor-footer advancedNoteMover-modal-footer',
     });
 
-    // Remove Rule button (only in edit mode)
     if (this.ruleOptions.isEditMode && this.ruleOptions.onDelete) {
       const leftSide = footer.createDiv({
         cls: 'advancedNoteMover-rule-editor-footer-left',
       });
-      new Setting(leftSide).addButton(btn =>
-        btn
-          .setButtonText('Remove rule')
-          .setDestructive()
-          .onClick(() => {
-            void (async () => {
-              const ruleLabel = toMarkdownInlineCode(this.workingRule.name);
-              const confirmed = await ConfirmModal.show(this.app, {
-                title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
-                message: `Are you sure you want to delete the rule ${ruleLabel}?\n\nThis action cannot be undone.`,
-                confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
-                cancelText: 'Cancel',
-                danger: true,
-              });
-              if (confirmed && this.ruleOptions.onDelete) {
-                await this.ruleOptions.onDelete();
-                this.close();
-              }
-            })();
-          })
+      const leftButtons = this.createButtonContainer(leftSide);
+      this.createButton(
+        leftButtons,
+        'Remove rule',
+        () => {
+          void this.handleRemoveRule();
+        },
+        { isWarning: true }
       );
     }
 
-    // Right side: Cancel and Save
     const rightSide = footer.createDiv({
       cls: 'advancedNoteMover-rule-editor-footer-right',
     });
+    const rightButtons = this.createButtonContainer(rightSide);
 
-    new Setting(rightSide)
-      .addButton(btn =>
-        btn.setButtonText('Cancel').onClick(() => {
-          this.close();
-        })
-      )
-      .addButton(btn =>
-        btn
-          .setButtonText('Save')
-          .setCta()
-          .onClick(async () => {
-            if (this.validateRule()) {
-              await this.ruleOptions.onSave(this.workingRule);
-              this.close();
-            }
-          })
-      );
+    this.createButton(rightButtons, 'Cancel', () => {
+      void this.requestClose();
+    });
+
+    this.createButton(
+      rightButtons,
+      'Save',
+      () => {
+        void this.handleSave();
+      },
+      { isPrimary: true }
+    );
+  }
+
+  private async handleSave(): Promise<void> {
+    if (!this.validateRule()) {
+      return;
+    }
+    await this.ruleOptions.onSave(this.workingRule);
+    this.isForceClosing = true;
+    super.close();
+  }
+
+  private async handleRemoveRule(): Promise<void> {
+    const ruleLabel = toMarkdownInlineCode(this.workingRule.name);
+    const confirmed = await ConfirmModal.show(this.app, {
+      title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
+      message: `Are you sure you want to delete the rule ${ruleLabel}?\n\nThis action cannot be undone.`,
+      confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
+      cancelText: 'Cancel',
+      danger: true,
+    });
+    if (confirmed && this.ruleOptions.onDelete) {
+      await this.ruleOptions.onDelete();
+      this.isForceClosing = true;
+      super.close();
+    }
+  }
+
+  private hasUnsavedChanges(): boolean {
+    return (
+      JSON.stringify(this.workingRule) !== JSON.stringify(this.originalRule)
+    );
+  }
+
+  private async requestClose(): Promise<void> {
+    this.close();
+  }
+
+  private async confirmDiscardAndClose(): Promise<void> {
+    const confirmed = await ConfirmModal.show(this.app, {
+      title: SETTINGS_CONSTANTS.UI_TEXTS.DISCARD_CHANGES_TITLE,
+      message: SETTINGS_CONSTANTS.UI_TEXTS.DISCARD_CHANGES_MESSAGE,
+      confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DISCARD_CHANGES_CONFIRM,
+      cancelText: 'Cancel',
+      danger: true,
+    });
+    if (confirmed) {
+      this.isForceClosing = true;
+      super.close();
+    }
+  }
+
+  close(): void {
+    if (this.isForceClosing || !this.hasUnsavedChanges()) {
+      super.close();
+      return;
+    }
+    void this.confirmDiscardAndClose();
   }
 
   private validateRule(): boolean {
