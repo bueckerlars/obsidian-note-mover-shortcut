@@ -21,24 +21,23 @@ export class HistorySettingsSection {
     const clearHistorySetting = new Setting(this.containerEl)
       .setName('Clear history')
       .setDesc('Clears the history of moved notes')
-      .addButton(btn =>
-        btn
-          .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY)
-          .setDestructive()
-          .onClick(async () => {
-            const confirmed = await ConfirmModal.show(this.app, {
-              title: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_TITLE,
-              message: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_MESSAGE,
-              confirmText: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CONFIRM,
-              cancelText: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CANCEL,
-              danger: true,
-            });
+      .addButton(btn => {
+        btn.setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY);
+        btn.buttonEl.addClass('mod-warning');
+        btn.onClick(async () => {
+          const confirmed = await ConfirmModal.show(this.app, {
+            title: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_TITLE,
+            message: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_MESSAGE,
+            confirmText: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CONFIRM,
+            cancelText: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CANCEL,
+            danger: true,
+          });
 
-            if (confirmed) {
-              await this.plugin.historyManager.clearHistory();
-            }
-          })
-      );
+          if (confirmed) {
+            await this.plugin.historyManager.clearHistory();
+          }
+        });
+      });
 
     // Add mobile optimization classes
     if (isMobile) {
@@ -60,13 +59,13 @@ export class HistorySettingsSection {
     const isMobile = MobileUtils.isMobile();
 
     // Initialize retention policy if not set
-    if (!this.plugin.settings.settings.retentionPolicy) {
-      this.plugin.settings.settings.retentionPolicy = {
+    if (!this.plugin.pluginData.settings.retentionPolicy) {
+      this.plugin.pluginData.settings.retentionPolicy = {
         ...HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
       };
     }
 
-    const retentionPolicy = this.plugin.settings.settings.retentionPolicy;
+    const retentionPolicy = this.plugin.pluginData.settings.retentionPolicy;
 
     // Retention Policy Section - Single line with value input and unit dropdown
     const retentionSetting = new Setting(this.containerEl)
@@ -79,7 +78,7 @@ export class HistorySettingsSection {
           .onChange(async (value: string) => {
             const numValue = parseInt(value);
             if (!isNaN(numValue) && numValue > 0) {
-              this.plugin.settings.settings.retentionPolicy.value = numValue;
+              this.plugin.pluginData.settings.retentionPolicy.value = numValue;
               await this.plugin.save_settings();
             }
           })
@@ -97,7 +96,7 @@ export class HistorySettingsSection {
           )
           .setValue(retentionPolicy.unit)
           .onChange(async (value: string) => {
-            this.plugin.settings.settings.retentionPolicy.unit = value as
+            this.plugin.pluginData.settings.retentionPolicy.unit = value as
               | 'days'
               | 'weeks'
               | 'months';

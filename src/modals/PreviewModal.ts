@@ -252,7 +252,7 @@ export class PreviewModal extends BaseModal {
             originalPath: entry.currentPath,
             newPath,
             attachmentSettings: getAttachmentMoveSettings(
-              this.plugin.settings.settings
+              this.plugin.pluginData.settings
             ),
           });
           movedCount++;

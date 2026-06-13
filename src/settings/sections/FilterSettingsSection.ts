@@ -32,7 +32,7 @@ export class FilterSettingsSection {
         .setButtonText('Add new filter')
         .setCta()
         .onClick(async () => {
-          this.plugin.settings.settings.filters.filter.push({ value: '' });
+          this.plugin.pluginData.settings.filters.filter.push({ value: '' });
           await this.plugin.save_settings();
           // Update RuleManager
           this.plugin.advancedNoteMover.updateRuleManager();
@@ -71,14 +71,14 @@ export class FilterSettingsSection {
     // Setup drag & drop manager
     this.setupDragDropManager(filtersContainer);
 
-    if (this.plugin.settings.settings.filters.filter.length === 0) {
+    if (this.plugin.pluginData.settings.filters.filter.length === 0) {
       this.containerEl.createEl('p', {
         cls: 'advancedNoteMover-settings-hint',
         text: 'No filters are configured. Add one using the control below to exclude files from move operations.',
       });
     }
 
-    this.plugin.settings.settings.filters.filter.forEach((filter, index) => {
+    this.plugin.pluginData.settings.filters.filter.forEach((filter, index) => {
       const s = new Setting(filtersContainer)
         .addSearch(cb => {
           // AdvancedSuggest instead of TagSuggest
@@ -94,11 +94,13 @@ export class FilterSettingsSection {
             .onChange(async value => {
               // Don't save empty filters
               if (!value || value.trim() === '') {
-                this.plugin.settings.settings.filters.filter[index] = {
+                this.plugin.pluginData.settings.filters.filter[index] = {
                   value: '',
                 };
               } else {
-                this.plugin.settings.settings.filters.filter[index] = { value };
+                this.plugin.pluginData.settings.filters.filter[index] = {
+                  value,
+                };
               }
               await this.plugin.save_settings();
               // Update RuleManager
@@ -108,7 +110,7 @@ export class FilterSettingsSection {
         })
         .addExtraButton(btn =>
           btn.setIcon('cross').onClick(async () => {
-            this.plugin.settings.settings.filters.filter.splice(index, 1);
+            this.plugin.pluginData.settings.filters.filter.splice(index, 1);
             await this.plugin.save_settings();
             // Update RuleManager
             this.plugin.advancedNoteMover.updateRuleManager();
@@ -140,7 +142,7 @@ export class FilterSettingsSection {
   }
 
   moveFilter(index: number, direction: number) {
-    const list = this.plugin.settings.settings.filters.filter;
+    const list = this.plugin.pluginData.settings.filters.filter;
     const newIndex = Math.max(0, Math.min(list.length - 1, index + direction));
     [list[index], list[newIndex]] = [list[newIndex], list[index]];
     void this.plugin.save_settings();
@@ -182,7 +184,7 @@ export class FilterSettingsSection {
   private reorderFilters(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
 
-    const filters = this.plugin.settings.settings.filters.filter;
+    const filters = this.plugin.pluginData.settings.filters.filter;
     const [movedFilter] = filters.splice(fromIndex, 1);
     filters.splice(toIndex, 0, movedFilter);
 

@@ -34,12 +34,12 @@ export class AdvancedNoteMover {
   }
 
   public updateRuleManager(): void {
-    const rulesV2 = Array.isArray(this.plugin.settings.settings.rulesV2)
-      ? this.plugin.settings.settings.rulesV2
+    const rulesV2 = Array.isArray(this.plugin.pluginData.settings.rulesV2)
+      ? this.plugin.pluginData.settings.rulesV2
       : [];
     this.ruleManagerV2.setRules(rulesV2);
     this.ruleManagerV2.setFilter(
-      this.plugin.settings.settings.filters.filter.map(f => f.value)
+      this.plugin.pluginData.settings.filters.filter.map(f => f.value)
     );
 
     this.plugin.syncRuleCacheHash();
@@ -52,7 +52,7 @@ export class AdvancedNoteMover {
 
       // Check if filter already exists
       if (
-        this.plugin.settings.settings.filters.filter.some(
+        this.plugin.pluginData.settings.filters.filter.some(
           f => f.value === filterValue
         )
       ) {
@@ -63,7 +63,9 @@ export class AdvancedNoteMover {
       }
 
       // Add filter to settings
-      this.plugin.settings.settings.filters.filter.push({ value: filterValue });
+      this.plugin.pluginData.settings.filters.filter.push({
+        value: filterValue,
+      });
       await this.plugin.save_settings();
 
       // Update RuleManager
@@ -98,7 +100,7 @@ export class AdvancedNoteMover {
         const { app } = this.plugin;
         const cache = this.plugin.ruleCache;
         const cacheEnabled =
-          this.plugin.settings.settings.enableRuleEvaluationCache !== false;
+          this.plugin.pluginData.settings.enableRuleEvaluationCache !== false;
         const originalPath = file.path;
         const mtime = file.stat?.mtime ?? 0;
 
@@ -158,7 +160,7 @@ export class AdvancedNoteMover {
             originalPath,
             newPath,
             attachmentSettings: getAttachmentMoveSettings(
-              this.plugin.settings.settings
+              this.plugin.pluginData.settings
             ),
           });
 

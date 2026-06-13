@@ -71,15 +71,15 @@ export class UpdateManager {
   }
 
   private isReleaseNotesEnabled(): boolean {
-    return this.plugin.settings.settings.showReleaseNotesOnUpdate !== false;
+    return this.plugin.pluginData.settings.showReleaseNotesOnUpdate !== false;
   }
 
   private getLastSeenVersion(): string | undefined {
-    return this.plugin.settings.lastSeenVersion;
+    return this.plugin.pluginData.lastSeenVersion;
   }
 
   private async markVersionSeen(version: string): Promise<void> {
-    this.plugin.settings.lastSeenVersion = version;
+    this.plugin.pluginData.lastSeenVersion = version;
     await this.plugin.save_settings();
   }
 

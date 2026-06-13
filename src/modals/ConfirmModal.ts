@@ -54,7 +54,8 @@ export class ConfirmModal extends BaseModal {
       new Setting(contentEl).addButton(btn => {
         btn.setButtonText(this.confirmOptions.confirmText || 'OK');
         if (this.confirmOptions.danger) {
-          btn.setDestructive().setCta();
+          btn.setCta();
+          btn.buttonEl.addClass('mod-warning');
         } else {
           btn.setCta();
         }

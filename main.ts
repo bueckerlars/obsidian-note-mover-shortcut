@@ -21,7 +21,8 @@ import { createPluginApplicationServices } from 'src/application/plugin-applicat
 import type { PluginApplicationServices } from 'src/application/plugin-application-services';
 
 export default class AdvancedNoteMoverPlugin extends Plugin {
-  declare settings: PluginData;
+  /** Persisted plugin payload (not Obsidian 1.13+ `Plugin.settings`). */
+  declare pluginData: PluginData;
   public advancedNoteMover!: AdvancedNoteMover;
   public command_handler!: CommandHandler;
   public historyManager!: HistoryManager;
@@ -40,10 +41,10 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
     this.ruleCache = new RuleEvaluationCache();
     this.vaultIndexCache = new PluginVaultIndexCache();
     this.performanceTrace = new PerformanceTraceRecorder(
-      () => this.settings.settings.enablePerformanceDebug === true
+      () => this.pluginData.settings.enablePerformanceDebug === true
     );
     this.vaultIndexCache.setCacheEnabledResolver(
-      () => this.settings.settings.enableVaultIndexCache !== false
+      () => this.pluginData.settings.enableVaultIndexCache !== false
     );
     this.vaultIndexCache.setPerformanceRecorder(this.performanceTrace);
     this.historyManager = new HistoryManager(this);
@@ -81,7 +82,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
   }
 
   public syncRuleCacheHash(): void {
-    const s = this.settings.settings;
+    const s = this.pluginData.settings;
     this.ruleCache.updateRulesHash(s.rulesV2 ?? [], s.filters.filter);
   }
 

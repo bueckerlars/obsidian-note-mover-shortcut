@@ -28,10 +28,10 @@ export class PerformanceDebugSettingsSection {
       .addToggle(toggle =>
         toggle
           .setValue(
-            this.plugin.settings.settings.enableRuleEvaluationCache ?? true
+            this.plugin.pluginData.settings.enableRuleEvaluationCache ?? true
           )
           .onChange(async value => {
-            this.plugin.settings.settings.enableRuleEvaluationCache = value;
+            this.plugin.pluginData.settings.enableRuleEvaluationCache = value;
             await this.plugin.save_settings();
             if (!value) {
               this.plugin.ruleCache.invalidateAll();
@@ -47,10 +47,10 @@ export class PerformanceDebugSettingsSection {
       .addToggle(toggle =>
         toggle
           .setValue(
-            this.plugin.settings.settings.enableVaultIndexCache !== false
+            this.plugin.pluginData.settings.enableVaultIndexCache !== false
           )
           .onChange(async value => {
-            this.plugin.settings.settings.enableVaultIndexCache = value;
+            this.plugin.pluginData.settings.enableVaultIndexCache = value;
             await this.plugin.save_settings();
             this.plugin.vaultIndexCache.invalidateMovableFileList();
             this.plugin.vaultIndexCache.invalidateMarkdownList();
@@ -66,17 +66,17 @@ export class PerformanceDebugSettingsSection {
       .addToggle(toggle =>
         toggle
           .setValue(
-            this.plugin.settings.settings.enablePerformanceDebug === true
+            this.plugin.pluginData.settings.enablePerformanceDebug === true
           )
           .onChange(async value => {
-            this.plugin.settings.settings.enablePerformanceDebug = value;
+            this.plugin.pluginData.settings.enablePerformanceDebug = value;
             await this.plugin.save_settings();
             this.refreshDisplay();
           })
       );
 
     const debugOn =
-      this.plugin.settings.settings.enablePerformanceDebug === true;
+      this.plugin.pluginData.settings.enablePerformanceDebug === true;
 
     new Setting(this.containerEl)
       .setName('Export performance trace')
@@ -90,7 +90,9 @@ export class PerformanceDebugSettingsSection {
           .setButtonText('Export trace JSON')
           .setDisabled(!debugOn)
           .onClick(async () => {
-            if (this.plugin.settings.settings.enablePerformanceDebug !== true) {
+            if (
+              this.plugin.pluginData.settings.enablePerformanceDebug !== true
+            ) {
               NoticeManager.warning(
                 'Enable performance debug logs first, then run the actions you want to measure.'
               );

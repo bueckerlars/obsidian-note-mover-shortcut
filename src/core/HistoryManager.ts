@@ -23,7 +23,7 @@ export class HistoryManager {
   constructor(private plugin: AdvancedNoteMoverPlugin) {}
 
   public loadHistoryFromSettings(): void {
-    const historyData = this.plugin.settings.history;
+    const historyData = this.plugin.pluginData.history;
     if (historyData && Array.isArray(historyData.history)) {
       this.history = historyData.history;
     } else {
@@ -39,22 +39,22 @@ export class HistoryManager {
 
   private async saveHistory(): Promise<void> {
     if (
-      !this.plugin.settings.history ||
-      typeof this.plugin.settings.history !== 'object' ||
-      Array.isArray(this.plugin.settings.history)
+      !this.plugin.pluginData.history ||
+      typeof this.plugin.pluginData.history !== 'object' ||
+      Array.isArray(this.plugin.pluginData.history)
     ) {
-      this.plugin.settings.history = { history: [], bulkOperations: [] };
+      this.plugin.pluginData.history = { history: [], bulkOperations: [] };
     }
 
-    if (!Array.isArray(this.plugin.settings.history.history)) {
-      this.plugin.settings.history.history = [];
+    if (!Array.isArray(this.plugin.pluginData.history.history)) {
+      this.plugin.pluginData.history.history = [];
     }
-    if (!Array.isArray(this.plugin.settings.history.bulkOperations)) {
-      this.plugin.settings.history.bulkOperations = [];
+    if (!Array.isArray(this.plugin.pluginData.history.bulkOperations)) {
+      this.plugin.pluginData.history.bulkOperations = [];
     }
 
-    this.plugin.settings.history.history = this.history;
-    this.plugin.settings.history.bulkOperations = this.bulkOperations;
+    this.plugin.pluginData.history.history = this.history;
+    this.plugin.pluginData.history.bulkOperations = this.bulkOperations;
     await this.plugin.save_settings();
   }
 
@@ -246,7 +246,7 @@ export class HistoryManager {
    */
   public async cleanupOldEntries(): Promise<void> {
     const retentionPolicy =
-      this.plugin.settings.settings?.retentionPolicy ||
+      this.plugin.pluginData.settings?.retentionPolicy ||
       HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY;
     const cutoffTime = this.calculateRetentionCutoffTime(retentionPolicy);
 

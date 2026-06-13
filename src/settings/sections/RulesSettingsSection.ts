@@ -109,8 +109,8 @@ export class RulesSettingsSection {
    */
   private addRulesV2Array(): void {
     // Ensure rulesV2 array exists
-    if (!this.plugin.settings.settings.rulesV2) {
-      this.plugin.settings.settings.rulesV2 = [];
+    if (!this.plugin.pluginData.settings.rulesV2) {
+      this.plugin.pluginData.settings.rulesV2 = [];
     }
 
     const isMobile = MobileUtils.isMobile();
@@ -126,14 +126,14 @@ export class RulesSettingsSection {
     // Setup drag & drop manager for V2 rules
     this.setupDragDropManagerV2(rulesContainer);
 
-    if (this.plugin.settings.settings.rulesV2.length === 0) {
+    if (this.plugin.pluginData.settings.rulesV2.length === 0) {
       this.containerEl.createEl('p', {
         cls: 'advancedNoteMover-settings-hint',
         text: 'No rules are configured. Add one using the control below.',
       });
     }
 
-    this.plugin.settings.settings.rulesV2.forEach((rule, index) => {
+    this.plugin.pluginData.settings.rulesV2.forEach((rule, index) => {
       const s = new Setting(rulesContainer);
 
       // Remove default info element
@@ -180,7 +180,7 @@ export class RulesSettingsSection {
               danger: true,
             });
             if (confirmed) {
-              this.plugin.settings.settings.rulesV2!.splice(index, 1);
+              this.plugin.pluginData.settings.rulesV2!.splice(index, 1);
               await this.persistRulesAndSyncManager();
             }
           })
@@ -192,13 +192,13 @@ export class RulesSettingsSection {
           .setIcon('copy')
           .setTooltip('Clone rule')
           .onClick(async () => {
-            if (!this.plugin.settings.settings.rulesV2) {
-              this.plugin.settings.settings.rulesV2 = [];
+            if (!this.plugin.pluginData.settings.rulesV2) {
+              this.plugin.pluginData.settings.rulesV2 = [];
             }
             const clonedRule = JSON.parse(JSON.stringify(rule)) as RuleV2;
             const baseName = rule.name?.trim() || 'Unnamed Rule';
             clonedRule.name = `${baseName} (copy)`;
-            this.plugin.settings.settings.rulesV2.splice(
+            this.plugin.pluginData.settings.rulesV2.splice(
               index + 1,
               0,
               clonedRule
@@ -223,7 +223,7 @@ export class RulesSettingsSection {
           .setValue(rule.active)
           .setTooltip(rule.active ? 'Rule is active' : 'Rule is inactive')
           .onChange(async value => {
-            this.plugin.settings.settings.rulesV2![index].active = value;
+            this.plugin.pluginData.settings.rulesV2![index].active = value;
             await this.persistRulesAndSyncManager();
           })
       );
@@ -268,9 +268,10 @@ export class RulesSettingsSection {
    * Reorder RuleV2 rules
    */
   private reorderRulesV2(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex || !this.plugin.settings.settings.rulesV2) return;
+    if (fromIndex === toIndex || !this.plugin.pluginData.settings.rulesV2)
+      return;
 
-    const rules = this.plugin.settings.settings.rulesV2;
+    const rules = this.plugin.pluginData.settings.rulesV2;
     const [movedRule] = rules.splice(fromIndex, 1);
     rules.splice(toIndex, 0, movedRule);
   }
@@ -285,7 +286,9 @@ export class RulesSettingsSection {
 
     if (isEditMode) {
       // Edit mode: clone existing rule
-      rule = structuredClone(this.plugin.settings.settings.rulesV2![ruleIndex]);
+      rule = structuredClone(
+        this.plugin.pluginData.settings.rulesV2![ruleIndex]
+      );
     } else {
       // Create mode: new rule
       rule = {
@@ -307,23 +310,23 @@ export class RulesSettingsSection {
       rule,
       isEditMode,
       onSave: async (updatedRule: RuleV2) => {
-        if (!this.plugin.settings.settings.rulesV2) {
-          this.plugin.settings.settings.rulesV2 = [];
+        if (!this.plugin.pluginData.settings.rulesV2) {
+          this.plugin.pluginData.settings.rulesV2 = [];
         }
 
         if (isEditMode) {
           // Update existing rule
-          this.plugin.settings.settings.rulesV2[ruleIndex] = updatedRule;
+          this.plugin.pluginData.settings.rulesV2[ruleIndex] = updatedRule;
         } else {
           // Add new rule
-          this.plugin.settings.settings.rulesV2.push(updatedRule);
+          this.plugin.pluginData.settings.rulesV2.push(updatedRule);
         }
 
         await this.persistRulesAndSyncManager();
       },
       onDelete: isEditMode
         ? async () => {
-            this.plugin.settings.settings.rulesV2!.splice(ruleIndex, 1);
+            this.plugin.pluginData.settings.rulesV2!.splice(ruleIndex, 1);
             await this.persistRulesAndSyncManager();
           }
         : undefined,

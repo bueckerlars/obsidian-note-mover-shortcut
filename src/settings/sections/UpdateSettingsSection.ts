@@ -18,10 +18,10 @@ export class UpdateSettingsSection {
       .addToggle(toggle =>
         toggle
           .setValue(
-            this.plugin.settings.settings.showReleaseNotesOnUpdate !== false
+            this.plugin.pluginData.settings.showReleaseNotesOnUpdate !== false
           )
           .onChange(async value => {
-            this.plugin.settings.settings.showReleaseNotesOnUpdate = value;
+            this.plugin.pluginData.settings.showReleaseNotesOnUpdate = value;
             await this.plugin.save_settings();
           })
       );

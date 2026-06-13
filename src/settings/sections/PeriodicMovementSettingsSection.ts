@@ -24,10 +24,12 @@ export class TriggerSettingsSection {
       .addToggle(toggle =>
         toggle
           .setValue(
-            this.plugin.settings.settings.triggers.enableOnEditTrigger === true
+            this.plugin.pluginData.settings.triggers.enableOnEditTrigger ===
+              true
           )
           .onChange(async value => {
-            this.plugin.settings.settings.triggers.enableOnEditTrigger = value;
+            this.plugin.pluginData.settings.triggers.enableOnEditTrigger =
+              value;
             await this.plugin.save_settings();
             // Activate/Deactivate on-edit listener
             this.plugin.triggerHandler.toggleOnEditListener();
@@ -57,10 +59,10 @@ export class TriggerSettingsSection {
       .addToggle(toggle =>
         toggle
           .setValue(
-            this.plugin.settings.settings.triggers.enablePeriodicMovement
+            this.plugin.pluginData.settings.triggers.enablePeriodicMovement
           )
           .onChange(async value => {
-            this.plugin.settings.settings.triggers.enablePeriodicMovement =
+            this.plugin.pluginData.settings.triggers.enablePeriodicMovement =
               value;
             await this.plugin.save_settings();
             // Toggle interval based on the new value via TriggerEventHandler
@@ -84,7 +86,7 @@ export class TriggerSettingsSection {
       }
     }
 
-    if (this.plugin.settings.settings.triggers.enablePeriodicMovement) {
+    if (this.plugin.pluginData.settings.triggers.enablePeriodicMovement) {
       const intervalSetting = new Setting(this.containerEl)
         .setName('Periodic movement interval')
         .setDesc(
@@ -94,7 +96,7 @@ export class TriggerSettingsSection {
           text
             .setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.INTERVAL)
             .setValue(
-              this.plugin.settings.settings.triggers.periodicMovementInterval.toString()
+              this.plugin.pluginData.settings.triggers.periodicMovementInterval.toString()
             )
             .onChange(async value => {
               const interval = parseInt(value);
@@ -115,7 +117,7 @@ export class TriggerSettingsSection {
                 return;
               }
 
-              this.plugin.settings.settings.triggers.periodicMovementInterval =
+              this.plugin.pluginData.settings.triggers.periodicMovementInterval =
                 interval;
               await this.plugin.save_settings();
               // If periodic is enabled, restart interval via handler

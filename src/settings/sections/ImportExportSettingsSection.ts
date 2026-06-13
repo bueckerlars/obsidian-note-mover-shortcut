@@ -61,19 +61,18 @@ export class ImportExportSettingsSection {
       .setName('Import settings')
       .setDesc('Import settings from a JSON file')
       .addButton(btn => {
-        btn
-          .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS)
-          .setDestructive()
-          .onClick(() => {
-            void (async () => {
-              btn.setDisabled(true);
-              try {
-                await this.importSettings();
-              } finally {
-                btn.setDisabled(false);
-              }
-            })();
-          });
+        btn.setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS);
+        btn.buttonEl.addClass('mod-warning');
+        btn.onClick(() => {
+          void (async () => {
+            btn.setDisabled(true);
+            try {
+              await this.importSettings();
+            } finally {
+              btn.setDisabled(false);
+            }
+          })();
+        });
       });
 
     // Add mobile optimization classes
@@ -94,9 +93,9 @@ export class ImportExportSettingsSection {
     try {
       // Build export object without history
       const settingsToExport: Partial<PluginData> = {
-        settings: this.plugin.settings.settings,
-        lastSeenVersion: this.plugin.settings.lastSeenVersion,
-        schemaVersion: this.plugin.settings.schemaVersion,
+        settings: this.plugin.pluginData.settings,
+        lastSeenVersion: this.plugin.pluginData.lastSeenVersion,
+        schemaVersion: this.plugin.pluginData.schemaVersion,
       };
 
       // Convert to JSON string with proper formatting
@@ -200,7 +199,7 @@ export class ImportExportSettingsSection {
       });
 
       if (confirmed) {
-        const current = this.plugin.settings;
+        const current = this.plugin.pluginData;
 
         // If imported in new PluginData shape, apply directly
         const pluginImport =

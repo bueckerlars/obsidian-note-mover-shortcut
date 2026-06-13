@@ -13,15 +13,15 @@ export class AttachmentsSettingsSection {
     const isMobile = MobileUtils.isMobile();
     new Setting(this.containerEl).setName('Attachments').setHeading();
 
-    if (!this.plugin.settings.settings.attachments) {
-      this.plugin.settings.settings.attachments = {
+    if (!this.plugin.pluginData.settings.attachments) {
+      this.plugin.pluginData.settings.attachments = {
         moveWithNote: false,
         skipSharedAttachments: true,
         deleteEmptyAssetFolders: false,
       };
     }
 
-    const attachments = this.plugin.settings.settings.attachments;
+    const attachments = this.plugin.pluginData.settings.attachments;
 
     const moveWithNoteDesc =
       'When a markdown note is moved, also move images and other attachments referenced in the note that live in the note folder or its subfolders (e.g. _assets/). Relative link structure is preserved.';

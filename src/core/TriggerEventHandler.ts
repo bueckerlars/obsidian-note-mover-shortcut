@@ -34,9 +34,9 @@ export class TriggerEventHandler {
       this.periodicIntervalId = null;
     }
 
-    if (this.plugin.settings.settings.triggers.enablePeriodicMovement) {
+    if (this.plugin.pluginData.settings.triggers.enablePeriodicMovement) {
       const minutes =
-        this.plugin.settings.settings.triggers.periodicMovementInterval;
+        this.plugin.pluginData.settings.triggers.periodicMovementInterval;
       this.periodicIntervalId = window.setInterval(
         () => {
           void this.plugin.advancedNoteMover.moveAllFilesInVaultPeriodic();
@@ -54,7 +54,7 @@ export class TriggerEventHandler {
 
     this.debounceManager.cancel('onEdit');
 
-    if (this.plugin.settings.settings.triggers.enableOnEditTrigger) {
+    if (this.plugin.pluginData.settings.triggers.enableOnEditTrigger) {
       this.onModifyEventRef = this.plugin.app.vault.on('modify', file => {
         if (file instanceof TFile && isMovableVaultFile(file)) {
           this.debouncedHandleOnEdit(file);
@@ -78,7 +78,7 @@ export class TriggerEventHandler {
       return;
     }
 
-    if (this.plugin.settings.settings.enableRuleEvaluationCache !== false) {
+    if (this.plugin.pluginData.settings.enableRuleEvaluationCache !== false) {
       // Ensure the file is marked dirty so the cache check re-evaluates it.
       // The vault event listener in main.ts does the same, but listener
       // ordering is not guaranteed.

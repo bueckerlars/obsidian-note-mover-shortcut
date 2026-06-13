@@ -1,5 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { PluginSettingTab, type SettingDefinitionItem } from 'obsidian';
+import { PluginSettingTab } from 'obsidian';
 import {
   PeriodicMovementSettingsSection,
   AttachmentsSettingsSection,
@@ -70,10 +70,6 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
       debouncedDisplay
     );
     this.updateSettings = new UpdateSettingsSection(plugin, this.containerEl);
-  }
-
-  getSettingDefinitions(): SettingDefinitionItem[] {
-    return [];
   }
 
   display(): void {
@@ -169,11 +165,11 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
    * Ensure filter array exists without removing empty rules during display
    */
   private ensureArraysExist(): void {
-    if (!this.plugin.settings.settings.filters) {
-      this.plugin.settings.settings.filters = { filter: [] };
+    if (!this.plugin.pluginData.settings.filters) {
+      this.plugin.pluginData.settings.filters = { filter: [] };
     }
-    if (!Array.isArray(this.plugin.settings.settings.filters.filter)) {
-      this.plugin.settings.settings.filters.filter = [];
+    if (!Array.isArray(this.plugin.pluginData.settings.filters.filter)) {
+      this.plugin.pluginData.settings.filters.filter = [];
     }
   }
 

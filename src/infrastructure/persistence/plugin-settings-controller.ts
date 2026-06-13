@@ -15,7 +15,7 @@ import { looksLikePluginDataRoot } from './plugin-settings-schema';
 
 /** Plugin instance with persisted data fields used by this module. */
 export type PluginWithPersistedSettings = Plugin & {
-  settings: PluginData;
+  pluginData: PluginData;
 };
 
 export async function loadPersistedSettings(
@@ -24,10 +24,10 @@ export async function loadPersistedSettings(
   const savedData: unknown = await plugin.loadData();
 
   if (looksLikePluginDataRoot(savedData)) {
-    plugin.settings = savedData as PluginData;
+    plugin.pluginData = savedData as PluginData;
   } else {
     await backupLegacyDataJson(plugin);
-    plugin.settings = migrateFromLegacy(savedData || {});
+    plugin.pluginData = migrateFromLegacy(savedData || {});
     await savePersistedSettings(plugin);
   }
 
@@ -45,52 +45,52 @@ export async function savePersistedSettings(
   plugin: PluginWithPersistedSettings
 ): Promise<void> {
   if (
-    !plugin.settings.history ||
-    typeof plugin.settings.history !== 'object' ||
-    Array.isArray(plugin.settings.history)
+    !plugin.pluginData.history ||
+    typeof plugin.pluginData.history !== 'object' ||
+    Array.isArray(plugin.pluginData.history)
   ) {
-    plugin.settings.history = { history: [], bulkOperations: [] };
+    plugin.pluginData.history = { history: [], bulkOperations: [] };
   }
-  if (!Array.isArray(plugin.settings.history.history)) {
-    plugin.settings.history.history = [];
+  if (!Array.isArray(plugin.pluginData.history.history)) {
+    plugin.pluginData.history.history = [];
   }
-  if (!Array.isArray(plugin.settings.history.bulkOperations)) {
-    plugin.settings.history.bulkOperations = [];
+  if (!Array.isArray(plugin.pluginData.history.bulkOperations)) {
+    plugin.pluginData.history.bulkOperations = [];
   }
 
-  const settings = plugin.settings.settings as SettingsData &
+  const settings = plugin.pluginData.settings as SettingsData &
     LegacySettingsFields;
   delete settings.rules;
   delete settings.enableLegacyRules;
   delete settings.legacyMigrationDismissed;
   delete settings.enableRuleV2;
 
-  await plugin.saveData(plugin.settings);
+  await plugin.saveData(plugin.pluginData);
 }
 
 export async function validateAndRepairPluginData(
   plugin: PluginWithPersistedSettings
 ): Promise<void> {
-  if (!plugin.settings.settings) {
-    plugin.settings.settings = buildDefaultSettingsData();
+  if (!plugin.pluginData.settings) {
+    plugin.pluginData.settings = buildDefaultSettingsData();
   }
-  if (!plugin.settings.history) {
-    plugin.settings.history = {
+  if (!plugin.pluginData.history) {
+    plugin.pluginData.history = {
       history: [],
       bulkOperations: [],
     };
   }
 
-  const settingsWithLegacy = plugin.settings.settings as SettingsData &
+  const settingsWithLegacy = plugin.pluginData.settings as SettingsData &
     LegacySettingsFields;
   if (!Array.isArray(settingsWithLegacy.rules)) {
     settingsWithLegacy.rules = [];
   }
-  if (!plugin.settings.settings.filters) {
-    plugin.settings.settings.filters = { filter: [] };
+  if (!plugin.pluginData.settings.filters) {
+    plugin.pluginData.settings.filters = { filter: [] };
   }
-  if (!Array.isArray(plugin.settings.settings.filters.filter)) {
-    plugin.settings.settings.filters.filter = [];
+  if (!Array.isArray(plugin.pluginData.settings.filters.filter)) {
+    plugin.pluginData.settings.filters.filter = [];
   }
 
   if (settingsWithLegacy.enableRuleV2 !== undefined) {
@@ -100,62 +100,63 @@ export async function validateAndRepairPluginData(
   delete settingsWithLegacy.enableLegacyRules;
   delete settingsWithLegacy.legacyMigrationDismissed;
 
-  if (plugin.settings.settings.enableRuleEvaluationCache === undefined) {
-    plugin.settings.settings.enableRuleEvaluationCache = true;
+  if (plugin.pluginData.settings.enableRuleEvaluationCache === undefined) {
+    plugin.pluginData.settings.enableRuleEvaluationCache = true;
   }
 
-  if (plugin.settings.settings.enableVaultIndexCache === undefined) {
-    plugin.settings.settings.enableVaultIndexCache = true;
+  if (plugin.pluginData.settings.enableVaultIndexCache === undefined) {
+    plugin.pluginData.settings.enableVaultIndexCache = true;
   }
 
-  if (plugin.settings.settings.enablePerformanceDebug === undefined) {
-    plugin.settings.settings.enablePerformanceDebug = false;
+  if (plugin.pluginData.settings.enablePerformanceDebug === undefined) {
+    plugin.pluginData.settings.enablePerformanceDebug = false;
   }
 
-  if (plugin.settings.settings.showReleaseNotesOnUpdate === undefined) {
-    plugin.settings.settings.showReleaseNotesOnUpdate = true;
+  if (plugin.pluginData.settings.showReleaseNotesOnUpdate === undefined) {
+    plugin.pluginData.settings.showReleaseNotesOnUpdate = true;
   }
 
-  if (!plugin.settings.lastSeenVersion) {
+  if (!plugin.pluginData.lastSeenVersion) {
     const nestedLastSeen = (
-      plugin.settings.settings as { lastSeenVersion?: string }
+      plugin.pluginData.settings as { lastSeenVersion?: string }
     ).lastSeenVersion;
     if (typeof nestedLastSeen === 'string' && nestedLastSeen.trim() !== '') {
-      plugin.settings.lastSeenVersion = nestedLastSeen.trim();
-      delete (plugin.settings.settings as { lastSeenVersion?: string })
+      plugin.pluginData.lastSeenVersion = nestedLastSeen.trim();
+      delete (plugin.pluginData.settings as { lastSeenVersion?: string })
         .lastSeenVersion;
       await savePersistedSettings(plugin);
     }
   }
 
-  if (!plugin.settings.settings.attachments) {
-    plugin.settings.settings.attachments = {
+  if (!plugin.pluginData.settings.attachments) {
+    plugin.pluginData.settings.attachments = {
       moveWithNote: false,
       skipSharedAttachments: true,
       deleteEmptyAssetFolders: false,
     };
   } else {
-    if (plugin.settings.settings.attachments.moveWithNote === undefined) {
-      plugin.settings.settings.attachments.moveWithNote = false;
+    if (plugin.pluginData.settings.attachments.moveWithNote === undefined) {
+      plugin.pluginData.settings.attachments.moveWithNote = false;
     }
     if (
-      plugin.settings.settings.attachments.skipSharedAttachments === undefined
+      plugin.pluginData.settings.attachments.skipSharedAttachments === undefined
     ) {
-      plugin.settings.settings.attachments.skipSharedAttachments = true;
+      plugin.pluginData.settings.attachments.skipSharedAttachments = true;
     }
     if (
-      plugin.settings.settings.attachments.deleteEmptyAssetFolders === undefined
+      plugin.pluginData.settings.attachments.deleteEmptyAssetFolders ===
+      undefined
     ) {
-      plugin.settings.settings.attachments.deleteEmptyAssetFolders = false;
+      plugin.pluginData.settings.attachments.deleteEmptyAssetFolders = false;
     }
   }
 
-  if (!Array.isArray(plugin.settings.settings.rulesV2)) {
-    plugin.settings.settings.rulesV2 = [];
+  if (!Array.isArray(plugin.pluginData.settings.rulesV2)) {
+    plugin.pluginData.settings.rulesV2 = [];
   }
 
-  if (plugin.settings.schemaVersion === undefined) {
-    plugin.settings.schemaVersion = 1;
+  if (plugin.pluginData.schemaVersion === undefined) {
+    plugin.pluginData.schemaVersion = 1;
   }
 
   const legacyRules = Array.isArray(settingsWithLegacy.rules)
@@ -169,23 +170,23 @@ export async function validateAndRepairPluginData(
       String(rule.path).trim() !== ''
   );
 
-  plugin.settings.settings.filters.filter =
-    plugin.settings.settings.filters.filter.filter(
+  plugin.pluginData.settings.filters.filter =
+    plugin.pluginData.settings.filters.filter.filter(
       f => f && typeof f.value === 'string' && f.value.trim() !== ''
     );
 
   if (
     RuleMigrationService.shouldMigrate(
       settingsWithLegacy.rules ?? [],
-      plugin.settings.settings.rulesV2 ?? []
+      plugin.pluginData.settings.rulesV2 ?? []
     )
   ) {
     console.debug('Migrating Rule V1 to Rule V2...');
-    plugin.settings.settings.rulesV2 = RuleMigrationService.migrateRules(
+    plugin.pluginData.settings.rulesV2 = RuleMigrationService.migrateRules(
       settingsWithLegacy.rules ?? []
     );
     console.debug(
-      `Migrated ${(plugin.settings.settings.rulesV2 ?? []).length} rules to V2 format`
+      `Migrated ${(plugin.pluginData.settings.rulesV2 ?? []).length} rules to V2 format`
     );
     settingsWithLegacy.rules = [];
     await savePersistedSettings(plugin);
@@ -194,11 +195,11 @@ export async function validateAndRepairPluginData(
   }
 
   if (
-    plugin.settings.settings.rulesV2 &&
-    plugin.settings.settings.rulesV2.length > 0
+    plugin.pluginData.settings.rulesV2 &&
+    plugin.pluginData.settings.rulesV2.length > 0
   ) {
     const migrated = RuleMigrationService.migrateRuleV2Triggers(
-      plugin.settings.settings.rulesV2
+      plugin.pluginData.settings.rulesV2
     );
     if (migrated) {
       console.debug(
@@ -208,7 +209,7 @@ export async function validateAndRepairPluginData(
     }
 
     const repaired = RuleMigrationService.repairRuleV2Properties(
-      plugin.settings.settings.rulesV2
+      plugin.pluginData.settings.rulesV2
     );
     if (repaired) {
       console.debug(
@@ -219,8 +220,8 @@ export async function validateAndRepairPluginData(
   }
 
   if (
-    plugin.settings.settings.rulesV2 &&
-    plugin.settings.settings.rulesV2.length > 0
+    plugin.pluginData.settings.rulesV2 &&
+    plugin.pluginData.settings.rulesV2.length > 0
   ) {
     const validationResult = {
       isValid: true,
@@ -229,7 +230,7 @@ export async function validateAndRepairPluginData(
     };
 
     SettingsValidator.validateRulesV2Array(
-      plugin.settings.settings.rulesV2,
+      plugin.pluginData.settings.rulesV2,
       validationResult
     );
 
