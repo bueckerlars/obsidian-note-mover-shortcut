@@ -2,10 +2,15 @@
 
 ## [1.1.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.6...1.1.0)
 
+### Features
+
+- **Vault re-evaluation after rule changes** ([#80](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/80)): New command **Re-evaluate entire vault with current rules** and a matching button under **Settings → Rules**. Syncs the latest rules, clears the evaluation cache, opens a preview of planned moves, and only moves files when you confirm in the modal.
+
 ### Fixes
 
 - **Rule editor footer**: Save, Cancel, and Remove rule buttons were rendered but often invisible or not clickable on desktop because the footer used Obsidian `Setting` wrappers without a label, leaving an empty `.setting-item-info` that broke the layout. The footer now uses `BaseModal` button helpers (same pattern as the preview modal), so all actions are visible and clickable again.
 - **Remove rule in editor**: Deleting a rule from the editor footer works again — confirm dialog, removal, and list refresh.
+- **Rule evaluation cache after rule edits**: Saving, deleting, or toggling a rule in settings now calls `updateRuleManager()`, so the in-memory rule engine and evaluation cache stay in sync with your saved rules (previously only clone and reorder did this).
 
 ### Improvements
 

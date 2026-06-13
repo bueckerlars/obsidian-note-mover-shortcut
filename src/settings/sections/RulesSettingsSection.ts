@@ -1,5 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { App, Setting } from 'obsidian';
+import { App, ButtonComponent, Setting } from 'obsidian';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { RuleEditorModal } from '../../modals/RuleEditorModal';
@@ -7,6 +7,8 @@ import { RuleV2 } from '../../types/RuleV2';
 import { MobileUtils } from '../../utils/MobileUtils';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { toMarkdownInlineCode } from '../../utils/markdown-confirm';
+import { handleError } from '../../utils/Error';
+import { NoticeManager } from '../../utils/NoticeManager';
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -30,6 +32,43 @@ export class RulesSettingsSection {
     new Setting(this.containerEl).setDesc(descUseRules);
   }
 
+  addVaultReEvaluationSetting(): void {
+    let reEvaluateButton: ButtonComponent | undefined;
+
+    new Setting(this.containerEl)
+      .setName('Re-evaluate vault')
+      .setDesc(
+        'After changing rules, preview which files would move to their new destinations before applying any moves.'
+      )
+      .addButton(btn => {
+        reEvaluateButton = btn
+          .setButtonText('Re-evaluate vault with current rules')
+          .onClick(() => {
+            if (reEvaluateButton) {
+              reEvaluateButton.setDisabled(true);
+              reEvaluateButton.setButtonText('Generating preview…');
+            }
+            void (async () => {
+              try {
+                await this.plugin.advancedNoteMover.openVaultReEvaluationPreview();
+              } catch (error) {
+                handleError(error, 'Error generating vault preview', false);
+                NoticeManager.error(
+                  `Error generating preview: ${error instanceof Error ? error.message : String(error)}`
+                );
+              } finally {
+                if (reEvaluateButton) {
+                  reEvaluateButton.setDisabled(false);
+                  reEvaluateButton.setButtonText(
+                    'Re-evaluate vault with current rules'
+                  );
+                }
+              }
+            })();
+          });
+      });
+  }
+
   addAddRuleButtonSetting(): void {
     new Setting(this.containerEl).addButton(btn =>
       btn
@@ -47,6 +86,12 @@ export class RulesSettingsSection {
 
   private get app(): App {
     return this.plugin.app;
+  }
+
+  private async persistRulesAndSyncManager(): Promise<void> {
+    await this.plugin.save_settings();
+    this.plugin.advancedNoteMover.updateRuleManager();
+    this.refreshDisplay();
   }
 
   /**
@@ -136,8 +181,7 @@ export class RulesSettingsSection {
             });
             if (confirmed) {
               this.plugin.settings.settings.rulesV2!.splice(index, 1);
-              await this.plugin.save_settings();
-              this.refreshDisplay();
+              await this.persistRulesAndSyncManager();
             }
           })
       );
@@ -159,9 +203,7 @@ export class RulesSettingsSection {
               0,
               clonedRule
             );
-            await this.plugin.save_settings();
-            this.plugin.advancedNoteMover.updateRuleManager();
-            this.refreshDisplay();
+            await this.persistRulesAndSyncManager();
           })
       );
 
@@ -182,7 +224,7 @@ export class RulesSettingsSection {
           .setTooltip(rule.active ? 'Rule is active' : 'Rule is inactive')
           .onChange(async value => {
             this.plugin.settings.settings.rulesV2![index].active = value;
-            await this.plugin.save_settings();
+            await this.persistRulesAndSyncManager();
           })
       );
 
@@ -215,9 +257,7 @@ export class RulesSettingsSection {
         this.reorderRulesV2(fromIndex, toIndex);
       },
       onSave: async () => {
-        await this.plugin.save_settings();
-        this.plugin.advancedNoteMover.updateRuleManager();
-        this.refreshDisplay();
+        await this.persistRulesAndSyncManager();
       },
       itemSelector: '.setting-item',
       handleSelector: '.advancedNoteMover-drag-handle',
@@ -279,14 +319,12 @@ export class RulesSettingsSection {
           this.plugin.settings.settings.rulesV2.push(updatedRule);
         }
 
-        await this.plugin.save_settings();
-        this.refreshDisplay();
+        await this.persistRulesAndSyncManager();
       },
       onDelete: isEditMode
         ? async () => {
             this.plugin.settings.settings.rulesV2!.splice(ruleIndex, 1);
-            await this.plugin.save_settings();
-            this.refreshDisplay();
+            await this.persistRulesAndSyncManager();
           }
         : undefined,
       vaultIndexCache: this.plugin.vaultIndexCache,

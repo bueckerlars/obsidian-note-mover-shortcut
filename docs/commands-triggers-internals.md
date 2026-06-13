@@ -6,14 +6,15 @@
 
 All commands are available from the **command palette** (Ctrl/Cmd+P). Active-file commands only appear when a Markdown, Canvas, or Base file is open and focused.
 
-| Command                                 | What it does                                                                                                                                               |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Move active note to note folder**     | Evaluates the current note against your rules and moves it if a rule matches. Shows a notification with an Undo link. Also accessible via the ribbon icon. |
-| **Move all files in vault**             | Scans every movable file in the vault and moves each one that matches a rule.                                                                              |
-| **Preview active note movement**        | Shows where the current note _would_ go — without moving anything.                                                                                         |
-| **Preview bulk movement for all files** | Shows a full list of planned moves for every file in the vault — without moving anything.                                                                  |
-| **Show history**                        | Opens the move history modal. View past moves and undo bulk operations.                                                                                    |
-| **Add current file to blacklist**       | Appends `fileName: <current filename>` to your filter list, protecting the open note from future moves.                                                    |
+| Command                                         | What it does                                                                                                                                                                                                                                                                                                                              |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Move active note to note folder**             | Evaluates the current note against your rules and moves it if a rule matches. Shows a notification with an Undo link. Also accessible via the ribbon icon.                                                                                                                                                                                |
+| **Move all files in vault**                     | Scans every movable file in the vault and moves each one that matches a rule.                                                                                                                                                                                                                                                             |
+| **Re-evaluate entire vault with current rules** | Syncs your latest rules, clears the evaluation cache, and opens a **preview** of planned moves for the whole vault. Use this after adding, reordering, or editing rules so already filed notes can move to new destinations. Nothing moves until you confirm in the preview modal. Also available as a button under **Settings → Rules**. |
+| **Preview active note movement**                | Shows where the current note _would_ go — without moving anything.                                                                                                                                                                                                                                                                        |
+| **Preview bulk movement for all files**         | Shows a full list of planned moves for every file in the vault — without moving anything.                                                                                                                                                                                                                                                 |
+| **Show history**                                | Opens the move history modal. View past moves and undo bulk operations.                                                                                                                                                                                                                                                                   |
+| **Add current file to blacklist**               | Appends `fileName: <current filename>` to your filter list, protecting the open note from future moves.                                                                                                                                                                                                                                   |
 
 ### Bulk move: stop mid-run
 
@@ -106,7 +107,7 @@ Configured in **Settings → Performance / debug**.
 
 On by default. Stores the last matched destination per file (keyed by path + modification time + rules/filters hash). When a file hasn't changed and the rules haven't changed, it is skipped during bulk and periodic passes.
 
-The cache is automatically invalidated when you edit a file, rename or delete a file, or change your rules or filters.
+The cache is automatically invalidated when you edit, delete, reorder, or toggle a rule, change filters, rename or delete a file, or edit a file (modify/create). The **Re-evaluate entire vault with current rules** command also clears the cache before generating a preview, so bulk and periodic passes always re-check every file after you intentionally re-scan the vault.
 
 ### Vault index cache
 
