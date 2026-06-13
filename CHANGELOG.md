@@ -5,6 +5,7 @@
 ### Features
 
 - **Vault re-evaluation after rule changes** ([#80](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/80)): New command **Re-evaluate entire vault with current rules** and a matching button under **Settings → Rules**. Syncs the latest rules, clears the evaluation cache, opens a preview of planned moves, and only moves files when you confirm in the modal.
+- **Date components in destination templates** ([#98](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/98)): Property placeholders now support date components such as `{{property.created.year}}`, `{{property.created.month}}`, `{{property.created.monthName}}`, and `{{property.created.dayOfWeek}}` for building folder paths from date frontmatter without separate year/month fields.
 
 ### Fixes
 

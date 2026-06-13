@@ -1,4 +1,8 @@
-import { stringifyUnknown } from '../../utils/stringify-unknown';
+import type { DatePlaceholderComponent } from '../dates/property-date';
+import {
+  parsePropertyPlaceholderKey,
+  resolvePropertyPlaceholder,
+} from './property-placeholder';
 
 export type TemplateSegment =
   | {
@@ -8,8 +12,15 @@ export type TemplateSegment =
   | {
       kind: 'placeholder';
       raw: string;
-      type: 'tag' | 'property';
+      type: 'tag';
       key: string;
+    }
+  | {
+      kind: 'placeholder';
+      raw: string;
+      type: 'property';
+      key: string;
+      dateComponent?: DatePlaceholderComponent;
     };
 
 export interface TemplateParseError {
@@ -39,6 +50,7 @@ const PLACEHOLDER_END = '}}';
  * Supported placeholder formats:
  * - {{tag.<tagValue>}}
  * - {{property.<propertyKey>}}
+ * - {{property.<propertyKey>.<dateComponent>}}
  *
  * Everything else is treated as plain text.
  */
@@ -124,12 +136,23 @@ export function parseDestinationTemplate(raw: string): {
       };
     }
 
-    segments.push({
-      kind: 'placeholder',
-      raw: inner,
-      type: prefix,
-      key,
-    });
+    if (prefix === 'tag') {
+      segments.push({
+        kind: 'placeholder',
+        raw: inner,
+        type: 'tag',
+        key,
+      });
+    } else {
+      const parsedProperty = parsePropertyPlaceholderKey(key);
+      segments.push({
+        kind: 'placeholder',
+        raw: inner,
+        type: 'property',
+        key: parsedProperty.lookupKey,
+        dateComponent: parsedProperty.dateComponent,
+      });
+    }
 
     index = end + PLACEHOLDER_END.length;
   }
@@ -180,6 +203,8 @@ export function validateDestinationTemplate(
  *   - If no matching tag exists, the placeholder becomes an empty string.
  * - Property placeholders:
  *   - {{property.status}} → stringified value of properties['status'].
+ *   - {{property.created.year}} → date component from properties['created'] when parseable.
+ *   - Literal property keys take precedence over date components (e.g. property created.year).
  *   - If the property is missing or empty, the placeholder becomes an empty string.
  */
 export function renderDestinationTemplate(
@@ -214,7 +239,10 @@ export function renderDestinationTemplate(
     if (segment.type === 'tag') {
       result += resolveTagPlaceholder(segment.key, context.tags);
     } else if (segment.type === 'property') {
-      result += resolvePropertyPlaceholder(segment.key, context.properties);
+      const propertyKey = segment.dateComponent
+        ? `${segment.key}.${segment.dateComponent}`
+        : segment.key;
+      result += resolvePropertyPlaceholder(propertyKey, context.properties);
     }
   }
 
@@ -255,34 +283,4 @@ function resolveTagPlaceholder(key: string, tags: string[]): string {
 
 function stripTagHash(tag: string): string {
   return tag.startsWith('#') ? tag.substring(1) : tag;
-}
-
-function resolvePropertyPlaceholder(
-  key: string,
-  properties: Record<string, unknown>
-): string {
-  if (!properties || typeof properties !== 'object') {
-    return '';
-  }
-
-  if (!Object.prototype.hasOwnProperty.call(properties, key)) {
-    return '';
-  }
-
-  const value = properties[key];
-
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  // Basic handling for lists and other types: stringify
-  if (Array.isArray(value)) {
-    return value.join(', ');
-  }
-
-  return stringifyUnknown(value);
 }

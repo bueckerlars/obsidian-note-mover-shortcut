@@ -1,6 +1,9 @@
 import { AbstractInputSuggest, App, TFolder } from 'obsidian';
 import { GENERAL_CONSTANTS } from '../../config/constants';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
+import { DATE_PLACEHOLDER_COMPONENTS } from '../../domain/dates/property-date';
+import { inferPropertyTypeFromSamples } from '../../utils/OperatorMapping';
+import type { PropertyType } from './PropertySuggest';
 
 type FolderOrTemplateSuggestion =
   | {
@@ -24,13 +27,18 @@ type TemplateContext =
   | {
       type: 'property';
       search: string;
+    }
+  | {
+      type: 'propertyDateComponent';
+      propertyName: string;
+      search: string;
     };
 
 export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggestion> {
   private cachedFolders: TFolder[] | null = null;
   private metadataExtractor: MetadataExtractor;
   private cachedTags: string[] | null = null;
-  private cachedProperties: string[] | null = null;
+  private cachedPropertyInfo: Map<string, PropertyType> | null = null;
 
   constructor(
     app: App,
@@ -54,7 +62,7 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
   public invalidateCache(): void {
     this.cachedFolders = null;
     this.cachedTags = null;
-    this.cachedProperties = null;
+    this.cachedPropertyInfo = null;
   }
 
   protected getSuggestions(
@@ -83,6 +91,12 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
       }
       if (templateContext.type === 'property') {
         return this.getPropertyTemplateSuggestions(templateContext.search);
+      }
+      if (templateContext.type === 'propertyDateComponent') {
+        return this.getDateComponentTemplateSuggestions(
+          templateContext.propertyName,
+          templateContext.search
+        );
       }
     }
 
@@ -186,6 +200,18 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
         rest = rest.substring(1);
       }
       const search = this.cleanTemplateSearch(rest);
+      const dotIndex = search.indexOf('.');
+      if (dotIndex !== -1) {
+        const propertyName = search.substring(0, dotIndex);
+        const componentSearch = search.substring(dotIndex + 1).toLowerCase();
+        if (this.getPropertyType(propertyName) === 'date') {
+          return {
+            type: 'propertyDateComponent',
+            propertyName,
+            search: componentSearch,
+          };
+        }
+      }
       return { type: 'property', search: search.toLowerCase() };
     }
 
@@ -244,14 +270,11 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
   private getPropertyTemplateSuggestions(
     search: string
   ): FolderOrTemplateSuggestion[] {
-    if (this.cachedProperties === null) {
-      this.cachedProperties = this.loadProperties();
-    }
-
+    const propertyInfo = this.loadPropertyInfo();
     const lowerSearch = search.toLowerCase();
     const suggestions: FolderOrTemplateSuggestion[] = [];
 
-    for (const name of this.cachedProperties) {
+    for (const name of Array.from(propertyInfo.keys()).sort()) {
       if (!lowerSearch || name.toLowerCase().includes(lowerSearch)) {
         suggestions.push({
           kind: 'propertyTemplate',
@@ -270,21 +293,63 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
     return suggestions;
   }
 
-  private loadProperties(): string[] {
+  private getDateComponentTemplateSuggestions(
+    propertyName: string,
+    search: string
+  ): FolderOrTemplateSuggestion[] {
+    const suggestions: FolderOrTemplateSuggestion[] = [];
+
+    for (const component of DATE_PLACEHOLDER_COMPONENTS) {
+      if (!search || component.toLowerCase().startsWith(search)) {
+        suggestions.push({
+          kind: 'propertyTemplate',
+          value: `{{property.${propertyName}.${component}}}`,
+        });
+
+        if (
+          suggestions.length >=
+          GENERAL_CONSTANTS.SUGGESTION_LIMITS.FOLDER_SUGGESTIONS
+        ) {
+          break;
+        }
+      }
+    }
+
+    return suggestions;
+  }
+
+  private getPropertyType(propertyName: string): PropertyType | undefined {
+    return this.loadPropertyInfo().get(propertyName);
+  }
+
+  private loadPropertyInfo(): Map<string, PropertyType> {
+    if (this.cachedPropertyInfo !== null) {
+      return this.cachedPropertyInfo;
+    }
+
     const files = this.app.vault.getMarkdownFiles();
-    const propertyNames = new Set<string>();
+    const propertyValues = new Map<string, unknown[]>();
 
     files.forEach(file => {
       const cachedMetadata = this.app.metadataCache.getFileCache(file);
       if (cachedMetadata?.frontmatter) {
-        Object.keys(cachedMetadata.frontmatter).forEach(key => {
+        Object.entries(cachedMetadata.frontmatter).forEach(([key, value]) => {
           if (!key.startsWith('position') && key !== 'tags') {
-            propertyNames.add(key);
+            if (!propertyValues.has(key)) {
+              propertyValues.set(key, []);
+            }
+            propertyValues.get(key)!.push(value);
           }
         });
       }
     });
 
-    return Array.from(propertyNames).sort();
+    const propertyInfo = new Map<string, PropertyType>();
+    propertyValues.forEach((values, key) => {
+      propertyInfo.set(key, inferPropertyTypeFromSamples(values));
+    });
+
+    this.cachedPropertyInfo = propertyInfo;
+    return propertyInfo;
   }
 }
