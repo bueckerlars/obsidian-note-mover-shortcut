@@ -67,6 +67,22 @@ export class CommandHandler {
       },
     });
 
+    // Re-evaluate entire vault after rule changes (preview first)
+    this.plugin.addCommand({
+      id: 're-evaluate-vault-with-rules',
+      name: 'Re-evaluate entire vault with current rules',
+      callback: async () => {
+        try {
+          await this.plugin.advancedNoteMover.openVaultReEvaluationPreview();
+        } catch (error) {
+          handleError(error, 'Error generating preview', false);
+          NoticeManager.error(
+            `Error generating preview: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      },
+    });
+
     // Preview single note movement command
     this.plugin.addCommand({
       id: 'preview-note-movement',

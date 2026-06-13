@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.6...1.1.0)
+
+### Features
+
+- **Vault re-evaluation after rule changes** ([#80](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/80)): New command **Re-evaluate entire vault with current rules** and a matching button under **Settings → Rules**. Syncs the latest rules, clears the evaluation cache, opens a preview of planned moves, and only moves files when you confirm in the modal.
+
+### Fixes
+
+- **Rule evaluation cache after rule edits**: Saving, deleting, or toggling a rule in settings now calls `updateRuleManager()`, so the in-memory rule engine and evaluation cache stay in sync with your saved rules (previously only clone and reorder did this).
+
 ## [1.0.6](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.5...1.0.6)
 
 ### Fixes

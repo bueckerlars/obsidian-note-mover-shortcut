@@ -9,6 +9,7 @@ import AdvancedNoteMoverPlugin from 'main';
 import { type FileMoveResult, type OperationType } from '../types/Common';
 import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
+import { PreviewModal } from '../modals/PreviewModal';
 import {
   SETTINGS_CONSTANTS,
   NOTIFICATION_CONSTANTS,
@@ -342,6 +343,19 @@ export class AdvancedNoteMover {
     }
     this.lastMoveNoticeAtByFileName.set(file.name, now);
     showSingleFileMoveNotice(file, targetFolder);
+  }
+
+  /**
+   * Re-evaluate the vault with current rules: sync rule manager, invalidate cache,
+   * then open a preview modal before any files are moved.
+   */
+  async openVaultReEvaluationPreview(): Promise<void> {
+    this.updateRuleManager();
+    this.plugin.ruleCache.invalidateAll();
+    const preview = await this.generateVaultMovePreview();
+    new PreviewModal(this.plugin.app, this.plugin, preview, {
+      title: 'Re-evaluate vault',
+    }).open();
   }
 
   /**

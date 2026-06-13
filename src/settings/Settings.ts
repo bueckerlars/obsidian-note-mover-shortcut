@@ -151,6 +151,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
 
     this.rulesSettings.addRulesSetting();
     this.rulesSettings.addRulesArray();
+    this.rulesSettings.addVaultReEvaluationSetting();
     this.rulesSettings.addAddRuleButtonSetting();
 
     this.attachmentsSettings.addAttachmentSettings();
