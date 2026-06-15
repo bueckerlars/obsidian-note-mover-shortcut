@@ -12,6 +12,10 @@ import {
   type LegacyRuleV1,
 } from 'src/core/RuleMigrationService';
 import { looksLikePluginDataRoot } from './plugin-settings-schema';
+import {
+  migrateVaultLastSeenToApp,
+  resolveLastSeenVersion,
+} from './app-level-release-notes-store';
 
 /** Plugin instance with persisted data fields used by this module. */
 export type PluginWithPersistedSettings = Plugin & {
@@ -126,6 +130,18 @@ export async function validateAndRepairPluginData(
         .lastSeenVersion;
       await savePersistedSettings(plugin);
     }
+  }
+
+  migrateVaultLastSeenToApp(plugin.pluginData.lastSeenVersion);
+  const resolvedLastSeen = resolveLastSeenVersion(
+    plugin.pluginData.lastSeenVersion
+  );
+  if (
+    resolvedLastSeen &&
+    resolvedLastSeen !== plugin.pluginData.lastSeenVersion
+  ) {
+    plugin.pluginData.lastSeenVersion = resolvedLastSeen;
+    await savePersistedSettings(plugin);
   }
 
   if (!plugin.pluginData.settings.attachments) {

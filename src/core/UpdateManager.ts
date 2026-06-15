@@ -3,6 +3,10 @@ import { UpdateModal } from '../modals/UpdateModal';
 import { NoticeManager } from '../utils/NoticeManager';
 import { ChangelogEntry, CHANGELOG_ENTRIES } from '../generated/changelog';
 import {
+  persistLastSeenVersionAppLevel,
+  resolveLastSeenVersion,
+} from '../infrastructure/persistence/app-level-release-notes-store';
+import {
   isNewerVersion,
   shouldOfferReleaseNotes,
 } from '../utils/version-compare';
@@ -55,7 +59,11 @@ export class UpdateManager {
       currentVersion
     );
 
-    // Show update modal
+    // Persist before opening so vault switches / force-stop cannot lose the mark.
+    if (!forceShow) {
+      await this.markVersionSeen(currentVersion);
+    }
+
     const updateModal = new UpdateModal(
       this.plugin.app,
       currentVersion,
@@ -63,11 +71,6 @@ export class UpdateManager {
       changelogEntries
     );
     updateModal.open();
-
-    // Only mark version as "seen" on automatic call
-    if (!forceShow) {
-      await this.markVersionSeen(currentVersion);
-    }
   }
 
   private isReleaseNotesEnabled(): boolean {
@@ -75,10 +78,11 @@ export class UpdateManager {
   }
 
   private getLastSeenVersion(): string | undefined {
-    return this.plugin.pluginData.lastSeenVersion;
+    return resolveLastSeenVersion(this.plugin.pluginData.lastSeenVersion);
   }
 
   private async markVersionSeen(version: string): Promise<void> {
+    persistLastSeenVersionAppLevel(version);
     this.plugin.pluginData.lastSeenVersion = version;
     await this.plugin.save_settings();
   }
