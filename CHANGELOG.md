@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.1.1...1.1.2)
+
+### Fixes
+
+- **Release notes on vault switch and mobile restart** ([#92](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/92)): `lastSeenVersion` is now stored at app level (`localStorage`) in addition to vault `data.json`, so the changelog modal is not shown again when switching vaults or after force-stopping Obsidian. Version is persisted before the modal opens to reduce repeat prompts when vault saves are interrupted on mobile.
+
+## [1.1.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.1.0...1.1.1)
+
+### Fixes
+
+- **Minimum Obsidian version on mobile** ([#95](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/95)): Corrected `minAppVersion` from **1.13.0** to **1.8.7** so the plugin is offered again in Community Plugins on Obsidian **1.12.x** (iOS/Android). Releases v1.0.5–v1.1.0 were not installable on those builds because they required a newer Obsidian than currently available on mobile.
+
 ## [1.1.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.0.6...1.1.0)
 
 ### Features

@@ -13,7 +13,7 @@ export class UpdateSettingsSection {
     new Setting(this.containerEl)
       .setName('Show release notes after plugin update')
       .setDesc(
-        'When enabled, opens the changelog modal once after you install a newer plugin version. Does not show on every obsidian startup.'
+        'When enabled, opens the changelog modal once after you install a newer plugin version. Applies across all vaults; does not show on every startup or vault switch.'
       )
       .addToggle(toggle =>
         toggle
