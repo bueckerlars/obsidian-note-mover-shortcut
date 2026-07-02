@@ -6,8 +6,10 @@ import { MobileUtils } from '../utils/MobileUtils';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
 import { handleError, createError } from '../utils/Error';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
+import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
+import { deriveConflictInteractive } from '../utils/conflict-resolution-settings';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class PreviewModal extends BaseModal {
@@ -258,16 +260,13 @@ export class PreviewModal extends BaseModal {
             attachmentSettings: getAttachmentMoveSettings(
               this.plugin.pluginData.settings
             ),
-            interactive: true,
+            interactive: deriveConflictInteractive(
+              this.plugin.pluginData.settings,
+              false
+            ),
             bypassConflictSkipCache: true,
             onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
-              this.plugin.pluginData.settings.conflictResolution = {
-                strategy,
-              };
-              await this.plugin.save_settings();
-              NoticeManager.info(
-                `Conflict resolution strategy set to "${strategy}".`
-              );
+              await persistConflictResolutionStrategy(this.plugin, strategy);
             },
           });
 
@@ -275,8 +274,6 @@ export class PreviewModal extends BaseModal {
             movedCount++;
           } else if (moveOutcome.reason === 'skip') {
             skippedCount++;
-          } else if (moveOutcome.reason === 'cancel') {
-            break;
           }
         } catch (error) {
           handleError(error, `Error moving file ${entry.fileName}`, false);

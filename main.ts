@@ -34,6 +34,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
   public vaultIndexCache!: PluginVaultIndexCache;
   public performanceTrace!: PerformanceTraceRecorder;
   private settingTab!: AdvancedNoteMoverSettingsTab;
+  private pendingSkipCacheInvalidation = false;
   /** Application-layer facades (use-cases); core logic remains on `advancedNoteMover`. */
   public appServices!: PluginApplicationServices;
 
@@ -55,6 +56,10 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
     await this.conflictSkipCacheManager.prune(this.app);
     this.updateManager = new UpdateManager(this);
     this.advancedNoteMover = new AdvancedNoteMover(this);
+    if (this.pendingSkipCacheInvalidation) {
+      this.pendingSkipCacheInvalidation = false;
+      void this.advancedNoteMover.invalidateConflictSkipCacheForRuleChange();
+    }
     this.appServices = createPluginApplicationServices(this);
     this.triggerHandler = new TriggerEventHandler(this);
     this.command_handler = new CommandHandler(this);
@@ -87,7 +92,17 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
 
   public syncRuleCacheHash(): void {
     const s = this.pluginData.settings;
-    this.ruleCache.updateRulesHash(s.rulesV2 ?? [], s.filters.filter);
+    const rulesChanged = this.ruleCache.updateRulesHash(
+      s.rulesV2 ?? [],
+      s.filters.filter
+    );
+    if (rulesChanged) {
+      if (this.advancedNoteMover) {
+        void this.advancedNoteMover.invalidateConflictSkipCacheForRuleChange();
+      } else {
+        this.pendingSkipCacheInvalidation = true;
+      }
+    }
   }
 
   async save_settings(): Promise<void> {

@@ -4,7 +4,6 @@ import type { ConflictSkipCacheEntry } from '../types/ConflictSkipCache';
 import {
   conflictSkipCacheKey,
   findConflictSkipEntry,
-  findConflictSkipEntryForSource,
   normalizeConflictCachePath,
   pruneConflictSkipEntries,
   removeConflictSkipEntriesForPath,
@@ -44,14 +43,15 @@ export class ConflictSkipCacheManager {
     if (this.pendingSkips.has(key)) {
       return true;
     }
-    if (
+    return this.hasPersistedSkip(sourcePath, targetPath);
+  }
+
+  hasPersistedSkip(sourcePath: string, targetPath: string): boolean {
+    const normalizedSource = normalizeConflictCachePath(sourcePath);
+    const normalizedTarget = normalizeConflictCachePath(targetPath);
+    return (
       findConflictSkipEntry(this.entries, normalizedSource, normalizedTarget) !=
       null
-    ) {
-      return true;
-    }
-    return (
-      findConflictSkipEntryForSource(this.entries, normalizedSource) != null
     );
   }
 
@@ -91,6 +91,17 @@ export class ConflictSkipCacheManager {
   async addSkip(sourcePath: string, targetPath: string): Promise<void> {
     this.recordSkipInMemory(sourcePath, targetPath);
     await this.plugin.save_settings();
+  }
+
+  async replaceEntriesIfChanged(
+    entries: ConflictSkipCacheEntry[]
+  ): Promise<boolean> {
+    if (JSON.stringify(this.entries) === JSON.stringify(entries)) {
+      return false;
+    }
+    this.entries = entries;
+    await this.plugin.save_settings();
+    return true;
   }
 
   async removeForSource(sourcePath: string): Promise<void> {

@@ -3,6 +3,7 @@ import { Setting } from 'obsidian';
 import { MobileUtils } from '../../utils/MobileUtils';
 import type { ConflictResolutionStrategy } from '../../types/ConflictResolution';
 import { strategyRequiresWarning } from '../../domain/conflicts/note-move-conflict';
+import { persistConflictResolutionStrategy } from '../../application/persist-conflict-resolution-strategy';
 
 const STRATEGY_LABELS: Record<ConflictResolutionStrategy, string> = {
   ask: 'Ask every time',
@@ -49,8 +50,7 @@ export class ConflictResolutionSettingsSection {
         }
         dropdown.setValue(currentStrategy).onChange(async value => {
           const strategy = value as ConflictResolutionStrategy;
-          this.plugin.pluginData.settings.conflictResolution = { strategy };
-          await this.plugin.save_settings();
+          await persistConflictResolutionStrategy(this.plugin, strategy);
           strategySetting.setDesc(STRATEGY_DESCRIPTIONS[strategy]);
           this.updateWarning(strategy);
         });

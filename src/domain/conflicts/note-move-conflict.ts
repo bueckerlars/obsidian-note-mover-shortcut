@@ -21,7 +21,7 @@ export function buildRenamedFileName(
 
 /** Maps a per-note action to a persisted default strategy. */
 export function conflictActionToStrategy(
-  action: Exclude<ConflictResolutionAction, 'cancel'>
+  action: ConflictResolutionAction
 ): ConflictResolutionStrategy {
   return action;
 }

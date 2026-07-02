@@ -3,7 +3,13 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
+import { deriveConflictInteractive } from '../utils/conflict-resolution-settings';
+import {
+  filterConflictSkipEntriesByExpectedTarget,
+  normalizeConflictCachePath,
+} from '../domain/conflicts/conflict-skip-cache';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
+import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import AdvancedNoteMoverPlugin from 'main';
 import { type FileMoveResult, type OperationType } from '../types/Common';
@@ -45,6 +51,48 @@ export class AdvancedNoteMover {
     );
 
     this.plugin.syncRuleCacheHash();
+  }
+
+  /**
+   * Drops skip-cache entries whose expected target no longer matches current rules.
+   */
+  public async invalidateConflictSkipCacheForRuleChange(): Promise<void> {
+    const entries = this.plugin.conflictSkipCacheManager.getEntries();
+    if (entries.length === 0) {
+      return;
+    }
+
+    const expectedTargetBySource = new Map<string, string | null>();
+    const uniqueSources = [
+      ...new Set(
+        entries.map(entry => normalizeConflictCachePath(entry.sourcePath))
+      ),
+    ];
+
+    for (const sourcePath of uniqueSources) {
+      const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
+      if (!(file instanceof TFile)) {
+        expectedTargetBySource.set(sourcePath, null);
+        continue;
+      }
+
+      const destination = await this.ruleManagerV2.moveFileBasedOnTags(
+        file,
+        false
+      );
+      expectedTargetBySource.set(
+        sourcePath,
+        destination ? combinePath(destination, file.name) : null
+      );
+    }
+
+    const filtered = filterConflictSkipEntriesByExpectedTarget(
+      entries,
+      expectedTargetBySource
+    );
+    await this.plugin.conflictSkipCacheManager.replaceEntriesIfChanged(
+      filtered
+    );
   }
 
   public async addFileToBlacklist(fileName: string): Promise<void> {
@@ -96,12 +144,14 @@ export class AdvancedNoteMover {
     defaultFolder: string,
     skipFilter = false,
     options: {
-      interactive?: boolean;
       bypassConflictSkipCache?: boolean;
     } = {}
   ): Promise<FileMoveResult> {
-    const interactive = options.interactive ?? false;
     const bypassConflictSkipCache = options.bypassConflictSkipCache ?? false;
+    const interactive = deriveConflictInteractive(
+      this.plugin.pluginData.settings,
+      bypassConflictSkipCache
+    );
     return this.plugin.performanceTrace.recordAsync(
       'AdvancedNoteMover.moveFileBasedOnTags',
       async () => {
@@ -175,13 +225,7 @@ export class AdvancedNoteMover {
             interactive,
             bypassConflictSkipCache,
             onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
-              this.plugin.pluginData.settings.conflictResolution = {
-                strategy,
-              };
-              await this.plugin.save_settings();
-              NoticeManager.info(
-                `Conflict resolution strategy set to "${strategy}".`
-              );
+              await persistConflictResolutionStrategy(this.plugin, strategy);
             },
           });
 
@@ -245,10 +289,7 @@ export class AdvancedNoteMover {
                 files[i],
                 '/',
                 false,
-                {
-                  interactive: options.operationType === 'periodic',
-                  bypassConflictSkipCache: false,
-                }
+                { bypassConflictSkipCache: false }
               );
               if (moveResult.moved) {
                 successCount++;
@@ -365,7 +406,6 @@ export class AdvancedNoteMover {
 
     try {
       await this.moveFileBasedOnTags(file, '/', false, {
-        interactive: true,
         bypassConflictSkipCache: true,
       });
     } catch (error) {

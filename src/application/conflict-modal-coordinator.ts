@@ -4,41 +4,54 @@ import {
   type ConflictModalOptions,
 } from '../modals/ConflictModal';
 import type { ConflictModalResult } from '../types/ConflictResolution';
-import { normalizeConflictCachePath } from '../domain/conflicts/conflict-skip-cache';
+import { conflictSkipCacheKey } from '../domain/conflicts/conflict-skip-cache';
 
-const pendingBySourcePath = new Map<string, Promise<ConflictModalResult>>();
+export interface ConflictModalCoordinatorResult extends ConflictModalResult {
+  /** False when another concurrent caller owns applying this decision. */
+  shouldApplyResult: boolean;
+}
+
+const pendingByConflictKey = new Map<
+  string,
+  Promise<ConflictModalCoordinatorResult>
+>();
 
 /**
- * Ensures at most one conflict modal is open per source note.
- * Concurrent callers await the same user decision.
+ * Ensures at most one conflict modal is open per source/target pair.
+ * Concurrent callers await the same user decision; only the initiator applies it.
  */
 export async function showConflictModalForNote(
   app: App,
   options: ConflictModalOptions
-): Promise<ConflictModalResult> {
-  const sourceKey = normalizeConflictCachePath(options.sourcePath);
-  const existing = pendingBySourcePath.get(sourceKey);
+): Promise<ConflictModalCoordinatorResult> {
+  const conflictKey = conflictSkipCacheKey(
+    options.sourcePath,
+    options.targetPath
+  );
+  const existing = pendingByConflictKey.get(conflictKey);
   if (existing) {
-    return existing;
+    const result = await existing;
+    return { ...result, shouldApplyResult: false };
   }
 
-  const promise = (async () => {
+  const promise = (async (): Promise<ConflictModalCoordinatorResult> => {
     const modal = new ConflictModal(app, options);
-    return modal.resolve();
+    const result = await modal.resolve();
+    return { ...result, shouldApplyResult: true };
   })();
 
-  pendingBySourcePath.set(sourceKey, promise);
+  pendingByConflictKey.set(conflictKey, promise);
 
   try {
     return await promise;
   } finally {
-    if (pendingBySourcePath.get(sourceKey) === promise) {
-      pendingBySourcePath.delete(sourceKey);
+    if (pendingByConflictKey.get(conflictKey) === promise) {
+      pendingByConflictKey.delete(conflictKey);
     }
   }
 }
 
 /** @internal Test helper */
 export function clearConflictModalCoordinatorForTests(): void {
-  pendingBySourcePath.clear();
+  pendingByConflictKey.clear();
 }

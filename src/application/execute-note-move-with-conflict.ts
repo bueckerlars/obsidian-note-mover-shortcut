@@ -6,9 +6,38 @@ import type { AttachmentMoveSettings } from '../types/PluginData';
 import type { SettingsData } from '../types/PluginData';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import { performNoteMove } from './perform-note-move';
-import { resolveNoteMoveConflict } from './resolve-note-move-conflict';
+import {
+  hasNoteMoveConflict,
+  resolveNoteMoveConflict,
+} from './resolve-note-move-conflict';
 import { NoticeManager } from '../utils/NoticeManager';
 import { combinePath, getParentPath } from '../utils/PathUtils';
+import { getConflictResolutionSettings } from '../utils/conflict-resolution-settings';
+
+const targetPathTailLocks = new Map<string, Promise<void>>();
+
+async function withTargetPathLock<T>(
+  targetPath: string,
+  work: () => Promise<T>
+): Promise<T> {
+  const previousTail = targetPathTailLocks.get(targetPath) ?? Promise.resolve();
+  let release!: () => void;
+  const currentGate = new Promise<void>(resolve => {
+    release = resolve;
+  });
+  const currentTail = previousTail.then(() => currentGate);
+  targetPathTailLocks.set(targetPath, currentTail);
+
+  await previousTail;
+  try {
+    return await work();
+  } finally {
+    release();
+    if (targetPathTailLocks.get(targetPath) === currentTail) {
+      targetPathTailLocks.delete(targetPath);
+    }
+  }
+}
 
 export interface ExecuteNoteMoveWithConflictOptions {
   app: App;
@@ -28,7 +57,7 @@ export type ExecuteNoteMoveWithConflictResult =
   | { moved: true; newPath: string; targetFolder: string }
   | {
       moved: false;
-      reason: 'skip' | 'cancel' | 'unchanged' | 'cached_skip';
+      reason: 'skip' | 'unchanged' | 'cached_skip';
     };
 
 /**
@@ -56,70 +85,94 @@ export async function executeNoteMoveWithConflictHandling(
     return { moved: false, reason: 'unchanged' };
   }
 
-  if (
-    !bypassConflictSkipCache &&
-    conflictSkipCache.isSkippedOrPending(originalPath, newPath)
-  ) {
-    return { moved: false, reason: 'cached_skip' };
-  }
-
-  const conflictOutcome = await resolveNoteMoveConflict({
-    app,
-    settings,
-    sourcePath: originalPath,
-    targetFolder,
-    fileName: file.name,
-    basename: file.basename,
-    extension: file.extension,
-    newPath,
-    interactive,
-    bypassConflictSkipCache,
-    conflictSkipCache,
-    onPersistStrategy,
-  });
-
-  if (conflictOutcome.status === 'skip') {
-    await conflictSkipCache.addSkip(originalPath, newPath);
-    return { moved: false, reason: 'skip' };
-  }
-
-  if (conflictOutcome.status === 'cancel') {
-    return { moved: false, reason: 'cancel' };
-  }
-
-  const resolvedPath =
-    conflictOutcome.status === 'resolved'
-      ? conflictOutcome.resolved.newPath
-      : newPath;
-
-  if (originalPath === resolvedPath) {
-    return { moved: false, reason: 'unchanged' };
-  }
-
-  await performNoteMove({
-    app,
-    historyManager,
-    file,
-    originalPath,
-    newPath: resolvedPath,
-    attachmentSettings,
-  });
-
-  await conflictSkipCache.removeForSource(originalPath);
-
-  const resolvedFolder = getParentPath(resolvedPath) || targetFolder;
-
-  if (conflictOutcome.status === 'resolved') {
-    if (conflictOutcome.resolved.action === 'rename') {
-      NoticeManager.info(
-        `Renamed and moved "${file.basename}" to avoid a conflict.`
+  return withTargetPathLock(newPath, async () => {
+    if (
+      !bypassConflictSkipCache &&
+      conflictSkipCache.isSkippedOrPending(originalPath, newPath)
+    ) {
+      const stillConflict = await hasNoteMoveConflict(
+        app,
+        originalPath,
+        newPath
       );
-    } else if (conflictOutcome.resolved.action === 'overwrite') {
-      NoticeManager.warning(
-        `Replaced existing file and moved "${file.basename}".`
-      );
+      if (stillConflict) {
+        return { moved: false, reason: 'cached_skip' };
+      }
+      conflictSkipCache.clearPending(originalPath, newPath);
+      await conflictSkipCache.removeEntry(originalPath, newPath);
     }
-  }
 
-  return { moved: true, newPath: resolvedPath, targetFolder: resolvedFolder };
+    const conflictOutcome = await resolveNoteMoveConflict({
+      app,
+      settings,
+      sourcePath: originalPath,
+      targetFolder,
+      fileName: file.name,
+      basename: file.basename,
+      extension: file.extension,
+      newPath,
+      interactive,
+      bypassConflictSkipCache,
+      conflictSkipCache,
+      onPersistStrategy,
+    });
+
+    if (conflictOutcome.status === 'deduplicated') {
+      return { moved: false, reason: 'unchanged' };
+    }
+
+    if (conflictOutcome.status === 'skip') {
+      if (!conflictSkipCache.hasPersistedSkip(originalPath, newPath)) {
+        await conflictSkipCache.addSkip(originalPath, newPath);
+      }
+      if (getConflictResolutionSettings(settings).strategy === 'skip') {
+        NoticeManager.warning(
+          `Skipped "${file.basename}": a file already exists at the destination.`
+        );
+      }
+      return { moved: false, reason: 'skip' };
+    }
+
+    const resolvedPath =
+      conflictOutcome.status === 'resolved'
+        ? conflictOutcome.resolved.newPath
+        : newPath;
+
+    if (originalPath === resolvedPath) {
+      return { moved: false, reason: 'unchanged' };
+    }
+
+    await performNoteMove({
+      app,
+      historyManager,
+      file,
+      originalPath,
+      newPath: resolvedPath,
+      attachmentSettings,
+      overwriteTargetPath:
+        conflictOutcome.status === 'resolved' &&
+        conflictOutcome.resolved.action === 'overwrite'
+          ? resolvedPath
+          : undefined,
+      beforePluginMoveEnd: async () => {
+        await conflictSkipCache.removeForSource(originalPath);
+      },
+    });
+
+    const resolvedFolder = getParentPath(resolvedPath) || targetFolder;
+
+    if (conflictOutcome.status === 'resolved') {
+      if (conflictOutcome.resolved.action === 'rename') {
+        NoticeManager.info(
+          `Renamed and moved "${file.basename}" to avoid a conflict.`
+        );
+      } else if (conflictOutcome.resolved.action === 'overwrite') {
+        NoticeManager.warning(
+          `Replaced existing file and moved "${file.basename}".`
+        );
+      }
+    }
+
+    return { moved: true, newPath: resolvedPath, targetFolder: resolvedFolder };
+  });
 }

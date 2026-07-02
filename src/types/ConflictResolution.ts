@@ -6,11 +6,7 @@ export type ConflictResolutionStrategy =
   | 'overwrite';
 
 /** User choice for a single conflicting move. */
-export type ConflictResolutionAction =
-  | 'skip'
-  | 'rename'
-  | 'overwrite'
-  | 'cancel';
+export type ConflictResolutionAction = 'skip' | 'rename' | 'overwrite';
 
 export interface ConflictResolutionSettings {
   /** Default strategy when a target file already exists. */
@@ -25,5 +21,5 @@ export interface ConflictModalResult {
 
 export interface ResolvedNoteMovePath {
   newPath: string;
-  action: Exclude<ConflictResolutionAction, 'skip' | 'cancel'>;
+  action: Exclude<ConflictResolutionAction, 'skip'>;
 }

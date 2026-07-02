@@ -14,10 +14,7 @@ export interface ConflictModalOptions extends BaseModalOptions {
   targetPath: string;
 }
 
-const CONFLICT_ACTION_TOOLTIPS: Record<
-  Exclude<ConflictResolutionAction, 'cancel'>,
-  string
-> = {
+const CONFLICT_ACTION_TOOLTIPS: Record<ConflictResolutionAction, string> = {
   skip: 'Leave the note in its current location and remember this conflict',
   rename: 'Move the note with a numeric suffix, for example note (1).md',
   overwrite:
@@ -138,7 +135,7 @@ export class ConflictModal extends BaseModal {
   private createMobileActions(container: HTMLElement): void {
     const actions: Array<{
       text: string;
-      action: Exclude<ConflictResolutionAction, 'cancel'>;
+      action: ConflictResolutionAction;
       primary?: boolean;
       warning?: boolean;
     }> = [

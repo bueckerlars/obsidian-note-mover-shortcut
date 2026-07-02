@@ -85,7 +85,6 @@ export class TriggerEventHandler {
       this.plugin.ruleCache.markDirty(file.path);
     }
     await this.plugin.advancedNoteMover.moveFileBasedOnTags(file, '/', false, {
-      interactive: true,
       bypassConflictSkipCache: false,
     });
   }

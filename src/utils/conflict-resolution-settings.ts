@@ -25,6 +25,15 @@ export function getConflictResolutionSettings(
   return { ...DEFAULT_CONFLICT_RESOLUTION };
 }
 
+/** Whether conflict resolution may show the ConflictModal for this move. */
+export function deriveConflictInteractive(
+  settings: SettingsData,
+  manual: boolean
+): boolean {
+  const { strategy } = getConflictResolutionSettings(settings);
+  return strategy === 'ask' || manual;
+}
+
 export function normalizeConflictStrategy(
   strategy: ConflictResolutionStrategy
 ): ConflictResolutionStrategy {

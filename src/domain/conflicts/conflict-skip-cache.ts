@@ -159,7 +159,31 @@ export function removeConflictSkipEntriesForSource(
   entries: ConflictSkipCacheEntry[],
   sourcePath: string
 ): ConflictSkipCacheEntry[] {
-  return entries.filter(entry => entry.sourcePath !== sourcePath);
+  const normalizedSource = normalizeConflictCachePath(sourcePath);
+  return entries.filter(
+    entry => normalizeConflictCachePath(entry.sourcePath) !== normalizedSource
+  );
+}
+
+/** Keeps entries whose cached target still matches the current rule destination. */
+export function filterConflictSkipEntriesByExpectedTarget(
+  entries: ConflictSkipCacheEntry[],
+  expectedTargetBySource: Map<string, string | null>
+): ConflictSkipCacheEntry[] {
+  return entries.filter(entry => {
+    const normalizedSource = normalizeConflictCachePath(entry.sourcePath);
+    if (!expectedTargetBySource.has(normalizedSource)) {
+      return false;
+    }
+    const expectedTarget = expectedTargetBySource.get(normalizedSource);
+    if (expectedTarget == null) {
+      return false;
+    }
+    return (
+      normalizeConflictCachePath(entry.targetPath) ===
+      normalizeConflictCachePath(expectedTarget)
+    );
+  });
 }
 
 export function removeConflictSkipEntry(

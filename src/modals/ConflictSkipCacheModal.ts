@@ -226,7 +226,6 @@ export class ConflictSkipCacheModal extends BaseModal {
         '/',
         false,
         {
-          interactive: true,
           bypassConflictSkipCache: true,
         }
       );

@@ -2,6 +2,7 @@ import type { App } from 'obsidian';
 import { TFile } from 'obsidian';
 import { buildRenamedFileName } from '../domain/conflicts/note-move-conflict';
 import { combinePath } from '../utils/PathUtils';
+import { createError } from '../utils/Error';
 import type {
   ConflictResolutionAction,
   ConflictResolutionStrategy,
@@ -31,7 +32,7 @@ export interface ResolveNoteMoveConflictOptions {
 export type NoteMoveConflictOutcome =
   | { status: 'no_conflict' }
   | { status: 'skip' }
-  | { status: 'cancel' }
+  | { status: 'deduplicated' }
   | { status: 'resolved'; resolved: ResolvedNoteMovePath };
 
 /** Returns true when another file already occupies the target path. */
@@ -71,15 +72,22 @@ async function removeExistingTargetFile(
   app: App,
   targetPath: string
 ): Promise<void> {
+  // Vault naming conflicts are virtually always TFiles; guard non-file paths defensively.
   const existing = app.vault.getAbstractFileByPath(targetPath);
   if (existing instanceof TFile) {
     await app.fileManager.trashFile(existing);
+    return;
+  }
+  if (await app.vault.adapter.exists(targetPath)) {
+    throw createError(
+      `Cannot overwrite "${targetPath}": destination exists but is not a file`
+    );
   }
 }
 
 async function resolveWithStrategy(
   app: App,
-  action: Exclude<ConflictResolutionAction, 'cancel' | 'skip'>,
+  action: Exclude<ConflictResolutionAction, 'skip'>,
   options: ResolveNoteMoveConflictOptions
 ): Promise<ResolvedNoteMovePath> {
   if (action === 'rename') {
@@ -92,8 +100,15 @@ async function resolveWithStrategy(
     return { newPath: renamedPath, action: 'rename' };
   }
 
-  await removeExistingTargetFile(app, options.newPath);
   return { newPath: options.newPath, action: 'overwrite' };
+}
+
+/** Removes the conflicting destination file immediately before an overwrite move. */
+export async function removeConflictingTargetForOverwrite(
+  app: App,
+  targetPath: string
+): Promise<void> {
+  await removeExistingTargetFile(app, targetPath);
 }
 
 /**
@@ -112,11 +127,11 @@ export async function resolveNoteMoveConflict(
     return { status: 'no_conflict' };
   }
 
-  const forceInteractivePrompt =
-    options.bypassConflictSkipCache === true && options.interactive;
+  const bypassSkipCache = options.bypassConflictSkipCache === true;
+  const forceInteractivePrompt = bypassSkipCache && options.interactive;
 
   if (
-    !forceInteractivePrompt &&
+    !bypassSkipCache &&
     options.conflictSkipCache?.isSkippedOrPending(
       options.sourcePath,
       options.newPath
@@ -126,7 +141,7 @@ export async function resolveNoteMoveConflict(
   }
 
   const { strategy } = getConflictResolutionSettings(options.settings);
-  let action: ConflictResolutionAction | undefined;
+  let action: ConflictResolutionAction;
 
   options.conflictSkipCache?.markPending(options.sourcePath, options.newPath);
 
@@ -138,26 +153,22 @@ export async function resolveNoteMoveConflict(
         sourcePath: options.sourcePath,
         targetPath: options.newPath,
       });
+      if (!modalResult.shouldApplyResult) {
+        return { status: 'deduplicated' };
+      }
       action = modalResult.action;
 
-      if (modalResult.applyAlways && action !== 'cancel') {
+      if (modalResult.applyAlways) {
         const persistedStrategy = conflictActionToStrategy(action);
         await options.onPersistStrategy?.(persistedStrategy);
       }
-    } else if (strategy === 'ask') {
-      action = 'skip';
-    } else {
+    } else if (strategy !== 'ask') {
       action = strategy;
+    } else {
+      action = 'skip';
     }
 
-    if (action === 'cancel') {
-      return { status: 'cancel' };
-    }
     if (action === 'skip') {
-      options.conflictSkipCache?.recordSkipInMemory(
-        options.sourcePath,
-        options.newPath
-      );
       return { status: 'skip' };
     }
 

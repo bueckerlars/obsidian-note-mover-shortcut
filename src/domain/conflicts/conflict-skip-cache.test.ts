@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   conflictSkipCacheKey,
+  filterConflictSkipEntriesByExpectedTarget,
   findConflictSkipEntry,
   findConflictSkipEntryForSource,
   normalizeConflictCachePath,
@@ -171,5 +172,43 @@ describe('removeConflictSkipEntriesForSource', () => {
     const next = removeConflictSkipEntriesForSource(entries, 'inbox/a.md');
     expect(next).toHaveLength(1);
     expect(next[0]?.sourcePath).toBe('inbox/b.md');
+  });
+
+  it('matches source paths after normalization', () => {
+    const entries = [entry('inbox/note.md', 'archive/note.md')];
+    const next = removeConflictSkipEntriesForSource(entries, '/inbox/note.md');
+    expect(next).toHaveLength(0);
+  });
+});
+
+describe('filterConflictSkipEntriesByExpectedTarget', () => {
+  it('keeps entries whose target still matches the current rule destination', () => {
+    const entries = [entry('inbox/a.md', 'archive/a.md')];
+    const expected = new Map([['inbox/a.md', 'archive/a.md']]);
+    const filtered = filterConflictSkipEntriesByExpectedTarget(
+      entries,
+      expected
+    );
+    expect(filtered).toHaveLength(1);
+  });
+
+  it('removes entries when the rule destination changed', () => {
+    const entries = [entry('inbox/a.md', 'archive/a.md')];
+    const expected = new Map([['inbox/a.md', 'projects/a.md']]);
+    const filtered = filterConflictSkipEntriesByExpectedTarget(
+      entries,
+      expected
+    );
+    expect(filtered).toHaveLength(0);
+  });
+
+  it('removes entries when no rule matches anymore', () => {
+    const entries = [entry('inbox/a.md', 'archive/a.md')];
+    const expected = new Map([['inbox/a.md', null]]);
+    const filtered = filterConflictSkipEntriesByExpectedTarget(
+      entries,
+      expected
+    );
+    expect(filtered).toHaveLength(0);
   });
 });

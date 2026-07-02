@@ -12,6 +12,7 @@ export type PluginWithVaultSync = Plugin & {
       newPath: string,
       fileName: string
     ): void;
+    isPluginMoveInProgress(): boolean;
   };
   ruleCache: {
     handleRename(oldPath: string, newPath: string): void;
@@ -44,10 +45,12 @@ export function registerVaultEventHooks(plugin: PluginWithVaultSync): void {
         if (file.extension === 'md') {
           plugin.vaultIndexCache?.invalidateMarkdownList();
         }
-        void plugin.conflictSkipCacheManager?.handleRenameAndSave(
-          oldPath,
-          file.path
-        );
+        if (!plugin.historyManager.isPluginMoveInProgress()) {
+          void plugin.conflictSkipCacheManager?.handleRenameAndSave(
+            oldPath,
+            file.path
+          );
+        }
       }
     })
   );
@@ -81,7 +84,9 @@ export function registerVaultEventHooks(plugin: PluginWithVaultSync): void {
         if (file.extension === 'md') {
           plugin.vaultIndexCache?.invalidateMarkdownList();
         }
-        void plugin.conflictSkipCacheManager?.handleDelete(file.path);
+        if (!plugin.historyManager.isPluginMoveInProgress()) {
+          void plugin.conflictSkipCacheManager?.handleDelete(file.path);
+        }
       }
     })
   );
