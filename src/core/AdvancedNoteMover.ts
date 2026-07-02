@@ -3,13 +3,14 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
-import { performNoteMove } from '../application/perform-note-move';
+import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import AdvancedNoteMoverPlugin from 'main';
 import { type FileMoveResult, type OperationType } from '../types/Common';
 import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
 import { PreviewModal } from '../modals/PreviewModal';
+import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import {
   SETTINGS_CONSTANTS,
   NOTIFICATION_CONSTANTS,
@@ -92,8 +93,10 @@ export class AdvancedNoteMover {
   public async moveFileBasedOnTags(
     file: TFile,
     defaultFolder: string,
-    skipFilter = false
+    skipFilter = false,
+    options: { interactive?: boolean } = {}
   ): Promise<FileMoveResult> {
+    const interactive = options.interactive ?? false;
     return this.plugin.performanceTrace.recordAsync(
       'AdvancedNoteMover.moveFileBasedOnTags',
       async () => {
@@ -153,19 +156,37 @@ export class AdvancedNoteMover {
             );
           }
 
-          await performNoteMove({
+          const moveOutcome = await executeNoteMoveWithConflictHandling({
             app,
+            settings: this.plugin.pluginData.settings,
             historyManager: this.plugin.historyManager,
             file,
             originalPath,
-            newPath,
+            targetFolder,
             attachmentSettings: getAttachmentMoveSettings(
               this.plugin.pluginData.settings
             ),
+            interactive,
+            onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
+              this.plugin.pluginData.settings.conflictResolution = {
+                strategy,
+              };
+              await this.plugin.save_settings();
+              NoticeManager.info(
+                `Conflict resolution strategy set to "${strategy}".`
+              );
+            },
           });
 
-          const moveResult = { moved: true, targetFolder } as const;
-          this.maybeNotifySingleFileMove(file, targetFolder);
+          if (!moveOutcome.moved) {
+            return this.finishFileMove(originalPath, file, { moved: false });
+          }
+
+          const moveResult = {
+            moved: true,
+            targetFolder: moveOutcome.targetFolder,
+          } as const;
+          this.maybeNotifySingleFileMove(file, moveOutcome.targetFolder);
           return this.finishFileMove(originalPath, file, moveResult);
         } catch (error) {
           handleError(error, `Error moving file '${file.path}'`);
@@ -209,7 +230,12 @@ export class AdvancedNoteMover {
               break;
             }
             try {
-              const moveResult = await this.moveFileBasedOnTags(files[i], '/');
+              const moveResult = await this.moveFileBasedOnTags(
+                files[i],
+                '/',
+                false,
+                { interactive: options.operationType === 'periodic' }
+              );
               if (moveResult.moved) {
                 successCount++;
               }
@@ -316,7 +342,7 @@ export class AdvancedNoteMover {
     }
 
     try {
-      await this.moveFileBasedOnTags(file, '/', false);
+      await this.moveFileBasedOnTags(file, '/', false, { interactive: true });
     } catch (error) {
       handleError(error, 'moveFocusedNoteToDestination', false);
       return;

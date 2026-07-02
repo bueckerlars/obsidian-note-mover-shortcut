@@ -18,7 +18,8 @@
 .note-mover-preview-modal,
 .note-mover-update-modal,
 .note-mover-history-modal,
-.advancedNoteMover-confirm-modal {
+.advancedNoteMover-confirm-modal,
+.advancedNoteMover-conflict-modal {
   padding: 20px 0 20px 0;
   box-sizing: border-box;
 }
@@ -588,6 +589,42 @@
   .advancedNoteMover-modal-button-container
   button {
   min-width: 80px;
+}
+
+/* Conflict Modal Styles */
+.advancedNoteMover-conflict-modal {
+  padding: 24px 0 16px 0;
+}
+
+.advancedNoteMover-conflict-modal-message {
+  margin: 0 0 16px 0;
+  color: var(--text-muted);
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.advancedNoteMover-conflict-modal-warning {
+  margin-bottom: 8px;
+}
+
+.advancedNoteMover-conflict-modal-warning-text {
+  margin: 0 0 12px 0;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.advancedNoteMover-conflict-modal .advancedNoteMover-modal-button-container {
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.advancedNoteMover-conflict-settings-warning .mod-warning,
+.advancedNoteMover-conflict-modal-warning-text.mod-warning {
+  color: var(--text-error);
 }
 
 /* ===== DRAG & DROP STYLES ===== */

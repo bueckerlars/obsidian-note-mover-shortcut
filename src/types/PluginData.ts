@@ -1,5 +1,6 @@
 import { BulkOperation, HistoryEntry, RetentionPolicy } from './HistoryEntry';
 import { RuleV2 } from './RuleV2';
+import type { ConflictResolutionSettings } from './ConflictResolution';
 
 /**
  * @since 0.4.7
@@ -31,6 +32,7 @@ export interface SettingsData {
   /** When true (default), show the changelog modal once after a plugin version update. */
   showReleaseNotesOnUpdate?: boolean;
   attachments?: AttachmentMoveSettings;
+  conflictResolution?: ConflictResolutionSettings;
 }
 
 export interface HistoryData {

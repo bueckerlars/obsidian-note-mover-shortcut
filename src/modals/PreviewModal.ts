@@ -5,8 +5,9 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { MobileUtils } from '../utils/MobileUtils';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
 import { handleError, createError } from '../utils/Error';
-import { performNoteMove } from '../application/perform-note-move';
+import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
+import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class PreviewModal extends BaseModal {
@@ -204,6 +205,7 @@ export class PreviewModal extends BaseModal {
     const successfulEntries = this.movePreview.successfulMoves;
     let movedCount = 0;
     let errorCount = 0;
+    let skippedCount = 0;
     const abortCtl = new AbortController();
 
     if (this.actionFooterEl) {
@@ -245,17 +247,35 @@ export class PreviewModal extends BaseModal {
             );
           }
 
-          await performNoteMove({
+          const moveOutcome = await executeNoteMoveWithConflictHandling({
             app: this.app,
+            settings: this.plugin.pluginData.settings,
             historyManager: this.plugin.historyManager,
             file,
             originalPath: entry.currentPath,
-            newPath,
+            targetFolder,
             attachmentSettings: getAttachmentMoveSettings(
               this.plugin.pluginData.settings
             ),
+            interactive: true,
+            onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
+              this.plugin.pluginData.settings.conflictResolution = {
+                strategy,
+              };
+              await this.plugin.save_settings();
+              NoticeManager.info(
+                `Conflict resolution strategy set to "${strategy}".`
+              );
+            },
           });
-          movedCount++;
+
+          if (moveOutcome.moved) {
+            movedCount++;
+          } else if (moveOutcome.reason === 'skip') {
+            skippedCount++;
+          } else if (moveOutcome.reason === 'cancel') {
+            break;
+          }
         } catch (error) {
           handleError(error, `Error moving file ${entry.fileName}`, false);
           errorCount++;
@@ -279,13 +299,17 @@ export class PreviewModal extends BaseModal {
 
     if (abortCtl.signal.aborted) {
       NoticeManager.info(
-        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).`
+        `Bulk move stopped. ${movedCount} file(s) moved, ${skippedCount} skipped, ${errorCount} error(s).`
       );
-    } else if (errorCount === 0) {
+    } else if (errorCount === 0 && skippedCount === 0) {
       NoticeManager.success(`Successfully moved ${movedCount} files!`);
+    } else if (errorCount === 0) {
+      NoticeManager.info(
+        `Moved ${movedCount} files. ${skippedCount} file(s) skipped due to conflicts.`
+      );
     } else {
       NoticeManager.warning(
-        `Moved ${movedCount} files with ${errorCount} errors. Check console for details.`
+        `Moved ${movedCount} files, ${skippedCount} skipped, ${errorCount} errors. Check console for details.`
       );
     }
   }

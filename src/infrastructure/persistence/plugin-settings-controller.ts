@@ -167,6 +167,14 @@ export async function validateAndRepairPluginData(
     }
   }
 
+  if (!plugin.pluginData.settings.conflictResolution) {
+    plugin.pluginData.settings.conflictResolution = { strategy: 'ask' };
+  } else if (
+    plugin.pluginData.settings.conflictResolution.strategy === undefined
+  ) {
+    plugin.pluginData.settings.conflictResolution.strategy = 'ask';
+  }
+
   if (!Array.isArray(plugin.pluginData.settings.rulesV2)) {
     plugin.pluginData.settings.rulesV2 = [];
   }
@@ -282,6 +290,9 @@ export function buildDefaultSettingsData(): SettingsData {
       moveWithNote: true,
       skipSharedAttachments: true,
       deleteEmptyAssetFolders: false,
+    },
+    conflictResolution: {
+      strategy: 'ask',
     },
   };
 }
