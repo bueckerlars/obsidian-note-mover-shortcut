@@ -14,9 +14,11 @@ export interface ConflictModalOptions extends BaseModalOptions {
   targetPath: string;
 }
 
-const CONFLICT_ACTION_TOOLTIPS: Record<ConflictResolutionAction, string> = {
-  cancel: 'Close without moving this note',
-  skip: 'Leave the note in its current location',
+const CONFLICT_ACTION_TOOLTIPS: Record<
+  Exclude<ConflictResolutionAction, 'cancel'>,
+  string
+> = {
+  skip: 'Leave the note in its current location and remember this conflict',
   rename: 'Move the note with a numeric suffix, for example note (1).md',
   overwrite:
     'Replace the existing file at the destination. Existing content will be lost.',
@@ -106,15 +108,15 @@ export class ConflictModal extends BaseModal {
   private createDesktopActions(container: HTMLElement): void {
     const buttonContainer = this.createButtonContainer(container);
 
-    this.createButton(buttonContainer, 'Cancel', () => this.finish('cancel'), {
-      icon: 'x',
-      tooltip: CONFLICT_ACTION_TOOLTIPS.cancel,
-    });
-
-    this.createButton(buttonContainer, 'Skip', () => this.finish('skip'), {
-      icon: 'ban',
-      tooltip: CONFLICT_ACTION_TOOLTIPS.skip,
-    }).addClass('advancedNoteMover-conflict-action-skip');
+    this.createButton(
+      buttonContainer,
+      'Keep in place',
+      () => this.finish('skip'),
+      {
+        icon: 'ban',
+        tooltip: CONFLICT_ACTION_TOOLTIPS.skip,
+      }
+    ).addClass('advancedNoteMover-conflict-action-skip');
 
     this.createButton(buttonContainer, 'Rename', () => this.finish('rename'), {
       icon: 'pencil',
@@ -136,14 +138,13 @@ export class ConflictModal extends BaseModal {
   private createMobileActions(container: HTMLElement): void {
     const actions: Array<{
       text: string;
-      action: ConflictResolutionAction;
+      action: Exclude<ConflictResolutionAction, 'cancel'>;
       primary?: boolean;
       warning?: boolean;
     }> = [
-      { text: 'Skip', action: 'skip', primary: true },
+      { text: 'Keep in place', action: 'skip', primary: true },
       { text: 'Rename', action: 'rename' },
       { text: 'Overwrite', action: 'overwrite', warning: true },
-      { text: 'Cancel', action: 'cancel' },
     ];
 
     for (const { text, action, primary, warning } of actions) {
@@ -172,7 +173,7 @@ export class ConflictModal extends BaseModal {
   onClose() {
     this.messageRenderComponent.unload();
     if (!this.hasResolved) {
-      this.resolvePromise({ action: 'cancel', applyAlways: false });
+      this.resolvePromise({ action: 'skip', applyAlways: false });
     }
     this.hasResolved = true;
     super.onClose();

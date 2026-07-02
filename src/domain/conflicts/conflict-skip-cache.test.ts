@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  conflictSkipCacheKey,
+  findConflictSkipEntry,
+  findConflictSkipEntryForSource,
+  normalizeConflictCachePath,
   pruneConflictSkipEntries,
   removeConflictSkipEntriesForPath,
   removeConflictSkipEntriesForSource,
@@ -18,6 +22,30 @@ const entry = (
   sourcePath,
   targetPath,
   skippedAt,
+});
+
+describe('normalizeConflictCachePath', () => {
+  it('strips leading slashes and duplicate separators', () => {
+    expect(normalizeConflictCachePath('/inbox//note.md')).toBe('inbox/note.md');
+  });
+});
+
+describe('findConflictSkipEntry', () => {
+  it('matches entries regardless of leading slash differences', () => {
+    const entries = [entry('/inbox/note.md', '/archive/note.md')];
+    expect(
+      findConflictSkipEntry(entries, 'inbox/note.md', 'archive/note.md')
+    ).toBeDefined();
+  });
+});
+
+describe('findConflictSkipEntryForSource', () => {
+  it('finds an entry by normalized source path', () => {
+    const entries = [entry('inbox/note.md', 'archive/note.md')];
+    expect(
+      findConflictSkipEntryForSource(entries, '/inbox/note.md')
+    ).toBeDefined();
+  });
 });
 
 describe('shouldKeepConflictSkipEntry', () => {

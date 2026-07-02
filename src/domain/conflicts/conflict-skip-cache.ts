@@ -1,10 +1,16 @@
 import type { ConflictSkipCacheEntry } from '../../types/ConflictSkipCache';
+import { formatPath } from '../../utils/PathUtils';
+
+/** Normalizes vault-relative paths for stable cache keys. */
+export function normalizeConflictCachePath(path: string): string {
+  return formatPath(path.trim());
+}
 
 export function conflictSkipCacheKey(
   sourcePath: string,
   targetPath: string
 ): string {
-  return `${sourcePath}\0${targetPath}`;
+  return `${normalizeConflictCachePath(sourcePath)}\0${normalizeConflictCachePath(targetPath)}`;
 }
 
 export function isValidConflictSkipEntry(
@@ -28,11 +34,13 @@ export async function shouldKeepConflictSkipEntry(
   entry: ConflictSkipCacheEntry,
   exists: (path: string) => Promise<boolean>
 ): Promise<boolean> {
-  const sourceExists = await exists(entry.sourcePath);
+  const sourcePath = normalizeConflictCachePath(entry.sourcePath);
+  const sourceExists = await exists(sourcePath);
   if (!sourceExists) {
     return false;
   }
-  const targetExists = await exists(entry.targetPath);
+  const targetPath = normalizeConflictCachePath(entry.targetPath);
+  const targetExists = await exists(targetPath);
   if (!targetExists) {
     return false;
   }
@@ -114,18 +122,37 @@ export function findConflictSkipEntry(
   );
 }
 
+/** Finds any skip entry for the same source note (normalized path). */
+export function findConflictSkipEntryForSource(
+  entries: ConflictSkipCacheEntry[],
+  sourcePath: string
+): ConflictSkipCacheEntry | undefined {
+  const normalizedSource = normalizeConflictCachePath(sourcePath);
+  return entries.find(
+    entry => normalizeConflictCachePath(entry.sourcePath) === normalizedSource
+  );
+}
+
 export function upsertConflictSkipEntry(
   entries: ConflictSkipCacheEntry[],
   sourcePath: string,
   targetPath: string,
   skippedAt: number
 ): ConflictSkipCacheEntry[] {
+  const normalizedSource = normalizeConflictCachePath(sourcePath);
+  const normalizedTarget = normalizeConflictCachePath(targetPath);
+  const key = conflictSkipCacheKey(normalizedSource, normalizedTarget);
   const without = entries.filter(
-    entry =>
-      conflictSkipCacheKey(entry.sourcePath, entry.targetPath) !==
-      conflictSkipCacheKey(sourcePath, targetPath)
+    entry => conflictSkipCacheKey(entry.sourcePath, entry.targetPath) !== key
   );
-  return [...without, { sourcePath, targetPath, skippedAt }];
+  return [
+    ...without,
+    {
+      sourcePath: normalizedSource,
+      targetPath: normalizedTarget,
+      skippedAt,
+    },
+  ];
 }
 
 export function removeConflictSkipEntriesForSource(

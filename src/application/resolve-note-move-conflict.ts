@@ -7,10 +7,11 @@ import type {
   ConflictResolutionStrategy,
   ResolvedNoteMovePath,
 } from '../types/ConflictResolution';
-import { ConflictModal } from '../modals/ConflictModal';
+import { showConflictModalForNote } from './conflict-modal-coordinator';
 import { getConflictResolutionSettings } from '../utils/conflict-resolution-settings';
 import type { SettingsData } from '../types/PluginData';
 import { conflictActionToStrategy } from '../domain/conflicts/note-move-conflict';
+import type { ConflictSkipCacheManager } from '../core/ConflictSkipCacheManager';
 
 export interface ResolveNoteMoveConflictOptions {
   app: App;
@@ -22,6 +23,8 @@ export interface ResolveNoteMoveConflictOptions {
   extension: string;
   newPath: string;
   interactive: boolean;
+  bypassConflictSkipCache?: boolean;
+  conflictSkipCache?: ConflictSkipCacheManager;
   onPersistStrategy?: (strategy: ConflictResolutionStrategy) => Promise<void>;
 }
 
@@ -109,35 +112,61 @@ export async function resolveNoteMoveConflict(
     return { status: 'no_conflict' };
   }
 
-  const { strategy } = getConflictResolutionSettings(options.settings);
-  let action: ConflictResolutionAction;
+  const forceInteractivePrompt =
+    options.bypassConflictSkipCache === true && options.interactive;
 
-  if (strategy === 'ask' && options.interactive) {
-    const modalResult = await ConflictModal.show(options.app, {
-      title: 'File already exists',
-      fileName: options.fileName,
-      sourcePath: options.sourcePath,
-      targetPath: options.newPath,
-    });
-    action = modalResult.action;
-
-    if (modalResult.applyAlways && action !== 'cancel') {
-      const persistedStrategy = conflictActionToStrategy(action);
-      await options.onPersistStrategy?.(persistedStrategy);
-    }
-  } else if (strategy === 'ask') {
-    action = 'skip';
-  } else {
-    action = strategy;
-  }
-
-  if (action === 'cancel') {
-    return { status: 'cancel' };
-  }
-  if (action === 'skip') {
+  if (
+    !forceInteractivePrompt &&
+    options.conflictSkipCache?.isSkippedOrPending(
+      options.sourcePath,
+      options.newPath
+    )
+  ) {
     return { status: 'skip' };
   }
 
-  const resolved = await resolveWithStrategy(options.app, action, options);
-  return { status: 'resolved', resolved };
+  const { strategy } = getConflictResolutionSettings(options.settings);
+  let action: ConflictResolutionAction | undefined;
+
+  options.conflictSkipCache?.markPending(options.sourcePath, options.newPath);
+
+  try {
+    if ((strategy === 'ask' || forceInteractivePrompt) && options.interactive) {
+      const modalResult = await showConflictModalForNote(options.app, {
+        title: 'File already exists',
+        fileName: options.fileName,
+        sourcePath: options.sourcePath,
+        targetPath: options.newPath,
+      });
+      action = modalResult.action;
+
+      if (modalResult.applyAlways && action !== 'cancel') {
+        const persistedStrategy = conflictActionToStrategy(action);
+        await options.onPersistStrategy?.(persistedStrategy);
+      }
+    } else if (strategy === 'ask') {
+      action = 'skip';
+    } else {
+      action = strategy;
+    }
+
+    if (action === 'cancel') {
+      return { status: 'cancel' };
+    }
+    if (action === 'skip') {
+      options.conflictSkipCache?.recordSkipInMemory(
+        options.sourcePath,
+        options.newPath
+      );
+      return { status: 'skip' };
+    }
+
+    const resolved = await resolveWithStrategy(options.app, action, options);
+    return { status: 'resolved', resolved };
+  } finally {
+    options.conflictSkipCache?.clearPending(
+      options.sourcePath,
+      options.newPath
+    );
+  }
 }

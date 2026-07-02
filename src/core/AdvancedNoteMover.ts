@@ -24,6 +24,7 @@ export class AdvancedNoteMover {
   private ruleManagerV2: RuleManagerV2;
   private readonly filesMoveInFlight = new Set<string>();
   private readonly lastMoveNoticeAtByFileName = new Map<string, number>();
+  private periodicMoveInProgress = false;
 
   constructor(private plugin: AdvancedNoteMoverPlugin) {
     this.ruleManagerV2 = new RuleManagerV2(
@@ -334,11 +335,19 @@ export class AdvancedNoteMover {
    * Periodic version of bulk move - same logic but marked as periodic operation
    */
   async moveAllFilesInVaultPeriodic() {
-    await this.moveAllFiles({
-      createFolders: false,
-      showNotifications: true,
-      operationType: 'periodic',
-    });
+    if (this.periodicMoveInProgress) {
+      return;
+    }
+    this.periodicMoveInProgress = true;
+    try {
+      await this.moveAllFiles({
+        createFolders: false,
+        showNotifications: true,
+        operationType: 'periodic',
+      });
+    } finally {
+      this.periodicMoveInProgress = false;
+    }
   }
 
   async moveFocusedNoteToDestination() {

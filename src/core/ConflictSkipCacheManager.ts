@@ -2,7 +2,10 @@ import type { App } from 'obsidian';
 import type AdvancedNoteMoverPlugin from 'main';
 import type { ConflictSkipCacheEntry } from '../types/ConflictSkipCache';
 import {
+  conflictSkipCacheKey,
   findConflictSkipEntry,
+  findConflictSkipEntryForSource,
+  normalizeConflictCachePath,
   pruneConflictSkipEntries,
   removeConflictSkipEntriesForPath,
   removeConflictSkipEntriesForSource,
@@ -12,6 +15,8 @@ import {
 } from '../domain/conflicts/conflict-skip-cache';
 
 export class ConflictSkipCacheManager {
+  private readonly pendingSkips = new Set<string>();
+
   constructor(private readonly plugin: AdvancedNoteMoverPlugin) {}
 
   private get entries(): ConflictSkipCacheEntry[] {
@@ -29,7 +34,54 @@ export class ConflictSkipCacheManager {
   }
 
   isSkipped(sourcePath: string, targetPath: string): boolean {
-    return findConflictSkipEntry(this.entries, sourcePath, targetPath) != null;
+    return this.isSkippedOrPending(sourcePath, targetPath);
+  }
+
+  isSkippedOrPending(sourcePath: string, targetPath: string): boolean {
+    const normalizedSource = normalizeConflictCachePath(sourcePath);
+    const normalizedTarget = normalizeConflictCachePath(targetPath);
+    const key = conflictSkipCacheKey(normalizedSource, normalizedTarget);
+    if (this.pendingSkips.has(key)) {
+      return true;
+    }
+    if (
+      findConflictSkipEntry(this.entries, normalizedSource, normalizedTarget) !=
+      null
+    ) {
+      return true;
+    }
+    return (
+      findConflictSkipEntryForSource(this.entries, normalizedSource) != null
+    );
+  }
+
+  markPending(sourcePath: string, targetPath: string): void {
+    this.pendingSkips.add(
+      conflictSkipCacheKey(
+        normalizeConflictCachePath(sourcePath),
+        normalizeConflictCachePath(targetPath)
+      )
+    );
+  }
+
+  clearPending(sourcePath: string, targetPath: string): void {
+    this.pendingSkips.delete(
+      conflictSkipCacheKey(
+        normalizeConflictCachePath(sourcePath),
+        normalizeConflictCachePath(targetPath)
+      )
+    );
+  }
+
+  /** Updates in-memory cache immediately (persistence is separate). */
+  recordSkipInMemory(sourcePath: string, targetPath: string): void {
+    this.clearPending(sourcePath, targetPath);
+    this.entries = upsertConflictSkipEntry(
+      this.entries,
+      sourcePath,
+      targetPath,
+      Date.now()
+    );
   }
 
   getEntries(): ConflictSkipCacheEntry[] {
@@ -37,12 +89,7 @@ export class ConflictSkipCacheManager {
   }
 
   async addSkip(sourcePath: string, targetPath: string): Promise<void> {
-    this.entries = upsertConflictSkipEntry(
-      this.entries,
-      sourcePath,
-      targetPath,
-      Date.now()
-    );
+    this.recordSkipInMemory(sourcePath, targetPath);
     await this.plugin.save_settings();
   }
 
@@ -74,7 +121,8 @@ export class ConflictSkipCacheManager {
 
   async prune(app: App): Promise<number> {
     const before = this.entries.length;
-    const exists = (path: string) => app.vault.adapter.exists(path);
+    const exists = async (path: string) =>
+      app.vault.adapter.exists(normalizeConflictCachePath(path));
     const pruned = await pruneConflictSkipEntries(this.entries, exists);
     const removed = before - pruned.length;
     if (removed > 0) {

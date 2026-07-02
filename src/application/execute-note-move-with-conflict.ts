@@ -58,7 +58,7 @@ export async function executeNoteMoveWithConflictHandling(
 
   if (
     !bypassConflictSkipCache &&
-    conflictSkipCache.isSkipped(originalPath, newPath)
+    conflictSkipCache.isSkippedOrPending(originalPath, newPath)
   ) {
     return { moved: false, reason: 'cached_skip' };
   }
@@ -73,14 +73,13 @@ export async function executeNoteMoveWithConflictHandling(
     extension: file.extension,
     newPath,
     interactive,
+    bypassConflictSkipCache,
+    conflictSkipCache,
     onPersistStrategy,
   });
 
   if (conflictOutcome.status === 'skip') {
     await conflictSkipCache.addSkip(originalPath, newPath);
-    NoticeManager.warning(
-      `Skipped "${file.basename}": a file already exists at the destination.`
-    );
     return { moved: false, reason: 'skip' };
   }
 
