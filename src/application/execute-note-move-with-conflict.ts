@@ -1,6 +1,7 @@
 import type { App } from 'obsidian';
 import type { TFile } from 'obsidian';
 import type { HistoryManager } from '../core/HistoryManager';
+import type { ConflictSkipCacheManager } from '../core/ConflictSkipCacheManager';
 import type { AttachmentMoveSettings } from '../types/PluginData';
 import type { SettingsData } from '../types/PluginData';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
@@ -13,17 +14,22 @@ export interface ExecuteNoteMoveWithConflictOptions {
   app: App;
   settings: SettingsData;
   historyManager: HistoryManager;
+  conflictSkipCache: ConflictSkipCacheManager;
   file: TFile;
   originalPath: string;
   targetFolder: string;
   attachmentSettings: AttachmentMoveSettings;
   interactive: boolean;
+  bypassConflictSkipCache?: boolean;
   onPersistStrategy?: (strategy: ConflictResolutionStrategy) => Promise<void>;
 }
 
 export type ExecuteNoteMoveWithConflictResult =
   | { moved: true; newPath: string; targetFolder: string }
-  | { moved: false; reason: 'skip' | 'cancel' | 'unchanged' };
+  | {
+      moved: false;
+      reason: 'skip' | 'cancel' | 'unchanged' | 'cached_skip';
+    };
 
 /**
  * Resolves naming conflicts and performs the note move when allowed.
@@ -40,12 +46,21 @@ export async function executeNoteMoveWithConflictHandling(
     historyManager,
     settings,
     interactive,
+    conflictSkipCache,
+    bypassConflictSkipCache = false,
     onPersistStrategy,
   } = options;
 
   const newPath = combinePath(targetFolder, file.name);
   if (originalPath === newPath) {
     return { moved: false, reason: 'unchanged' };
+  }
+
+  if (
+    !bypassConflictSkipCache &&
+    conflictSkipCache.isSkipped(originalPath, newPath)
+  ) {
+    return { moved: false, reason: 'cached_skip' };
   }
 
   const conflictOutcome = await resolveNoteMoveConflict({
@@ -62,6 +77,7 @@ export async function executeNoteMoveWithConflictHandling(
   });
 
   if (conflictOutcome.status === 'skip') {
+    await conflictSkipCache.addSkip(originalPath, newPath);
     NoticeManager.warning(
       `Skipped "${file.basename}": a file already exists at the destination.`
     );
@@ -89,6 +105,8 @@ export async function executeNoteMoveWithConflictHandling(
     newPath: resolvedPath,
     attachmentSettings,
   });
+
+  await conflictSkipCache.removeForSource(originalPath);
 
   const resolvedFolder = getParentPath(resolvedPath) || targetFolder;
 

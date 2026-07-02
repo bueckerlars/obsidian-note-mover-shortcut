@@ -94,9 +94,13 @@ export class AdvancedNoteMover {
     file: TFile,
     defaultFolder: string,
     skipFilter = false,
-    options: { interactive?: boolean } = {}
+    options: {
+      interactive?: boolean;
+      bypassConflictSkipCache?: boolean;
+    } = {}
   ): Promise<FileMoveResult> {
     const interactive = options.interactive ?? false;
+    const bypassConflictSkipCache = options.bypassConflictSkipCache ?? false;
     return this.plugin.performanceTrace.recordAsync(
       'AdvancedNoteMover.moveFileBasedOnTags',
       async () => {
@@ -160,6 +164,7 @@ export class AdvancedNoteMover {
             app,
             settings: this.plugin.pluginData.settings,
             historyManager: this.plugin.historyManager,
+            conflictSkipCache: this.plugin.conflictSkipCacheManager,
             file,
             originalPath,
             targetFolder,
@@ -167,6 +172,7 @@ export class AdvancedNoteMover {
               this.plugin.pluginData.settings
             ),
             interactive,
+            bypassConflictSkipCache,
             onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
               this.plugin.pluginData.settings.conflictResolution = {
                 strategy,
@@ -224,6 +230,10 @@ export class AdvancedNoteMover {
         let successCount = 0;
         let errorCount = 0;
 
+        if (options.operationType === 'periodic') {
+          await this.plugin.conflictSkipCacheManager.prune(app);
+        }
+
         try {
           for (let i = 0; i < files.length; i++) {
             if (options.signal?.aborted) {
@@ -234,7 +244,10 @@ export class AdvancedNoteMover {
                 files[i],
                 '/',
                 false,
-                { interactive: options.operationType === 'periodic' }
+                {
+                  interactive: options.operationType === 'periodic',
+                  bypassConflictSkipCache: false,
+                }
               );
               if (moveResult.moved) {
                 successCount++;
@@ -342,7 +355,10 @@ export class AdvancedNoteMover {
     }
 
     try {
-      await this.moveFileBasedOnTags(file, '/', false, { interactive: true });
+      await this.moveFileBasedOnTags(file, '/', false, {
+        interactive: true,
+        bypassConflictSkipCache: true,
+      });
     } catch (error) {
       handleError(error, 'moveFocusedNoteToDestination', false);
       return;

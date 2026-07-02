@@ -62,6 +62,17 @@ export async function savePersistedSettings(
     plugin.pluginData.history.bulkOperations = [];
   }
 
+  if (
+    !plugin.pluginData.conflictSkipCache ||
+    typeof plugin.pluginData.conflictSkipCache !== 'object' ||
+    Array.isArray(plugin.pluginData.conflictSkipCache)
+  ) {
+    plugin.pluginData.conflictSkipCache = { entries: [] };
+  }
+  if (!Array.isArray(plugin.pluginData.conflictSkipCache.entries)) {
+    plugin.pluginData.conflictSkipCache.entries = [];
+  }
+
   const settings = plugin.pluginData.settings as SettingsData &
     LegacySettingsFields;
   delete settings.rules;
@@ -174,6 +185,27 @@ export async function validateAndRepairPluginData(
   ) {
     plugin.pluginData.settings.conflictResolution.strategy = 'ask';
   }
+
+  if (
+    !plugin.pluginData.conflictSkipCache ||
+    typeof plugin.pluginData.conflictSkipCache !== 'object' ||
+    Array.isArray(plugin.pluginData.conflictSkipCache)
+  ) {
+    plugin.pluginData.conflictSkipCache = { entries: [] };
+  }
+  if (!Array.isArray(plugin.pluginData.conflictSkipCache.entries)) {
+    plugin.pluginData.conflictSkipCache.entries = [];
+  }
+  plugin.pluginData.conflictSkipCache.entries =
+    plugin.pluginData.conflictSkipCache.entries.filter(
+      entry =>
+        entry &&
+        typeof entry.sourcePath === 'string' &&
+        entry.sourcePath.trim() !== '' &&
+        typeof entry.targetPath === 'string' &&
+        entry.targetPath.trim() !== '' &&
+        typeof entry.skippedAt === 'number'
+    );
 
   if (!Array.isArray(plugin.pluginData.settings.rulesV2)) {
     plugin.pluginData.settings.rulesV2 = [];
@@ -360,6 +392,7 @@ function migrateFromLegacy(legacy: unknown): PluginData {
       history: historyArray,
       bulkOperations: bulkOps,
     },
+    conflictSkipCache: { entries: [] },
     lastSeenVersion:
       typeof legacyRecord.lastSeenVersion === 'string'
         ? legacyRecord.lastSeenVersion

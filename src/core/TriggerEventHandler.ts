@@ -86,6 +86,7 @@ export class TriggerEventHandler {
     }
     await this.plugin.advancedNoteMover.moveFileBasedOnTags(file, '/', false, {
       interactive: true,
+      bypassConflictSkipCache: false,
     });
   }
 

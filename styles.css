@@ -19,7 +19,8 @@
 .note-mover-update-modal,
 .note-mover-history-modal,
 .advancedNoteMover-confirm-modal,
-.advancedNoteMover-conflict-modal {
+.advancedNoteMover-conflict-modal,
+.advancedNoteMover-conflict-skip-cache-modal {
   padding: 20px 0 20px 0;
   box-sizing: border-box;
 }
@@ -625,6 +626,30 @@
 .advancedNoteMover-conflict-settings-warning .mod-warning,
 .advancedNoteMover-conflict-modal-warning-text.mod-warning {
   color: var(--text-error);
+}
+
+.advancedNoteMover-conflict-skip-cache-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.advancedNoteMover-conflict-skip-cache-item {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.advancedNoteMover-conflict-skip-cache-skipped-at {
+  margin-top: 8px;
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.advancedNoteMover-conflict-skip-cache-item .setting-item {
+  border-top: none;
+  padding: 8px 0 0 0;
 }
 
 /* ===== DRAG & DROP STYLES ===== */

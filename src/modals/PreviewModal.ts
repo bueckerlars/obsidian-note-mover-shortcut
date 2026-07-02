@@ -251,6 +251,7 @@ export class PreviewModal extends BaseModal {
             app: this.app,
             settings: this.plugin.pluginData.settings,
             historyManager: this.plugin.historyManager,
+            conflictSkipCache: this.plugin.conflictSkipCacheManager,
             file,
             originalPath: entry.currentPath,
             targetFolder,
@@ -258,6 +259,7 @@ export class PreviewModal extends BaseModal {
               this.plugin.pluginData.settings
             ),
             interactive: true,
+            bypassConflictSkipCache: true,
             onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
               this.plugin.pluginData.settings.conflictResolution = {
                 strategy,

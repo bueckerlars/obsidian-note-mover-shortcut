@@ -24,6 +24,10 @@ export type PluginWithVaultSync = Plugin & {
     scheduleMetadataDerivedInvalidate(): void;
     attachMetadataInvalidationListeners(plugin: Plugin & { app: App }): void;
   };
+  conflictSkipCacheManager?: {
+    handleRenameAndSave(oldPath: string, newPath: string): Promise<void>;
+    handleDelete(path: string): Promise<void>;
+  };
 };
 
 export function registerVaultEventHooks(plugin: PluginWithVaultSync): void {
@@ -40,6 +44,10 @@ export function registerVaultEventHooks(plugin: PluginWithVaultSync): void {
         if (file.extension === 'md') {
           plugin.vaultIndexCache?.invalidateMarkdownList();
         }
+        void plugin.conflictSkipCacheManager?.handleRenameAndSave(
+          oldPath,
+          file.path
+        );
       }
     })
   );
@@ -73,6 +81,7 @@ export function registerVaultEventHooks(plugin: PluginWithVaultSync): void {
         if (file.extension === 'md') {
           plugin.vaultIndexCache?.invalidateMarkdownList();
         }
+        void plugin.conflictSkipCacheManager?.handleDelete(file.path);
       }
     })
   );
