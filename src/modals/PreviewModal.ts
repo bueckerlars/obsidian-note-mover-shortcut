@@ -5,6 +5,7 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { MobileUtils } from '../utils/MobileUtils';
 import { combinePath, ensureFolderExists } from '../utils/PathUtils';
 import { handleError, createError } from '../utils/Error';
+import { isNoteMoveConflictSkipOutcome } from '../application/note-move-conflict-skip-outcome';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
 import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
@@ -272,7 +273,7 @@ export class PreviewModal extends BaseModal {
 
           if (moveOutcome.moved) {
             movedCount++;
-          } else if (moveOutcome.reason === 'skip') {
+          } else if (isNoteMoveConflictSkipOutcome(moveOutcome)) {
             skippedCount++;
           }
         } catch (error) {
