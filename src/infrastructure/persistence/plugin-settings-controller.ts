@@ -179,11 +179,11 @@ export async function validateAndRepairPluginData(
   }
 
   if (!plugin.pluginData.settings.conflictResolution) {
-    plugin.pluginData.settings.conflictResolution = { strategy: 'ask' };
+    plugin.pluginData.settings.conflictResolution = { strategy: 'skip' };
   } else if (
     plugin.pluginData.settings.conflictResolution.strategy === undefined
   ) {
-    plugin.pluginData.settings.conflictResolution.strategy = 'ask';
+    plugin.pluginData.settings.conflictResolution.strategy = 'skip';
   }
 
   if (
@@ -324,7 +324,7 @@ export function buildDefaultSettingsData(): SettingsData {
       deleteEmptyAssetFolders: false,
     },
     conflictResolution: {
-      strategy: 'ask',
+      strategy: 'skip',
     },
   };
 }

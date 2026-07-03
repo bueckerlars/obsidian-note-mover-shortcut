@@ -35,11 +35,11 @@ export class ConflictResolutionSettingsSection {
     new Setting(this.containerEl).setName('Conflict resolution').setHeading();
 
     if (!this.plugin.pluginData.settings.conflictResolution) {
-      this.plugin.pluginData.settings.conflictResolution = { strategy: 'ask' };
+      this.plugin.pluginData.settings.conflictResolution = { strategy: 'skip' };
     }
 
     const currentStrategy =
-      this.plugin.pluginData.settings.conflictResolution.strategy ?? 'ask';
+      this.plugin.pluginData.settings.conflictResolution.strategy ?? 'skip';
 
     const strategySetting = new Setting(this.containerEl)
       .setName('When target file exists')

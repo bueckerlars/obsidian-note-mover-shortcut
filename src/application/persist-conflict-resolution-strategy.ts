@@ -8,7 +8,7 @@ export async function persistConflictResolutionStrategy(
   strategy: ConflictResolutionStrategy
 ): Promise<void> {
   const previousStrategy =
-    plugin.pluginData.settings.conflictResolution?.strategy ?? 'ask';
+    plugin.pluginData.settings.conflictResolution?.strategy ?? 'skip';
   plugin.pluginData.settings.conflictResolution = { strategy };
   if (previousStrategy !== strategy) {
     await plugin.conflictSkipCacheManager.clearAll();

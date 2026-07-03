@@ -5,7 +5,7 @@ import type {
 import type { SettingsData } from '../types/PluginData';
 
 const DEFAULT_CONFLICT_RESOLUTION: ConflictResolutionSettings = {
-  strategy: 'ask',
+  strategy: 'skip',
 };
 
 /** Resolves conflict settings with safe defaults. */
@@ -45,5 +45,5 @@ export function normalizeConflictStrategy(
   ) {
     return strategy;
   }
-  return 'ask';
+  return 'skip';
 }

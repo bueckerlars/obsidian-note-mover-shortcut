@@ -37,7 +37,7 @@ describe('deriveConflictInteractive', () => {
     ).toBe(false);
   });
 
-  it('defaults to ask and enables interactive for automatic moves', () => {
-    expect(deriveConflictInteractive({} as SettingsData, false)).toBe(true);
+  it('defaults to skip and disables interactive for automatic moves', () => {
+    expect(deriveConflictInteractive({} as SettingsData, false)).toBe(false);
   });
 });
