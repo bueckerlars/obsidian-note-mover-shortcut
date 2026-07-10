@@ -9,7 +9,10 @@ import {
   folderExists,
 } from '../utils/PathUtils';
 import { handleError, createError } from '../utils/Error';
-import { isNoteMoveConflictSkipOutcome } from '../application/note-move-conflict-skip-outcome';
+import {
+  formatMoveSkippedDetail,
+  isNoteMoveConflictSkipOutcome,
+} from '../application/note-move-skip-outcome';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
 import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
@@ -313,22 +316,11 @@ export class PreviewModal extends BaseModal {
 
     this.close();
 
+    const skippedDetail = formatMoveSkippedDetail({
+      missingFolder: missingFolderSkippedCount,
+      conflict: conflictSkippedCount,
+    });
     const totalSkipped = missingFolderSkippedCount + conflictSkippedCount;
-    const skippedDetail = (() => {
-      if (totalSkipped === 0) {
-        return '';
-      }
-      const parts: string[] = [];
-      if (missingFolderSkippedCount > 0) {
-        parts.push(
-          `${missingFolderSkippedCount} skipped (destination folder missing)`
-        );
-      }
-      if (conflictSkippedCount > 0) {
-        parts.push(`${conflictSkippedCount} skipped due to conflicts`);
-      }
-      return ` ${parts.join(', ')}.`;
-    })();
 
     if (abortCtl.signal.aborted) {
       NoticeManager.info(

@@ -5,7 +5,7 @@ import { handleError } from '../utils/Error';
 import {
   combinePath,
   DESTINATION_PATH_BLOCK_REASONS,
-  formatPath,
+  folderExists,
   normalizeDestinationFolderPath,
 } from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
@@ -246,7 +246,7 @@ export class RuleManagerV2 {
 
         // When auto-create is disabled and the destination folder does not
         // exist yet, the move would be skipped - reflect that in the preview.
-        if (!createFolder && !this.destinationFolderExists(targetFolder)) {
+        if (!createFolder && !(await folderExists(this.app, targetFolder))) {
           return {
             fileName,
             currentPath: filePath,
@@ -396,21 +396,6 @@ export class RuleManagerV2 {
   /**
    * Applies the same destination normalization for move and preview so both agree.
    */
-  /**
-   * Synchronous existence check for a destination folder, used during preview
-   * generation. Root always counts as existing.
-   */
-  private destinationFolderExists(folderPath: string): boolean {
-    if (!folderPath || folderPath === '/' || folderPath === '') {
-      return true;
-    }
-    const formatted = formatPath(folderPath);
-    if (!formatted) {
-      return true;
-    }
-    return this.app.vault.getAbstractFileByPath(formatted) !== null;
-  }
-
   private normalizeRenderedDestination(
     rendered: string
   ): { ok: true; path: string } | { ok: false; reason: string } {

@@ -30,6 +30,9 @@ function makeApp(existingFolders: string[] = []): App {
     },
     vault: {
       read: async () => '',
+      adapter: {
+        exists: async (path: string) => folders.has(path),
+      },
       getAbstractFileByPath: (path: string) =>
         folders.has(path) ? ({ path } as unknown) : null,
     },
