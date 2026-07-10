@@ -1,5 +1,6 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { HistoryModal } from '../modals/HistoryModal';
+import { ConflictSkipCacheModal } from '../modals/ConflictSkipCacheModal';
 import { PreviewModal } from '../modals/PreviewModal';
 import { handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
@@ -46,6 +47,18 @@ export class CommandHandler {
           this.plugin.historyManager,
           this.plugin
         ).open();
+      },
+    });
+
+    // Skipped conflict cache review
+    this.plugin.addCommand({
+      id: 'show-conflict-skip-cache',
+      name: 'Review skipped move conflicts',
+      callback: () => {
+        void (async () => {
+          await this.plugin.conflictSkipCacheManager.prune(this.plugin.app);
+          new ConflictSkipCacheModal(this.plugin.app, this.plugin).open();
+        })();
       },
     });
 

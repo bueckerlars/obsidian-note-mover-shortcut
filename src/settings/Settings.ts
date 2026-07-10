@@ -9,6 +9,7 @@ import {
   ImportExportSettingsSection,
   PerformanceDebugSettingsSection,
   UpdateSettingsSection,
+  ConflictResolutionSettingsSection,
 } from './sections';
 import { DebounceManager } from '../utils/DebounceManager';
 import { MobileUtils } from '../utils/MobileUtils';
@@ -22,6 +23,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   private importExportSettings: ImportExportSettingsSection;
   private performanceDebugSettings: PerformanceDebugSettingsSection;
   private updateSettings: UpdateSettingsSection;
+  private conflictResolutionSettings: ConflictResolutionSettingsSection;
   private debounceManager: DebounceManager;
 
   constructor(private plugin: AdvancedNoteMoverPlugin) {
@@ -70,6 +72,10 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
       debouncedDisplay
     );
     this.updateSettings = new UpdateSettingsSection(plugin, this.containerEl);
+    this.conflictResolutionSettings = new ConflictResolutionSettingsSection(
+      plugin,
+      this.containerEl
+    );
   }
 
   display(): void {
@@ -140,6 +146,10 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
       this.plugin,
       this.containerEl
     );
+    this.conflictResolutionSettings = new ConflictResolutionSettingsSection(
+      this.plugin,
+      this.containerEl
+    );
 
     this.periodicMovementSettings.addTriggerSettings();
 
@@ -151,6 +161,8 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.rulesSettings.addAddRuleButtonSetting();
 
     this.attachmentsSettings.addAttachmentSettings();
+
+    this.conflictResolutionSettings.addConflictResolutionSettings();
 
     this.historySettings.addHistorySettings();
 

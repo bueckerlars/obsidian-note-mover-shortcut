@@ -22,13 +22,16 @@ export class RuleEvaluationCache {
   /**
    * Recompute the rules hash from the current configuration.
    * Must be called whenever rules or filters change.
+   * @returns true when the hash changed and the cache was invalidated.
    */
-  public updateRulesHash(rulesV2: RuleV2[], filters: Filter[]): void {
+  public updateRulesHash(rulesV2: RuleV2[], filters: Filter[]): boolean {
     const newHash = this.computeRulesHash(rulesV2, filters);
     if (newHash !== this.currentRulesHash) {
       this.currentRulesHash = newHash;
       this.invalidateAll();
+      return true;
     }
+    return false;
   }
 
   /** Mark a file as needing re-evaluation (e.g. after modify / create). */

@@ -6,3 +6,6 @@ export { HistoryModal } from './HistoryModal';
 export { PreviewModal } from './PreviewModal';
 export { UpdateModal } from './UpdateModal';
 export { RuleEditorModal } from './RuleEditorModal';
+export { ConflictModal } from './ConflictModal';
+export type { ConflictModalOptions } from './ConflictModal';
+export { ConflictSkipCacheModal } from './ConflictSkipCacheModal';

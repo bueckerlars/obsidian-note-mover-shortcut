@@ -12,6 +12,7 @@ export type PluginWithVaultSync = Plugin & {
       newPath: string,
       fileName: string
     ): void;
+    isPluginMoveInProgress(): boolean;
   };
   ruleCache: {
     handleRename(oldPath: string, newPath: string): void;
@@ -23,6 +24,10 @@ export type PluginWithVaultSync = Plugin & {
     invalidateMarkdownList(): void;
     scheduleMetadataDerivedInvalidate(): void;
     attachMetadataInvalidationListeners(plugin: Plugin & { app: App }): void;
+  };
+  conflictSkipCacheManager?: {
+    handleRenameAndSave(oldPath: string, newPath: string): Promise<void>;
+    handleDelete(path: string): Promise<void>;
   };
 };
 
@@ -39,6 +44,12 @@ export function registerVaultEventHooks(plugin: PluginWithVaultSync): void {
         plugin.vaultIndexCache?.invalidateMovableFileList();
         if (file.extension === 'md') {
           plugin.vaultIndexCache?.invalidateMarkdownList();
+        }
+        if (!plugin.historyManager.isPluginMoveInProgress()) {
+          void plugin.conflictSkipCacheManager?.handleRenameAndSave(
+            oldPath,
+            file.path
+          );
         }
       }
     })
@@ -72,6 +83,9 @@ export function registerVaultEventHooks(plugin: PluginWithVaultSync): void {
         plugin.vaultIndexCache?.invalidateMovableFileList();
         if (file.extension === 'md') {
           plugin.vaultIndexCache?.invalidateMarkdownList();
+        }
+        if (!plugin.historyManager.isPluginMoveInProgress()) {
+          void plugin.conflictSkipCacheManager?.handleDelete(file.path);
         }
       }
     })

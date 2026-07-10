@@ -3,6 +3,7 @@ import { AdvancedNoteMover } from 'src/core/AdvancedNoteMover';
 import { CommandHandler } from 'src/handlers/CommandHandler';
 import { AdvancedNoteMoverSettingsTab } from 'src/settings/Settings';
 import { HistoryManager } from 'src/core/HistoryManager';
+import { ConflictSkipCacheManager } from 'src/core/ConflictSkipCacheManager';
 import { TriggerEventHandler } from 'src/core/TriggerEventHandler';
 import { UpdateManager } from 'src/core/UpdateManager';
 import { RuleEvaluationCache } from 'src/core/RuleEvaluationCache';
@@ -26,12 +27,14 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
   public advancedNoteMover!: AdvancedNoteMover;
   public command_handler!: CommandHandler;
   public historyManager!: HistoryManager;
+  public conflictSkipCacheManager!: ConflictSkipCacheManager;
   public updateManager!: UpdateManager;
   public triggerHandler!: TriggerEventHandler;
   public ruleCache!: RuleEvaluationCache;
   public vaultIndexCache!: PluginVaultIndexCache;
   public performanceTrace!: PerformanceTraceRecorder;
   private settingTab!: AdvancedNoteMoverSettingsTab;
+  private pendingSkipCacheInvalidation = false;
   /** Application-layer facades (use-cases); core logic remains on `advancedNoteMover`. */
   public appServices!: PluginApplicationServices;
 
@@ -49,8 +52,14 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
     this.vaultIndexCache.setPerformanceRecorder(this.performanceTrace);
     this.historyManager = new HistoryManager(this);
     this.historyManager.loadHistoryFromSettings();
+    this.conflictSkipCacheManager = new ConflictSkipCacheManager(this);
+    await this.conflictSkipCacheManager.prune(this.app);
     this.updateManager = new UpdateManager(this);
     this.advancedNoteMover = new AdvancedNoteMover(this);
+    if (this.pendingSkipCacheInvalidation) {
+      this.pendingSkipCacheInvalidation = false;
+      void this.advancedNoteMover.invalidateConflictSkipCacheForRuleChange();
+    }
     this.appServices = createPluginApplicationServices(this);
     this.triggerHandler = new TriggerEventHandler(this);
     this.command_handler = new CommandHandler(this);
@@ -83,7 +92,17 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
 
   public syncRuleCacheHash(): void {
     const s = this.pluginData.settings;
-    this.ruleCache.updateRulesHash(s.rulesV2 ?? [], s.filters.filter);
+    const rulesChanged = this.ruleCache.updateRulesHash(
+      s.rulesV2 ?? [],
+      s.filters.filter
+    );
+    if (rulesChanged) {
+      if (this.advancedNoteMover) {
+        void this.advancedNoteMover.invalidateConflictSkipCacheForRuleChange();
+      } else {
+        this.pendingSkipCacheInvalidation = true;
+      }
+    }
   }
 
   async save_settings(): Promise<void> {
