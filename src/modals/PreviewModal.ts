@@ -3,7 +3,11 @@ import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
 import { MobileUtils } from '../utils/MobileUtils';
-import { combinePath, ensureFolderExists } from '../utils/PathUtils';
+import {
+  combinePath,
+  ensureFolderExists,
+  folderExists,
+} from '../utils/PathUtils';
 import { handleError, createError } from '../utils/Error';
 import { performNoteMove } from '../application/perform-note-move';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
@@ -204,6 +208,7 @@ export class PreviewModal extends BaseModal {
     const successfulEntries = this.movePreview.successfulMoves;
     let movedCount = 0;
     let errorCount = 0;
+    let skippedCount = 0;
     const abortCtl = new AbortController();
 
     if (this.actionFooterEl) {
@@ -238,6 +243,17 @@ export class PreviewModal extends BaseModal {
           const targetFolder = entry.targetPath;
           const newPath = combinePath(targetFolder, file.name);
           if (file.path === newPath) continue;
+
+          // Respect the folder-creation decision: skip if auto-create is
+          // disabled and the destination folder is missing (e.g. it was
+          // deleted between preview generation and execution).
+          if (
+            entry.createFolder === false &&
+            !(await folderExists(this.app, targetFolder))
+          ) {
+            skippedCount++;
+            continue;
+          }
 
           if (!(await ensureFolderExists(this.app, targetFolder))) {
             throw createError(
@@ -277,15 +293,22 @@ export class PreviewModal extends BaseModal {
 
     this.close();
 
+    const skippedSuffix =
+      skippedCount > 0
+        ? ` ${skippedCount} skipped (destination folder missing).`
+        : '';
+
     if (abortCtl.signal.aborted) {
       NoticeManager.info(
-        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).`
+        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).${skippedSuffix}`
       );
     } else if (errorCount === 0) {
-      NoticeManager.success(`Successfully moved ${movedCount} files!`);
+      NoticeManager.success(
+        `Successfully moved ${movedCount} files!${skippedSuffix}`
+      );
     } else {
       NoticeManager.warning(
-        `Moved ${movedCount} files with ${errorCount} errors. Check console for details.`
+        `Moved ${movedCount} files with ${errorCount} errors.${skippedSuffix} Check console for details.`
       );
     }
   }

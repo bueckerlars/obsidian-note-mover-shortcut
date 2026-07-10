@@ -165,4 +165,10 @@ export interface RuleV2 {
   aggregation: AggregationType;
   triggers: Trigger[];
   active: boolean;
+  /**
+   * Per-rule override for creating the destination folder when it is missing.
+   * `undefined` inherits the global `createMissingDestinationFolders` setting,
+   * `true` always creates the folder, `false` skips the move if it is missing.
+   */
+  createDestinationFolder?: boolean;
 }

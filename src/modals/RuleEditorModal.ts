@@ -69,6 +69,9 @@ export class RuleEditorModal extends BaseModal {
     // Destination
     this.createDestinationInput(container);
 
+    // Destination folder creation override
+    this.createFolderCreationSelector(container);
+
     // Separator
     container.createEl('hr', {
       cls: 'advancedNoteMover-rule-editor-separator',
@@ -172,6 +175,44 @@ export class RuleEditorModal extends BaseModal {
     setting.settingEl
       .querySelector('input')
       ?.setAttribute('aria-describedby', descriptionId);
+  }
+
+  private createFolderCreationSelector(container: HTMLElement): void {
+    const currentValue: 'inherit' | 'always' | 'never' =
+      this.workingRule.createDestinationFolder === undefined
+        ? 'inherit'
+        : this.workingRule.createDestinationFolder
+          ? 'always'
+          : 'never';
+
+    new Setting(container)
+      .setName(SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_NAME)
+      .setDesc(SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_DESC)
+      .addDropdown(dropdown =>
+        dropdown
+          .addOption(
+            'inherit',
+            SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_INHERIT
+          )
+          .addOption(
+            'always',
+            SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_ALWAYS
+          )
+          .addOption(
+            'never',
+            SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_NEVER
+          )
+          .setValue(currentValue)
+          .onChange(value => {
+            if (value === 'always') {
+              this.workingRule.createDestinationFolder = true;
+            } else if (value === 'never') {
+              this.workingRule.createDestinationFolder = false;
+            } else {
+              delete this.workingRule.createDestinationFolder;
+            }
+          })
+      );
   }
 
   private createConditionsSection(container: HTMLElement): void {

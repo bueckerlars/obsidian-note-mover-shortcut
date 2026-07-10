@@ -278,6 +278,7 @@ export function buildDefaultSettingsData(): SettingsData {
     enableVaultIndexCache: true,
     enablePerformanceDebug: false,
     showReleaseNotesOnUpdate: true,
+    createMissingDestinationFolders: true,
     attachments: {
       moveWithNote: true,
       skipSharedAttachments: true,
@@ -341,6 +342,7 @@ function migrateFromLegacy(legacy: unknown): PluginData {
     enableRuleEvaluationCache: true,
     enableVaultIndexCache: true,
     enablePerformanceDebug: false,
+    createMissingDestinationFolders: true,
   };
 
   const data: PluginData = {

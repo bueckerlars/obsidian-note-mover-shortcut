@@ -52,6 +52,7 @@ export const SETTINGS_CONSTANTS = {
     filter: [] as string[],
     rules: [] as never[],
     retentionPolicy: HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
+    createMissingDestinationFolders: true,
   },
 
   PLACEHOLDER_TEXTS: {
@@ -109,6 +110,16 @@ export const SETTINGS_CONSTANTS = {
     RETENTION_POLICY_DAYS: 'Days',
     RETENTION_POLICY_WEEKS: 'Weeks',
     RETENTION_POLICY_MONTHS: 'Months',
+    // Destination folder creation texts
+    CREATE_MISSING_FOLDERS_NAME: 'Create missing destination folders',
+    CREATE_MISSING_FOLDERS_DESC:
+      'When enabled (default), destination folders are created automatically if they do not exist. When disabled, notes are skipped and not moved if the destination folder is missing. Individual rules can override this in the rule editor.',
+    RULE_CREATE_FOLDER_NAME: 'Create destination folder',
+    RULE_CREATE_FOLDER_DESC:
+      'Control whether a missing destination folder is created for this rule.',
+    RULE_CREATE_FOLDER_INHERIT: 'Use global default',
+    RULE_CREATE_FOLDER_ALWAYS: 'Always create',
+    RULE_CREATE_FOLDER_NEVER: 'Never create',
   } as const,
 } as const;
 

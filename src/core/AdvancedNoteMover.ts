@@ -2,7 +2,11 @@ import { TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
-import { combinePath, ensureFolderExists } from '../utils/PathUtils';
+import {
+  combinePath,
+  ensureFolderExists,
+  folderExists,
+} from '../utils/PathUtils';
 import { performNoteMove } from '../application/perform-note-move';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import AdvancedNoteMoverPlugin from 'main';
@@ -40,6 +44,9 @@ export class AdvancedNoteMover {
     this.ruleManagerV2.setRules(rulesV2);
     this.ruleManagerV2.setFilter(
       this.plugin.pluginData.settings.filters.filter.map(f => f.value)
+    );
+    this.ruleManagerV2.setCreateMissingFolders(
+      this.plugin.pluginData.settings.createMissingDestinationFolders !== false
     );
 
     this.plugin.syncRuleCacheHash();
@@ -125,25 +132,33 @@ export class AdvancedNoteMover {
         try {
           let targetFolder = defaultFolder;
 
-          let result: string | null = null;
-
-          result = await this.ruleManagerV2.moveFileBasedOnTags(
+          const result = await this.ruleManagerV2.moveFileBasedOnTags(
             file,
             skipFilter
           );
 
           if (cacheEnabled) {
-            cache.store(originalPath, mtime, result);
+            cache.store(originalPath, mtime, result?.destination ?? null);
           }
 
           if (result === null) {
             return this.finishFileMove(originalPath, file, { moved: false });
           }
-          targetFolder = result;
+          targetFolder = result.destination;
 
           const newPath = combinePath(targetFolder, file.name);
 
           if (originalPath === newPath) {
+            return this.finishFileMove(originalPath, file, { moved: false });
+          }
+
+          // When folder auto-creation is disabled (globally or per rule), skip
+          // the move if the destination folder does not exist yet.
+          if (
+            !result.createFolder &&
+            !(await folderExists(app, targetFolder))
+          ) {
+            this.maybeNotifyMissingFolder(file, targetFolder);
             return this.finishFileMove(originalPath, file, { moved: false });
           }
 
@@ -331,6 +346,24 @@ export class AdvancedNoteMover {
     this.filesMoveInFlight.delete(originalPath);
     this.filesMoveInFlight.delete(file.path);
     return result;
+  }
+
+  private maybeNotifyMissingFolder(file: TFile, targetFolder: string): void {
+    // Suppress per-file notices during bulk operations to avoid spam; the bulk
+    // completion notice already summarizes how many files were moved.
+    if (this.plugin.historyManager.isBulkOperationInProgress()) {
+      return;
+    }
+
+    const now = Date.now();
+    const lastAt = this.lastMoveNoticeAtByFileName.get(file.name);
+    if (lastAt !== undefined && now - lastAt < MOVE_NOTICE_DEDUPE_MS) {
+      return;
+    }
+    this.lastMoveNoticeAtByFileName.set(file.name, now);
+    NoticeManager.warning(
+      `"${file.name}" was not moved: destination folder "${targetFolder}" does not exist (auto-create is disabled).`
+    );
   }
 
   private maybeNotifySingleFileMove(file: TFile, targetFolder: string): void {

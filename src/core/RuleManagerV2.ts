@@ -5,6 +5,7 @@ import { handleError } from '../utils/Error';
 import {
   combinePath,
   DESTINATION_PATH_BLOCK_REASONS,
+  formatPath,
   normalizeDestinationFolderPath,
 } from '../utils/PathUtils';
 import { MetadataExtractor } from './MetadataExtractor';
@@ -25,9 +26,19 @@ import type { PerformanceTraceRecorder } from '../infrastructure/debug/performan
  *
  * @since 0.5.0
  */
+/**
+ * Result of resolving a file against the rules: the destination folder plus
+ * whether a missing destination folder should be created for this move.
+ */
+export interface RuleMoveResult {
+  destination: string;
+  createFolder: boolean;
+}
+
 export class RuleManagerV2 {
   private rules: RuleV2[] = [];
   private filter: string[] = []; // Filter remain V1-compatible
+  private createMissingFolders = true;
   private metadataExtractor: MetadataExtractor;
   private ruleMatcherV2: RuleMatcherV2;
   private readonly filterEngine = new BlacklistFilterEngine();
@@ -61,6 +72,24 @@ export class RuleManagerV2 {
     this.filter = filter;
   }
 
+  /**
+   * Sets the global default for creating missing destination folders.
+   * Individual rules can override this via `RuleV2.createDestinationFolder`.
+   *
+   * @param createMissingFolders - Whether missing folders are created by default
+   */
+  public setCreateMissingFolders(createMissingFolders: boolean): void {
+    this.createMissingFolders = createMissingFolders;
+  }
+
+  /**
+   * Resolves the effective "create destination folder" decision for a rule,
+   * honoring the per-rule override and falling back to the global default.
+   */
+  private resolveCreateFolder(rule: RuleV2): boolean {
+    return rule.createDestinationFolder ?? this.createMissingFolders;
+  }
+
   private filterNeedsContent(): boolean {
     return filtersNeedContent(this.filter);
   }
@@ -73,12 +102,12 @@ export class RuleManagerV2 {
    *
    * @param file - The specific TFile to evaluate
    * @param skipFilter - Whether to skip filter evaluation
-   * @returns Target folder path if rule matches, null otherwise
+   * @returns Move result with destination and folder-creation decision, or null
    */
   public async moveFileBasedOnTags(
     file: TFile,
     skipFilter = false
-  ): Promise<string | null> {
+  ): Promise<RuleMoveResult | null> {
     return this.perf.recordAsync(
       'RuleManagerV2.moveFileBasedOnTags',
       async () => {
@@ -112,7 +141,10 @@ export class RuleManagerV2 {
               return null;
             }
 
-            return normalized.path;
+            return {
+              destination: normalized.path,
+              createFolder: this.resolveCreateFolder(matchingRule),
+            };
           }
 
           // No rule matched - skip the file since only notes with rules should be moved
@@ -193,6 +225,7 @@ export class RuleManagerV2 {
         }
 
         const targetFolder = normalized.path;
+        const createFolder = this.resolveCreateFolder(matchingRule);
 
         // Calculate the full target path
         const fullTargetPath = combinePath(targetFolder, fileName);
@@ -206,6 +239,23 @@ export class RuleManagerV2 {
             willBeMoved: false,
             blockReason: 'File is already in the correct folder',
             matchedRule: matchingRule.name,
+            createFolder,
+            tags,
+          };
+        }
+
+        // When auto-create is disabled and the destination folder does not
+        // exist yet, the move would be skipped - reflect that in the preview.
+        if (!createFolder && !this.destinationFolderExists(targetFolder)) {
+          return {
+            fileName,
+            currentPath: filePath,
+            targetPath: targetFolder,
+            willBeMoved: false,
+            blockReason:
+              'Destination folder does not exist and auto-create is disabled',
+            matchedRule: matchingRule.name,
+            createFolder,
             tags,
           };
         }
@@ -216,6 +266,7 @@ export class RuleManagerV2 {
           targetPath: targetFolder,
           willBeMoved: true,
           matchedRule: matchingRule.name,
+          createFolder,
           tags,
         };
       }
@@ -345,6 +396,21 @@ export class RuleManagerV2 {
   /**
    * Applies the same destination normalization for move and preview so both agree.
    */
+  /**
+   * Synchronous existence check for a destination folder, used during preview
+   * generation. Root always counts as existing.
+   */
+  private destinationFolderExists(folderPath: string): boolean {
+    if (!folderPath || folderPath === '/' || folderPath === '') {
+      return true;
+    }
+    const formatted = formatPath(folderPath);
+    if (!formatted) {
+      return true;
+    }
+    return this.app.vault.getAbstractFileByPath(formatted) !== null;
+  }
+
   private normalizeRenderedDestination(
     rendered: string
   ): { ok: true; path: string } | { ok: false; reason: string } {
