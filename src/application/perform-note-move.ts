@@ -8,6 +8,7 @@ import {
 import type { AttachmentMoveSettings } from '../types/PluginData';
 import type { HistoryManager } from '../core/HistoryManager';
 import { deleteEmptyAssetFoldersAfterMove } from '../domain/attachments/delete-empty-asset-folders';
+import { removeConflictingTargetForOverwrite } from './resolve-note-move-conflict';
 
 export interface PerformNoteMoveOptions {
   app: App;
@@ -16,6 +17,32 @@ export interface PerformNoteMoveOptions {
   originalPath: string;
   newPath: string;
   attachmentSettings: AttachmentMoveSettings;
+  /** When set, trashes the conflicting destination file before renaming. */
+  overwriteTargetPath?: string;
+  /** Runs after a successful rename while the plugin-move guard is still active. */
+  beforePluginMoveEnd?: () => Promise<void>;
+}
+
+async function readTargetBackup(
+  app: App,
+  targetPath: string
+): Promise<string | null> {
+  const targetFile = app.vault.getAbstractFileByPath(targetPath);
+  if (!(targetFile instanceof TFile)) {
+    return null;
+  }
+  return app.vault.read(targetFile);
+}
+
+async function restoreTargetBackup(
+  app: App,
+  targetPath: string,
+  content: string
+): Promise<void> {
+  if (await app.vault.adapter.exists(targetPath)) {
+    return;
+  }
+  await app.vault.create(targetPath, content);
 }
 
 /**
@@ -31,6 +58,8 @@ export async function performNoteMove(
     originalPath,
     newPath,
     attachmentSettings,
+    overwriteTargetPath,
+    beforePluginMoveEnd,
   } = options;
 
   const shouldCoMove =
@@ -42,9 +71,25 @@ export async function performNoteMove(
       })
     : [];
 
+  const targetBackup =
+    overwriteTargetPath != null
+      ? await readTargetBackup(app, overwriteTargetPath)
+      : null;
+
   historyManager.markPluginMoveStart();
   try {
-    await app.fileManager.renameFile(file, newPath);
+    if (overwriteTargetPath) {
+      await removeConflictingTargetForOverwrite(app, overwriteTargetPath);
+    }
+
+    try {
+      await app.fileManager.renameFile(file, newPath);
+    } catch (error) {
+      if (targetBackup != null && overwriteTargetPath) {
+        await restoreTargetBackup(app, overwriteTargetPath, targetBackup);
+      }
+      throw error;
+    }
 
     let attachmentMoves: AttachmentMoveRecord[] = [];
     if (attachmentPlans.length > 0) {
@@ -66,6 +111,8 @@ export async function performNoteMove(
       fileName: file.name,
       attachmentMoves: attachmentMoves.length > 0 ? attachmentMoves : undefined,
     });
+
+    await beforePluginMoveEnd?.();
 
     return attachmentMoves;
   } finally {

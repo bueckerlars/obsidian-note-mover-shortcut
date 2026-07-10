@@ -1,6 +1,6 @@
 {
   "name": "obsidian-note-mover-shortcut",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Automatically move notes into folders using configurable rules — match on tags, properties, filenames, dates, and more. Supports templates, blacklist filters, preview, attachment co-move, and undo.",
   "main": "main.js",
   "scripts": {
@@ -55,5 +55,10 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "fsevents@2.3.3": true,
+    "esbuild@0.28.1": true
   }
 }

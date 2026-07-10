@@ -1,4 +1,4 @@
-import { Modal, App, setIcon } from 'obsidian';
+import { Modal, App, setIcon, setTooltip } from 'obsidian';
 import { MobileUtils } from '../utils/MobileUtils';
 
 export type ModalSize = 'small' | 'medium' | 'large';
@@ -277,6 +277,7 @@ export abstract class BaseModal extends Modal {
     }
     if (options.tooltip) {
       button.setAttr('aria-label', options.tooltip);
+      setTooltip(button, options.tooltip);
     }
     button.addEventListener('click', onClick);
     return button;

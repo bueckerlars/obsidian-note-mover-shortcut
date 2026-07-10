@@ -7,13 +7,20 @@ import {
   ensureFolderExists,
   folderExists,
 } from '../utils/PathUtils';
-import { performNoteMove } from '../application/perform-note-move';
+import { deriveConflictInteractive } from '../utils/conflict-resolution-settings';
+import {
+  filterConflictSkipEntriesByExpectedTarget,
+  normalizeConflictCachePath,
+} from '../domain/conflicts/conflict-skip-cache';
+import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
+import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import AdvancedNoteMoverPlugin from 'main';
 import { type FileMoveResult, type OperationType } from '../types/Common';
 import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
 import { PreviewModal } from '../modals/PreviewModal';
+import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import {
   SETTINGS_CONSTANTS,
   NOTIFICATION_CONSTANTS,
@@ -27,6 +34,7 @@ export class AdvancedNoteMover {
   private ruleManagerV2: RuleManagerV2;
   private readonly filesMoveInFlight = new Set<string>();
   private readonly lastMoveNoticeAtByFileName = new Map<string, number>();
+  private periodicMoveInProgress = false;
 
   constructor(private plugin: AdvancedNoteMoverPlugin) {
     this.ruleManagerV2 = new RuleManagerV2(
@@ -50,6 +58,48 @@ export class AdvancedNoteMover {
     );
 
     this.plugin.syncRuleCacheHash();
+  }
+
+  /**
+   * Drops skip-cache entries whose expected target no longer matches current rules.
+   */
+  public async invalidateConflictSkipCacheForRuleChange(): Promise<void> {
+    const entries = this.plugin.conflictSkipCacheManager.getEntries();
+    if (entries.length === 0) {
+      return;
+    }
+
+    const expectedTargetBySource = new Map<string, string | null>();
+    const uniqueSources = [
+      ...new Set(
+        entries.map(entry => normalizeConflictCachePath(entry.sourcePath))
+      ),
+    ];
+
+    for (const sourcePath of uniqueSources) {
+      const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
+      if (!(file instanceof TFile)) {
+        expectedTargetBySource.set(sourcePath, null);
+        continue;
+      }
+
+      const moveResult = await this.ruleManagerV2.moveFileBasedOnTags(
+        file,
+        false
+      );
+      expectedTargetBySource.set(
+        sourcePath,
+        moveResult ? combinePath(moveResult.destination, file.name) : null
+      );
+    }
+
+    const filtered = filterConflictSkipEntriesByExpectedTarget(
+      entries,
+      expectedTargetBySource
+    );
+    await this.plugin.conflictSkipCacheManager.replaceEntriesIfChanged(
+      filtered
+    );
   }
 
   public async addFileToBlacklist(fileName: string): Promise<void> {
@@ -99,8 +149,16 @@ export class AdvancedNoteMover {
   public async moveFileBasedOnTags(
     file: TFile,
     defaultFolder: string,
-    skipFilter = false
+    skipFilter = false,
+    options: {
+      bypassConflictSkipCache?: boolean;
+    } = {}
   ): Promise<FileMoveResult> {
+    const bypassConflictSkipCache = options.bypassConflictSkipCache ?? false;
+    const interactive = deriveConflictInteractive(
+      this.plugin.pluginData.settings,
+      bypassConflictSkipCache
+    );
     return this.plugin.performanceTrace.recordAsync(
       'AdvancedNoteMover.moveFileBasedOnTags',
       async () => {
@@ -168,19 +226,33 @@ export class AdvancedNoteMover {
             );
           }
 
-          await performNoteMove({
+          const moveOutcome = await executeNoteMoveWithConflictHandling({
             app,
+            settings: this.plugin.pluginData.settings,
             historyManager: this.plugin.historyManager,
+            conflictSkipCache: this.plugin.conflictSkipCacheManager,
             file,
             originalPath,
-            newPath,
+            targetFolder,
             attachmentSettings: getAttachmentMoveSettings(
               this.plugin.pluginData.settings
             ),
+            interactive,
+            bypassConflictSkipCache,
+            onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
+              await persistConflictResolutionStrategy(this.plugin, strategy);
+            },
           });
 
-          const moveResult = { moved: true, targetFolder } as const;
-          this.maybeNotifySingleFileMove(file, targetFolder);
+          if (!moveOutcome.moved) {
+            return this.finishFileMove(originalPath, file, { moved: false });
+          }
+
+          const moveResult = {
+            moved: true,
+            targetFolder: moveOutcome.targetFolder,
+          } as const;
+          this.maybeNotifySingleFileMove(file, moveOutcome.targetFolder);
           return this.finishFileMove(originalPath, file, moveResult);
         } catch (error) {
           handleError(error, `Error moving file '${file.path}'`);
@@ -218,13 +290,22 @@ export class AdvancedNoteMover {
         let successCount = 0;
         let errorCount = 0;
 
+        if (options.operationType === 'periodic') {
+          await this.plugin.conflictSkipCacheManager.prune(app);
+        }
+
         try {
           for (let i = 0; i < files.length; i++) {
             if (options.signal?.aborted) {
               break;
             }
             try {
-              const moveResult = await this.moveFileBasedOnTags(files[i], '/');
+              const moveResult = await this.moveFileBasedOnTags(
+                files[i],
+                '/',
+                false,
+                { bypassConflictSkipCache: false }
+              );
               if (moveResult.moved) {
                 successCount++;
               }
@@ -310,11 +391,19 @@ export class AdvancedNoteMover {
    * Periodic version of bulk move - same logic but marked as periodic operation
    */
   async moveAllFilesInVaultPeriodic() {
-    await this.moveAllFiles({
-      createFolders: false,
-      showNotifications: true,
-      operationType: 'periodic',
-    });
+    if (this.periodicMoveInProgress) {
+      return;
+    }
+    this.periodicMoveInProgress = true;
+    try {
+      await this.moveAllFiles({
+        createFolders: false,
+        showNotifications: true,
+        operationType: 'periodic',
+      });
+    } finally {
+      this.periodicMoveInProgress = false;
+    }
   }
 
   async moveFocusedNoteToDestination() {
@@ -331,7 +420,9 @@ export class AdvancedNoteMover {
     }
 
     try {
-      await this.moveFileBasedOnTags(file, '/', false);
+      await this.moveFileBasedOnTags(file, '/', false, {
+        bypassConflictSkipCache: true,
+      });
     } catch (error) {
       handleError(error, 'moveFocusedNoteToDestination', false);
       return;

@@ -9,8 +9,12 @@ import {
   folderExists,
 } from '../utils/PathUtils';
 import { handleError, createError } from '../utils/Error';
-import { performNoteMove } from '../application/perform-note-move';
+import { isNoteMoveConflictSkipOutcome } from '../application/note-move-conflict-skip-outcome';
+import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
+import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
+import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
+import { deriveConflictInteractive } from '../utils/conflict-resolution-settings';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class PreviewModal extends BaseModal {
@@ -208,7 +212,8 @@ export class PreviewModal extends BaseModal {
     const successfulEntries = this.movePreview.successfulMoves;
     let movedCount = 0;
     let errorCount = 0;
-    let skippedCount = 0;
+    let missingFolderSkippedCount = 0;
+    let conflictSkippedCount = 0;
     const abortCtl = new AbortController();
 
     if (this.actionFooterEl) {
@@ -251,7 +256,7 @@ export class PreviewModal extends BaseModal {
             entry.createFolder === false &&
             !(await folderExists(this.app, targetFolder))
           ) {
-            skippedCount++;
+            missingFolderSkippedCount++;
             continue;
           }
 
@@ -261,17 +266,32 @@ export class PreviewModal extends BaseModal {
             );
           }
 
-          await performNoteMove({
+          const moveOutcome = await executeNoteMoveWithConflictHandling({
             app: this.app,
+            settings: this.plugin.pluginData.settings,
             historyManager: this.plugin.historyManager,
+            conflictSkipCache: this.plugin.conflictSkipCacheManager,
             file,
             originalPath: entry.currentPath,
-            newPath,
+            targetFolder,
             attachmentSettings: getAttachmentMoveSettings(
               this.plugin.pluginData.settings
             ),
+            interactive: deriveConflictInteractive(
+              this.plugin.pluginData.settings,
+              false
+            ),
+            bypassConflictSkipCache: true,
+            onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
+              await persistConflictResolutionStrategy(this.plugin, strategy);
+            },
           });
-          movedCount++;
+
+          if (moveOutcome.moved) {
+            movedCount++;
+          } else if (isNoteMoveConflictSkipOutcome(moveOutcome)) {
+            conflictSkippedCount++;
+          }
         } catch (error) {
           handleError(error, `Error moving file ${entry.fileName}`, false);
           errorCount++;
@@ -293,22 +313,34 @@ export class PreviewModal extends BaseModal {
 
     this.close();
 
-    const skippedSuffix =
-      skippedCount > 0
-        ? ` ${skippedCount} skipped (destination folder missing).`
-        : '';
+    const totalSkipped = missingFolderSkippedCount + conflictSkippedCount;
+    const skippedDetail = (() => {
+      if (totalSkipped === 0) {
+        return '';
+      }
+      const parts: string[] = [];
+      if (missingFolderSkippedCount > 0) {
+        parts.push(
+          `${missingFolderSkippedCount} skipped (destination folder missing)`
+        );
+      }
+      if (conflictSkippedCount > 0) {
+        parts.push(`${conflictSkippedCount} skipped due to conflicts`);
+      }
+      return ` ${parts.join(', ')}.`;
+    })();
 
     if (abortCtl.signal.aborted) {
       NoticeManager.info(
-        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).${skippedSuffix}`
+        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).${skippedDetail}`
       );
+    } else if (errorCount === 0 && totalSkipped === 0) {
+      NoticeManager.success(`Successfully moved ${movedCount} files!`);
     } else if (errorCount === 0) {
-      NoticeManager.success(
-        `Successfully moved ${movedCount} files!${skippedSuffix}`
-      );
+      NoticeManager.info(`Moved ${movedCount} files.${skippedDetail}`);
     } else {
       NoticeManager.warning(
-        `Moved ${movedCount} files with ${errorCount} errors.${skippedSuffix} Check console for details.`
+        `Moved ${movedCount} files with ${errorCount} errors.${skippedDetail} Check console for details.`
       );
     }
   }

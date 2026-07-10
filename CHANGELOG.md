@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.1.2...1.2.0)
+
+### Features
+
+- **Conflict resolution when the destination already exists** ([#25](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/25)): Moves that would collide with an existing file at the target path are handled by a configurable strategy — **Ask every time** (ConflictModal with skip, rename, or overwrite; optional “Always use this choice” persists the strategy), **Always skip**, **Always rename** (numeric suffix such as `note (1).md`), or **Always overwrite**. New **Settings → Conflict resolution** section selects the default. A skip cache remembers skipped source/target pairs so batch moves and vault re-evaluation do not re-prompt for the same conflict. Concurrent moves to the same target path are serialized with per-path locking. Notices report when a file was skipped, renamed to avoid a conflict, or overwrote an existing file.
+
 ## [1.1.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.1.1...1.1.2)
 
 ### Fixes

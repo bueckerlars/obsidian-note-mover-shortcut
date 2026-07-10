@@ -1,5 +1,7 @@
 import { BulkOperation, HistoryEntry, RetentionPolicy } from './HistoryEntry';
 import { RuleV2 } from './RuleV2';
+import type { ConflictResolutionSettings } from './ConflictResolution';
+import type { ConflictSkipCacheData } from './ConflictSkipCache';
 
 /**
  * @since 0.4.7
@@ -7,6 +9,7 @@ import { RuleV2 } from './RuleV2';
 export interface PluginData {
   settings: SettingsData;
   history: HistoryData;
+  conflictSkipCache?: ConflictSkipCacheData;
   lastSeenVersion?: string;
   schemaVersion?: number;
 }
@@ -38,6 +41,7 @@ export interface SettingsData {
    */
   createMissingDestinationFolders?: boolean;
   attachments?: AttachmentMoveSettings;
+  conflictResolution?: ConflictResolutionSettings;
 }
 
 export interface HistoryData {
