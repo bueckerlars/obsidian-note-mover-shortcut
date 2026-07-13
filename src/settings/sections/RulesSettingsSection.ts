@@ -32,6 +32,30 @@ export class RulesSettingsSection {
     new Setting(this.containerEl).setDesc(descUseRules);
   }
 
+  addCreateMissingFoldersSetting(): void {
+    const isMobile = MobileUtils.isMobile();
+    const setting = new Setting(this.containerEl)
+      .setName(SETTINGS_CONSTANTS.UI_TEXTS.CREATE_MISSING_FOLDERS_NAME)
+      .setDesc(SETTINGS_CONSTANTS.UI_TEXTS.CREATE_MISSING_FOLDERS_DESC)
+      .addToggle(toggle =>
+        toggle
+          .setValue(
+            this.plugin.pluginData.settings.createMissingDestinationFolders !==
+              false
+          )
+          .onChange(async value => {
+            this.plugin.pluginData.settings.createMissingDestinationFolders =
+              value;
+            await this.plugin.save_settings();
+            this.plugin.advancedNoteMover.updateRuleManager();
+          })
+      );
+
+    if (isMobile) {
+      setting.settingEl.addClass('advancedNoteMover-mobile-optimized');
+    }
+  }
+
   addVaultReEvaluationSetting(): void {
     let reEvaluateButton: ButtonComponent | undefined;
 

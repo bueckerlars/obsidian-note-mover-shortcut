@@ -33,6 +33,13 @@ export interface SettingsData {
   enablePerformanceDebug?: boolean;
   /** When true (default), show the changelog modal once after a plugin version update. */
   showReleaseNotesOnUpdate?: boolean;
+  /**
+   * When true (default), destination folders are created automatically if they
+   * do not exist. When false, notes are skipped (not moved) if the destination
+   * folder is missing. Individual rules can override this via
+   * {@link RuleV2.createDestinationFolder}.
+   */
+  createMissingDestinationFolders?: boolean;
   attachments?: AttachmentMoveSettings;
   conflictResolution?: ConflictResolutionSettings;
 }

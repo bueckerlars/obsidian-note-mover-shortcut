@@ -13,6 +13,11 @@ export interface PreviewEntry {
   blockReason?: string;
   /** The filter that blocked the move (if any) */
   blockingFilter?: string;
+  /**
+   * Whether a missing destination folder should be created for this move.
+   * Resolved from the matched rule override or the global setting.
+   */
+  createFolder?: boolean;
   /** File tags for display */
   tags: string[];
 }

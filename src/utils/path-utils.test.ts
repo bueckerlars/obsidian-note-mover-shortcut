@@ -1,8 +1,49 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import type { App } from 'obsidian';
 import {
+  folderExists,
   normalizeDestinationFolderPath,
   sanitizePathSegment,
 } from './PathUtils';
+
+function makeApp(existsImpl: (path: string) => Promise<boolean>): App {
+  return {
+    vault: {
+      adapter: {
+        exists: existsImpl,
+      },
+    },
+  } as unknown as App;
+}
+
+describe('folderExists', () => {
+  it('treats root and empty paths as existing', async () => {
+    const exists = vi.fn().mockResolvedValue(false);
+    const app = makeApp(exists);
+
+    expect(await folderExists(app, '')).toBe(true);
+    expect(await folderExists(app, '/')).toBe(true);
+    expect(exists).not.toHaveBeenCalled();
+  });
+
+  it('checks formatted vault-relative paths via adapter.exists', async () => {
+    const exists = vi
+      .fn()
+      .mockImplementation(async (path: string) => path === 'Projects/Notes');
+    const app = makeApp(exists);
+
+    expect(await folderExists(app, '/Projects/Notes/')).toBe(true);
+    expect(await folderExists(app, 'Projects/Missing')).toBe(false);
+    expect(exists).toHaveBeenCalledWith('Projects/Notes');
+  });
+
+  it('returns false when adapter.exists throws', async () => {
+    const exists = vi.fn().mockRejectedValue(new Error('IO error'));
+    const app = makeApp(exists);
+
+    expect(await folderExists(app, 'Projects')).toBe(false);
+  });
+});
 
 describe('sanitizePathSegment', () => {
   it('unwraps wikilinks and strips invalid characters', () => {

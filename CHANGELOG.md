@@ -4,7 +4,13 @@
 
 ### Features
 
-- **Conflict resolution when the destination already exists** ([#25](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/25)): Moves that would collide with an existing file at the target path are handled by a configurable strategy — **Ask every time** (ConflictModal with skip, rename, or overwrite; optional “Always use this choice” persists the strategy), **Always skip**, **Always rename** (numeric suffix such as `note (1).md`), or **Always overwrite**. New **Settings → Conflict resolution** section selects the default. A skip cache remembers skipped source/target pairs so batch moves and vault re-evaluation do not re-prompt for the same conflict. Concurrent moves to the same target path are serialized with per-path locking. Notices report when a file was skipped, renamed to avoid a conflict, or overwrote an existing file.
+- **Conflict resolution when the destination already exists** ([#25](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/25)): Moves that would collide with an existing file at the target path are handled by a configurable strategy — **Ask every time** (ConflictModal with skip, rename, or overwrite; optional “Always use this choice” persists the strategy), **Always skip**, **Always rename** (numeric suffix such as `note (1).md`), or **Always overwrite**. New **Settings → Conflict resolution** section selects the default (**Always skip** for new installs and when no strategy was saved yet). A skip cache remembers skipped source/target pairs so batch moves and vault re-evaluation do not re-prompt for the same conflict. Concurrent moves to the same target path are serialized with per-path locking. Notices report when a file was skipped, renamed to avoid a conflict, or overwrote an existing file.
+- **Optional destination folder creation** ([#103](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/103)): New toggle under **Settings → Rules** — **Create missing destination folders** (on by default). When disabled, notes are not moved if the target folder does not exist; a warning notice explains why (on-edit and manual moves). Each rule can override the global default in the rule editor (**Use global default**, **Always create**, or **Never create**). Bulk, periodic, and preview completion notices summarize how many files were skipped because the destination folder was missing.
+
+### Fixes
+
+- **Bulk and periodic skip summaries**: Move-all and periodic runs now report skipped files in the completion notice — separately for missing destination folders and for conflict skips (including cached conflict skips) — even when no files were moved.
+- **Preview vs runtime folder checks**: Rule preview uses the same `adapter.exists` folder check as move execution, so preview and runtime agree on whether a destination folder exists.
 
 ## [1.1.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.1.1...1.1.2)
 

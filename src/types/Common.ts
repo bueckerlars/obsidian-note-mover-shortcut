@@ -11,9 +11,15 @@ export type NotificationType =
 
 export type OperationType = 'single' | 'bulk' | 'periodic';
 
+/** Why a rule-based move was skipped without moving the file. */
+export type FileMoveSkipReason =
+  | 'missing_destination_folder'
+  | 'conflict_skip'
+  | 'cached_conflict_skip';
+
 /** Result of attempting to move one file via rules. */
 export type FileMoveResult =
-  | { moved: false }
+  | { moved: false; skipReason?: FileMoveSkipReason }
   | { moved: true; targetFolder: string };
 
 /**

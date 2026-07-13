@@ -3,9 +3,16 @@ import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
 import { MobileUtils } from '../utils/MobileUtils';
-import { combinePath, ensureFolderExists } from '../utils/PathUtils';
+import {
+  combinePath,
+  ensureFolderExists,
+  folderExists,
+} from '../utils/PathUtils';
 import { handleError, createError } from '../utils/Error';
-import { isNoteMoveConflictSkipOutcome } from '../application/note-move-conflict-skip-outcome';
+import {
+  formatMoveSkippedDetail,
+  isNoteMoveConflictSkipOutcome,
+} from '../application/note-move-skip-outcome';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
 import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
@@ -208,7 +215,8 @@ export class PreviewModal extends BaseModal {
     const successfulEntries = this.movePreview.successfulMoves;
     let movedCount = 0;
     let errorCount = 0;
-    let skippedCount = 0;
+    let missingFolderSkippedCount = 0;
+    let conflictSkippedCount = 0;
     const abortCtl = new AbortController();
 
     if (this.actionFooterEl) {
@@ -244,6 +252,17 @@ export class PreviewModal extends BaseModal {
           const newPath = combinePath(targetFolder, file.name);
           if (file.path === newPath) continue;
 
+          // Respect the folder-creation decision: skip if auto-create is
+          // disabled and the destination folder is missing (e.g. it was
+          // deleted between preview generation and execution).
+          if (
+            entry.createFolder === false &&
+            !(await folderExists(this.app, targetFolder))
+          ) {
+            missingFolderSkippedCount++;
+            continue;
+          }
+
           if (!(await ensureFolderExists(this.app, targetFolder))) {
             throw createError(
               `Failed to create target folder: ${targetFolder}`
@@ -274,7 +293,7 @@ export class PreviewModal extends BaseModal {
           if (moveOutcome.moved) {
             movedCount++;
           } else if (isNoteMoveConflictSkipOutcome(moveOutcome)) {
-            skippedCount++;
+            conflictSkippedCount++;
           }
         } catch (error) {
           handleError(error, `Error moving file ${entry.fileName}`, false);
@@ -297,19 +316,23 @@ export class PreviewModal extends BaseModal {
 
     this.close();
 
+    const skippedDetail = formatMoveSkippedDetail({
+      missingFolder: missingFolderSkippedCount,
+      conflict: conflictSkippedCount,
+    });
+    const totalSkipped = missingFolderSkippedCount + conflictSkippedCount;
+
     if (abortCtl.signal.aborted) {
       NoticeManager.info(
-        `Bulk move stopped. ${movedCount} file(s) moved, ${skippedCount} skipped, ${errorCount} error(s).`
+        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).${skippedDetail}`
       );
-    } else if (errorCount === 0 && skippedCount === 0) {
+    } else if (errorCount === 0 && totalSkipped === 0) {
       NoticeManager.success(`Successfully moved ${movedCount} files!`);
     } else if (errorCount === 0) {
-      NoticeManager.info(
-        `Moved ${movedCount} files. ${skippedCount} file(s) skipped due to conflicts.`
-      );
+      NoticeManager.info(`Moved ${movedCount} files.${skippedDetail}`);
     } else {
       NoticeManager.warning(
-        `Moved ${movedCount} files, ${skippedCount} skipped, ${errorCount} errors. Check console for details.`
+        `Moved ${movedCount} files with ${errorCount} errors.${skippedDetail} Check console for details.`
       );
     }
   }

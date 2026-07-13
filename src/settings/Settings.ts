@@ -156,6 +156,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.filterSettings.addFilterSettings();
 
     this.rulesSettings.addRulesSetting();
+    this.rulesSettings.addCreateMissingFoldersSetting();
     this.rulesSettings.addRulesArray();
     this.rulesSettings.addVaultReEvaluationSetting();
     this.rulesSettings.addAddRuleButtonSetting();

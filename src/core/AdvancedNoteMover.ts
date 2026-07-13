@@ -2,7 +2,11 @@ import { TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
-import { combinePath, ensureFolderExists } from '../utils/PathUtils';
+import {
+  combinePath,
+  ensureFolderExists,
+  folderExists,
+} from '../utils/PathUtils';
 import { deriveConflictInteractive } from '../utils/conflict-resolution-settings';
 import {
   filterConflictSkipEntriesByExpectedTarget,
@@ -13,6 +17,12 @@ import { persistConflictResolutionStrategy } from '../application/persist-confli
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import AdvancedNoteMoverPlugin from 'main';
 import { type FileMoveResult, type OperationType } from '../types/Common';
+import {
+  fileMoveResultFromConflictOutcome,
+  formatMoveSkippedDetail,
+  isConflictSkipFileMoveOutcome,
+  isMissingFolderSkipOutcome,
+} from '../application/note-move-skip-outcome';
 import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
 import { PreviewModal } from '../modals/PreviewModal';
@@ -49,6 +59,9 @@ export class AdvancedNoteMover {
     this.ruleManagerV2.setFilter(
       this.plugin.pluginData.settings.filters.filter.map(f => f.value)
     );
+    this.ruleManagerV2.setCreateMissingFolders(
+      this.plugin.pluginData.settings.createMissingDestinationFolders !== false
+    );
 
     this.plugin.syncRuleCacheHash();
   }
@@ -76,13 +89,13 @@ export class AdvancedNoteMover {
         continue;
       }
 
-      const destination = await this.ruleManagerV2.moveFileBasedOnTags(
+      const moveResult = await this.ruleManagerV2.moveFileBasedOnTags(
         file,
         false
       );
       expectedTargetBySource.set(
         sourcePath,
-        destination ? combinePath(destination, file.name) : null
+        moveResult ? combinePath(moveResult.destination, file.name) : null
       );
     }
 
@@ -183,26 +196,37 @@ export class AdvancedNoteMover {
         try {
           let targetFolder = defaultFolder;
 
-          let result: string | null = null;
-
-          result = await this.ruleManagerV2.moveFileBasedOnTags(
+          const result = await this.ruleManagerV2.moveFileBasedOnTags(
             file,
             skipFilter
           );
 
           if (cacheEnabled) {
-            cache.store(originalPath, mtime, result);
+            cache.store(originalPath, mtime, result?.destination ?? null);
           }
 
           if (result === null) {
             return this.finishFileMove(originalPath, file, { moved: false });
           }
-          targetFolder = result;
+          targetFolder = result.destination;
 
           const newPath = combinePath(targetFolder, file.name);
 
           if (originalPath === newPath) {
             return this.finishFileMove(originalPath, file, { moved: false });
+          }
+
+          // When folder auto-creation is disabled (globally or per rule), skip
+          // the move if the destination folder does not exist yet.
+          if (
+            !result.createFolder &&
+            !(await folderExists(app, targetFolder))
+          ) {
+            this.maybeNotifyMissingFolder(file, targetFolder);
+            return this.finishFileMove(originalPath, file, {
+              moved: false,
+              skipReason: 'missing_destination_folder',
+            });
           }
 
           if (!(await ensureFolderExists(app, targetFolder))) {
@@ -230,7 +254,11 @@ export class AdvancedNoteMover {
           });
 
           if (!moveOutcome.moved) {
-            return this.finishFileMove(originalPath, file, { moved: false });
+            return this.finishFileMove(
+              originalPath,
+              file,
+              fileMoveResultFromConflictOutcome(moveOutcome)
+            );
           }
 
           const moveResult = {
@@ -274,6 +302,8 @@ export class AdvancedNoteMover {
         );
         let successCount = 0;
         let errorCount = 0;
+        let missingFolderSkippedCount = 0;
+        let conflictSkippedCount = 0;
 
         if (options.operationType === 'periodic') {
           await this.plugin.conflictSkipCacheManager.prune(app);
@@ -293,6 +323,10 @@ export class AdvancedNoteMover {
               );
               if (moveResult.moved) {
                 successCount++;
+              } else if (isMissingFolderSkipOutcome(moveResult)) {
+                missingFolderSkippedCount++;
+              } else if (isConflictSkipFileMoveOutcome(moveResult)) {
+                conflictSkippedCount++;
               }
             } catch (error) {
               errorCount++;
@@ -315,43 +349,63 @@ export class AdvancedNoteMover {
             }
           }
 
-          // Show completion notice
-          if (successCount > 0 && options.showNotifications) {
-            if (options.operationType === 'bulk') {
-              const totalFiles = successCount + errorCount;
-              const successMessage =
-                errorCount > 0
-                  ? `Moved ${successCount}/${totalFiles} files. ${errorCount} files had errors.`
-                  : `Successfully moved ${successCount} files`;
+          const skippedDetail = formatMoveSkippedDetail({
+            missingFolder: missingFolderSkippedCount,
+            conflict: conflictSkippedCount,
+          });
+          const hasSkipOrError =
+            missingFolderSkippedCount > 0 ||
+            conflictSkippedCount > 0 ||
+            errorCount > 0;
 
-              NoticeManager.showWithUndo(
-                'info',
-                `Bulk Operation: ${successMessage}`,
-                () => {
-                  void (async () => {
-                    const success =
-                      await this.plugin.historyManager.undoBulkOperation(
-                        bulkOperationId
-                      );
-                    if (success) {
-                      NoticeManager.success(
-                        `Bulk operation undone: ${successCount} files moved back`,
-                        { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
-                      );
-                    } else {
-                      NoticeManager.warning(
-                        `Could not undo all moves. Check individual files in history.`,
-                        { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
-                      );
-                    }
-                  })();
-                },
-                SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL
-              );
+          // Show completion notice when anything happened worth reporting
+          if (
+            options.showNotifications &&
+            (successCount > 0 || hasSkipOrError)
+          ) {
+            if (options.operationType === 'bulk') {
+              if (successCount > 0) {
+                const totalAttempted = successCount + errorCount;
+                const successMessage =
+                  errorCount > 0
+                    ? `Moved ${successCount}/${totalAttempted} files. ${errorCount} files had errors.`
+                    : `Successfully moved ${successCount} files`;
+
+                NoticeManager.showWithUndo(
+                  'info',
+                  `Bulk Operation: ${successMessage}${skippedDetail}`,
+                  () => {
+                    void (async () => {
+                      const success =
+                        await this.plugin.historyManager.undoBulkOperation(
+                          bulkOperationId
+                        );
+                      if (success) {
+                        NoticeManager.success(
+                          `Bulk operation undone: ${successCount} files moved back`,
+                          { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+                        );
+                      } else {
+                        NoticeManager.warning(
+                          `Could not undo all moves. Check individual files in history.`,
+                          { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+                        );
+                      }
+                    })();
+                  },
+                  SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL
+                );
+              } else {
+                NoticeManager.info(
+                  `Bulk Operation: No files moved.${skippedDetail}`
+                );
+              }
             } else {
-              NoticeManager.info(
-                `Periodic movement: Successfully moved ${successCount} files`
-              );
+              const periodicMessage =
+                successCount > 0
+                  ? `Periodic movement: Successfully moved ${successCount} files${skippedDetail}`
+                  : `Periodic movement: No files moved.${skippedDetail}`;
+              NoticeManager.info(periodicMessage);
             }
           }
         } finally {
@@ -422,6 +476,24 @@ export class AdvancedNoteMover {
     this.filesMoveInFlight.delete(originalPath);
     this.filesMoveInFlight.delete(file.path);
     return result;
+  }
+
+  private maybeNotifyMissingFolder(file: TFile, targetFolder: string): void {
+    // Suppress per-file notices during bulk operations to avoid spam; the bulk
+    // completion notice already summarizes how many files were moved.
+    if (this.plugin.historyManager.isBulkOperationInProgress()) {
+      return;
+    }
+
+    const now = Date.now();
+    const lastAt = this.lastMoveNoticeAtByFileName.get(file.name);
+    if (lastAt !== undefined && now - lastAt < MOVE_NOTICE_DEDUPE_MS) {
+      return;
+    }
+    this.lastMoveNoticeAtByFileName.set(file.name, now);
+    NoticeManager.warning(
+      `"${file.name}" was not moved: destination folder "${targetFolder}" does not exist (auto-create is disabled).`
+    );
   }
 
   private maybeNotifySingleFileMove(file: TFile, targetFolder: string): void {

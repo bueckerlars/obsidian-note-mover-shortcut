@@ -21,6 +21,12 @@ describe('isNoteMoveConflictSkipOutcome', () => {
   });
 
   it('returns false for successful moves', () => {
-    expect(isNoteMoveConflictSkipOutcome({ moved: true })).toBe(false);
+    expect(
+      isNoteMoveConflictSkipOutcome({
+        moved: true,
+        newPath: 'Dest/note.md',
+        targetFolder: 'Dest',
+      })
+    ).toBe(false);
   });
 });

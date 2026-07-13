@@ -260,6 +260,18 @@ export class SettingsValidator {
       }
     }
 
+    // createMissingDestinationFolders (optional boolean)
+    if (
+      !this.validateBooleanField(
+        settings.createMissingDestinationFolders,
+        'settings.createMissingDestinationFolders',
+        result,
+        false
+      )
+    ) {
+      result.isValid = false;
+    }
+
     // retention policy (optional but recommended)
     if (settings.retentionPolicy !== undefined) {
       const rp = settings.retentionPolicy;
@@ -639,6 +651,17 @@ export class SettingsValidator {
     if (typeof rule.active !== 'boolean') {
       result.errors.push(
         `RuleV2 at index ${index}: 'active' is required and must be a boolean`
+      );
+      return false;
+    }
+
+    // Validate createDestinationFolder (optional boolean override)
+    if (
+      rule.createDestinationFolder !== undefined &&
+      typeof rule.createDestinationFolder !== 'boolean'
+    ) {
+      result.errors.push(
+        `RuleV2 at index ${index}: 'createDestinationFolder' must be a boolean`
       );
       return false;
     }

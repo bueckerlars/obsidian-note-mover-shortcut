@@ -161,6 +161,34 @@ export function getParentPath(fullPath: string): string {
 }
 
 /**
+ * Checks whether a folder already exists in the vault without creating it.
+ * @param app - The Obsidian App instance
+ * @param folderPath - The path of the folder to check
+ * @returns Promise<boolean> - true if the folder (or root) exists, false otherwise
+ */
+export async function folderExists(
+  app: App,
+  folderPath: string
+): Promise<boolean> {
+  // Root always exists
+  if (!folderPath || folderPath === '/' || folderPath === '') {
+    return true;
+  }
+
+  const formattedPath = formatPath(folderPath);
+  if (!formattedPath) {
+    return true; // Root path after formatting
+  }
+
+  try {
+    return await app.vault.adapter.exists(formattedPath);
+  } catch (error) {
+    console.error(`Failed to check folder ${formattedPath}:`, error);
+    return false;
+  }
+}
+
+/**
  * Ensures that a folder exists in the vault, creating it if necessary
  * @param app - The Obsidian App instance
  * @param folderPath - The path of the folder to ensure exists
