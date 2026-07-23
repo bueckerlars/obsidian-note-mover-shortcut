@@ -140,4 +140,84 @@ describe('RuleMatcherV2Engine', () => {
     const meta: FileMetadata = { ...baseMeta, fileName: 'note.md' };
     expect(engine.findMatchingRule(meta, rules)?.destination).toBe('Out');
   });
+
+  describe('folder criteria', () => {
+    const rootMeta: FileMetadata = {
+      ...baseMeta,
+      fileName: 'Note.md',
+      filePath: 'Note.md',
+    };
+
+    const inboxMeta: FileMetadata = {
+      ...baseMeta,
+      fileName: 'Note.md',
+      filePath: 'Inbox/Note.md',
+    };
+
+    function folderRule(
+      operator: RuleV2['triggers'][0]['operator'],
+      value: string,
+      destination = 'Dest'
+    ): RuleV2[] {
+      return [
+        {
+          name: 'folder-rule',
+          destination,
+          aggregation: 'any',
+          active: true,
+          triggers: [
+            {
+              criteriaType: 'folder',
+              operator,
+              value,
+            },
+          ],
+        },
+      ];
+    }
+
+    it('matches root notes when folder is "/"', () => {
+      const engine = new RuleMatcherV2Engine();
+      expect(
+        engine.findMatchingRule(rootMeta, folderRule('is', '/'))?.destination
+      ).toBe('Dest');
+    });
+
+    it('matches root notes when folder is ""', () => {
+      const engine = new RuleMatcherV2Engine();
+      expect(
+        engine.findMatchingRule(rootMeta, folderRule('is', ''))?.destination
+      ).toBe('Dest');
+    });
+
+    it('does not match nested notes when folder is "/"', () => {
+      const engine = new RuleMatcherV2Engine();
+      expect(
+        engine.findMatchingRule(inboxMeta, folderRule('is', '/'))
+      ).toBeNull();
+    });
+
+    it('matches nested folder with and without leading slash', () => {
+      const engine = new RuleMatcherV2Engine();
+      expect(
+        engine.findMatchingRule(inboxMeta, folderRule('is', 'Inbox'))
+          ?.destination
+      ).toBe('Dest');
+      expect(
+        engine.findMatchingRule(inboxMeta, folderRule('is', '/Inbox'))
+          ?.destination
+      ).toBe('Dest');
+    });
+
+    it('starts with "/" matches only root, not every file', () => {
+      const engine = new RuleMatcherV2Engine();
+      expect(
+        engine.findMatchingRule(rootMeta, folderRule('starts with', '/'))
+          ?.destination
+      ).toBe('Dest');
+      expect(
+        engine.findMatchingRule(inboxMeta, folderRule('starts with', '/'))
+      ).toBeNull();
+    });
+  });
 });

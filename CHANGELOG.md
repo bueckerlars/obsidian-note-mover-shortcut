@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.2.0...1.2.1)
+
+### Fixes
+
+- **Folder condition for vault root** ([#106](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/106)): Rules with `folder` `is` `/` (as stored by FolderSuggest for the vault root) now match notes in the vault root. Trigger values `"/"` and `""` both mean root; leading/trailing slashes on other folder paths are normalized for matching.
+
 ## [1.2.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.1.2...1.2.0)
 
 ### Features

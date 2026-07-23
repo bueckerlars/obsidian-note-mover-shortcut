@@ -58,6 +58,8 @@ Uses **text operators**.
 
 Operand: the parent folder path of the file (vault-relative, all segments before the final `/`). A note at the vault root has an empty string `""` as its folder.
 
+Trigger values `"/"` and `""` both mean the vault root (FolderSuggest stores the Obsidian root as `/`). Leading and trailing slashes on other paths are ignored for matching (e.g. `/Inbox` matches folder `Inbox`).
+
 Uses **text operators**.
 
 **Example:** a file at `Projects/2026/Q1/Note.md` has folder operand `Projects/2026/Q1`.

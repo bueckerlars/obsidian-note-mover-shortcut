@@ -15,6 +15,7 @@ import {
 } from '../../../types/RuleV2';
 import { parseListProperty } from '../../property/parseListProperty';
 import { noteHasTag, tagEqualsOrIsChildOf } from '../../tags/tag-hierarchy';
+import { formatPath, getParentPath } from '../../../utils/PathUtils';
 import { stringifyUnknown } from '../../../utils/stringify-unknown';
 
 /**
@@ -101,14 +102,22 @@ export class RuleMatcherV2Engine {
         );
 
       case 'folder': {
-        // Extract folder from filePath
-        const folder =
-          metadata.filePath.split('/').slice(0, -1).join('/') || '';
-        return this.evaluateTextOperator(
-          folder,
-          trigger.operator as TextOperator,
-          trigger.value
-        );
+        const folder = getParentPath(metadata.filePath);
+        const operator = trigger.operator as TextOperator;
+
+        // Keep "/" as a regex character; do not treat it as vault root.
+        if (operator === 'match regex' || operator === 'does not match regex') {
+          return this.evaluateTextOperator(folder, operator, trigger.value);
+        }
+
+        // formatPath maps "/" → "" and strips leading/trailing slashes
+        // so FolderSuggest's root ("/") and "/Inbox" both compare correctly.
+        const expected = formatPath(trigger.value.trim());
+        if (expected === '') {
+          return this.evaluateRootFolderOperator(folder, operator);
+        }
+
+        return this.evaluateTextOperator(folder, operator, expected);
       }
       case 'extension': {
         const extension = metadata.extension || '';
@@ -198,6 +207,31 @@ export class RuleMatcherV2Engine {
 
       default:
         return false; // Unknown aggregation type
+    }
+  }
+
+  /**
+   * Matches vault-root folder when the criterion value normalizes to "".
+   * Avoids vacuous JS string ops (e.g. "Inbox".startsWith("") === true).
+   */
+  private evaluateRootFolderOperator(
+    folder: string,
+    operator: TextOperator
+  ): boolean {
+    const isRoot = folder === '';
+    switch (operator) {
+      case 'is':
+      case 'contains':
+      case 'starts with':
+      case 'ends with':
+        return isRoot;
+      case 'is not':
+      case 'does not contain':
+      case 'does not starts with':
+      case 'does not ends with':
+        return !isRoot;
+      default:
+        return false;
     }
   }
 

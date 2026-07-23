@@ -301,11 +301,10 @@ export class PreviewModal extends BaseModal {
         }
         if ((i + 1) % 50 === 0 && i + 1 < successfulEntries.length) {
           await new Promise<void>(resolve => {
-            const ric = window.requestIdleCallback;
-            if (typeof ric === 'function') {
-              ric(() => resolve(), { timeout: 250 });
+            if (typeof window.requestIdleCallback === 'function') {
+              window.requestIdleCallback(() => resolve(), { timeout: 250 });
             } else {
-              window.setTimeout(resolve, 0);
+              window.setTimeout(() => resolve(), 0);
             }
           });
         }
