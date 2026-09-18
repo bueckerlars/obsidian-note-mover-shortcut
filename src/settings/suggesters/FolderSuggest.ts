@@ -1,7 +1,10 @@
 import { AbstractInputSuggest, App, TFolder } from 'obsidian';
 import { GENERAL_CONSTANTS } from '../../config/constants';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
-import { DATE_PLACEHOLDER_COMPONENTS } from '../../domain/dates/property-date';
+import {
+  buildDatePlaceholderSuggestions,
+  type DateFormatSeparator,
+} from '../../domain/dates/property-date';
 import { inferPropertyTypeFromSamples } from '../../utils/OperatorMapping';
 import type { PropertyType } from './PropertySuggest';
 
@@ -32,6 +35,7 @@ type TemplateContext =
       type: 'propertyDateComponent';
       propertyName: string;
       search: string;
+      formatSeparator: DateFormatSeparator;
     };
 
 export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggestion> {
@@ -95,7 +99,8 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
       if (templateContext.type === 'propertyDateComponent') {
         return this.getDateComponentTemplateSuggestions(
           templateContext.propertyName,
-          templateContext.search
+          templateContext.search,
+          templateContext.formatSeparator
         );
       }
     }
@@ -199,7 +204,20 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
       if (rest.startsWith('.')) {
         rest = rest.substring(1);
       }
-      const search = this.cleanTemplateSearch(rest);
+      const search = this.cleanTemplateSearch(rest, false);
+      const colonIndex = search.indexOf(':');
+      if (colonIndex > 0) {
+        const propertyName = search.substring(0, colonIndex);
+        const componentSearch = search.substring(colonIndex + 1).toLowerCase();
+        if (this.getPropertyType(propertyName) === 'date') {
+          return {
+            type: 'propertyDateComponent',
+            propertyName,
+            search: componentSearch,
+            formatSeparator: ':',
+          };
+        }
+      }
       const dotIndex = search.indexOf('.');
       if (dotIndex !== -1) {
         const propertyName = search.substring(0, dotIndex);
@@ -209,6 +227,7 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
             type: 'propertyDateComponent',
             propertyName,
             search: componentSearch,
+            formatSeparator: '.',
           };
         }
       }
@@ -218,12 +237,17 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
     return null;
   }
 
-  private cleanTemplateSearch(rest: string): string {
+  private cleanTemplateSearch(
+    rest: string,
+    stopOnSlash: boolean = true
+  ): string {
     if (!rest) {
       return '';
     }
 
-    const stopChars = ['}', '/', ' ', '\t', '\n'];
+    const stopChars = stopOnSlash
+      ? ['}', '/', ' ', '\t', '\n']
+      : ['}', ' ', '\t', '\n'];
     let endIndex = rest.length;
 
     for (const ch of stopChars) {
@@ -295,23 +319,26 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
 
   private getDateComponentTemplateSuggestions(
     propertyName: string,
-    search: string
+    search: string,
+    formatSeparator: DateFormatSeparator
   ): FolderOrTemplateSuggestion[] {
     const suggestions: FolderOrTemplateSuggestion[] = [];
 
-    for (const component of DATE_PLACEHOLDER_COMPONENTS) {
-      if (!search || component.toLowerCase().startsWith(search)) {
-        suggestions.push({
-          kind: 'propertyTemplate',
-          value: `{{property.${propertyName}.${component}}}`,
-        });
+    for (const value of buildDatePlaceholderSuggestions(
+      propertyName,
+      search,
+      formatSeparator
+    )) {
+      suggestions.push({
+        kind: 'propertyTemplate',
+        value,
+      });
 
-        if (
-          suggestions.length >=
-          GENERAL_CONSTANTS.SUGGESTION_LIMITS.FOLDER_SUGGESTIONS
-        ) {
-          break;
-        }
+      if (
+        suggestions.length >=
+        GENERAL_CONSTANTS.SUGGESTION_LIMITS.FOLDER_SUGGESTIONS
+      ) {
+        break;
       }
     }
 

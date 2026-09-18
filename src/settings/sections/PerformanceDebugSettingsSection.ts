@@ -15,10 +15,10 @@ export class PerformanceDebugSettingsSection {
   addPerformanceDebugSettings(): void {
     new Setting(this.containerEl).setName('Performance').setHeading();
 
-    const cacheDesc = activeDocument.createDocumentFragment();
+    const cacheDesc = createFragment();
     cacheDesc.append(
       'Cache rule evaluation results so unchanged files are not re-evaluated on every periodic or on-edit run.',
-      activeDocument.createElement('br'),
+      createEl('br'),
       'This significantly improves performance for vaults with many files and rules.'
     );
 

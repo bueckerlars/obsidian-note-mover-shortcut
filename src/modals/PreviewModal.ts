@@ -62,7 +62,7 @@ export class PreviewModal extends BaseModal {
 
     // No files message
     if (stats.totalFiles === 0) {
-      contentEl.createEl('div', {
+      contentEl.createDiv({
         cls: 'advancedNoteMover-modal-empty',
         text: 'No files found to analyze.',
       });
@@ -84,35 +84,35 @@ export class PreviewModal extends BaseModal {
         : 'advancedNoteMover-preview-section advancedNoteMover-preview-section-success'
     );
 
-    const header = section.createEl('div', {
+    const header = section.createDiv({
       cls: 'advancedNoteMover-modal-section-header',
     });
     header.createEl('h3', {
       text: `✅ Files to be moved (${entries.length})`,
     });
 
-    const list = section.createEl('div', {
+    const list = section.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-modal-list advancedNoteMover-modal-list-mobile'
         : 'advancedNoteMover-modal-list',
     });
 
     entries.forEach(entry => {
-      const item = list.createEl('div', {
+      const item = list.createDiv({
         cls: isMobile
           ? 'advancedNoteMover-modal-list-item advancedNoteMover-preview-item-success advancedNoteMover-preview-item-mobile'
           : 'advancedNoteMover-modal-list-item advancedNoteMover-preview-item-success',
       });
 
-      const mainInfo = item.createEl('div', {
+      const mainInfo = item.createDiv({
         cls: 'advancedNoteMover-preview-item-main',
       });
-      const fileName = mainInfo.createEl('div', {
+      const fileName = mainInfo.createDiv({
         cls: 'advancedNoteMover-preview-item-filename',
       });
       fileName.textContent = entry.fileName;
 
-      const pathInfo = mainInfo.createEl('div', {
+      const pathInfo = mainInfo.createDiv({
         cls: isMobile
           ? 'advancedNoteMover-preview-item-paths advancedNoteMover-preview-item-paths-mobile'
           : 'advancedNoteMover-preview-item-paths',
@@ -120,17 +120,17 @@ export class PreviewModal extends BaseModal {
 
       if (isMobile) {
         // Mobile: Stack paths vertically
-        const currentPathEl = pathInfo.createEl('div', {
+        const currentPathEl = pathInfo.createDiv({
           cls: 'advancedNoteMover-preview-path-mobile advancedNoteMover-preview-path-current',
         });
         currentPathEl.textContent = entry.currentPath;
 
-        const arrowEl = pathInfo.createEl('div', {
+        const arrowEl = pathInfo.createDiv({
           cls: 'advancedNoteMover-preview-arrow-mobile',
         });
         arrowEl.textContent = '↓';
 
-        const targetPathEl = pathInfo.createEl('div', {
+        const targetPathEl = pathInfo.createDiv({
           cls: 'advancedNoteMover-preview-path-mobile advancedNoteMover-preview-path-target',
         });
         targetPathEl.textContent = entry.targetPath;
@@ -150,14 +150,14 @@ export class PreviewModal extends BaseModal {
         });
       }
 
-      const details = item.createEl('div', {
+      const details = item.createDiv({
         cls: isMobile
           ? 'advancedNoteMover-preview-item-details advancedNoteMover-preview-item-details-mobile'
           : 'advancedNoteMover-preview-item-details',
       });
 
       if (entry.matchedRule) {
-        const rule = details.createEl('div', {
+        const rule = details.createDiv({
           cls: 'advancedNoteMover-preview-item-rule',
         });
         rule.createSpan({
@@ -168,7 +168,7 @@ export class PreviewModal extends BaseModal {
       }
 
       if (entry.tags && entry.tags.length > 0) {
-        const tags = details.createEl('div', {
+        const tags = details.createDiv({
           cls: 'advancedNoteMover-preview-item-tags',
         });
         tags.createSpan({
@@ -186,7 +186,7 @@ export class PreviewModal extends BaseModal {
 
   private createActionButtons(container: HTMLElement) {
     const isMobile = MobileUtils.isMobile();
-    const footer = container.createEl('div', {
+    const footer = container.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-modal-footer advancedNoteMover-modal-footer-mobile'
         : 'advancedNoteMover-modal-footer',

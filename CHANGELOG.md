@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.2]
+
+### Features
+
+- **Custom date formats in destination templates** ([#108](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/108)): Date property placeholders accept Moment-style format patterns such as `{{property.created.MMM}}` (`Sep`), `{{property.created.YYYY-MM-DD}}`, and `{{property.created.DD-MM-YYYY}}`. Use a colon when the pattern contains dots: `{{property.created:YYYY.MM.DD}}`. `MMM` is also available as a named date component.
+
+### Improvements
+
+- **Plugin review: DOM helpers**: Modals, settings, notices, and drag handles use Obsidian `createDiv` / `createSpan` / `createEl` / `createFragment` instead of `document.createElement`.
+- **Settings search on Obsidian 1.13+**: The settings tab implements `getSettingDefinitions()` so plugin settings appear in Obsidian's settings search. `display()` remains for users on Obsidian 1.8.7–1.12.x.
+
 ## [1.2.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.2.0...1.2.1)
 
 ### Fixes

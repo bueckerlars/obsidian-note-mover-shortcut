@@ -1,3 +1,5 @@
+import 'obsidian';
+
 export interface DragDropItem {
   element: HTMLElement;
   index: number;
@@ -231,30 +233,29 @@ export class DragDropManager {
 
   // Public method to create a drag handle
   public static createDragHandle(): HTMLElement {
-    const handle = activeDocument.createElement('div');
-    handle.className = 'advancedNoteMover-drag-handle';
-    handle.textContent = '⋮⋮';
-    handle.setAttribute('draggable', 'true');
-    handle.setAttribute('aria-label', 'Drag to reorder');
-    handle.setAttribute('role', 'button');
-    handle.setAttribute('tabindex', '0');
-    handle.setAttribute('title', 'Drag to reorder');
-
-    return handle;
+    return createDiv({
+      cls: 'advancedNoteMover-drag-handle',
+      text: '⋮⋮',
+      attr: {
+        draggable: 'true',
+        'aria-label': 'Drag to reorder',
+        role: 'button',
+        tabindex: '0',
+        title: 'Drag to reorder',
+      },
+    });
   }
 
   // Public method to wrap a setting item with drag handle
   public static wrapWithDragHandle(settingItem: HTMLElement): HTMLElement {
-    const wrapper = activeDocument.createElement('div');
-    wrapper.className = 'setting-item advancedNoteMover-with-drag-handle';
-
-    const handleContainer = activeDocument.createElement('div');
-    handleContainer.className = 'advancedNoteMover-drag-handle-container';
+    const wrapper = createDiv({
+      cls: 'setting-item advancedNoteMover-with-drag-handle',
+    });
+    const handleContainer = wrapper.createDiv({
+      cls: 'advancedNoteMover-drag-handle-container',
+    });
     handleContainer.appendChild(this.createDragHandle());
-
-    wrapper.appendChild(handleContainer);
     wrapper.appendChild(settingItem);
-
     return wrapper;
   }
 

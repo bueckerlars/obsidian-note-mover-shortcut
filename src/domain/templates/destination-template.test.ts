@@ -55,4 +55,48 @@ describe('DestinationTemplate', () => {
     });
     expect(out).toBe('X/manual');
   });
+
+  it('renders moment-style date format patterns', () => {
+    const context = {
+      tags: [],
+      properties: { created: '2025-06-13' },
+    };
+
+    expect(
+      renderDestinationTemplate('Journal/{{property.created.MMM}}', context)
+    ).toBe('Journal/Jun');
+    expect(
+      renderDestinationTemplate('Days/{{property.created.YYYY-MM-DD}}', context)
+    ).toBe('Days/2025-06-13');
+    expect(
+      renderDestinationTemplate(
+        'Inbox/{{property.created.DD-MM-YYYY}}',
+        context
+      )
+    ).toBe('Inbox/13-06-2025');
+    expect(
+      renderDestinationTemplate(
+        'Archive/{{property.created:YYYY.MM.DD}}',
+        context
+      )
+    ).toBe('Archive/2025.06.13');
+    expect(
+      renderDestinationTemplate(
+        'Inbox/{{property.created:DD-MM-YYYY}}',
+        context
+      )
+    ).toBe('Inbox/13-06-2025');
+  });
+
+  it('prefers literal colon keys over reconstructed dot format keys', () => {
+    expect(
+      renderDestinationTemplate('X/{{property.created:DD-MM-YYYY}}', {
+        tags: [],
+        properties: {
+          'created:DD-MM-YYYY': 'manual-colon',
+          created: '2025-06-13',
+        },
+      })
+    ).toBe('X/manual-colon');
+  });
 });

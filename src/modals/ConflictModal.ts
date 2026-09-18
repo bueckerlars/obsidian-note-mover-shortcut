@@ -52,7 +52,7 @@ export class ConflictModal extends BaseModal {
       'Choose how to handle this conflict:',
     ].join('\n');
 
-    const messageEl = contentEl.createEl('div', {
+    const messageEl = contentEl.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-conflict-modal-message advancedNoteMover-conflict-modal-message-mobile'
         : 'advancedNoteMover-conflict-modal-message',
@@ -65,7 +65,7 @@ export class ConflictModal extends BaseModal {
       this.messageRenderComponent
     );
 
-    this.warningEl = contentEl.createEl('div', {
+    this.warningEl = contentEl.createDiv({
       cls: 'advancedNoteMover-conflict-modal-warning',
     });
     this.updateWarning();

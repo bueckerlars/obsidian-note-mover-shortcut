@@ -32,14 +32,14 @@ export class ConflictSkipCacheModal extends BaseModal {
     });
 
     if (entries.length === 0) {
-      contentEl.createEl('div', {
+      contentEl.createDiv({
         cls: 'advancedNoteMover-modal-empty',
         text: 'No skipped move conflicts.',
       });
       return;
     }
 
-    const list = contentEl.createEl('div', {
+    const list = contentEl.createDiv({
       cls: 'advancedNoteMover-conflict-skip-cache-list',
     });
 
@@ -54,36 +54,36 @@ export class ConflictSkipCacheModal extends BaseModal {
     const isMobile = MobileUtils.isMobile();
     const fileName = entry.sourcePath.split('/').pop() ?? entry.sourcePath;
 
-    const item = container.createEl('div', {
+    const item = container.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-modal-list-item advancedNoteMover-conflict-skip-cache-item advancedNoteMover-conflict-skip-cache-item-mobile'
         : 'advancedNoteMover-modal-list-item advancedNoteMover-conflict-skip-cache-item',
     });
 
-    const mainInfo = item.createEl('div', {
+    const mainInfo = item.createDiv({
       cls: 'advancedNoteMover-preview-item-main',
     });
-    mainInfo.createEl('div', {
+    mainInfo.createDiv({
       cls: 'advancedNoteMover-preview-item-filename',
       text: fileName,
     });
 
-    const pathInfo = item.createEl('div', {
+    const pathInfo = item.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-preview-item-paths advancedNoteMover-preview-item-paths-mobile'
         : 'advancedNoteMover-preview-item-paths',
     });
 
     if (isMobile) {
-      pathInfo.createEl('div', {
+      pathInfo.createDiv({
         cls: 'advancedNoteMover-preview-path-mobile advancedNoteMover-preview-path-current',
         text: entry.sourcePath,
       });
-      pathInfo.createEl('div', {
+      pathInfo.createDiv({
         cls: 'advancedNoteMover-preview-arrow-mobile',
         text: '↓',
       });
-      pathInfo.createEl('div', {
+      pathInfo.createDiv({
         cls: 'advancedNoteMover-preview-path-mobile advancedNoteMover-preview-path-target',
         text: entry.targetPath,
       });
@@ -99,7 +99,7 @@ export class ConflictSkipCacheModal extends BaseModal {
       });
     }
 
-    item.createEl('div', {
+    item.createDiv({
       cls: 'advancedNoteMover-conflict-skip-cache-skipped-at',
       text: `Skipped ${new Date(entry.skippedAt).toLocaleString()}`,
     });
@@ -160,7 +160,7 @@ export class ConflictSkipCacheModal extends BaseModal {
   }
 
   private createFooterActions(container: HTMLElement): void {
-    const footer = container.createEl('div', {
+    const footer = container.createDiv({
       cls: 'advancedNoteMover-modal-footer',
     });
     const buttonContainer = this.createButtonContainer(footer);

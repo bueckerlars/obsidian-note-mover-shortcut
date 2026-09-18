@@ -21,6 +21,7 @@ export type TemplateSegment =
       type: 'property';
       key: string;
       dateComponent?: DatePlaceholderComponent;
+      dateFormat?: string;
     };
 
 export interface TemplateParseError {
@@ -51,6 +52,8 @@ const PLACEHOLDER_END = '}}';
  * - {{tag.<tagValue>}}
  * - {{property.<propertyKey>}}
  * - {{property.<propertyKey>.<dateComponent>}}
+ * - {{property.<propertyKey>.<dateFormat>}}
+ * - {{property.<propertyKey>:<dateFormat>}}
  *
  * Everything else is treated as plain text.
  */
@@ -151,6 +154,7 @@ export function parseDestinationTemplate(raw: string): {
         type: 'property',
         key: parsedProperty.lookupKey,
         dateComponent: parsedProperty.dateComponent,
+        dateFormat: parsedProperty.dateFormat,
       });
     }
 
@@ -204,6 +208,7 @@ export function validateDestinationTemplate(
  * - Property placeholders:
  *   - {{property.status}} → stringified value of properties['status'].
  *   - {{property.created.year}} → date component from properties['created'] when parseable.
+ *   - {{property.created.YYYY-MM-DD}} / {{property.created:YYYY.MM.DD}} → Moment-style format.
  *   - Literal property keys take precedence over date components (e.g. property created.year).
  *   - If the property is missing or empty, the placeholder becomes an empty string.
  */
@@ -239,14 +244,33 @@ export function renderDestinationTemplate(
     if (segment.type === 'tag') {
       result += resolveTagPlaceholder(segment.key, context.tags);
     } else if (segment.type === 'property') {
-      const propertyKey = segment.dateComponent
-        ? `${segment.key}.${segment.dateComponent}`
-        : segment.key;
-      result += resolvePropertyPlaceholder(propertyKey, context.properties);
+      result += resolvePropertyPlaceholder(
+        propertyPlaceholderKey(segment),
+        context.properties
+      );
     }
   }
 
   return result;
+}
+
+function propertyPlaceholderKey(
+  segment: Extract<TemplateSegment, { type: 'property' }>
+): string {
+  const propertyPrefix = 'property.';
+  if (segment.raw.startsWith(propertyPrefix)) {
+    return segment.raw.slice(propertyPrefix.length);
+  }
+
+  if (segment.dateComponent) {
+    return `${segment.key}.${segment.dateComponent}`;
+  }
+  if (segment.dateFormat) {
+    return segment.dateFormat.includes('.')
+      ? `${segment.key}:${segment.dateFormat}`
+      : `${segment.key}.${segment.dateFormat}`;
+  }
+  return segment.key;
 }
 
 function resolveTagPlaceholder(key: string, tags: string[]): string {

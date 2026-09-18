@@ -26,22 +26,17 @@ export class NoticeManager {
     const notice = new Notice('', duration);
     const noticeEl = notice.messageEl;
 
-    // Add title
-    const title = activeDocument.createElement('b');
-    title.textContent = NOTIFICATION_CONSTANTS.DEFAULT_TITLES[type];
-    noticeEl.appendChild(title);
-    noticeEl.appendChild(activeDocument.createElement('br'));
+    noticeEl.createEl('b', {
+      text: NOTIFICATION_CONSTANTS.DEFAULT_TITLES[type],
+    });
+    noticeEl.createEl('br');
+    noticeEl.createSpan({ text: message });
 
-    // Add message
-    const messageSpan = activeDocument.createElement('span');
-    messageSpan.textContent = message;
-    noticeEl.appendChild(messageSpan);
-
-    // Add undo button if requested
     if (options.showUndoButton && options.onUndo) {
-      const undoButton = activeDocument.createElement('button');
-      undoButton.textContent = options.undoText ?? 'Undo';
-      undoButton.className = 'mod-warning advancedNoteMover-notice-undo-button';
+      const undoButton = noticeEl.createEl('button', {
+        text: options.undoText ?? 'Undo',
+        cls: 'mod-warning advancedNoteMover-notice-undo-button',
+      });
       undoButton.onclick = () => {
         try {
           options.onUndo!();
@@ -54,7 +49,6 @@ export class NoticeManager {
           );
         }
       };
-      noticeEl.appendChild(undoButton);
     }
 
     return notice;

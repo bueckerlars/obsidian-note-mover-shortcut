@@ -1,6 +1,8 @@
 import {
   type DatePlaceholderComponent,
   formatDateComponent,
+  formatDatePattern,
+  isDateFormatPattern,
   isDatePlaceholderComponent,
   parsePropertyDateValue,
 } from '../dates/property-date';
@@ -9,6 +11,7 @@ import { stringifyUnknown } from '../../utils/stringify-unknown';
 export interface ParsedPropertyPlaceholderKey {
   lookupKey: string;
   dateComponent?: DatePlaceholderComponent;
+  dateFormat?: string;
 }
 
 export function parsePropertyPlaceholderKey(
@@ -19,20 +22,38 @@ export function parsePropertyPlaceholderKey(
     return { lookupKey: '' };
   }
 
+  const colonIndex = trimmed.indexOf(':');
+  if (colonIndex > 0 && colonIndex < trimmed.length - 1) {
+    const lookupKey = trimmed.substring(0, colonIndex);
+    const dateFormat = trimmed.substring(colonIndex + 1).trim();
+    if (isDateFormatPattern(dateFormat)) {
+      return { lookupKey, dateFormat };
+    }
+  }
+
   const lastDot = trimmed.lastIndexOf('.');
   if (lastDot <= 0 || lastDot === trimmed.length - 1) {
     return { lookupKey: trimmed };
   }
 
-  const suffix = trimmed.substring(lastDot + 1);
-  if (!isDatePlaceholderComponent(suffix)) {
-    return { lookupKey: trimmed };
+  const suffix = trimmed.substring(lastDot + 1).trim();
+  const lookupKey = trimmed.substring(0, lastDot);
+
+  if (isDatePlaceholderComponent(suffix)) {
+    return {
+      lookupKey,
+      dateComponent: suffix,
+    };
   }
 
-  return {
-    lookupKey: trimmed.substring(0, lastDot),
-    dateComponent: suffix,
-  };
+  if (isDateFormatPattern(suffix)) {
+    return {
+      lookupKey,
+      dateFormat: suffix,
+    };
+  }
+
+  return { lookupKey: trimmed };
 }
 
 function stringifyPropertyValue(value: unknown): string {
@@ -80,7 +101,7 @@ export function resolvePropertyPlaceholder(
   }
 
   const parsed = parsePropertyPlaceholderKey(trimmedKey);
-  if (!parsed.dateComponent) {
+  if (!parsed.dateComponent && !parsed.dateFormat) {
     return '';
   }
 
@@ -98,5 +119,13 @@ export function resolvePropertyPlaceholder(
     return '';
   }
 
-  return formatDateComponent(parsedDate, parsed.dateComponent);
+  if (parsed.dateComponent) {
+    return formatDateComponent(parsedDate, parsed.dateComponent);
+  }
+
+  if (parsed.dateFormat) {
+    return formatDatePattern(parsedDate, parsed.dateFormat);
+  }
+
+  return '';
 }

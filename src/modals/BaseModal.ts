@@ -203,10 +203,10 @@ export abstract class BaseModal extends Modal {
     const { contentEl } = this;
 
     if (this.options.titleIcon) {
-      const titleContainer = contentEl.createEl('div', {
+      const titleContainer = contentEl.createDiv({
         cls: 'advancedNoteMover-modal-title-container',
       });
-      const titleIcon = titleContainer.createEl('span', {
+      const titleIcon = titleContainer.createSpan({
         cls: 'advancedNoteMover-modal-title-icon',
       });
       titleIcon.textContent = this.options.titleIcon;
@@ -247,7 +247,7 @@ export abstract class BaseModal extends Modal {
     container: HTMLElement,
     cssClass = 'advancedNoteMover-modal-button-container'
   ): HTMLElement {
-    return container.createEl('div', { cls: cssClass });
+    return container.createDiv({ cls: cssClass });
   }
 
   /**
@@ -290,7 +290,7 @@ export abstract class BaseModal extends Modal {
     container: HTMLElement,
     cssClass = 'advancedNoteMover-modal-section'
   ): HTMLElement {
-    return container.createEl('div', { cls: cssClass });
+    return container.createDiv({ cls: cssClass });
   }
 
   /**
