@@ -5,21 +5,22 @@ import type { ConflictResolutionStrategy } from '../../types/ConflictResolution'
 import { strategyRequiresWarning } from '../../domain/conflicts/note-move-conflict';
 import { persistConflictResolutionStrategy } from '../../application/persist-conflict-resolution-strategy';
 
-const STRATEGY_LABELS: Record<ConflictResolutionStrategy, string> = {
+export const STRATEGY_LABELS: Record<ConflictResolutionStrategy, string> = {
   ask: 'Ask every time',
   skip: 'Always skip',
   rename: 'Always rename',
   overwrite: 'Always overwrite',
 };
 
-const STRATEGY_DESCRIPTIONS: Record<ConflictResolutionStrategy, string> = {
-  ask: 'Show a dialog when a file with the same name already exists at the destination.',
-  skip: 'Leave the note in its current location and notify you when a conflict occurs.',
-  rename:
-    'Automatically append a numeric suffix (e.g. note (1).md) to avoid overwriting.',
-  overwrite:
-    'Replace the existing file at the destination without asking. Existing content will be lost.',
-};
+export const STRATEGY_DESCRIPTIONS: Record<ConflictResolutionStrategy, string> =
+  {
+    ask: 'Show a dialog when a file with the same name already exists at the destination.',
+    skip: 'Leave the note in its current location and notify you when a conflict occurs.',
+    rename:
+      'Automatically append a numeric suffix (e.g. note (1).md) to avoid overwriting.',
+    overwrite:
+      'Replace the existing file at the destination without asking. Existing content will be lost.',
+  };
 
 export class ConflictResolutionSettingsSection {
   private warningEl: HTMLElement | null = null;
@@ -60,7 +61,7 @@ export class ConflictResolutionSettingsSection {
       strategySetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
     }
 
-    this.warningEl = this.containerEl.createEl('div', {
+    this.warningEl = this.containerEl.createDiv({
       cls: 'advancedNoteMover-conflict-settings-warning',
     });
     this.updateWarning(currentStrategy);

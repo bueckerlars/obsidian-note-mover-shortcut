@@ -22,10 +22,10 @@ export class RulesSettingsSection {
   addRulesSetting(): void {
     new Setting(this.containerEl).setName('Rules').setHeading();
 
-    const descUseRules = activeDocument.createDocumentFragment();
+    const descUseRules = createFragment();
     descUseRules.append(
       'The Advanced Note Mover will move files to the folder associated with the specified criteria.',
-      activeDocument.createElement('br'),
+      createEl('br'),
       'Criteria can be tags, filenames, paths, content, properties, or dates. If multiple rules match, the first one will be applied.'
     );
 
@@ -112,7 +112,7 @@ export class RulesSettingsSection {
     return this.plugin.app;
   }
 
-  private async persistRulesAndSyncManager(): Promise<void> {
+  async persistRulesAndSyncManager(): Promise<void> {
     await this.plugin.save_settings();
     this.plugin.advancedNoteMover.updateRuleManager();
     this.refreshDisplay();
@@ -139,13 +139,12 @@ export class RulesSettingsSection {
 
     const isMobile = MobileUtils.isMobile();
 
-    // Create a container for rules with drag & drop
-    const rulesContainer = activeDocument.createElement('div');
-    rulesContainer.className = 'advancedNoteMover-rules-v2-container';
+    const rulesContainer = this.containerEl.createDiv({
+      cls: 'advancedNoteMover-rules-v2-container',
+    });
     if (isMobile) {
       rulesContainer.addClass('advancedNoteMover-mobile-rules-container');
     }
-    this.containerEl.appendChild(rulesContainer);
 
     // Setup drag & drop manager for V2 rules
     this.setupDragDropManagerV2(rulesContainer);
@@ -304,7 +303,7 @@ export class RulesSettingsSection {
    * Open RuleEditorModal for creating or editing a rule
    * @param ruleIndex - Index of rule to edit, or null to create new rule
    */
-  private openRuleEditorModal(ruleIndex: number | null): void {
+  openRuleEditorModal(ruleIndex: number | null): void {
     const isEditMode = ruleIndex !== null;
     let rule: RuleV2;
 

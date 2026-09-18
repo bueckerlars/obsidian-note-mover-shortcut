@@ -89,7 +89,7 @@ export class ImportExportSettingsSection {
     }
   }
 
-  private async exportSettings(): Promise<void> {
+  async exportSettings(): Promise<void> {
     try {
       // Build export object without history
       const settingsToExport: Partial<PluginData> = {
@@ -106,7 +106,7 @@ export class ImportExportSettingsSection {
       const url = URL.createObjectURL(blob);
 
       // Create download link
-      const link = activeDocument.createElement('a');
+      const link = createEl('a');
       link.href = url;
       link.download = `note-mover-settings-${new Date().toISOString().split('T')[0]}.json`;
 
@@ -130,10 +130,10 @@ export class ImportExportSettingsSection {
     }
   }
 
-  private async importSettings(): Promise<void> {
+  async importSettings(): Promise<void> {
     try {
       // Create file input element
-      const input = activeDocument.createElement('input');
+      const input = createEl('input');
       input.type = 'file';
       input.accept = '.json';
       input.classList.add('advancedNoteMover-hidden-file-input');

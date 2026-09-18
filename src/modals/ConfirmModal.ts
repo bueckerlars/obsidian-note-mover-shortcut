@@ -35,7 +35,7 @@ export class ConfirmModal extends BaseModal {
     const { contentEl } = this;
     const isMobile = MobileUtils.isMobile();
 
-    const messageEl = contentEl.createEl('div', {
+    const messageEl = contentEl.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-confirm-modal-message advancedNoteMover-confirm-modal-message-mobile'
         : 'advancedNoteMover-confirm-modal-message',

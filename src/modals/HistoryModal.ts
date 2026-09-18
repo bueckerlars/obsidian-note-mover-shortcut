@@ -44,14 +44,14 @@ export class HistoryModal extends BaseModal {
     );
 
     if (history.length === 0 && bulkOperations.length === 0) {
-      contentEl.createEl('div', {
+      contentEl.createDiv({
         cls: 'advancedNoteMover-modal-empty',
         text: 'No history entries for the selected time range.',
       });
       return;
     }
 
-    const historyList = contentEl.createEl('div', {
+    const historyList = contentEl.createDiv({
       cls: 'advancedNoteMover-history-list',
     });
 
@@ -86,7 +86,7 @@ export class HistoryModal extends BaseModal {
 
   private createTimeFilterDropdown(container: HTMLElement): void {
     const isMobile = MobileUtils.isMobile();
-    const filterContainer = container.createEl('div', {
+    const filterContainer = container.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-time-filter-container advancedNoteMover-time-filter-container-mobile'
         : 'advancedNoteMover-time-filter-container',
@@ -119,13 +119,13 @@ export class HistoryModal extends BaseModal {
     bulkOp: BulkOperation
   ) {
     const isMobile = MobileUtils.isMobile();
-    const bulkEntryEl = container.createEl('div', {
+    const bulkEntryEl = container.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-history-entry advancedNoteMover-bulk-operation advancedNoteMover-history-entry-mobile'
         : 'advancedNoteMover-history-entry advancedNoteMover-bulk-operation',
     });
 
-    const headerEl = bulkEntryEl.createEl('div', {
+    const headerEl = bulkEntryEl.createDiv({
       cls: 'advancedNoteMover-bulk-header',
     });
     const formattedDate = this.formatHistoryDate(bulkOp.timestamp);
@@ -134,7 +134,7 @@ export class HistoryModal extends BaseModal {
       bulkOp.operationType === 'bulk' ? 'Bulk Move' : 'Periodic Move';
     const operationIcon = bulkOp.operationType === 'bulk' ? '📦' : '🕐';
 
-    headerEl.createEl('div', {
+    headerEl.createDiv({
       cls: 'advancedNoteMover-bulk-operation-info',
       text: `${operationIcon} ${operationTypeText}: ${bulkOp.totalFiles} files - ${formattedDate}`,
     });
@@ -145,7 +145,7 @@ export class HistoryModal extends BaseModal {
     });
     detailsEl.open = true;
     const summaryEl = detailsEl.createEl('summary', { text: 'Hide files' });
-    const filesListEl = detailsEl.createEl('div', {
+    const filesListEl = detailsEl.createDiv({
       cls: 'advancedNoteMover-bulk-files-list',
     });
 
@@ -160,21 +160,21 @@ export class HistoryModal extends BaseModal {
     );
 
     sortedEntries.forEach(entry => {
-      const fileEl = filesListEl.createEl('div', {
+      const fileEl = filesListEl.createDiv({
         cls: 'advancedNoteMover-history-entry advancedNoteMover-bulk-file-entry',
       });
 
-      const contentEl = fileEl.createEl('div', {
+      const contentEl = fileEl.createDiv({
         cls: 'advancedNoteMover-history-entry-content',
       });
       const formattedDate = this.formatHistoryDate(entry.timestamp);
 
-      contentEl.createEl('div', {
+      contentEl.createDiv({
         cls: 'advancedNoteMover-history-entry-info',
         text: `📄 ${entry.fileName} - ${formattedDate}`,
       });
 
-      contentEl.createEl('div', {
+      contentEl.createDiv({
         cls: 'advancedNoteMover-history-entry-paths',
         text: `${entry.sourcePath} → ${entry.destinationPath}`,
       });
@@ -339,23 +339,23 @@ export class HistoryModal extends BaseModal {
 
   private createSingleEntry(container: HTMLElement, entry: HistoryEntry) {
     const isMobile = MobileUtils.isMobile();
-    const entryEl = container.createEl('div', {
+    const entryEl = container.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-history-entry advancedNoteMover-single-operation advancedNoteMover-history-entry-mobile'
         : 'advancedNoteMover-history-entry advancedNoteMover-single-operation',
     });
 
-    const contentEl = entryEl.createEl('div', {
+    const contentEl = entryEl.createDiv({
       cls: 'advancedNoteMover-history-entry-content',
     });
     const formattedDate = this.formatHistoryDate(entry.timestamp);
 
-    contentEl.createEl('div', {
+    contentEl.createDiv({
       cls: 'advancedNoteMover-history-entry-info',
       text: `📄 ${entry.fileName} - ${formattedDate}`,
     });
 
-    contentEl.createEl('div', {
+    contentEl.createDiv({
       cls: 'advancedNoteMover-history-entry-paths',
       text: `${entry.sourcePath} → ${entry.destinationPath}`,
     });

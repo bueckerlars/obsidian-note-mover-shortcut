@@ -60,13 +60,12 @@ export class FilterSettingsSection {
 
     const isMobile = MobileUtils.isMobile();
 
-    // Create a container for filters with drag & drop
-    const filtersContainer = activeDocument.createElement('div');
-    filtersContainer.className = 'advancedNoteMover-filters-container';
+    const filtersContainer = this.containerEl.createDiv({
+      cls: 'advancedNoteMover-filters-container',
+    });
     if (isMobile) {
       filtersContainer.addClass('advancedNoteMover-mobile-filters-container');
     }
-    this.containerEl.appendChild(filtersContainer);
 
     // Setup drag & drop manager
     this.setupDragDropManager(filtersContainer);
@@ -79,44 +78,16 @@ export class FilterSettingsSection {
     }
 
     this.plugin.pluginData.settings.filters.filter.forEach((filter, index) => {
-      const s = new Setting(filtersContainer)
-        .addSearch(cb => {
-          // AdvancedSuggest instead of TagSuggest
-          const advancedSuggest = new AdvancedSuggest(
-            this.app,
-            cb.inputEl,
-            this.plugin.vaultIndexCache
-          );
-          // Track the instance for cleanup
-          this.advancedSuggestInstances.push(advancedSuggest);
-          cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER)
-            .setValue(filter?.value || '')
-            .onChange(async value => {
-              // Don't save empty filters
-              if (!value || value.trim() === '') {
-                this.plugin.pluginData.settings.filters.filter[index] = {
-                  value: '',
-                };
-              } else {
-                this.plugin.pluginData.settings.filters.filter[index] = {
-                  value,
-                };
-              }
-              await this.plugin.save_settings();
-              // Update RuleManager
-              this.plugin.advancedNoteMover.updateRuleManager();
-            });
-          cb.inputEl.classList.add('advancedNoteMover-search');
+      const s = new Setting(filtersContainer);
+      this.bindFilterSearch(s, index);
+      s.addExtraButton(btn =>
+        btn.setIcon('cross').onClick(async () => {
+          this.plugin.pluginData.settings.filters.filter.splice(index, 1);
+          await this.plugin.save_settings();
+          this.plugin.advancedNoteMover.updateRuleManager();
+          this.refreshDisplay();
         })
-        .addExtraButton(btn =>
-          btn.setIcon('cross').onClick(async () => {
-            this.plugin.pluginData.settings.filters.filter.splice(index, 1);
-            await this.plugin.save_settings();
-            // Update RuleManager
-            this.plugin.advancedNoteMover.updateRuleManager();
-            this.refreshDisplay();
-          })
-        );
+      );
 
       // Add drag handle to the setting
       this.addDragHandle(s.settingEl, index);
@@ -170,10 +141,43 @@ export class FilterSettingsSection {
     });
   }
 
+  bindFilterSearch(setting: Setting, index: number): () => void {
+    let advancedSuggest: AdvancedSuggest | undefined;
+    setting.addSearch(cb => {
+      advancedSuggest = new AdvancedSuggest(
+        this.app,
+        cb.inputEl,
+        this.plugin.vaultIndexCache
+      );
+      this.advancedSuggestInstances.push(advancedSuggest);
+      const filter = this.plugin.pluginData.settings.filters.filter[index];
+      cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER)
+        .setValue(filter?.value || '')
+        .onChange(async value => {
+          this.plugin.pluginData.settings.filters.filter[index] = {
+            value: !value || value.trim() === '' ? '' : value,
+          };
+          await this.plugin.save_settings();
+          this.plugin.advancedNoteMover.updateRuleManager();
+        });
+      cb.inputEl.classList.add('advancedNoteMover-search');
+    });
+    return () => {
+      if (!advancedSuggest) {
+        return;
+      }
+      advancedSuggest.destroy();
+      this.advancedSuggestInstances = this.advancedSuggestInstances.filter(
+        instance => instance !== advancedSuggest
+      );
+    };
+  }
+
   private addDragHandle(settingEl: HTMLElement, index: number): void {
     const handle = DragDropManager.createDragHandle();
-    const handleContainer = activeDocument.createElement('div');
-    handleContainer.className = 'advancedNoteMover-drag-handle-container';
+    const handleContainer = createDiv({
+      cls: 'advancedNoteMover-drag-handle-container',
+    });
     handleContainer.appendChild(handle);
 
     // Insert handle at the beginning of the setting

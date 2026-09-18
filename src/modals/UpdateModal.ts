@@ -45,7 +45,7 @@ export class UpdateModal extends BaseModal {
 
     // Changelog Content
     const isMobile = MobileUtils.isMobile();
-    const changelogContainer = contentEl.createEl('div', {
+    const changelogContainer = contentEl.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-changelog-container advancedNoteMover-changelog-container-mobile'
         : 'advancedNoteMover-changelog-container',
@@ -61,14 +61,14 @@ export class UpdateModal extends BaseModal {
     }
 
     // Footer with links and button
-    const footerContainer = contentEl.createEl('div', {
+    const footerContainer = contentEl.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-modal-footer advancedNoteMover-modal-footer-mobile'
         : 'advancedNoteMover-modal-footer',
     });
 
     // GitHub Link
-    const linkContainer = footerContainer.createEl('div', {
+    const linkContainer = footerContainer.createDiv({
       cls: isMobile
         ? 'advancedNoteMover-update-modal-links advancedNoteMover-update-modal-links-mobile'
         : 'advancedNoteMover-update-modal-links',
@@ -122,7 +122,7 @@ export class UpdateModal extends BaseModal {
   private renderChangelog(container: HTMLElement) {
     const isMobile = MobileUtils.isMobile();
     this.changelogEntries.forEach(entry => {
-      const versionContainer = container.createEl('div', {
+      const versionContainer = container.createDiv({
         cls: isMobile
           ? 'advancedNoteMover-changelog-version advancedNoteMover-changelog-version-mobile'
           : 'advancedNoteMover-changelog-version',
@@ -134,7 +134,7 @@ export class UpdateModal extends BaseModal {
       });
 
       if (entry.changes.breaking && entry.changes.breaking.length > 0) {
-        const breakingSection = versionContainer.createEl('div', {
+        const breakingSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section advancedNoteMover-changelog-section-breaking',
         });
         breakingSection.createEl('h4', {
@@ -150,7 +150,7 @@ export class UpdateModal extends BaseModal {
       }
 
       if (entry.changes.features && entry.changes.features.length > 0) {
-        const featuresSection = versionContainer.createEl('div', {
+        const featuresSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
         featuresSection.createEl('h4', {
@@ -166,7 +166,7 @@ export class UpdateModal extends BaseModal {
       }
 
       if (entry.changes.improvements && entry.changes.improvements.length > 0) {
-        const improvementsSection = versionContainer.createEl('div', {
+        const improvementsSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
         improvementsSection.createEl('h4', {
@@ -182,7 +182,7 @@ export class UpdateModal extends BaseModal {
       }
 
       if (entry.changes.bugFixes && entry.changes.bugFixes.length > 0) {
-        const bugFixesSection = versionContainer.createEl('div', {
+        const bugFixesSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
         bugFixesSection.createEl('h4', {
@@ -198,7 +198,7 @@ export class UpdateModal extends BaseModal {
       }
 
       if (entry.changes.changes && entry.changes.changes.length > 0) {
-        const changesSection = versionContainer.createEl('div', {
+        const changesSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
         changesSection.createEl('h4', {
@@ -214,7 +214,7 @@ export class UpdateModal extends BaseModal {
       }
 
       if (entry.changes.fixes && entry.changes.fixes.length > 0) {
-        const fixesSection = versionContainer.createEl('div', {
+        const fixesSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
         fixesSection.createEl('h4', {
@@ -230,7 +230,7 @@ export class UpdateModal extends BaseModal {
       }
 
       if (entry.changes.performance && entry.changes.performance.length > 0) {
-        const performanceSection = versionContainer.createEl('div', {
+        const performanceSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
         performanceSection.createEl('h4', {
