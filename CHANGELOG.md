@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Features
+
+- **Custom date formats in destination templates** ([#108](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/108)): Date property placeholders accept Moment-style format patterns such as `{{property.created.MMM}}` (`Sep`), `{{property.created.YYYY-MM-DD}}`, and `{{property.created.DD-MM-YYYY}}`. Use a colon when the pattern contains dots: `{{property.created:YYYY.MM.DD}}`. `MMM` is also available as a named date component.
+
 ## [1.2.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.2.0...1.2.1)
 
 ### Fixes

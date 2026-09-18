@@ -75,17 +75,52 @@ Supported components:
 | `day`       | `13`                                   | Zero-padded day (01–31)            |
 | `iso`       | `2025-06-13`                           | Normalized ISO date (time ignored) |
 | `monthName` | `June`                                 | English full month name            |
+| `MMM`       | `Jun`                                  | English short month name           |
 | `dayOfWeek` | `friday`                               | Lowercase English day name         |
+
+### Custom date formats
+
+You can also append a Moment-style format pattern instead of a named component:
+
+```
+{{property.<key>.<format>}}
+{{property.<key>:<format>}}
+```
+
+The colon form is required when the format itself contains dots (for example `YYYY.MM.DD`).
+
+Supported tokens:
+
+| Token  | Example output (`created: 2025-06-13`) | Notes                      |
+| ------ | -------------------------------------- | -------------------------- |
+| `YYYY` | `2025`                                 | 4-digit year               |
+| `YY`   | `25`                                   | 2-digit year               |
+| `MMMM` | `June`                                 | English full month name    |
+| `MMM`  | `Jun`                                  | English short month name   |
+| `MM`   | `06`                                   | Zero-padded month          |
+| `M`    | `6`                                    | Month without padding      |
+| `DD`   | `13`                                   | Zero-padded day            |
+| `D`    | `13`                                   | Day without padding        |
+| `dddd` | `Friday`                               | English full weekday name  |
+| `ddd`  | `Fri`                                  | English short weekday name |
+
+Tokens can be combined with `-`, `/`, `.`, or spaces: `YYYY-MM-DD`, `DD-MM-YYYY`, `YYYY.MM.DD`, `D-M-YYYY`. Time tokens are not supported; only the calendar date is used.
+
+A suffix that is only `D` or `M` is **not** treated as a format (so keys such as `priority.D` stay literal). Use those tokens inside a larger pattern, or the named components `day` / `month`.
 
 ### Examples
 
-| Template                                                       | Frontmatter           | Resolves to       |
-| -------------------------------------------------------------- | --------------------- | ----------------- |
-| `Archive/{{property.created.year}}`                            | `created: 2025-06-13` | `Archive/2025`    |
-| `Journal/{{property.created.year}}/{{property.created.month}}` | `created: 2025-06-13` | `Journal/2025/06` |
-| `Days/{{property.created.dayOfWeek}}`                          | `created: 2025-06-13` | `Days/friday`     |
+| Template                                                       | Frontmatter           | Resolves to          |
+| -------------------------------------------------------------- | --------------------- | -------------------- |
+| `Archive/{{property.created.year}}`                            | `created: 2025-06-13` | `Archive/2025`       |
+| `Journal/{{property.created.year}}/{{property.created.month}}` | `created: 2025-06-13` | `Journal/2025/06`    |
+| `Days/{{property.created.dayOfWeek}}`                          | `created: 2025-06-13` | `Days/friday`        |
+| `Journal/{{property.created.MMM}}`                             | `created: 2025-09-18` | `Journal/Sep`        |
+| `Days/{{property.created.YYYY-MM-DD}}`                         | `created: 2025-06-13` | `Days/2025-06-13`    |
+| `Inbox/{{property.created.DD-MM-YYYY}}`                        | `created: 2025-06-13` | `Inbox/13-06-2025`   |
+| `Archive/{{property.created:YYYY.MM.DD}}`                      | `created: 2025-06-13` | `Archive/2025.06.13` |
 
-Type `{{property.<dateProperty>.` in the destination field to get component suggestions for date properties discovered in your vault.
+Type `{{property.<dateProperty>.` in the destination field to get component and format suggestions for date properties discovered in your vault.
 
 ### Literal property keys take precedence
 
