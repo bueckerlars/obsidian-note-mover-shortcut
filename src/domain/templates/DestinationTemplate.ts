@@ -1,8 +1,17 @@
 import type { DatePlaceholderComponent } from '../dates/property-date';
 import {
+  formatDateComponent,
+  formatDatePattern,
+  isDateFormatPattern,
+  isDatePlaceholderComponent,
+  parsePropertyDateValue,
+} from '../dates/property-date';
+import {
   parsePropertyPlaceholderKey,
   resolvePropertyPlaceholder,
 } from './property-placeholder';
+
+export type FileTimestampField = 'created' | 'modified';
 
 export type TemplateSegment =
   | {
@@ -20,6 +29,14 @@ export type TemplateSegment =
       raw: string;
       type: 'property';
       key: string;
+      dateComponent?: DatePlaceholderComponent;
+      dateFormat?: string;
+    }
+  | {
+      kind: 'placeholder';
+      raw: string;
+      type: 'file';
+      field: FileTimestampField | null;
       dateComponent?: DatePlaceholderComponent;
       dateFormat?: string;
     };
@@ -40,6 +57,14 @@ export interface DestinationTemplateContext {
    * Frontmatter / properties object as returned by MetadataExtractor.
    */
   properties: Record<string, unknown>;
+  /**
+   * Filesystem creation time (`TFile.stat.ctime`), when available.
+   */
+  createdAt?: Date | null;
+  /**
+   * Filesystem modification time (`TFile.stat.mtime`), when available.
+   */
+  updatedAt?: Date | null;
 }
 
 const PLACEHOLDER_START = '{{';
@@ -54,6 +79,9 @@ const PLACEHOLDER_END = '}}';
  * - {{property.<propertyKey>.<dateComponent>}}
  * - {{property.<propertyKey>.<dateFormat>}}
  * - {{property.<propertyKey>:<dateFormat>}}
+ * - {{file.created}} / {{file.modified}} (ISO date)
+ * - {{file.created.<dateComponent|dateFormat>}} / {{file.created:<dateFormat>}}
+ * - Aliases: createdAt/created_at → created; modified_at/updated/updatedAt → modified
  *
  * Everything else is treated as plain text.
  */
@@ -122,18 +150,18 @@ export function parseDestinationTemplate(raw: string): {
         segments,
         error: {
           message:
-            "Invalid placeholder format. Expected 'tag.<value>' or 'property.<key>'",
+            "Invalid placeholder format. Expected 'tag.<value>', 'property.<key>', or 'file.<key>'",
           index: start,
         },
       };
     }
 
-    if (prefix !== 'tag' && prefix !== 'property') {
+    if (prefix !== 'tag' && prefix !== 'property' && prefix !== 'file') {
       return {
         segments,
         error: {
           message:
-            "Unknown placeholder type. Supported types are 'tag' and 'property'.",
+            "Unknown placeholder type. Supported types are 'tag', 'property', and 'file'.",
           index: start,
         },
       };
@@ -146,7 +174,7 @@ export function parseDestinationTemplate(raw: string): {
         type: 'tag',
         key,
       });
-    } else {
+    } else if (prefix === 'property') {
       const parsedProperty = parsePropertyPlaceholderKey(key);
       segments.push({
         kind: 'placeholder',
@@ -155,6 +183,16 @@ export function parseDestinationTemplate(raw: string): {
         key: parsedProperty.lookupKey,
         dateComponent: parsedProperty.dateComponent,
         dateFormat: parsedProperty.dateFormat,
+      });
+    } else {
+      const parsedFile = parseFilePlaceholderKey(key);
+      segments.push({
+        kind: 'placeholder',
+        raw: inner,
+        type: 'file',
+        field: parsedFile.field,
+        dateComponent: parsedFile.dateComponent,
+        dateFormat: parsedFile.dateFormat,
       });
     }
 
@@ -211,6 +249,11 @@ export function validateDestinationTemplate(
  *   - {{property.created.YYYY-MM-DD}} / {{property.created:YYYY.MM.DD}} → Moment-style format.
  *   - Literal property keys take precedence over date components (e.g. property created.year).
  *   - If the property is missing or empty, the placeholder becomes an empty string.
+ * - File placeholders:
+ *   - {{file.created}} / {{file.modified}} → local ISO calendar date (YYYY-MM-DD).
+ *   - {{file.created.year}} / {{file.modified.DD-MM-YYYY}} → same components/formats as properties.
+ *   - Uses filesystem ctime/mtime from context.createdAt / context.updatedAt.
+ *   - Missing timestamps become an empty string.
  */
 export function renderDestinationTemplate(
   raw: string,
@@ -248,6 +291,8 @@ export function renderDestinationTemplate(
         propertyPlaceholderKey(segment),
         context.properties
       );
+    } else if (segment.type === 'file') {
+      result += resolveFilePlaceholder(segment, context);
     }
   }
 
@@ -271,6 +316,95 @@ function propertyPlaceholderKey(
       : `${segment.key}.${segment.dateFormat}`;
   }
   return segment.key;
+}
+
+function normalizeFileTimestampField(key: string): FileTimestampField | null {
+  switch (key) {
+    case 'created':
+    case 'createdAt':
+    case 'created_at':
+      return 'created';
+    case 'modified':
+    case 'modified_at':
+    case 'updated':
+    case 'updatedAt':
+      return 'modified';
+    default:
+      return null;
+  }
+}
+
+interface ParsedFilePlaceholderKey {
+  field: FileTimestampField | null;
+  dateComponent?: DatePlaceholderComponent;
+  dateFormat?: string;
+}
+
+function parseFilePlaceholderKey(key: string): ParsedFilePlaceholderKey {
+  const trimmed = key.trim();
+  if (!trimmed) {
+    return { field: null };
+  }
+
+  const colonIndex = trimmed.indexOf(':');
+  if (colonIndex > 0 && colonIndex < trimmed.length - 1) {
+    const fieldKey = trimmed.substring(0, colonIndex);
+    const dateFormat = trimmed.substring(colonIndex + 1).trim();
+    const field = normalizeFileTimestampField(fieldKey);
+    if (field && isDateFormatPattern(dateFormat)) {
+      return { field, dateFormat };
+    }
+  }
+
+  const lastDot = trimmed.lastIndexOf('.');
+  if (lastDot > 0 && lastDot < trimmed.length - 1) {
+    const fieldKey = trimmed.substring(0, lastDot);
+    const suffix = trimmed.substring(lastDot + 1).trim();
+    const field = normalizeFileTimestampField(fieldKey);
+
+    if (field) {
+      if (isDatePlaceholderComponent(suffix)) {
+        return { field, dateComponent: suffix };
+      }
+      if (isDateFormatPattern(suffix)) {
+        return { field, dateFormat: suffix };
+      }
+    }
+  }
+
+  return { field: normalizeFileTimestampField(trimmed) };
+}
+
+function resolveFilePlaceholder(
+  segment: Extract<TemplateSegment, { type: 'file' }>,
+  context: DestinationTemplateContext
+): string {
+  if (!segment.field) {
+    return '';
+  }
+
+  const rawDate =
+    segment.field === 'created' ? context.createdAt : context.updatedAt;
+
+  if (rawDate === null || rawDate === undefined) {
+    return '';
+  }
+
+  const parsedDate = parsePropertyDateValue(rawDate);
+  if (!parsedDate) {
+    return '';
+  }
+
+  if (segment.dateComponent) {
+    return formatDateComponent(parsedDate, segment.dateComponent);
+  }
+
+  if (segment.dateFormat) {
+    return formatDatePattern(parsedDate, segment.dateFormat);
+  }
+
+  // Bare {{file.created}} / {{file.modified}} → ISO calendar date
+  return formatDateComponent(parsedDate, 'iso');
 }
 
 function resolveTagPlaceholder(key: string, tags: string[]): string {

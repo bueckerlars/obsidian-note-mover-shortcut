@@ -14,6 +14,21 @@ describe('DestinationTemplate', () => {
     expect(r.isValid).toBe(false);
   });
 
+  it('accepts file placeholders as valid syntax', () => {
+    expect(
+      validateDestinationTemplate('Inbox/{{file.created.DD-MM-YYYY}}').isValid
+    ).toBe(true);
+    expect(validateDestinationTemplate('{{file.modified.year}}').isValid).toBe(
+      true
+    );
+  });
+
+  it('rejects unknown placeholder prefixes', () => {
+    const r = validateDestinationTemplate('Clients/{{category.foo}}');
+    expect(r.isValid).toBe(false);
+    expect(r.errors[0]).toContain('file');
+  });
+
   it('renders tag and property placeholders', () => {
     const out = renderDestinationTemplate(
       'P/{{property.status}}/{{tag.tasks}}',
@@ -98,5 +113,134 @@ describe('DestinationTemplate', () => {
         },
       })
     ).toBe('X/manual-colon');
+  });
+
+  describe('file placeholders', () => {
+    const createdAt = new Date(2025, 5, 13, 15, 30, 0);
+    const updatedAt = new Date(2024, 0, 2, 9, 0, 0);
+
+    const fileContext = {
+      tags: [],
+      properties: {},
+      createdAt,
+      updatedAt,
+    };
+
+    it('renders bare created/modified as ISO local dates', () => {
+      expect(
+        renderDestinationTemplate('Inbox/{{file.created}}', fileContext)
+      ).toBe('Inbox/2025-06-13');
+      expect(
+        renderDestinationTemplate('Inbox/{{file.modified}}', fileContext)
+      ).toBe('Inbox/2024-01-02');
+    });
+
+    it('renders date components from filesystem times', () => {
+      expect(
+        renderDestinationTemplate(
+          'Archive/{{file.created.year}}/{{file.created.month}}',
+          fileContext
+        )
+      ).toBe('Archive/2025/06');
+      expect(
+        renderDestinationTemplate('Days/{{file.modified.dayOfWeek}}', fileContext)
+      ).toBe('Days/tuesday');
+      expect(
+        renderDestinationTemplate(
+          '{{file.created.monthName}}/{{file.created.day}}',
+          fileContext
+        )
+      ).toBe('June/13');
+    });
+
+    it('renders moment-style formats for file timestamps', () => {
+      expect(
+        renderDestinationTemplate(
+          'Inbox/{{file.created.DD-MM-YYYY}}',
+          fileContext
+        )
+      ).toBe('Inbox/13-06-2025');
+      expect(
+        renderDestinationTemplate('Journal/{{file.created.MMM}}', fileContext)
+      ).toBe('Journal/Jun');
+      expect(
+        renderDestinationTemplate(
+          'Archive/{{file.created:YYYY.MM.DD}}',
+          fileContext
+        )
+      ).toBe('Archive/2025.06.13');
+      expect(
+        renderDestinationTemplate(
+          'Days/{{file.modified.YYYY-MM-DD}}',
+          fileContext
+        )
+      ).toBe('Days/2024-01-02');
+    });
+
+    it('accepts created/modified aliases', () => {
+      expect(
+        renderDestinationTemplate('{{file.createdAt}}', fileContext)
+      ).toBe('2025-06-13');
+      expect(
+        renderDestinationTemplate('{{file.created_at.year}}', fileContext)
+      ).toBe('2025');
+      expect(
+        renderDestinationTemplate('{{file.updated}}', fileContext)
+      ).toBe('2024-01-02');
+      expect(
+        renderDestinationTemplate('{{file.updatedAt.month}}', fileContext)
+      ).toBe('01');
+      expect(
+        renderDestinationTemplate('{{file.modified_at.day}}', fileContext)
+      ).toBe('02');
+    });
+
+    it('returns empty string when timestamps are missing', () => {
+      expect(
+        renderDestinationTemplate('Inbox/{{file.created}}', {
+          tags: [],
+          properties: {},
+        })
+      ).toBe('Inbox/');
+      expect(
+        renderDestinationTemplate('Inbox/{{file.modified.year}}', {
+          tags: [],
+          properties: {},
+          createdAt: null,
+          updatedAt: null,
+        })
+      ).toBe('Inbox/');
+    });
+
+    it('returns empty string for unknown file keys', () => {
+      expect(
+        renderDestinationTemplate('X/{{file.unknown}}', fileContext)
+      ).toBe('X/');
+      expect(
+        renderDestinationTemplate('X/{{file.foo.year}}', fileContext)
+      ).toBe('X/');
+    });
+
+    it('does not use frontmatter for file placeholders', () => {
+      expect(
+        renderDestinationTemplate('{{file.created}}', {
+          tags: [],
+          properties: { created: '1999-01-01' },
+          createdAt,
+        })
+      ).toBe('2025-06-13');
+    });
+
+    it('can combine file placeholders with property and tag placeholders', () => {
+      const out = renderDestinationTemplate(
+        '{{file.created.year}}/{{property.client}}/{{tag.tasks}}',
+        {
+          tags: ['#tasks/personal'],
+          properties: { client: 'Acme' },
+          createdAt,
+        }
+      );
+      expect(out).toBe('2025/Acme/tasks/personal');
+    });
   });
 });

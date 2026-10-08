@@ -8,6 +8,8 @@ import {
 import { inferPropertyTypeFromSamples } from '../../utils/OperatorMapping';
 import type { PropertyType } from './PropertySuggest';
 
+const FILE_TIMESTAMP_FIELDS = ['created', 'modified'] as const;
+
 type FolderOrTemplateSuggestion =
   | {
       kind: 'folder';
@@ -19,6 +21,10 @@ type FolderOrTemplateSuggestion =
     }
   | {
       kind: 'propertyTemplate';
+      value: string;
+    }
+  | {
+      kind: 'fileTemplate';
       value: string;
     };
 
@@ -34,6 +40,16 @@ type TemplateContext =
   | {
       type: 'propertyDateComponent';
       propertyName: string;
+      search: string;
+      formatSeparator: DateFormatSeparator;
+    }
+  | {
+      type: 'file';
+      search: string;
+    }
+  | {
+      type: 'fileDateComponent';
+      fieldName: (typeof FILE_TIMESTAMP_FIELDS)[number];
       search: string;
       formatSeparator: DateFormatSeparator;
     };
@@ -76,13 +92,14 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
     const startIndex = trimmed.lastIndexOf('{{');
 
     // If the user just started a template with '{{', suggest the available
-    // template types (tag / property) directly.
+    // template types (tag / property / file) directly.
     if (startIndex !== -1) {
       const fragment = trimmed.substring(startIndex);
       if (fragment === '{{') {
         return [
           { kind: 'tagTemplate', value: '{{tag.' },
           { kind: 'propertyTemplate', value: '{{property.' },
+          { kind: 'fileTemplate', value: '{{file.' },
         ];
       }
     }
@@ -98,7 +115,19 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
       }
       if (templateContext.type === 'propertyDateComponent') {
         return this.getDateComponentTemplateSuggestions(
+          'property',
           templateContext.propertyName,
+          templateContext.search,
+          templateContext.formatSeparator
+        );
+      }
+      if (templateContext.type === 'file') {
+        return this.getFileTemplateSuggestions(templateContext.search);
+      }
+      if (templateContext.type === 'fileDateComponent') {
+        return this.getDateComponentTemplateSuggestions(
+          'file',
+          templateContext.fieldName,
           templateContext.search,
           templateContext.formatSeparator
         );
@@ -131,12 +160,9 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
         el.setText(value.folder.path);
         break;
       }
-      case 'tagTemplate': {
-        el.addClass('advancedNoteMover-template-suggestion');
-        el.setText(value.value);
-        break;
-      }
-      case 'propertyTemplate': {
+      case 'tagTemplate':
+      case 'propertyTemplate':
+      case 'fileTemplate': {
         el.addClass('advancedNoteMover-template-suggestion');
         el.setText(value.value);
         break;
@@ -189,6 +215,8 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
     // - {{tag.tasks}}/Archive
     // - {{property.status}}
     // - {{property.status}}/Something
+    // - {{file.created}}
+    // - {{file.created.year}}
 
     if (fragment.startsWith('{{tag')) {
       let rest = fragment.substring('{{tag'.length); // may start with "." or "}}"
@@ -232,6 +260,39 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
         }
       }
       return { type: 'property', search: search.toLowerCase() };
+    }
+
+    if (fragment.startsWith('{{file')) {
+      let rest = fragment.substring('{{file'.length);
+      if (rest.startsWith('.')) {
+        rest = rest.substring(1);
+      }
+      const search = this.cleanTemplateSearch(rest, false);
+      const colonIndex = search.indexOf(':');
+      if (colonIndex > 0) {
+        const fieldName = search.substring(0, colonIndex);
+        if (this.isFileTimestampField(fieldName)) {
+          return {
+            type: 'fileDateComponent',
+            fieldName,
+            search: search.substring(colonIndex + 1).toLowerCase(),
+            formatSeparator: ':',
+          };
+        }
+      }
+      const dotIndex = search.indexOf('.');
+      if (dotIndex !== -1) {
+        const fieldName = search.substring(0, dotIndex);
+        if (this.isFileTimestampField(fieldName)) {
+          return {
+            type: 'fileDateComponent',
+            fieldName,
+            search: search.substring(dotIndex + 1).toLowerCase(),
+            formatSeparator: '.',
+          };
+        }
+      }
+      return { type: 'file', search: search.toLowerCase() };
     }
 
     return null;
@@ -317,20 +378,42 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
     return suggestions;
   }
 
+  private getFileTemplateSuggestions(
+    search: string
+  ): FolderOrTemplateSuggestion[] {
+    const lowerSearch = search.toLowerCase();
+    const suggestions: FolderOrTemplateSuggestion[] = [];
+
+    for (const field of FILE_TIMESTAMP_FIELDS) {
+      if (!lowerSearch || field.startsWith(lowerSearch)) {
+        suggestions.push({
+          kind: 'fileTemplate',
+          value: `{{file.${field}}}`,
+        });
+      }
+    }
+
+    return suggestions;
+  }
+
   private getDateComponentTemplateSuggestions(
-    propertyName: string,
+    placeholderPrefix: 'property' | 'file',
+    keyName: string,
     search: string,
     formatSeparator: DateFormatSeparator
   ): FolderOrTemplateSuggestion[] {
     const suggestions: FolderOrTemplateSuggestion[] = [];
+    const kind =
+      placeholderPrefix === 'file' ? 'fileTemplate' : 'propertyTemplate';
 
     for (const value of buildDatePlaceholderSuggestions(
-      propertyName,
+      keyName,
       search,
-      formatSeparator
+      formatSeparator,
+      placeholderPrefix
     )) {
       suggestions.push({
-        kind: 'propertyTemplate',
+        kind,
         value,
       });
 
@@ -343,6 +426,12 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
     }
 
     return suggestions;
+  }
+
+  private isFileTimestampField(
+    fieldName: string
+  ): fieldName is (typeof FILE_TIMESTAMP_FIELDS)[number] {
+    return (FILE_TIMESTAMP_FIELDS as readonly string[]).includes(fieldName);
   }
 
   private getPropertyType(propertyName: string): PropertyType | undefined {

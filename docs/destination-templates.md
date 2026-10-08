@@ -8,11 +8,13 @@ Instead of a fixed folder path, a rule's destination can include **placeholders*
 
 Placeholders are wrapped in double braces: `{{ … }}`.
 
-The inner text must start with `tag.` or `property.`, followed by a key:
+The inner text must start with `tag.`, `property.`, or `file.`, followed by a key:
 
 ```
 {{tag.<key>}}
 {{property.<key>}}
+{{file.created}}
+{{file.modified}}
 ```
 
 Static path segments can appear before, between, or after placeholders:
@@ -21,6 +23,7 @@ Static path segments can appear before, between, or after placeholders:
 Clients/{{property.client}}/Notes
 Archive/{{property.year}}/{{property.project}}
 Areas/{{tag.work}}
+Inbox/{{file.created.DD-MM-YYYY}}
 ```
 
 ### Valid examples
@@ -31,15 +34,16 @@ Areas/{{tag.work}}
 | `Areas/{{tag.work/personal}}`        | `Areas/work/personal` (if tag `#work/personal` exists) |
 | `Archive/{{property.year}}`          | `Archive/2025` (if `year: 2025`)                       |
 | `Inbox/{{property.status}}`          | `Inbox/done` (if `status: done`)                       |
+| `Inbox/{{file.created}}`             | `Inbox/2025-06-13` (from filesystem creation time)     |
 
 ### Invalid examples (will fall back to raw string)
 
-| Template                    | Problem                                            |
-| --------------------------- | -------------------------------------------------- |
-| `Clients/{{property.client` | Unclosed `{{`                                      |
-| `Clients/{{}}`              | Empty placeholder                                  |
-| `Clients/{{property}}`      | Missing key after prefix                           |
-| `Clients/{{category.foo}}`  | Unknown prefix (only `tag` and `property` allowed) |
+| Template                    | Problem                                                   |
+| --------------------------- | --------------------------------------------------------- |
+| `Clients/{{property.client` | Unclosed `{{`                                             |
+| `Clients/{{}}`              | Empty placeholder                                         |
+| `Clients/{{property}}`      | Missing key after prefix                                  |
+| `Clients/{{category.foo}}`  | Unknown prefix (only `tag`, `property`, and `file` allowed) |
 
 ---
 
@@ -127,6 +131,59 @@ Type `{{property.<dateProperty>.` in the destination field to get component and 
 If a frontmatter key exactly matches the full placeholder path (including the suffix), the raw property value is used instead of date extraction. For example, if you have a property literally named `created.year`, then `{{property.created.year}}` resolves to that property's value — not the year from `created`.
 
 To gate moves on a date property, add a trigger: `properties` → `created` (date) → `has any value`.
+
+---
+
+## `{{file.created}}` / `{{file.modified}}`
+
+Uses the file's **filesystem** timestamps from Obsidian (`TFile.stat.ctime` / `mtime`), not frontmatter. This is useful for attachments and notes that have no date property.
+
+| Placeholder | Source |
+| ----------- | ------ |
+| `{{file.created}}` | Creation time (`ctime`) |
+| `{{file.modified}}` | Modification time (`mtime`) |
+
+Bare placeholders resolve to the local calendar date as `YYYY-MM-DD` (same as the `iso` component).
+
+You can append the same date components and Moment-style formats as for property dates:
+
+```
+{{file.created.<component>}}
+{{file.created.<format>}}
+{{file.created:<format>}}
+{{file.modified.<component>}}
+```
+
+Date parts use the **local** timezone of the machine running Obsidian.
+
+### Aliases
+
+These key names are accepted as aliases:
+
+| Alias | Same as |
+| ----- | ------- |
+| `createdAt`, `created_at` | `created` |
+| `modified_at`, `updated`, `updatedAt` | `modified` |
+
+### Examples
+
+| Template | Resolves to (ctime = local 2025-06-13) |
+| -------- | -------------------------------------- |
+| `Inbox/{{file.created}}` | `Inbox/2025-06-13` |
+| `Inbox/{{file.created.DD-MM-YYYY}}` | `Inbox/13-06-2025` |
+| `Archive/{{file.modified.year}}` | `Archive/2025` |
+| `Days/{{file.created.dayOfWeek}}` | `Days/friday` |
+
+**If the timestamp is missing**, the placeholder becomes an empty string (same as a missing property).
+
+### `property.created` vs `file.created`
+
+| Placeholder | Reads |
+| ----------- | ----- |
+| `{{property.created.*}}` | Frontmatter property named `created` |
+| `{{file.created.*}}` | OS/filesystem creation time |
+
+Type `{{file.` in the destination field to get field suggestions; type `{{file.created.` or `{{file.modified.` for component and format suggestions.
 
 ---
 

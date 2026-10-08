@@ -163,7 +163,7 @@ export class RuleEditorModal extends BaseModal {
 
     // Move description below the input to give the input more horizontal space
     const descriptionText =
-      'Folder or template where files matching this rule will be moved. Supports {{tag.*}} and {{property.*}} placeholders, including date components such as Archive/{{property.created.year}} and formats such as Journal/{{property.created.YYYY-MM-DD}} or {{property.created.MMM}}. Type {{tag. or {{property. to get template suggestions.';
+      'Folder or template where files matching this rule will be moved. Supports {{tag.*}}, {{property.*}}, and {{file.*}} placeholders. Use frontmatter dates via Archive/{{property.created.year}} or formats such as Journal/{{property.created.YYYY-MM-DD}}; use filesystem times via Inbox/{{file.created.DD-MM-YYYY}} or {{file.modified.year}}. Type {{tag., {{property., or {{file. to get template suggestions.';
     const descriptionEl = container.createDiv({
       cls: 'advancedNoteMover-rule-destination-description',
       text: descriptionText,
