@@ -813,17 +813,47 @@
   min-width: 0;
 }
 
+/* Name + Active: input grows, toggle never crushes it */
+.advancedNoteMover-rule-editor-modal
+  .setting-item.advancedNoteMover-rule-name-setting
+  .setting-item-control {
+  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.advancedNoteMover-rule-editor-modal
+  .setting-item.advancedNoteMover-rule-name-setting
+  .setting-item-control
+  input[type='text'] {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.advancedNoteMover-rule-editor-modal
+  .setting-item.advancedNoteMover-rule-name-setting
+  .setting-item-control
+  .checkbox-container {
+  flex-shrink: 0;
+}
+
+.advancedNoteMover-rule-editor-modal
+  .setting-item.advancedNoteMover-rule-destination-setting {
+  margin-bottom: 4px;
+}
+
 .advancedNoteMover-rule-destination-description {
   flex: 0 0 100%;
   width: 100%;
-  margin: 4px 0 0 0;
+  margin: 4px 0 12px 0;
   font-size: var(--font-ui-small);
   color: var(--text-muted);
   line-height: 1.4;
 }
 
 .advancedNoteMover-rule-editor-separator {
-  margin: 20px 0;
+  margin: 12px 0;
   border: none;
   border-top: 1px solid var(--background-modifier-border);
 }
@@ -859,13 +889,13 @@
 }
 
 .advancedNoteMover-rule-conditions-section {
-  margin: 16px 0;
+  margin: 8px 0;
   width: 100%;
   box-sizing: border-box;
 }
 
 .advancedNoteMover-rule-conditions-title {
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
   font-size: 1.1em;
   font-weight: 600;
 }
@@ -873,8 +903,8 @@
 .advancedNoteMover-rule-triggers-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 8px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -882,8 +912,8 @@
 .advancedNoteMover-rule-trigger-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 6px;
+  padding: 6px;
   background: var(--background-secondary);
   border-radius: 4px;
   border: 1px solid var(--background-modifier-border);
@@ -1826,24 +1856,63 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
     font-size: 0.95em;
   }
 
-  /* Trigger Row - Stack elements vertically */
+  /* Rule Editor: stack settings so Name input can use full width */
+  .advancedNoteMover-rule-editor-modal .setting-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .advancedNoteMover-rule-editor-modal .setting-item-info {
+    width: 100%;
+  }
+
+  .advancedNoteMover-rule-editor-modal .setting-item-control {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .advancedNoteMover-rule-editor-modal
+    .setting-item.advancedNoteMover-rule-name-setting
+    .setting-item-control {
+    justify-content: space-between;
+  }
+
+  .advancedNoteMover-rule-editor-modal
+    .setting-item.advancedNoteMover-rule-destination-setting {
+    margin-bottom: 2px;
+  }
+
+  .advancedNoteMover-rule-destination-description {
+    margin: 2px 0 8px 0;
+  }
+
+  .advancedNoteMover-rule-editor-separator {
+    margin: 10px 0;
+  }
+
+  .advancedNoteMover-rule-conditions-section {
+    margin: 4px 0;
+  }
+
+  /* Trigger Row - Stack elements vertically, keep compact */
   .advancedNoteMover-rule-trigger-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
-    padding: 12px;
+    gap: 6px;
+    padding: 8px;
   }
 
   .advancedNoteMover-rule-trigger-row .advancedNoteMover-drag-handle-container {
     order: -1;
     align-self: flex-end;
-    margin-bottom: 4px;
+    margin-bottom: 0;
   }
 
   .advancedNoteMover-rule-trigger-delete-btn {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 6px;
   }
 
   .advancedNoteMover-rule-criteria-type,
@@ -1851,14 +1920,14 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   .advancedNoteMover-rule-trigger-value {
     width: 100%;
     min-width: unset;
-    min-height: 44px;
-    padding: 10px;
+    min-height: 40px;
+    padding: 8px;
   }
 
   .advancedNoteMover-rule-property-name {
     width: 100%;
-    min-height: 44px;
-    padding: 10px;
+    min-height: 40px;
+    padding: 8px;
   }
 
   /* Preview Modal Paths - Allow wrapping */
@@ -2032,8 +2101,8 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
 
   /* Rule trigger rows - Even more compact */
   .advancedNoteMover-rule-trigger-row {
-    padding: 10px;
-    gap: 10px;
+    padding: 6px;
+    gap: 6px;
   }
 
   /* Smaller inputs but still touch-friendly */
@@ -2042,7 +2111,8 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   .advancedNoteMover-rule-trigger-value,
   .advancedNoteMover-rule-property-name {
     font-size: 0.95em;
-    padding: 8px;
+    padding: 6px 8px;
+    min-height: 40px;
   }
 
   /* Aggregation buttons - Full width on very small screens */
@@ -2142,10 +2212,36 @@ body.is-mobile
   .modal-container.advancedNoteMover-modal-size-mobile
   .advancedNoteMover-rule-editor-modal
   .setting-item {
-  margin-bottom: 24px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  margin-bottom: 12px;
   padding: 0;
   width: 100%;
   box-sizing: border-box;
+}
+
+body.is-mobile
+  .modal-container.advancedNoteMover-modal-size-mobile
+  .advancedNoteMover-rule-editor-modal
+  .setting-item-info {
+  width: 100%;
+}
+
+body.is-mobile
+  .modal-container.advancedNoteMover-modal-size-mobile
+  .advancedNoteMover-rule-editor-modal
+  .setting-item-control {
+  width: 100%;
+  margin-left: 0;
+}
+
+body.is-mobile
+  .modal-container.advancedNoteMover-modal-size-mobile
+  .advancedNoteMover-rule-editor-modal
+  .setting-item.advancedNoteMover-rule-name-setting
+  .setting-item-control {
+  justify-content: space-between;
 }
 
 /* Ensure all content respects modal padding */
@@ -2165,11 +2261,11 @@ body.is-mobile
   box-sizing: border-box;
 }
 
-/* Separator styling for mobile */
+/* Separator styling for mobile — keep tight to avoid blank after Destination */
 body.is-mobile
   .modal-container.advancedNoteMover-modal-size-mobile
   .advancedNoteMover-rule-editor-separator {
-  margin: 32px 0;
+  margin: 12px 0;
   border: none;
   border-top: 1px solid var(--background-modifier-border);
   opacity: 0.6;
@@ -2181,7 +2277,28 @@ body.is-mobile
   .modal-container.advancedNoteMover-modal-size-mobile
   .advancedNoteMover-rule-editor-modal
   .setting-item.advancedNoteMover-rule-destination-setting {
-  margin-bottom: 24px;
+  margin-bottom: 2px;
+}
+
+body.is-mobile
+  .modal-container.advancedNoteMover-modal-size-mobile
+  .advancedNoteMover-rule-destination-description {
+  margin: 2px 0 8px 0;
+}
+
+body.is-mobile
+  .modal-container.advancedNoteMover-modal-size-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-rule-conditions-section {
+  margin: 4px 0;
+}
+
+body.is-mobile
+  .modal-container.advancedNoteMover-modal-size-mobile
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-rule-trigger-row {
+  gap: 6px;
+  padding: 8px;
 }
 
 body.is-mobile
@@ -2253,7 +2370,7 @@ body.is-mobile
   .setting-item-name {
   font-weight: 600;
   font-size: 1em;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   color: var(--text-normal);
 }
 
@@ -2263,8 +2380,8 @@ body.is-mobile
   .setting-item-description {
   font-size: 0.9em;
   color: var(--text-muted);
-  margin-top: 4px;
-  margin-bottom: 12px;
+  margin-top: 2px;
+  margin-bottom: 6px;
   line-height: 1.5;
 }
 

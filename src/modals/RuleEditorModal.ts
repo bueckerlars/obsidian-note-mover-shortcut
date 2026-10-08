@@ -90,8 +90,7 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createNameAndActiveRow(container: HTMLElement): void {
-    // Desktop: Original layout
-    new Setting(container)
+    const setting = new Setting(container)
       .setName('Name')
       .addText(text =>
         text
@@ -112,6 +111,8 @@ export class RuleEditorModal extends BaseModal {
             toggle.setTooltip(value ? 'Rule is active' : 'Rule is inactive');
           })
       );
+
+    setting.settingEl.addClass('advancedNoteMover-rule-name-setting');
   }
 
   private createMatchConditionsSelector(container: HTMLElement): void {
