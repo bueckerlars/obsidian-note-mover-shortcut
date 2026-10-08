@@ -2781,14 +2781,20 @@ body.is-mobile .modal-content.advancedNoteMover-confirm-modal {
 }
 
 .advancedNoteMover-rule-mobile-condition-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: var(--size-4-3);
   padding: var(--size-4-3) var(--size-4-4) var(--size-4-4);
 }
 
-.advancedNoteMover-rule-mobile-slot {
-  display: contents;
+.advancedNoteMover-rule-mobile-condition-selectors {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--size-4-3);
+}
+
+.advancedNoteMover-rule-mobile-slot:empty {
+  display: none;
 }
 
 .advancedNoteMover-rule-mobile .advancedNoteMover-rule-mobile-add-button,
@@ -2844,14 +2850,10 @@ body.is-mobile .modal-content.advancedNoteMover-confirm-modal {
   }
 }
 
-/* Tablets and landscape phones: condition fields in two columns */
+/* Tablets and landscape phones: type and operator side by side */
 @container (min-width: 560px) {
-  .advancedNoteMover-rule-mobile-condition-body {
+  .advancedNoteMover-rule-mobile-condition-selectors {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .advancedNoteMover-rule-mobile-field-wide {
-    grid-column: 1 / -1;
   }
 }
 

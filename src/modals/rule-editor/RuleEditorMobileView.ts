@@ -389,7 +389,9 @@ export class RuleEditorMobileView {
   private renderConditionBody(body: HTMLElement, trigger: Trigger): void {
     body.empty();
 
-    const typeField = this.createField(body, 'Type');
+    const selectors = body.createDiv({ cls: `${CLS}-condition-selectors` });
+
+    const typeField = this.createField(selectors, 'Type');
     const typeDropdown = new DropdownComponent(typeField.controlEl);
     CRITERIA_TYPES.forEach(ct => {
       typeDropdown.addOption(ct, ct);
@@ -401,14 +403,12 @@ export class RuleEditorMobileView {
     typeDropdown.selectEl.id = typeField.inputId;
     typeDropdown.selectEl.addClass(`${CLS}-select`);
 
-    // Slots use `display: contents` so their fields take part in the body grid
-    const propertySlot = body.createDiv({ cls: `${CLS}-slot` });
-
-    const operatorField = this.createField(body, 'Operator');
+    const operatorField = this.createField(selectors, 'Operator');
     const operatorDropdown = new DropdownComponent(operatorField.controlEl);
     operatorDropdown.selectEl.id = operatorField.inputId;
     operatorDropdown.selectEl.addClass(`${CLS}-select`);
 
+    const propertySlot = body.createDiv({ cls: `${CLS}-slot` });
     const valueSlot = body.createDiv({ cls: `${CLS}-slot` });
 
     const renderValue = () => {
@@ -417,7 +417,6 @@ export class RuleEditorMobileView {
         return;
       }
       const valueField = this.createField(valueSlot, 'Value');
-      valueField.fieldEl.addClass(`${CLS}-field-wide`);
       new TextComponent(valueField.controlEl)
         .setPlaceholder(getValuePlaceholder(trigger))
         .setValue(trigger.value)
