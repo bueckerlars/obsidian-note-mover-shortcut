@@ -127,14 +127,17 @@ export function isDateFormatPattern(value: string): boolean {
 
 export type DateFormatSeparator = '.' | ':';
 
+export type DatePlaceholderPrefix = 'property' | 'file';
+
 /**
- * Destination-template suggestions after `{{property.<dateKey>.` or `:`.
- * Named components always use `.`. Patterns that contain `.` always use `:`.
+ * Destination-template suggestions after `{{property.<dateKey>.` / `{{file.<field>.`
+ * or `:`. Named components always use `.`. Patterns that contain `.` always use `:`.
  */
 export function buildDatePlaceholderSuggestions(
   propertyName: string,
   search: string,
-  formatSeparator: DateFormatSeparator = '.'
+  formatSeparator: DateFormatSeparator = '.',
+  placeholderPrefix: DatePlaceholderPrefix = 'property'
 ): string[] {
   const lowerSearch = search.toLowerCase();
   const values: string[] = [];
@@ -151,7 +154,7 @@ export function buildDatePlaceholderSuggestions(
 
   for (const component of DATE_PLACEHOLDER_COMPONENTS) {
     if (!lowerSearch || component.toLowerCase().startsWith(lowerSearch)) {
-      push(`{{property.${propertyName}.${component}}}`);
+      push(`{{${placeholderPrefix}.${propertyName}.${component}}}`);
     }
   }
 
@@ -160,7 +163,7 @@ export function buildDatePlaceholderSuggestions(
       continue;
     }
     const separator = pattern.includes('.') ? ':' : formatSeparator;
-    push(`{{property.${propertyName}${separator}${pattern}}}`);
+    push(`{{${placeholderPrefix}.${propertyName}${separator}${pattern}}}`);
   }
 
   return values;
@@ -240,6 +243,10 @@ export function parsePropertyDateValue(
 ): ParsedPropertyDate | null {
   if (raw === null || raw === undefined) {
     return null;
+  }
+
+  if (raw instanceof Date) {
+    return parseFromDateObject(raw);
   }
 
   if (typeof raw === 'number' && Number.isFinite(raw)) {
