@@ -143,7 +143,10 @@ describe('DestinationTemplate', () => {
         )
       ).toBe('Archive/2025/06');
       expect(
-        renderDestinationTemplate('Days/{{file.modified.dayOfWeek}}', fileContext)
+        renderDestinationTemplate(
+          'Days/{{file.modified.dayOfWeek}}',
+          fileContext
+        )
       ).toBe('Days/tuesday');
       expect(
         renderDestinationTemplate(
@@ -178,15 +181,15 @@ describe('DestinationTemplate', () => {
     });
 
     it('accepts created/modified aliases', () => {
-      expect(
-        renderDestinationTemplate('{{file.createdAt}}', fileContext)
-      ).toBe('2025-06-13');
+      expect(renderDestinationTemplate('{{file.createdAt}}', fileContext)).toBe(
+        '2025-06-13'
+      );
       expect(
         renderDestinationTemplate('{{file.created_at.year}}', fileContext)
       ).toBe('2025');
-      expect(
-        renderDestinationTemplate('{{file.updated}}', fileContext)
-      ).toBe('2024-01-02');
+      expect(renderDestinationTemplate('{{file.updated}}', fileContext)).toBe(
+        '2024-01-02'
+      );
       expect(
         renderDestinationTemplate('{{file.updatedAt.month}}', fileContext)
       ).toBe('01');
@@ -213,9 +216,9 @@ describe('DestinationTemplate', () => {
     });
 
     it('returns empty string for unknown file keys', () => {
-      expect(
-        renderDestinationTemplate('X/{{file.unknown}}', fileContext)
-      ).toBe('X/');
+      expect(renderDestinationTemplate('X/{{file.unknown}}', fileContext)).toBe(
+        'X/'
+      );
       expect(
         renderDestinationTemplate('X/{{file.foo.year}}', fileContext)
       ).toBe('X/');

@@ -23,12 +23,31 @@ const MOBILE_MODAL_SHELL_STYLES: ReadonlyArray<readonly [string, string]> = [
   ['height', '100vh'],
 ];
 
+/**
+ * Full-screen flex shell for modals that manage their own scroll area and pinned footer.
+ * `dvh` follows the visible viewport when the on-screen keyboard opens.
+ */
+const MOBILE_FLEX_SHELL_STYLES: ReadonlyArray<readonly [string, string]> = [
+  ['width', '100%'],
+  ['max-width', '100%'],
+  ['margin', '0'],
+  ['border-radius', '0'],
+  ['max-height', '100dvh'],
+  ['height', '100dvh'],
+  ['display', 'flex'],
+  ['flex-direction', 'column'],
+];
+
 const MODAL_SHELL_STYLE_PRIORITY = 'important';
 
 export interface BaseModalOptions {
   title?: string;
   titleIcon?: string;
+  /** Render the title in Obsidian's native modal header (`titleEl`) instead of the content. */
+  useNativeTitle?: boolean;
   cssClass?: string;
+  /** Class added to `modalEl` on mobile; switches the shell to a full-height flex column. */
+  mobileShellClass?: string;
   size?: ModalSize;
   autoFocus?: boolean;
   focusSelector?: string;
@@ -136,7 +155,14 @@ export abstract class BaseModal extends Modal {
 
     if (MobileUtils.isMobile()) {
       modalContainer.classList.add('advancedNoteMover-modal-size-mobile');
-      for (const [property, value] of MOBILE_MODAL_SHELL_STYLES) {
+      const { mobileShellClass } = this.options;
+      if (mobileShellClass) {
+        modalContainer.classList.add(mobileShellClass);
+      }
+      const shellStyles = mobileShellClass
+        ? MOBILE_FLEX_SHELL_STYLES
+        : MOBILE_MODAL_SHELL_STYLES;
+      for (const [property, value] of shellStyles) {
         modalContainer.style.setProperty(
           property,
           value,
@@ -185,6 +211,11 @@ export abstract class BaseModal extends Modal {
       'advancedNoteMover-modal-size-large',
       'advancedNoteMover-modal-size-mobile'
     );
+    if (this.options.mobileShellClass) {
+      modalContainer.classList.remove(this.options.mobileShellClass);
+    }
+    modalContainer.style.removeProperty('display');
+    modalContainer.style.removeProperty('flex-direction');
     modalContainer.style.removeProperty('width');
     modalContainer.style.removeProperty('min-width');
     modalContainer.style.removeProperty('max-width');
@@ -199,6 +230,11 @@ export abstract class BaseModal extends Modal {
    */
   protected createTitle(): void {
     if (!this.options.title) return;
+
+    if (this.options.useNativeTitle) {
+      this.setTitle(this.options.title);
+      return;
+    }
 
     const { contentEl } = this;
 

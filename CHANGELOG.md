@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0]
+
+### Features
+
+- **Mobile-optimized rule editor** ([#110](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/110)): On phones and tablets the rule editor uses a dedicated touch-first layout instead of the desktop form. Fields are full width with larger touch targets, match mode is an All / Any / None segmented control, destination help is a short hint with collapsible template examples, and each condition is a card with move up / move down / delete (replacing drag and drop, which did not work with touch). The modal uses Obsidian's native title, a full-height shell, and a pinned Cancel / Save footer that respects the safe area. The desktop editor is unchanged.
+- **File created/modified timestamps in destination templates** ([#111](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/111)): Destination paths can use filesystem dates via `{{file.created}}` and `{{file.modified}}`, including the same date components and Moment-style formats as property dates (e.g. `Archive/{{file.created.year}}`, `Inbox/{{file.modified.YYYY-MM-DD}}`). Aliases such as `created_at` / `modified_at` are accepted. Suggestions appear when typing `{{file.` in the destination field.
+
 ## [1.2.2]
 
 ### Features

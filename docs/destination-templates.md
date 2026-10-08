@@ -38,11 +38,11 @@ Inbox/{{file.created.DD-MM-YYYY}}
 
 ### Invalid examples (will fall back to raw string)
 
-| Template                    | Problem                                                   |
-| --------------------------- | --------------------------------------------------------- |
-| `Clients/{{property.client` | Unclosed `{{`                                             |
-| `Clients/{{}}`              | Empty placeholder                                         |
-| `Clients/{{property}}`      | Missing key after prefix                                  |
+| Template                    | Problem                                                     |
+| --------------------------- | ----------------------------------------------------------- |
+| `Clients/{{property.client` | Unclosed `{{`                                               |
+| `Clients/{{}}`              | Empty placeholder                                           |
+| `Clients/{{property}}`      | Missing key after prefix                                    |
 | `Clients/{{category.foo}}`  | Unknown prefix (only `tag`, `property`, and `file` allowed) |
 
 ---
@@ -138,9 +138,9 @@ To gate moves on a date property, add a trigger: `properties` → `created` (dat
 
 Uses the file's **filesystem** timestamps from Obsidian (`TFile.stat.ctime` / `mtime`), not frontmatter. This is useful for attachments and notes that have no date property.
 
-| Placeholder | Source |
-| ----------- | ------ |
-| `{{file.created}}` | Creation time (`ctime`) |
+| Placeholder         | Source                      |
+| ------------------- | --------------------------- |
+| `{{file.created}}`  | Creation time (`ctime`)     |
 | `{{file.modified}}` | Modification time (`mtime`) |
 
 Bare placeholders resolve to the local calendar date as `YYYY-MM-DD` (same as the `iso` component).
@@ -160,28 +160,28 @@ Date parts use the **local** timezone of the machine running Obsidian.
 
 These key names are accepted as aliases:
 
-| Alias | Same as |
-| ----- | ------- |
-| `createdAt`, `created_at` | `created` |
+| Alias                                 | Same as    |
+| ------------------------------------- | ---------- |
+| `createdAt`, `created_at`             | `created`  |
 | `modified_at`, `updated`, `updatedAt` | `modified` |
 
 ### Examples
 
-| Template | Resolves to (ctime = local 2025-06-13) |
-| -------- | -------------------------------------- |
-| `Inbox/{{file.created}}` | `Inbox/2025-06-13` |
-| `Inbox/{{file.created.DD-MM-YYYY}}` | `Inbox/13-06-2025` |
-| `Archive/{{file.modified.year}}` | `Archive/2025` |
-| `Days/{{file.created.dayOfWeek}}` | `Days/friday` |
+| Template                            | Resolves to (ctime = local 2025-06-13) |
+| ----------------------------------- | -------------------------------------- |
+| `Inbox/{{file.created}}`            | `Inbox/2025-06-13`                     |
+| `Inbox/{{file.created.DD-MM-YYYY}}` | `Inbox/13-06-2025`                     |
+| `Archive/{{file.modified.year}}`    | `Archive/2025`                         |
+| `Days/{{file.created.dayOfWeek}}`   | `Days/friday`                          |
 
 **If the timestamp is missing**, the placeholder becomes an empty string (same as a missing property).
 
 ### `property.created` vs `file.created`
 
-| Placeholder | Reads |
-| ----------- | ----- |
+| Placeholder              | Reads                                |
+| ------------------------ | ------------------------------------ |
 | `{{property.created.*}}` | Frontmatter property named `created` |
-| `{{file.created.*}}` | OS/filesystem creation time |
+| `{{file.created.*}}`     | OS/filesystem creation time          |
 
 Type `{{file.` in the destination field to get field suggestions; type `{{file.created.` or `{{file.modified.` for component and format suggestions.
 
