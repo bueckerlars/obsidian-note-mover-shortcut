@@ -9,6 +9,11 @@ export class TFile extends TAbstractFile {
   name = '';
 }
 
+export class TFolder extends TAbstractFile {}
+export class AbstractInputSuggest<T> {
+  protected suggestions: T[] = [];
+}
+
 export function getAllTags(cache: Record<string, unknown>): string[] {
   const tags = cache.tags as { tag: string }[] | undefined;
   if (!tags?.length) return [];

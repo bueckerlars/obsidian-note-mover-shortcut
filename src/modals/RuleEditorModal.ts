@@ -8,23 +8,34 @@ import {
   Operator,
 } from '../types/RuleV2';
 import { FolderSuggest } from '../settings/suggesters/FolderSuggest';
-import { TagSuggest } from '../settings/suggesters/TagSuggest';
 import { PropertySuggest } from '../settings/suggesters/PropertySuggest';
-import { PropertyValueSuggest } from '../settings/suggesters/PropertyValueSuggest';
 import { DragDropManager } from '../utils/DragDropManager';
-import {
-  getOperatorsForCriteriaType,
-  getOperatorsForPropertyType,
-  getDefaultOperatorForCriteriaType,
-  isRegexOperator,
-  operatorRequiresValue,
-  getPropertyTypeFromVault,
-} from '../utils/OperatorMapping';
+import { MobileUtils } from '../utils/MobileUtils';
+import { operatorRequiresValue } from '../utils/OperatorMapping';
 import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault-index-cache';
 import { ConfirmModal } from './ConfirmModal';
 import { NoticeManager } from '../utils/NoticeManager';
 import { SETTINGS_CONSTANTS } from '../config/constants';
 import { toMarkdownInlineCode } from '../utils/markdown-confirm';
+import { RuleEditorMobileView } from './rule-editor/RuleEditorMobileView';
+import {
+  AGGREGATION_TYPES,
+  CRITERIA_TYPES,
+  DESTINATION_DESCRIPTION,
+  FolderCreationValue,
+  applyCriteriaType,
+  applyFolderCreationValue,
+  applyPropertyName,
+  attachValueSuggester,
+  capitalize,
+  createDefaultTrigger,
+  getFolderCreationValue,
+  getOperatorsForTrigger,
+  getValuePlaceholder,
+  moveTrigger,
+  removeTrigger,
+  validateRule,
+} from './rule-editor/ruleEditorShared';
 
 interface RuleEditorModalOptions {
   rule: RuleV2;
@@ -41,14 +52,21 @@ export class RuleEditorModal extends BaseModal {
   private isForceClosing = false;
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
+  private readonly isMobileLayout: boolean;
 
   constructor(app: App, options: RuleEditorModalOptions) {
+    const isMobileLayout = MobileUtils.isMobile();
     super(app, {
-      title: 'Rule Editor',
+      title: isMobileLayout ? 'Rule editor' : 'Rule Editor',
+      useNativeTitle: isMobileLayout,
       size: 'large',
-      cssClass: 'advancedNoteMover-rule-editor-modal',
+      cssClass: isMobileLayout
+        ? 'advancedNoteMover-rule-editor-mobile-content'
+        : 'advancedNoteMover-rule-editor-modal',
+      mobileShellClass: 'advancedNoteMover-rule-editor--mobile',
       autoFocus: false, // Disable auto focus to prevent scroll issues on mobile
     });
+    this.isMobileLayout = isMobileLayout;
     this.ruleOptions = options;
     this.workingRule = structuredClone(options.rule);
     this.originalRule = structuredClone(options.rule);
@@ -56,6 +74,20 @@ export class RuleEditorModal extends BaseModal {
 
   protected createContent(): void {
     const { contentEl } = this;
+    if (this.isMobileLayout) {
+      new RuleEditorMobileView({
+        app: this.app,
+        rule: this.workingRule,
+        canDelete: Boolean(
+          this.ruleOptions.isEditMode && this.ruleOptions.onDelete
+        ),
+        vaultIndexCache: this.ruleOptions.vaultIndexCache,
+        onSave: () => void this.handleSave(),
+        onCancel: () => void this.requestClose(),
+        onDelete: () => void this.handleRemoveRule(),
+      }).render(contentEl);
+      return;
+    }
     this.createDesktopContent(contentEl);
   }
 
@@ -90,7 +122,7 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createNameAndActiveRow(container: HTMLElement): void {
-    const setting = new Setting(container)
+    new Setting(container)
       .setName('Name')
       .addText(text =>
         text
@@ -111,8 +143,6 @@ export class RuleEditorModal extends BaseModal {
             toggle.setTooltip(value ? 'Rule is active' : 'Rule is inactive');
           })
       );
-
-    setting.settingEl.addClass('advancedNoteMover-rule-name-setting');
   }
 
   private createMatchConditionsSelector(container: HTMLElement): void {
@@ -122,10 +152,9 @@ export class RuleEditorModal extends BaseModal {
       cls: 'advancedNoteMover-rule-aggregation-buttons',
     });
 
-    const aggregations: AggregationType[] = ['all', 'any', 'none'];
-    aggregations.forEach(agg => {
+    AGGREGATION_TYPES.forEach((agg: AggregationType) => {
       const button = buttonContainer.createEl('button', {
-        text: agg.charAt(0).toUpperCase() + agg.slice(1),
+        text: capitalize(agg),
         cls: 'advancedNoteMover-rule-aggregation-button',
       });
 
@@ -163,11 +192,9 @@ export class RuleEditorModal extends BaseModal {
     setting.settingEl.addClass('advancedNoteMover-rule-destination-setting');
 
     // Move description below the input to give the input more horizontal space
-    const descriptionText =
-      'Folder or template where files matching this rule will be moved. Supports {{tag.*}} and {{property.*}} placeholders, including date components such as Archive/{{property.created.year}} and formats such as Journal/{{property.created.YYYY-MM-DD}} or {{property.created.MMM}}. Type {{tag. or {{property. to get template suggestions.';
     const descriptionEl = container.createDiv({
       cls: 'advancedNoteMover-rule-destination-description',
-      text: descriptionText,
+      text: DESTINATION_DESCRIPTION,
     });
 
     // Visually and accessibly associate the description with the input
@@ -179,13 +206,6 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createFolderCreationSelector(container: HTMLElement): void {
-    const currentValue: 'inherit' | 'always' | 'never' =
-      this.workingRule.createDestinationFolder === undefined
-        ? 'inherit'
-        : this.workingRule.createDestinationFolder
-          ? 'always'
-          : 'never';
-
     new Setting(container)
       .setName(SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_NAME)
       .setDesc(SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_DESC)
@@ -203,15 +223,12 @@ export class RuleEditorModal extends BaseModal {
             'never',
             SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_NEVER
           )
-          .setValue(currentValue)
+          .setValue(getFolderCreationValue(this.workingRule))
           .onChange(value => {
-            if (value === 'always') {
-              this.workingRule.createDestinationFolder = true;
-            } else if (value === 'never') {
-              this.workingRule.createDestinationFolder = false;
-            } else {
-              delete this.workingRule.createDestinationFolder;
-            }
+            applyFolderCreationValue(
+              this.workingRule,
+              value as FolderCreationValue
+            );
           })
       );
   }
@@ -236,11 +253,7 @@ export class RuleEditorModal extends BaseModal {
     // Add Condition Button
     new Setting(section).addButton(btn =>
       btn.setButtonText('+ add condition').onClick(() => {
-        this.workingRule.triggers.push({
-          criteriaType: 'tag',
-          operator: 'includes item',
-          value: '',
-        });
+        this.workingRule.triggers.push(createDefaultTrigger());
         this.renderTriggers();
       })
     );
@@ -270,26 +283,17 @@ export class RuleEditorModal extends BaseModal {
     trigger: Trigger,
     index: number
   ): void {
-    // Desktop only
     const row = container.createDiv({
       cls: 'advancedNoteMover-rule-trigger-row',
     });
 
-    // Desktop: Delete button (left side)
+    // Delete button (left side)
     const deleteBtn = row.createEl('button', {
       cls: 'advancedNoteMover-rule-trigger-delete-btn clickable-icon',
     });
     setIcon(deleteBtn, 'x');
     deleteBtn.onclick = () => {
-      this.workingRule.triggers.splice(index, 1);
-      // Prevent saving with empty triggers
-      if (this.workingRule.triggers.length === 0) {
-        this.workingRule.triggers.push({
-          criteriaType: 'tag',
-          operator: 'includes item',
-          value: '',
-        });
-      }
+      removeTrigger(this.workingRule.triggers, index);
       this.renderTriggers();
     };
 
@@ -297,19 +301,7 @@ export class RuleEditorModal extends BaseModal {
     const criteriaTypeSelect = row.createEl('select', {
       cls: 'dropdown advancedNoteMover-rule-criteria-type',
     });
-    const criteriaTypes: CriteriaType[] = [
-      'tag',
-      'fileName',
-      'folder',
-      'created_at',
-      'modified_at',
-      'extension',
-      'links',
-      'embeds',
-      'properties',
-      'headings',
-    ];
-    criteriaTypes.forEach(ct => {
+    CRITERIA_TYPES.forEach(ct => {
       const option = criteriaTypeSelect.createEl('option', {
         value: ct,
         text: ct,
@@ -319,16 +311,7 @@ export class RuleEditorModal extends BaseModal {
       }
     });
     criteriaTypeSelect.onchange = () => {
-      trigger.criteriaType = criteriaTypeSelect.value as CriteriaType;
-      // Reset operator to default for new criteria type
-      trigger.operator = getDefaultOperatorForCriteriaType(
-        trigger.criteriaType
-      );
-      // Clear property fields if not properties criteria
-      if (trigger.criteriaType !== 'properties') {
-        delete trigger.propertyName;
-        delete trigger.propertyType;
-      }
+      applyCriteriaType(trigger, criteriaTypeSelect.value as CriteriaType);
       this.renderTriggers(); // Re-render to update operator dropdown
     };
 
@@ -339,71 +322,48 @@ export class RuleEditorModal extends BaseModal {
     this.populateOperatorDropdown(operatorSelect, trigger);
 
     // Property-specific fields (only shown for properties criteria)
-    let propertyNameInput: HTMLInputElement | null = null;
-
     if (trigger.criteriaType === 'properties') {
-      propertyNameInput = row.createEl('input', {
+      const propertyNameInput = row.createEl('input', {
         type: 'text',
         cls: 'advancedNoteMover-rule-property-name',
         placeholder: 'Property Name',
         value: trigger.propertyName || '',
       });
 
-      // Attach PropertySuggest
       new PropertySuggest(this.app, propertyNameInput);
 
       propertyNameInput.oninput = () => {
-        trigger.propertyName = propertyNameInput!.value;
-
-        // Automatische Typ-Erkennung
-        const detectedType = getPropertyTypeFromVault(
+        const detected = applyPropertyName(
           this.app,
-          trigger.propertyName,
+          trigger,
+          propertyNameInput.value,
           this.ruleOptions.vaultIndexCache
         );
-        if (detectedType) {
-          trigger.propertyType = detectedType;
+        if (detected) {
           this.renderTriggers(); // Re-render to update operator dropdown
         }
       };
     }
 
     // Value input (only when operator requires a value)
-    let valueInput: HTMLInputElement | null = null;
     if (operatorRequiresValue(trigger.operator)) {
-      valueInput = row.createEl('input', {
+      const valueInput = row.createEl('input', {
         type: 'text',
         cls: 'advancedNoteMover-rule-trigger-value',
-        placeholder: trigger.criteriaType === 'tag' ? '#tag' : 'Value',
+        placeholder: getValuePlaceholder(trigger),
         value: trigger.value,
       });
       valueInput.oninput = () => {
-        trigger.value = valueInput!.value;
+        trigger.value = valueInput.value;
       };
 
-      // Add suggesters based on criteriaType
-      if (trigger.criteriaType === 'tag') {
-        new TagSuggest(this.app, valueInput, this.ruleOptions.vaultIndexCache);
-      } else if (trigger.criteriaType === 'folder') {
-        new FolderSuggest(this.app, valueInput);
-      } else if (
-        trigger.criteriaType === 'properties' &&
-        trigger.propertyName &&
-        trigger.propertyType
-      ) {
-        // PropertyValueSuggest when property type is known
-        new PropertyValueSuggest(
-          this.app,
-          valueInput,
-          trigger.propertyName,
-          trigger.propertyType,
-          this.ruleOptions.vaultIndexCache
-        );
-      }
-    }
-
-    // Add CSS class to row based on whether value field is present
-    if (!operatorRequiresValue(trigger.operator)) {
+      attachValueSuggester(
+        this.app,
+        valueInput,
+        trigger,
+        this.ruleOptions.vaultIndexCache
+      );
+    } else {
       row.addClass('advancedNoteMover-no-value-field');
     }
 
@@ -424,15 +384,7 @@ export class RuleEditorModal extends BaseModal {
   ): void {
     select.empty();
 
-    let operators: Operator[];
-
-    if (trigger.criteriaType === 'properties' && trigger.propertyType) {
-      operators = getOperatorsForPropertyType(trigger.propertyType);
-    } else {
-      operators = getOperatorsForCriteriaType(trigger.criteriaType);
-    }
-
-    operators.forEach(op => {
+    getOperatorsForTrigger(trigger).forEach(op => {
       const option = select.createEl('option', {
         value: op,
         text: op,
@@ -454,11 +406,9 @@ export class RuleEditorModal extends BaseModal {
 
     this.dragDropManager = new DragDropManager(this.triggersContainer, {
       onReorder: (fromIndex: number, toIndex: number) => {
-        // Update data array
-        const [movedTrigger] = this.workingRule.triggers.splice(fromIndex, 1);
-        // Adjust toIndex if moving down (because we removed an element)
+        // DragDropManager reports the insertion index before removal
         const adjustedToIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
-        this.workingRule.triggers.splice(adjustedToIndex, 0, movedTrigger);
+        moveTrigger(this.workingRule.triggers, fromIndex, adjustedToIndex);
 
         // Manually move the DOM element
         const items = Array.from(
@@ -538,7 +488,9 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private async handleSave(): Promise<void> {
-    if (!this.validateRule()) {
+    const error = validateRule(this.workingRule);
+    if (error) {
+      NoticeManager.error(error);
       return;
     }
     await this.ruleOptions.onSave(this.workingRule);
@@ -592,56 +544,6 @@ export class RuleEditorModal extends BaseModal {
       return;
     }
     void this.confirmDiscardAndClose();
-  }
-
-  private validateRule(): boolean {
-    // Validate name
-    if (!this.workingRule.name || this.workingRule.name.trim() === '') {
-      NoticeManager.error('Rule name cannot be empty.');
-      return false;
-    }
-
-    // Validate destination
-    if (
-      !this.workingRule.destination ||
-      this.workingRule.destination.trim() === ''
-    ) {
-      NoticeManager.error('Destination folder cannot be empty.');
-      return false;
-    }
-
-    // Validate triggers
-    if (this.workingRule.triggers.length === 0) {
-      NoticeManager.error('At least one condition is required.');
-      return false;
-    }
-
-    // Validate each trigger
-    for (let i = 0; i < this.workingRule.triggers.length; i++) {
-      const trigger = this.workingRule.triggers[i];
-
-      // Only validate value if the operator requires one
-      if (operatorRequiresValue(trigger.operator)) {
-        if (!trigger.value || trigger.value.trim() === '') {
-          NoticeManager.error(`Condition ${i + 1}: Value cannot be empty.`);
-          return false;
-        }
-
-        // Validate regex if applicable
-        if (isRegexOperator(trigger.operator)) {
-          try {
-            new RegExp(trigger.value);
-          } catch (e) {
-            NoticeManager.error(
-              `Condition ${i + 1}: Invalid regex pattern: ${e instanceof Error ? e.message : 'Unknown error'}`
-            );
-            return false;
-          }
-        }
-      }
-    }
-
-    return true;
   }
 
   onClose(): void {
