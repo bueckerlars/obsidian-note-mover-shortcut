@@ -423,6 +423,8 @@ export class RuleManagerV2 {
     const context: DestinationTemplateContext = {
       tags: metadata.tags,
       properties: metadata.properties,
+      createdAt: metadata.createdAt,
+      updatedAt: metadata.updatedAt,
     };
 
     try {

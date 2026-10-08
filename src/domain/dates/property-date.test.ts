@@ -73,6 +73,28 @@ describe('property-date', () => {
     expect(parsed).not.toBeNull();
   });
 
+  it('parses Date objects using local calendar parts', () => {
+    const parsed = parsePropertyDateValue(new Date(2025, 5, 13, 15, 30));
+    expect(parsed).toEqual({ year: 2025, month: 6, day: 13 });
+  });
+
+  it('returns null for invalid Date objects', () => {
+    expect(parsePropertyDateValue(new Date(Number.NaN))).toBeNull();
+  });
+
+  it('builds file-prefix date placeholder suggestions', () => {
+    const fileSuggestions = buildDatePlaceholderSuggestions(
+      'created',
+      '',
+      '.',
+      'file'
+    );
+    expect(fileSuggestions).toContain('{{file.created.year}}');
+    expect(fileSuggestions).toContain('{{file.created.DD-MM-YYYY}}');
+    expect(fileSuggestions).toContain('{{file.created:YYYY.MM.DD}}');
+    expect(fileSuggestions).not.toContain('{{property.created.year}}');
+  });
+
   it('returns null for invalid values', () => {
     expect(parsePropertyDateValue('')).toBeNull();
     expect(parsePropertyDateValue('not-a-date')).toBeNull();
