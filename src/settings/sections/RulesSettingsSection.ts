@@ -156,7 +156,7 @@ export class RulesSettingsSection {
       });
     }
 
-    this.plugin.pluginData.settings.rulesV2.forEach((rule, index) => {
+    this.plugin.pluginData.settings.rulesV2.forEach(rule => {
       const s = new Setting(rulesContainer);
 
       // Remove default info element
@@ -194,6 +194,10 @@ export class RulesSettingsSection {
           .setIcon('trash')
           .setTooltip('Delete rule')
           .onClick(async () => {
+            const currentIndex = this.findRuleIndex(rule);
+            if (currentIndex < 0) {
+              return;
+            }
             const ruleLabel = toMarkdownInlineCode(rule.name || 'Unnamed Rule');
             const confirmed = await ConfirmModal.show(this.app, {
               title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
@@ -203,7 +207,7 @@ export class RulesSettingsSection {
               danger: true,
             });
             if (confirmed) {
-              this.plugin.pluginData.settings.rulesV2!.splice(index, 1);
+              this.plugin.pluginData.settings.rulesV2!.splice(currentIndex, 1);
               await this.persistRulesAndSyncManager();
             }
           })
@@ -218,11 +222,15 @@ export class RulesSettingsSection {
             if (!this.plugin.pluginData.settings.rulesV2) {
               this.plugin.pluginData.settings.rulesV2 = [];
             }
+            const currentIndex = this.findRuleIndex(rule);
+            if (currentIndex < 0) {
+              return;
+            }
             const clonedRule = JSON.parse(JSON.stringify(rule)) as RuleV2;
             const baseName = rule.name?.trim() || 'Unnamed Rule';
             clonedRule.name = `${baseName} (copy)`;
             this.plugin.pluginData.settings.rulesV2.splice(
-              index + 1,
+              currentIndex + 1,
               0,
               clonedRule
             );
@@ -236,7 +244,11 @@ export class RulesSettingsSection {
           .setIcon('pencil')
           .setTooltip('Edit rule')
           .onClick(() => {
-            this.openRuleEditorModal(index);
+            const currentIndex = this.findRuleIndex(rule);
+            if (currentIndex < 0) {
+              return;
+            }
+            this.openRuleEditorModal(currentIndex);
           })
       );
 
@@ -246,7 +258,12 @@ export class RulesSettingsSection {
           .setValue(rule.active)
           .setTooltip(rule.active ? 'Rule is active' : 'Rule is inactive')
           .onChange(async value => {
-            this.plugin.pluginData.settings.rulesV2![index].active = value;
+            const currentIndex = this.findRuleIndex(rule);
+            if (currentIndex < 0) {
+              return;
+            }
+            this.plugin.pluginData.settings.rulesV2![currentIndex].active =
+              value;
             await this.persistRulesAndSyncManager();
           })
       );
@@ -297,6 +314,11 @@ export class RulesSettingsSection {
     const rules = this.plugin.pluginData.settings.rulesV2;
     const [movedRule] = rules.splice(fromIndex, 1);
     rules.splice(toIndex, 0, movedRule);
+  }
+
+  /** Resolve current index by object identity so actions stay correct after reorder. */
+  private findRuleIndex(rule: RuleV2): number {
+    return this.plugin.pluginData.settings.rulesV2?.indexOf(rule) ?? -1;
   }
 
   /**
