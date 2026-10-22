@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.3.1)
+
+### Fixes
+
+- **Edit rule after reordering** ([#114](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/114)): After drag-reordering rules in settings, Edit / Toggle / Clone now target the rule shown in that row instead of the rule that previously occupied the slot. The settings UI rebuilds after reorder, and row actions resolve the rule by object identity.
+
 ## [1.3.0]
 
 ### Features
