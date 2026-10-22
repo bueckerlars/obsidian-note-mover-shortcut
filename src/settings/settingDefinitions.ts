@@ -247,10 +247,10 @@ export function buildSettingDefinitions(
       onDelete: index => {
         void deleteRule(host, index);
       },
-      items: rules.map((rule, index) => ({
+      items: rules.map(rule => ({
         name: rule.name || 'Unnamed rule',
         searchable: false,
-        render: (setting: Setting) => bindRuleRow(host, setting, rule, index),
+        render: (setting: Setting) => bindRuleRow(host, setting, rule),
       })),
     },
     {
@@ -522,11 +522,14 @@ export function buildSettingDefinitions(
   ];
 }
 
+function findRuleIndex(rules: RuleV2[] | undefined, rule: RuleV2): number {
+  return rules?.indexOf(rule) ?? -1;
+}
+
 function bindRuleRow(
   host: SettingDefinitionsHost,
   setting: Setting,
-  rule: RuleV2,
-  index: number
+  rule: RuleV2
 ): void {
   const plugin = host.plugin;
   setting.addToggle(toggle =>
@@ -534,10 +537,12 @@ function bindRuleRow(
       .setValue(rule.active)
       .setTooltip(rule.active ? 'Rule is active' : 'Rule is inactive')
       .onChange(async value => {
-        if (!plugin.pluginData.settings.rulesV2) {
+        const rules = plugin.pluginData.settings.rulesV2;
+        const currentIndex = findRuleIndex(rules, rule);
+        if (!rules || currentIndex < 0) {
           return;
         }
-        plugin.pluginData.settings.rulesV2[index].active = value;
+        rules[currentIndex].active = value;
         await plugin.save_settings();
         plugin.advancedNoteMover.updateRuleManager();
       })
@@ -547,7 +552,14 @@ function bindRuleRow(
       .setIcon('pencil')
       .setTooltip('Edit rule')
       .onClick(() => {
-        host.rulesSettings.openRuleEditorModal(index);
+        const currentIndex = findRuleIndex(
+          plugin.pluginData.settings.rulesV2,
+          rule
+        );
+        if (currentIndex < 0) {
+          return;
+        }
+        host.rulesSettings.openRuleEditorModal(currentIndex);
       })
   );
   setting.addExtraButton(btn =>
@@ -558,10 +570,21 @@ function bindRuleRow(
         if (!plugin.pluginData.settings.rulesV2) {
           plugin.pluginData.settings.rulesV2 = [];
         }
+        const currentIndex = findRuleIndex(
+          plugin.pluginData.settings.rulesV2,
+          rule
+        );
+        if (currentIndex < 0) {
+          return;
+        }
         const clonedRule = structuredClone(rule);
         const baseName = rule.name?.trim() || 'Unnamed Rule';
         clonedRule.name = `${baseName} (copy)`;
-        plugin.pluginData.settings.rulesV2.splice(index + 1, 0, clonedRule);
+        plugin.pluginData.settings.rulesV2.splice(
+          currentIndex + 1,
+          0,
+          clonedRule
+        );
         await host.rulesSettings.persistRulesAndSyncManager();
       })
   );
@@ -597,6 +620,7 @@ async function reorderFilters(
   filters.splice(toIndex, 0, movedFilter);
   await host.plugin.save_settings();
   host.plugin.advancedNoteMover.updateRuleManager();
+  host.update();
 }
 
 async function reorderRules(
@@ -612,6 +636,7 @@ async function reorderRules(
   rules.splice(toIndex, 0, movedRule);
   await host.plugin.save_settings();
   host.plugin.advancedNoteMover.updateRuleManager();
+  host.update();
 }
 
 async function deleteRule(
