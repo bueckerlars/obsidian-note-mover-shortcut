@@ -77,9 +77,13 @@ export class CommandHandler {
       name: strings().commands.previewBulk,
       callback: async () => {
         try {
-          const preview =
-            await this.plugin.advancedNoteMover.generateVaultMovePreview();
-          new PreviewModal(this.plugin.app, this.plugin, preview).open();
+          new PreviewModal(this.plugin.app, this.plugin, null, {
+            load: (signal, onProgress) =>
+              this.plugin.advancedNoteMover.generateVaultMovePreview(
+                signal,
+                onProgress
+              ),
+          }).open();
         } catch (error) {
           handleError(
             error,

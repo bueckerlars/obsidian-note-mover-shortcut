@@ -24,29 +24,65 @@ import { deriveConflictInteractive } from '../utils/conflict-resolution-settings
 import { previewRowLabel } from '../domain/preview/previewReasons';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 
+type PreviewLoader = (
+  signal: AbortSignal,
+  onProgress: (completed: number, total: number) => void
+) => Promise<MovePreview>;
+
+const EMPTY_PREVIEW: MovePreview = {
+  successfulMoves: [],
+  analyzed: [],
+  totalFiles: 0,
+  settings: { isFilterWhitelist: false },
+};
+
 export class PreviewModal extends BaseModal {
   private movePreview: MovePreview;
   private actionFooterEl: HTMLElement | null = null;
   private moveButton: HTMLButtonElement | null = null;
+  private readingEl: HTMLElement | null = null;
+  private operationAbort: AbortController | null = null;
+  private previewReady: boolean;
+  private readonly loadPreview: PreviewLoader | undefined;
   private readonly selectedPaths = new Set<string>();
 
   constructor(
     app: App,
     private plugin: AdvancedNoteMoverPlugin,
-    movePreview: MovePreview,
-    options: BaseModalOptions = {}
+    movePreview: MovePreview | null,
+    options: BaseModalOptions & { load?: PreviewLoader } = {}
   ) {
+    const { load, ...modalOptions } = options;
     super(app, {
       title: strings().modals.previewTitle,
       titleIcon: 'search',
       cssClass: 'advancedNoteMover-preview-modal',
       size: 'large',
-      ...options,
+      ...modalOptions,
     });
-    this.movePreview = movePreview;
-    for (const entry of movePreview.successfulMoves) {
+    this.loadPreview = load;
+    this.previewReady = movePreview != null;
+    this.movePreview = movePreview ?? EMPTY_PREVIEW;
+    this.selectSuccessful(this.movePreview);
+  }
+
+  private selectSuccessful(preview: MovePreview): void {
+    this.selectedPaths.clear();
+    for (const entry of preview.successfulMoves) {
       this.selectedPaths.add(entry.currentPath);
     }
+  }
+
+  private beginOperation(): AbortController {
+    this.operationAbort?.abort();
+    const controller = new AbortController();
+    this.operationAbort = controller;
+    return controller;
+  }
+
+  onClose(): void {
+    this.operationAbort?.abort();
+    super.onClose();
   }
 
   private selectedEntries(): PreviewEntry[] {
@@ -57,6 +93,38 @@ export class PreviewModal extends BaseModal {
 
   protected createContent(): void {
     const { contentEl } = this;
+    if (this.loadPreview && !this.previewReady) {
+      this.showReadingProgress(contentEl, 0, 0);
+      const signal = this.beginOperation().signal;
+      void this.loadPreview(signal, (done, total) => {
+        if (signal.aborted) {
+          return;
+        }
+        this.showReadingProgress(contentEl, done, total);
+      })
+        .then(preview => {
+          if (signal.aborted) {
+            return;
+          }
+          this.movePreview = preview;
+          this.previewReady = true;
+          this.selectSuccessful(preview);
+          this.readingEl = null;
+          this.contentEl.empty();
+          this.createContent();
+        })
+        .catch((error: unknown) => {
+          if (signal.aborted) {
+            return;
+          }
+          const message =
+            error instanceof Error ? error.message : String(error);
+          NoticeManager.error(
+            fill(strings().notices.errorGeneratingPreview, { message })
+          );
+        });
+      return;
+    }
     const stats = this.movePreview;
     contentEl.createEl('p', {
       text: fill(strings().modals.previewSubtitle, {
@@ -81,6 +149,25 @@ export class PreviewModal extends BaseModal {
     }
 
     this.createActionButtons(contentEl);
+  }
+
+  private showReadingProgress(
+    container: HTMLElement,
+    done: number,
+    total: number
+  ): void {
+    const text =
+      total === 0
+        ? strings().modals.previewReadingStart
+        : fill(strings().modals.previewReading, { done, total });
+    if (!this.readingEl || !this.readingEl.isConnected) {
+      this.readingEl = container.createDiv({
+        cls: 'advancedNoteMover-preview-bulk-status',
+        text,
+      });
+      return;
+    }
+    this.readingEl.setText(text);
   }
 
   private renderEmptyState(container: HTMLElement, message: string): void {
@@ -310,21 +397,26 @@ export class PreviewModal extends BaseModal {
     let missingFolderSkippedCount = 0;
     let conflictSkippedCount = 0;
     const moveErrors: string[] = [];
-    const abortCtl = new AbortController();
+    const controller = this.beginOperation();
+    const signal = controller.signal;
+    let status: HTMLElement | null = null;
 
     if (this.actionFooterEl) {
       this.actionFooterEl.empty();
-      const status = this.actionFooterEl.createDiv({
+      const created = this.actionFooterEl.createDiv({
         cls: 'advancedNoteMover-preview-bulk-status',
-        text: `Moving files… (${successfulEntries.length} planned)`,
+        text: fill(strings().modals.previewMoving, {
+          count: successfulEntries.length,
+        }),
       });
+      status = created;
       const row = this.actionFooterEl.createDiv({
         cls: 'advancedNoteMover-preview-bulk-actions',
       });
       new Setting(row).addButton(btn =>
         btn.setButtonText(strings().modals.previewStop).onClick(() => {
-          abortCtl.abort();
-          status.setText('Stopping after current file…');
+          controller.abort();
+          created.setText(strings().modals.previewStopping);
         })
       );
     }
@@ -334,9 +426,15 @@ export class PreviewModal extends BaseModal {
     try {
       for (let i = 0; i < successfulEntries.length; i++) {
         const entry = successfulEntries[i];
-        if (abortCtl.signal.aborted) {
+        if (signal.aborted) {
           break;
         }
+        status?.setText(
+          fill(strings().modals.previewMoveProgress, {
+            done: i + 1,
+            total: successfulEntries.length,
+          })
+        );
         try {
           const file = this.app.vault.getAbstractFileByPath(entry.currentPath);
           if (!(file instanceof TFile) || !entry.targetPath) continue;
@@ -405,6 +503,7 @@ export class PreviewModal extends BaseModal {
       this.plugin.historyManager.endBulkOperation();
     }
 
+    const stopped = signal.aborted;
     this.close();
 
     const skippedDetail = formatMoveSkippedDetail({
@@ -413,7 +512,7 @@ export class PreviewModal extends BaseModal {
     });
     const totalSkipped = missingFolderSkippedCount + conflictSkippedCount;
 
-    if (abortCtl.signal.aborted) {
+    if (stopped) {
       NoticeManager.info(
         `Bulk move stopped. ${pluralize(movedCount, 'file')} moved, ${pluralize(errorCount, 'error')}.${skippedDetail}`
       );

@@ -590,16 +590,20 @@ export class AdvancedNoteMover {
   async openVaultReEvaluationPreview(): Promise<void> {
     this.updateRuleManager();
     this.plugin.ruleCache.invalidateAll();
-    const preview = await this.generateVaultMovePreview();
-    new PreviewModal(this.plugin.app, this.plugin, preview, {
+    new PreviewModal(this.plugin.app, this.plugin, null, {
       title: strings().modals.previewReEvaluateTitle,
+      load: (signal, onProgress) =>
+        this.generateVaultMovePreview(signal, onProgress),
     }).open();
   }
 
   /**
    * Generates a preview of moves for all files in the vault
    */
-  async generateVaultMovePreview(): Promise<MovePreview> {
+  async generateVaultMovePreview(
+    signal?: AbortSignal,
+    onProgress?: (completed: number, total: number) => void
+  ): Promise<MovePreview> {
     return this.plugin.performanceTrace.recordAsync(
       'AdvancedNoteMover.generateVaultMovePreview',
       async () => {
@@ -607,7 +611,10 @@ export class AdvancedNoteMover {
 
         const files = this.plugin.vaultIndexCache.getMovableFilesCached(app);
 
-        return await this.ruleManagerV2.generateMovePreview(files, true, true);
+        return await this.ruleManagerV2.generateMovePreview(files, true, true, {
+          signal,
+          onProgress,
+        });
       },
       {}
     );
