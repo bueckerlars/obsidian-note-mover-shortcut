@@ -2,6 +2,7 @@ import { Setting, App, TFile } from 'obsidian';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
+import { pluralize } from '../utils/pluralize';
 import { MobileUtils } from '../utils/MobileUtils';
 import {
   combinePath,
@@ -45,7 +46,7 @@ export class PreviewModal extends BaseModal {
 
     // Subtitle with statistics
     const stats = this.movePreview;
-    const subtitle = `${stats.totalFiles} files analyzed • ${stats.successfulMoves.length} will be moved`;
+    const subtitle = `${pluralize(stats.totalFiles, 'file')} analyzed • ${stats.successfulMoves.length} will be moved`;
     contentEl.createEl('p', {
       text: subtitle,
       cls: 'advancedNoteMover-modal-subtitle',
@@ -198,7 +199,7 @@ export class PreviewModal extends BaseModal {
     if (this.movePreview.successfulMoves.length > 0) {
       this.createButton(
         buttonContainer,
-        `Move ${this.movePreview.successfulMoves.length} files`,
+        `Move ${pluralize(this.movePreview.successfulMoves.length, 'file')}`,
         () => {
           void this.executeMoves();
         },
@@ -323,15 +324,19 @@ export class PreviewModal extends BaseModal {
 
     if (abortCtl.signal.aborted) {
       NoticeManager.info(
-        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).${skippedDetail}`
+        `Bulk move stopped. ${pluralize(movedCount, 'file')} moved, ${pluralize(errorCount, 'error')}.${skippedDetail}`
       );
     } else if (errorCount === 0 && totalSkipped === 0) {
-      NoticeManager.success(`Successfully moved ${movedCount} files!`);
+      NoticeManager.success(
+        `Successfully moved ${pluralize(movedCount, 'file')}!`
+      );
     } else if (errorCount === 0) {
-      NoticeManager.info(`Moved ${movedCount} files.${skippedDetail}`);
+      NoticeManager.info(
+        `Moved ${pluralize(movedCount, 'file')}.${skippedDetail}`
+      );
     } else {
       NoticeManager.warning(
-        `Moved ${movedCount} files with ${errorCount} errors.${skippedDetail} Check console for details.`
+        `Moved ${pluralize(movedCount, 'file')} with ${pluralize(errorCount, 'error')}.${skippedDetail} Check console for details.`
       );
     }
   }

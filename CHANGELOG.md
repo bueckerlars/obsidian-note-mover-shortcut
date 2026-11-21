@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- **Counts**: Notices and buttons say "1 file" and "2 files".
 - **Periodic interval**: Invalid intervals are ignored. A valid change restarts the timer once.
 - **Modal size**: Dialog widths come from the existing size classes instead of inline styles.
 - **Conflict cache title**: The skipped-conflicts modal keeps its title after Dismiss, Remove stale, and Clear all.
