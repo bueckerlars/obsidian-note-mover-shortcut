@@ -16,6 +16,7 @@ import {
 import type { FilterSettingsSection } from './sections/FilterSettingsSection';
 import type { ImportExportSettingsSection } from './sections/ImportExportSettingsSection';
 import type { RulesSettingsSection } from './sections/RulesSettingsSection';
+import { parsePeriodicIntervalMinutes } from './intervalInput';
 
 export interface SettingDefinitionsHost {
   plugin: AdvancedNoteMoverPlugin;
@@ -125,8 +126,8 @@ export function buildSettingDefinitions(
             min: 1,
             placeholder: SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.INTERVAL,
             validate: (value: number) =>
-              !Number.isFinite(value) || value < 1
-                ? 'Interval must be greater than 0'
+              parsePeriodicIntervalMinutes(String(value)) === null
+                ? 'Enter a whole number of minutes from 1 to 1440'
                 : undefined,
           },
         },
