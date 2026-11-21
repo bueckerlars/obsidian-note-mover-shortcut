@@ -46,11 +46,4 @@ export default defineConfig([
       ],
     },
   },
-  {
-    files: ['src/modals/UpdateModal.ts'],
-    rules: {
-      // Changelog section headings use intentional title-style casing.
-      'obsidianmd/ui/sentence-case': 'off',
-    },
-  },
 ]);

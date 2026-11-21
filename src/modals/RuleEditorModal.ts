@@ -64,7 +64,9 @@ export class RuleEditorModal extends BaseModal {
   constructor(app: App, options: RuleEditorModalOptions) {
     const isMobileLayout = MobileUtils.isMobile();
     super(app, {
-      title: isMobileLayout ? 'Rule editor' : 'Rule Editor',
+      title: isMobileLayout
+        ? strings().modals.ruleEditorTitleMobile
+        : strings().modals.ruleEditorTitleDesktop,
       useNativeTitle: isMobileLayout,
       size: 'large',
       cssClass: isMobileLayout
