@@ -1241,468 +1241,454 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
   font-size: 16px;
 }
 
-/* Mobile breakpoint: tablets and phones in portrait */
-@media (max-width: 768px) {
-  /* Modal Size Adjustments */
-  .modal.advancedNoteMover-modal-size-small,
-  .modal.advancedNoteMover-modal-size-medium,
-  .modal.advancedNoteMover-modal-size-large,
-  .modal-container.advancedNoteMover-modal-size-small,
-  .modal-container.advancedNoteMover-modal-size-medium,
-  .modal-container.advancedNoteMover-modal-size-large {
-    width: 100vw;
-    max-width: 95vw;
-    min-width: unset;
-  }
-
-  /* Modal Title Adjustments */
-  .advancedNoteMover-modal-title-container {
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .advancedNoteMover-modal-title {
-    font-size: 1.4em;
-  }
-
-  .advancedNoteMover-modal-title-icon {
-    font-size: 1.6em;
-  }
-
-  .advancedNoteMover-modal-subtitle {
-    font-size: 1em;
-    margin-bottom: 16px;
-  }
-
-  /* Button Container - Stack vertically on mobile */
-  .advancedNoteMover-modal-button-container {
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-  }
-
-  .advancedNoteMover-modal-button-container > .mod-button,
-  .advancedNoteMover-modal-button-container .setting-item-control button {
-    width: 100%;
-    min-height: 44px;
-    font-size: 1em;
-  }
-
-  /* Modal Section Adjustments */
-  .advancedNoteMover-modal-section {
-    margin-bottom: 20px;
-  }
-
-  .advancedNoteMover-modal-section-header h3 {
-    font-size: 1.1em;
-  }
-
-  /* History Modal Adjustments */
-  .advancedNoteMover-history-entry {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 12px 16px;
-    gap: 12px;
-  }
-
-  .advancedNoteMover-history-entry-content {
-    width: 100%;
-  }
-
-  .advancedNoteMover-history-entry-info {
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  .advancedNoteMover-history-entry-paths {
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  /* Plugin setting controls. Footer buttons keep their own rule below. */
-  .advancedNoteMover-time-filter-container .setting-item-control,
-  .advancedNoteMover-settings-root .setting-item-control,
-  .advancedNoteMover-rule-editor-modal .setting-item-control,
-  .advancedNoteMover-rule-editor-mobile-content .setting-item-control,
-  .advancedNoteMover-conflict-modal .setting-item-control,
-  .advancedNoteMover-conflict-skip-cache-modal .setting-item-control,
-  .advancedNoteMover-confirm-modal .setting-item-control,
-  .note-mover-history-modal .setting-item-control,
-  .note-mover-preview-modal .setting-item-control,
-  .note-mover-update-modal .setting-item-control {
-    margin-left: 0;
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .advancedNoteMover-time-filter-container .setting-item-control button,
-  .advancedNoteMover-settings-root .setting-item-control button,
-  .advancedNoteMover-rule-editor-modal .setting-item-control button,
-  .advancedNoteMover-rule-editor-mobile-content .setting-item-control button,
-  .advancedNoteMover-conflict-modal .setting-item-control button,
-  .advancedNoteMover-conflict-skip-cache-modal .setting-item-control button,
-  .advancedNoteMover-confirm-modal .setting-item-control button,
-  .note-mover-history-modal .setting-item-control button,
-  .note-mover-preview-modal .setting-item-control button,
-  .note-mover-update-modal .setting-item-control button {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
-  }
-
-  .advancedNoteMover-modal-button-container .setting-item-control,
-  .note-mover-history-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control,
-  .note-mover-preview-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control,
-  .note-mover-update-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control {
-    margin-left: 0;
-    width: auto;
-    justify-content: center;
-  }
-
-  .advancedNoteMover-modal-button-container .setting-item-control button,
-  .note-mover-history-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control
-    button,
-  .note-mover-preview-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control
-    button,
-  .note-mover-update-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control
-    button {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
-  }
-
-  /* Bulk Operations Mobile Adjustments */
-  .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
-    padding: 12px 16px;
-  }
-
-  .advancedNoteMover-bulk-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .advancedNoteMover-bulk-operation-info {
-    width: 100%;
-    white-space: normal;
-    word-break: break-word;
-    overflow: visible;
-  }
-
-  /* Rule Editor Modal - Stack footer buttons */
-  .advancedNoteMover-rule-editor-footer {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .advancedNoteMover-rule-editor-footer-left,
-  .advancedNoteMover-rule-editor-footer-right {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .advancedNoteMover-rule-editor-footer-left button,
-  .advancedNoteMover-rule-editor-footer-right button {
-    min-height: 44px;
-    width: 100%;
-  }
-
-  /* Rule Aggregation Buttons - Stack on mobile */
-  .advancedNoteMover-rule-aggregation-buttons {
-    flex-wrap: wrap;
-  }
-
-  .advancedNoteMover-rule-aggregation-button {
-    flex: 1 1 30%;
-    min-width: 80px;
-    min-height: 44px;
-    padding: 10px 12px;
-    font-size: 0.95em;
-  }
-
-  /* Trigger Row - Stack elements vertically */
-  .advancedNoteMover-rule-trigger-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 12px;
-  }
-
-  .advancedNoteMover-rule-trigger-row .advancedNoteMover-drag-handle-container {
-    order: -1;
-    align-self: flex-end;
-    margin-bottom: 4px;
-  }
-
-  .advancedNoteMover-rule-trigger-delete-btn {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
-  }
-
-  .advancedNoteMover-rule-criteria-type,
-  .advancedNoteMover-rule-trigger-value {
-    width: 100%;
-    min-width: unset;
-    min-height: 44px;
-    padding: 10px;
-  }
-
-  .advancedNoteMover-rule-property-name {
-    width: 100%;
-    min-height: 44px;
-    padding: 10px;
-  }
-
-  /* Preview Modal Paths - Allow wrapping */
-  .advancedNoteMover-preview-item-paths {
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 0.8em;
-  }
-
-  .advancedNoteMover-preview-item-main {
-    margin-bottom: 12px;
-  }
-
-  .advancedNoteMover-preview-item-details {
-    gap: 6px;
-    font-size: 0.85em;
-  }
-
-  .advancedNoteMover-rule-label,
-  .advancedNoteMover-tags-label {
-    min-width: unset;
-    width: auto;
-  }
-
-  /* Preview Item - Adjust layout */
-  .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success {
-    padding: 12px;
-  }
-
-  /* Update Modal - Keep footer horizontal on mobile */
-  .note-mover-update-modal .advancedNoteMover-modal-footer {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-  }
-
-  .note-mover-update-modal .advancedNoteMover-update-modal-links {
-    flex: 1;
-  }
-
-  .note-mover-update-modal .advancedNoteMover-modal-button-container {
-    flex-direction: row;
-    width: auto;
-    flex-shrink: 0;
-  }
-
-  .note-mover-update-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control {
-    margin: 0;
-  }
-
-  .note-mover-update-modal .advancedNoteMover-modal-button-container button {
-    width: auto;
-    min-width: 100px;
-    padding: 8px 16px;
-  }
-
-  /* Time Filter Container Mobile */
-  .advancedNoteMover-time-filter-container .setting-item-control {
-    width: 100%;
-    margin-right: 0;
-    margin-top: 8px;
-  }
-
-  .advancedNoteMover-time-filter-container .setting-item-name {
-    width: 100%;
-  }
-
-  /* Setting items with drag handles - Adjust for mobile */
-  .setting-item.advancedNoteMover-with-drag-handle {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .setting-item.advancedNoteMover-with-drag-handle .setting-item-info {
-    width: 100%;
-  }
-
-  .setting-item.advancedNoteMover-with-drag-handle .setting-item-control {
-    width: 100%;
-    justify-content: flex-end;
-    margin-top: 8px;
-  }
-
-  .advancedNoteMover-drag-handle {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
-    border-radius: 6px;
-  }
-
-  /* Rule V2 Mobile Layout */
-  .advancedNoteMover-rule-v2-custom-container {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 12px 12px;
-  }
-
-  .advancedNoteMover-rule-v2-name {
-    width: 100%;
-    white-space: normal;
-    word-break: break-word;
-    font-size: 1em;
-  }
-
-  .advancedNoteMover-rule-v2-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .advancedNoteMover-rule-v2-actions .setting-item-control {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .advancedNoteMover-rule-v2-actions button {
-    min-width: 44px;
-    min-height: 44px;
-  }
-
-  /* Empty state adjustments */
-  .advancedNoteMover-modal-empty {
-    padding: 32px 16px;
-    font-size: 1em;
-  }
-
-  /* Confirm modal button adjustments */
-  .advancedNoteMover-confirm-modal
-    .advancedNoteMover-modal-button-container
-    button {
-    min-width: 100%;
-    min-height: 44px;
-  }
+/* Phone and tablet layout. Follows body.is-mobile, not the window width. */
+/* Modal Title Adjustments */
+body.is-mobile .advancedNoteMover-modal-title-container {
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
-/* Small mobile breakpoint: phones */
-@media (max-width: 480px) {
-  /* Modal Title - Smaller font for very small screens */
-  .advancedNoteMover-modal-title {
-    font-size: 1.2em;
-  }
-
-  .advancedNoteMover-modal-title-icon {
-    font-size: 1.4em;
-  }
-
-  .advancedNoteMover-modal-subtitle {
-    font-size: 0.9em;
-  }
-
-  /* History entries - More compact padding */
-  .advancedNoteMover-history-entry {
-    padding: 10px 12px;
-    gap: 10px;
-  }
-
-  .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
-    padding: 10px 12px;
-  }
-
-  /* Rule trigger rows - Even more compact */
-  .advancedNoteMover-rule-trigger-row {
-    padding: 10px;
-    gap: 10px;
-  }
-
-  /* Smaller inputs but still touch-friendly */
-  .advancedNoteMover-rule-criteria-type,
-  .advancedNoteMover-rule-trigger-value,
-  .advancedNoteMover-rule-property-name {
-    font-size: 0.95em;
-    padding: 8px;
-  }
-
-  /* Aggregation buttons - Full width on very small screens */
-  .advancedNoteMover-rule-aggregation-button {
-    flex: 1 1 100%;
-    min-width: unset;
-  }
-
-  /* Footer buttons - Full width */
-  .advancedNoteMover-rule-editor-footer-left button,
-  .advancedNoteMover-rule-editor-footer-right button {
-    font-size: 0.95em;
-  }
-
-  /* Preview paths - Smaller font to fit more */
-  .advancedNoteMover-preview-item-paths {
-    font-size: 0.75em;
-  }
-
-  /* Modal list items - More compact */
-  .advancedNoteMover-modal-list-item {
-    padding: 12px;
-  }
-
-  /* Section headers - Smaller */
-  .advancedNoteMover-modal-section-header h3 {
-    font-size: 1em;
-  }
-
-  .advancedNoteMover-rule-conditions-title {
-    font-size: 1em;
-  }
-
-  /* Changelog - Smaller font */
-  .advancedNoteMover-changelog-version-title {
-    font-size: 1.1em;
-  }
-
-  .advancedNoteMover-changelog-section-title {
-    font-size: 0.95em;
-  }
-
-  .advancedNoteMover-changelog-list {
-    font-size: 0.9em;
-  }
-
-  /* Confirm modal message - Smaller font */
-  .advancedNoteMover-confirm-modal-message {
-    font-size: 0.95em;
-  }
-
-  /* Smaller button fonts inside plugin roots */
-  .advancedNoteMover-settings-root button,
-  .advancedNoteMover-rule-editor-modal button,
-  .advancedNoteMover-rule-editor-mobile-content button,
-  .advancedNoteMover-conflict-modal button,
-  .advancedNoteMover-conflict-skip-cache-modal button,
-  .note-mover-history-modal button,
-  .note-mover-preview-modal button,
-  .note-mover-update-modal button,
-  .advancedNoteMover-confirm-modal button {
-    font-size: 0.95em;
-  }
+body.is-mobile .advancedNoteMover-modal-title {
+  font-size: 1.4em;
 }
+
+body.is-mobile .advancedNoteMover-modal-title-icon {
+  font-size: 1.6em;
+}
+
+body.is-mobile .advancedNoteMover-modal-subtitle {
+  font-size: 1em;
+  margin-bottom: 16px;
+}
+
+/* Button Container - Stack vertically on mobile */
+body.is-mobile .advancedNoteMover-modal-button-container {
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+body.is-mobile .advancedNoteMover-modal-button-container > .mod-button,
+body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control button {
+  width: 100%;
+  min-height: 44px;
+  font-size: 1em;
+}
+
+/* Modal Section Adjustments */
+body.is-mobile .advancedNoteMover-modal-section {
+  margin-bottom: 20px;
+}
+
+body.is-mobile .advancedNoteMover-modal-section-header h3 {
+  font-size: 1.1em;
+}
+
+/* History Modal Adjustments */
+body.is-mobile .advancedNoteMover-history-entry {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+body.is-mobile .advancedNoteMover-history-entry-content {
+  width: 100%;
+}
+
+body.is-mobile .advancedNoteMover-history-entry-info {
+  white-space: normal;
+  word-break: break-word;
+}
+
+body.is-mobile .advancedNoteMover-history-entry-paths {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Plugin setting controls. Footer buttons keep their own rule below. */
+body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control,
+body.is-mobile .advancedNoteMover-settings-root .setting-item-control,
+body.is-mobile .advancedNoteMover-rule-editor-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-rule-editor-mobile-content .setting-item-control,
+body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-conflict-skip-cache-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control,
+body.is-mobile .note-mover-history-modal .setting-item-control,
+body.is-mobile .note-mover-preview-modal .setting-item-control,
+body.is-mobile .note-mover-update-modal .setting-item-control {
+  margin-left: 0;
+  width: 100%;
+  justify-content: space-between;
+}
+
+body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control button,
+body.is-mobile .advancedNoteMover-settings-root .setting-item-control button,
+body.is-mobile .advancedNoteMover-rule-editor-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-rule-editor-mobile-content .setting-item-control button,
+body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-conflict-skip-cache-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control button,
+body.is-mobile .note-mover-history-modal .setting-item-control button,
+body.is-mobile .note-mover-preview-modal .setting-item-control button,
+body.is-mobile .note-mover-update-modal .setting-item-control button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+}
+
+body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control,
+body.is-mobile .note-mover-history-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control,
+body.is-mobile .note-mover-preview-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control,
+body.is-mobile .note-mover-update-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control {
+  margin-left: 0;
+  width: auto;
+  justify-content: center;
+}
+
+body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control button,
+body.is-mobile .note-mover-history-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control
+  button,
+body.is-mobile .note-mover-preview-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control
+  button,
+body.is-mobile .note-mover-update-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control
+  button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+}
+
+/* Bulk Operations Mobile Adjustments */
+body.is-mobile .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
+  padding: 12px 16px;
+}
+
+body.is-mobile .advancedNoteMover-bulk-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+body.is-mobile .advancedNoteMover-bulk-operation-info {
+  width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+}
+
+/* Rule Editor Modal - Stack footer buttons */
+body.is-mobile .advancedNoteMover-rule-editor-footer {
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.is-mobile .advancedNoteMover-rule-editor-footer-left,
+body.is-mobile .advancedNoteMover-rule-editor-footer-right {
+  width: 100%;
+  justify-content: center;
+}
+
+body.is-mobile .advancedNoteMover-rule-editor-footer-left button,
+body.is-mobile .advancedNoteMover-rule-editor-footer-right button {
+  min-height: 44px;
+  width: 100%;
+}
+
+/* Rule Aggregation Buttons - Stack on mobile */
+body.is-mobile .advancedNoteMover-rule-aggregation-buttons {
+  flex-wrap: wrap;
+}
+
+body.is-mobile .advancedNoteMover-rule-aggregation-button {
+  flex: 1 1 30%;
+  min-width: 80px;
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 0.95em;
+}
+
+/* Trigger Row - Stack elements vertically */
+body.is-mobile .advancedNoteMover-rule-trigger-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px;
+}
+
+body.is-mobile .advancedNoteMover-rule-trigger-row .advancedNoteMover-drag-handle-container {
+  order: -1;
+  align-self: flex-end;
+  margin-bottom: 4px;
+}
+
+body.is-mobile .advancedNoteMover-rule-trigger-delete-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+}
+
+body.is-mobile .advancedNoteMover-rule-criteria-type,
+body.is-mobile .advancedNoteMover-rule-trigger-value {
+  width: 100%;
+  min-width: unset;
+  min-height: 44px;
+  padding: 10px;
+}
+
+body.is-mobile .advancedNoteMover-rule-property-name {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+}
+
+/* Preview Modal Paths - Allow wrapping */
+body.is-mobile .advancedNoteMover-preview-item-paths {
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.8em;
+}
+
+body.is-mobile .advancedNoteMover-preview-item-main {
+  margin-bottom: 12px;
+}
+
+body.is-mobile .advancedNoteMover-preview-item-details {
+  gap: 6px;
+  font-size: 0.85em;
+}
+
+body.is-mobile .advancedNoteMover-rule-label,
+body.is-mobile .advancedNoteMover-tags-label {
+  min-width: unset;
+  width: auto;
+}
+
+/* Preview Item - Adjust layout */
+body.is-mobile .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success {
+  padding: 12px;
+}
+
+/* Update Modal - Keep footer horizontal on mobile */
+body.is-mobile .note-mover-update-modal .advancedNoteMover-modal-footer {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+}
+
+body.is-mobile .note-mover-update-modal .advancedNoteMover-update-modal-links {
+  flex: 1;
+}
+
+body.is-mobile .note-mover-update-modal .advancedNoteMover-modal-button-container {
+  flex-direction: row;
+  width: auto;
+  flex-shrink: 0;
+}
+
+body.is-mobile .note-mover-update-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control {
+  margin: 0;
+}
+
+body.is-mobile .note-mover-update-modal .advancedNoteMover-modal-button-container button {
+  width: auto;
+  min-width: 100px;
+  padding: 8px 16px;
+}
+
+/* Time Filter Container Mobile */
+body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control {
+  width: 100%;
+  margin-right: 0;
+  margin-top: 8px;
+}
+
+body.is-mobile .advancedNoteMover-time-filter-container .setting-item-name {
+  width: 100%;
+}
+
+/* Setting items with drag handles - Adjust for mobile */
+body.is-mobile .setting-item.advancedNoteMover-with-drag-handle {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+body.is-mobile .setting-item.advancedNoteMover-with-drag-handle .setting-item-info {
+  width: 100%;
+}
+
+body.is-mobile .setting-item.advancedNoteMover-with-drag-handle .setting-item-control {
+  width: 100%;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+body.is-mobile .advancedNoteMover-drag-handle {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+/* Rule V2 Mobile Layout */
+body.is-mobile .advancedNoteMover-rule-v2-custom-container {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px 12px;
+}
+
+body.is-mobile .advancedNoteMover-rule-v2-name {
+  width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  font-size: 1em;
+}
+
+body.is-mobile .advancedNoteMover-rule-v2-actions {
+  width: 100%;
+  justify-content: space-between;
+}
+
+body.is-mobile .advancedNoteMover-rule-v2-actions .setting-item-control {
+  width: 100%;
+  justify-content: space-between;
+}
+
+body.is-mobile .advancedNoteMover-rule-v2-actions button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Empty state adjustments */
+body.is-mobile .advancedNoteMover-modal-empty {
+  padding: 32px 16px;
+  font-size: 1em;
+}
+
+/* Confirm modal button adjustments */
+body.is-mobile .advancedNoteMover-confirm-modal
+  .advancedNoteMover-modal-button-container
+  button {
+  min-width: 100%;
+  min-height: 44px;
+}
+
+
+/* Phone layout. Follows body.is-phone, not a 480px window. */
+/* Modal Title - Smaller font for very small screens */
+body.is-phone .advancedNoteMover-modal-title {
+  font-size: 1.2em;
+}
+
+body.is-phone .advancedNoteMover-modal-title-icon {
+  font-size: 1.4em;
+}
+
+body.is-phone .advancedNoteMover-modal-subtitle {
+  font-size: 0.9em;
+}
+
+/* History entries - More compact padding */
+body.is-phone .advancedNoteMover-history-entry {
+  padding: 10px 12px;
+  gap: 10px;
+}
+
+body.is-phone .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
+  padding: 10px 12px;
+}
+
+/* Rule trigger rows - Even more compact */
+body.is-phone .advancedNoteMover-rule-trigger-row {
+  padding: 10px;
+  gap: 10px;
+}
+
+/* Smaller inputs but still touch-friendly */
+body.is-phone .advancedNoteMover-rule-criteria-type,
+body.is-phone .advancedNoteMover-rule-trigger-value,
+body.is-phone .advancedNoteMover-rule-property-name {
+  font-size: 0.95em;
+  padding: 8px;
+}
+
+/* Aggregation buttons - Full width on very small screens */
+body.is-phone .advancedNoteMover-rule-aggregation-button {
+  flex: 1 1 100%;
+  min-width: unset;
+}
+
+/* Footer buttons - Full width */
+body.is-phone .advancedNoteMover-rule-editor-footer-left button,
+body.is-phone .advancedNoteMover-rule-editor-footer-right button {
+  font-size: 0.95em;
+}
+
+/* Preview paths - Smaller font to fit more */
+body.is-phone .advancedNoteMover-preview-item-paths {
+  font-size: 0.75em;
+}
+
+/* Modal list items - More compact */
+body.is-phone .advancedNoteMover-modal-list-item {
+  padding: 12px;
+}
+
+/* Section headers - Smaller */
+body.is-phone .advancedNoteMover-modal-section-header h3 {
+  font-size: 1em;
+}
+
+body.is-phone .advancedNoteMover-rule-conditions-title {
+  font-size: 1em;
+}
+
+/* Changelog - Smaller font */
+body.is-phone .advancedNoteMover-changelog-version-title {
+  font-size: 1.1em;
+}
+
+body.is-phone .advancedNoteMover-changelog-section-title {
+  font-size: 0.95em;
+}
+
+body.is-phone .advancedNoteMover-changelog-list {
+  font-size: 0.9em;
+}
+
+/* Confirm modal message - Smaller font */
+body.is-phone .advancedNoteMover-confirm-modal-message {
+  font-size: 0.95em;
+}
+
+/* Smaller button fonts inside plugin roots */
+body.is-phone .advancedNoteMover-settings-root button,
+body.is-phone .advancedNoteMover-rule-editor-modal button,
+body.is-phone .advancedNoteMover-rule-editor-mobile-content button,
+body.is-phone .advancedNoteMover-conflict-modal button,
+body.is-phone .advancedNoteMover-conflict-skip-cache-modal button,
+body.is-phone .note-mover-history-modal button,
+body.is-phone .note-mover-preview-modal button,
+body.is-phone .note-mover-update-modal button,
+body.is-phone .advancedNoteMover-confirm-modal button {
+  font-size: 0.95em;
+}
+
 
 /* ===== MOBILE MODAL STYLES ===== */
 
@@ -1738,11 +1724,11 @@ body.is-mobile .modal-content.note-mover-history-modal {
   padding: 16px 0;
 }
 
-.is-mobile .advancedNoteMover-time-filter-container-mobile {
+body.is-mobile .advancedNoteMover-time-filter-container-mobile {
   margin-bottom: 16px;
 }
 
-.is-mobile
+body.is-mobile
   .advancedNoteMover-time-filter-container-mobile
   .setting-item-control
   select {
@@ -1751,7 +1737,7 @@ body.is-mobile .modal-content.note-mover-history-modal {
   width: 100%;
 }
 
-.is-mobile .advancedNoteMover-history-entry-mobile {
+body.is-mobile .advancedNoteMover-history-entry-mobile {
   display: flex;
   flex-direction: column;
   padding: 12px;
@@ -1762,12 +1748,12 @@ body.is-mobile .modal-content.note-mover-history-modal {
   gap: 12px;
 }
 
-.is-mobile .advancedNoteMover-history-entry-content {
+body.is-mobile .advancedNoteMover-history-entry-content {
   width: 100%;
   overflow: visible;
 }
 
-.is-mobile .advancedNoteMover-history-entry-info {
+body.is-mobile .advancedNoteMover-history-entry-info {
   font-size: 1em;
   margin-bottom: 8px;
   word-break: break-word;
@@ -1775,7 +1761,7 @@ body.is-mobile .modal-content.note-mover-history-modal {
   white-space: normal;
 }
 
-.is-mobile .advancedNoteMover-history-entry-paths {
+body.is-mobile .advancedNoteMover-history-entry-paths {
   font-size: 0.9em;
   color: var(--text-muted);
   word-break: break-word;
@@ -1784,7 +1770,7 @@ body.is-mobile .modal-content.note-mover-history-modal {
   white-space: normal;
 }
 
-.is-mobile .advancedNoteMover-history-entry-buttons-mobile {
+body.is-mobile .advancedNoteMover-history-entry-buttons-mobile {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1792,7 +1778,7 @@ body.is-mobile .modal-content.note-mover-history-modal {
   margin-top: 8px;
 }
 
-.is-mobile .advancedNoteMover-history-entry-button-mobile {
+body.is-mobile .advancedNoteMover-history-entry-button-mobile {
   width: 100%;
   min-height: 48px;
   padding: 12px;
@@ -1805,25 +1791,25 @@ body.is-mobile .modal-content.note-mover-history-modal {
   font-weight: 500;
 }
 
-.is-mobile .advancedNoteMover-history-entry-button-mobile:active {
+body.is-mobile .advancedNoteMover-history-entry-button-mobile:active {
   opacity: 0.8;
 }
 
-.is-mobile .advancedNoteMover-history-entry-button-warning {
+body.is-mobile .advancedNoteMover-history-entry-button-warning {
   background: var(--background-modifier-error);
   color: var(--text-on-accent);
   border-color: var(--background-modifier-error);
 }
 
-.is-mobile .advancedNoteMover-bulk-operation {
+body.is-mobile .advancedNoteMover-bulk-operation {
   margin-bottom: 16px;
 }
 
-.is-mobile .advancedNoteMover-bulk-header {
+body.is-mobile .advancedNoteMover-bulk-header {
   margin-bottom: 12px;
 }
 
-.is-mobile .advancedNoteMover-bulk-operation-info {
+body.is-mobile .advancedNoteMover-bulk-operation-info {
   font-size: 1em;
   margin-bottom: 8px;
   overflow: visible;
@@ -1831,11 +1817,11 @@ body.is-mobile .modal-content.note-mover-history-modal {
   word-break: break-word;
 }
 
-.is-mobile .advancedNoteMover-bulk-details {
+body.is-mobile .advancedNoteMover-bulk-details {
   margin-top: 12px;
 }
 
-.is-mobile .advancedNoteMover-bulk-details summary {
+body.is-mobile .advancedNoteMover-bulk-details summary {
   min-height: 48px;
   display: flex;
   align-items: center;
@@ -1847,14 +1833,14 @@ body.is-mobile .modal-content.note-mover-history-modal {
   border: 1px solid var(--background-modifier-border);
 }
 
-.is-mobile .advancedNoteMover-bulk-files-list {
+body.is-mobile .advancedNoteMover-bulk-files-list {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.is-mobile .advancedNoteMover-bulk-file-entry {
+body.is-mobile .advancedNoteMover-bulk-file-entry {
   padding: 12px;
   background: var(--background-primary);
   border-radius: 6px;
@@ -1866,17 +1852,17 @@ body.is-mobile .modal-content.note-mover-preview-modal {
   padding: 16px 0;
 }
 
-.is-mobile .advancedNoteMover-preview-section-mobile {
+body.is-mobile .advancedNoteMover-preview-section-mobile {
   margin-bottom: 16px;
 }
 
-.is-mobile .advancedNoteMover-modal-list-mobile {
+body.is-mobile .advancedNoteMover-modal-list-mobile {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.is-mobile .advancedNoteMover-preview-item-mobile {
+body.is-mobile .advancedNoteMover-preview-item-mobile {
   padding: 12px;
   background: var(--background-secondary);
   border-radius: 8px;
@@ -1884,56 +1870,56 @@ body.is-mobile .modal-content.note-mover-preview-modal {
   margin-bottom: 0;
 }
 
-.is-mobile .advancedNoteMover-preview-item-filename {
+body.is-mobile .advancedNoteMover-preview-item-filename {
   font-size: 1em;
   font-weight: 600;
   margin-bottom: 8px;
   word-break: break-word;
 }
 
-.is-mobile .advancedNoteMover-preview-item-paths-mobile {
+body.is-mobile .advancedNoteMover-preview-item-paths-mobile {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-bottom: 12px;
 }
 
-.is-mobile .advancedNoteMover-preview-path-mobile {
+body.is-mobile .advancedNoteMover-preview-path-mobile {
   font-size: 0.9em;
   color: var(--text-muted);
   word-break: break-word;
   line-height: 1.4;
 }
 
-.is-mobile .advancedNoteMover-preview-path-current {
+body.is-mobile .advancedNoteMover-preview-path-current {
   color: var(--text-normal);
 }
 
-.is-mobile .advancedNoteMover-preview-arrow-mobile {
+body.is-mobile .advancedNoteMover-preview-arrow-mobile {
   text-align: center;
   color: var(--text-muted);
   font-size: 1.2em;
   margin: 4px 0;
 }
 
-.is-mobile .advancedNoteMover-preview-item-details-mobile {
+body.is-mobile .advancedNoteMover-preview-item-details-mobile {
   font-size: 0.9em;
   margin-top: 8px;
 }
 
-.is-mobile .advancedNoteMover-modal-footer-mobile {
+body.is-mobile .advancedNoteMover-modal-footer-mobile {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 16px;
 }
 
-.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item {
+body.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item {
   width: 100%;
   margin-bottom: 0;
 }
 
-.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item button {
+body.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item button {
   width: 100%;
   min-height: 48px;
   font-size: 16px;
@@ -1944,11 +1930,11 @@ body.is-mobile .modal-content.note-mover-update-modal {
   padding: 16px 0;
 }
 
-.is-mobile .advancedNoteMover-changelog-container-mobile {
+body.is-mobile .advancedNoteMover-changelog-container-mobile {
   margin-bottom: 16px;
 }
 
-.is-mobile .advancedNoteMover-changelog-version-mobile {
+body.is-mobile .advancedNoteMover-changelog-version-mobile {
   margin-bottom: 16px;
   padding: 12px;
   background: var(--background-secondary);
@@ -1956,27 +1942,27 @@ body.is-mobile .modal-content.note-mover-update-modal {
   border: 1px solid var(--background-modifier-border);
 }
 
-.is-mobile .advancedNoteMover-changelog-version-title {
+body.is-mobile .advancedNoteMover-changelog-version-title {
   font-size: 1.1em;
   margin-bottom: 12px;
 }
 
-.is-mobile .advancedNoteMover-changelog-section {
+body.is-mobile .advancedNoteMover-changelog-section {
   margin-bottom: 12px;
 }
 
-.is-mobile .advancedNoteMover-changelog-section-title {
+body.is-mobile .advancedNoteMover-changelog-section-title {
   font-size: 1em;
   margin-bottom: 8px;
 }
 
-.is-mobile .advancedNoteMover-changelog-list {
+body.is-mobile .advancedNoteMover-changelog-list {
   font-size: 0.95em;
   line-height: 1.6;
   padding-left: 20px;
 }
 
-.is-mobile .advancedNoteMover-update-modal-links-mobile {
+body.is-mobile .advancedNoteMover-update-modal-links-mobile {
   margin-bottom: 16px;
   width: 100%;
 }
@@ -1990,12 +1976,12 @@ body.is-mobile .modal-content.note-mover-update-modal {
   color: var(--text-on-accent);
 }
 
-.is-mobile .advancedNoteMover-bulk-undo-setting-mobile button {
+body.is-mobile .advancedNoteMover-bulk-undo-setting-mobile button {
   width: 100%;
   min-height: 48px;
 }
 
-.is-mobile .advancedNoteMover-update-modal-github-link-mobile {
+body.is-mobile .advancedNoteMover-update-modal-github-link-mobile {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2011,7 +1997,7 @@ body.is-mobile .modal-content.note-mover-update-modal {
   transition: opacity 0.2s ease;
 }
 
-.is-mobile .advancedNoteMover-update-modal-github-link-mobile:active {
+body.is-mobile .advancedNoteMover-update-modal-github-link-mobile:active {
   opacity: 0.8;
 }
 
@@ -2020,46 +2006,46 @@ body.is-mobile .modal-content.advancedNoteMover-confirm-modal {
   padding: 16px 0;
 }
 
-.is-mobile .advancedNoteMover-confirm-modal-message-mobile {
+body.is-mobile .advancedNoteMover-confirm-modal-message-mobile {
   font-size: 1em;
   line-height: 1.6;
   margin-bottom: 16px;
   word-break: break-word;
 }
 
-.is-mobile .advancedNoteMover-confirm-modal .setting-item {
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item {
   width: 100%;
   margin-bottom: 12px;
 }
 
-.is-mobile .advancedNoteMover-confirm-modal .setting-item:last-child {
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item:last-child {
   margin-bottom: 0;
 }
 
-.is-mobile .advancedNoteMover-confirm-modal .setting-item button {
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item button {
   width: 100%;
   min-height: 48px;
   font-size: 16px;
 }
 
 /* Mobile Modal General Improvements */
-.is-mobile .advancedNoteMover-modal-title {
+body.is-mobile .advancedNoteMover-modal-title {
   font-size: 1.3em;
   margin-bottom: 12px;
 }
 
-.is-mobile .advancedNoteMover-modal-subtitle {
+body.is-mobile .advancedNoteMover-modal-subtitle {
   font-size: 0.95em;
   margin-bottom: 16px;
   line-height: 1.5;
 }
 
-.is-mobile .advancedNoteMover-modal-section-header h3 {
+body.is-mobile .advancedNoteMover-modal-section-header h3 {
   font-size: 1.1em;
   margin-bottom: 12px;
 }
 
-/* Optimize for large vertical aspect ratios */
+/* Viewport height in portrait. Not a device class. */
 @media (max-height: 800px) and (orientation: portrait) {
   body.is-mobile
     .modal-container.advancedNoteMover-modal-size-mobile
@@ -2067,24 +2053,24 @@ body.is-mobile .modal-content.advancedNoteMover-confirm-modal {
     padding: 16px 12px;
   }
 
-  .is-mobile .advancedNoteMover-modal-title {
+  body.is-mobile .advancedNoteMover-modal-title {
     font-size: 1.2em;
     margin-bottom: 8px;
   }
 
-  .is-mobile .advancedNoteMover-modal-subtitle {
+  body.is-mobile .advancedNoteMover-modal-subtitle {
     font-size: 0.9em;
     margin-bottom: 12px;
   }
 
-  .is-mobile .advancedNoteMover-history-entry-mobile,
-  .is-mobile .advancedNoteMover-preview-item-mobile {
+  body.is-mobile .advancedNoteMover-history-entry-mobile,
+  body.is-mobile .advancedNoteMover-preview-item-mobile {
     padding: 12px;
     margin-bottom: 12px;
     gap: 12px;
   }
 
-  .is-mobile .advancedNoteMover-changelog-version-mobile {
+  body.is-mobile .advancedNoteMover-changelog-version-mobile {
     padding: 12px;
     margin-bottom: 12px;
   }
@@ -2433,7 +2419,7 @@ body.is-mobile
   background: var(--modal-background, var(--background-primary));
 }
 
-/* Landscape phones: keep more of the short viewport for the form */
+/* Viewport height. Not a device class. */
 @media (max-height: 500px) {
   .advancedNoteMover-rule-mobile-footer {
     padding-top: var(--size-2-3);
