@@ -1067,12 +1067,46 @@ async function runAxe(cdp) {
     }
     return await evaluateExpression(
       cdp,
-      `axe.run(document.querySelector('.modal') || document.querySelector('.advancedNoteMover-settings-root') || document.body).then(result => ({
-        ran: true,
-        serious: result.violations.filter(item => item.impact === 'serious').reduce((sum, item) => sum + item.nodes.length, 0),
-        critical: result.violations.filter(item => item.impact === 'critical').reduce((sum, item) => sum + item.nodes.length, 0),
-        rules: result.violations.filter(item => item.impact === 'serious' || item.impact === 'critical').map(item => item.id)
-      }))`,
+      `(() => {
+        const modals = [...document.querySelectorAll('.modal')];
+        const root = modals[modals.length - 1] || document.querySelector('.advancedNoteMover-settings-root') || document.body;
+        const pluginOwned = (node) => {
+          const raw = node.target;
+          const parts = Array.isArray(raw) ? raw.flat() : [raw];
+          const selector = parts.filter(part => typeof part === 'string').at(-1);
+          if (!selector) return false;
+          let el = null;
+          try { el = document.querySelector(selector); } catch { return false; }
+          if (!el || typeof el.closest !== 'function') return false;
+          if (el.closest('.advancedNoteMover-settings-root, .advancedNoteMover-focus-scope')) return true;
+          const modal = el.closest('.modal');
+          if (!modal) return false;
+          return [...modal.classList].some(name => name.startsWith('advancedNoteMover-') || name.startsWith('anm-'));
+        };
+        return axe.run(root).then(result => {
+          const flagged = result.violations.filter(item => item.impact === 'serious' || item.impact === 'critical');
+          const nodes = [];
+          for (const item of flagged) {
+            for (const node of item.nodes) {
+              nodes.push({
+                impact: item.impact,
+                id: item.id,
+                owned: pluginOwned(node),
+                target: node.target,
+                html: String(node.html || '').slice(0, 240),
+                failure: String(node.failureSummary || '').slice(0, 240)
+              });
+            }
+          }
+          return {
+            ran: true,
+            serious: nodes.filter(node => node.impact === 'serious').length,
+            critical: nodes.filter(node => node.impact === 'critical').length,
+            rules: [...new Set(flagged.map(item => item.id))],
+            nodes
+          };
+        });
+      })()`,
       120000
     );
   } catch (error) {
