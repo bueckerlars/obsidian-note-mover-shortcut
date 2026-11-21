@@ -178,7 +178,26 @@ describe('setting definitions', () => {
         catalogText(definition.nameKey)
       );
       expect(controlMatches(matches[0]!, definition.id)).toBe(true);
+      if (
+        definition.control === 'toggle' ||
+        definition.control === 'dropdown'
+      ) {
+        expect(
+          matches[0]?.classList.contains('advancedNoteMover-setting-stack')
+        ).toBe(false);
+      }
     }
+
+    expect(
+      root
+        .querySelector('[data-setting-id="triggers.interval"]')
+        ?.classList.contains('advancedNoteMover-setting-stack')
+    ).toBe(true);
+    expect(
+      root
+        .querySelector('[data-setting-id="history.retention"]')
+        ?.classList.contains('advancedNoteMover-setting-stack')
+    ).toBe(true);
 
     const outsideLists = Array.from(
       root.querySelectorAll('.setting-item')

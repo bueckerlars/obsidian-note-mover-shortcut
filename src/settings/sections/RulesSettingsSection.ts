@@ -33,11 +33,7 @@ export class RulesSettingsSection {
   }
 
   addCreateMissingFoldersSetting(): void {
-    const isMobile = MobileUtils.isMobile();
-    const setting = renderSetting(
-      this.containerEl,
-      'rules.createFolders'
-    ).addToggle(toggle =>
+    renderSetting(this.containerEl, 'rules.createFolders').addToggle(toggle =>
       toggle
         .setValue(
           this.plugin.pluginData.settings.createMissingDestinationFolders !==
@@ -50,10 +46,6 @@ export class RulesSettingsSection {
           this.plugin.advancedNoteMover.updateRuleManager();
         })
     );
-
-    if (isMobile) {
-      setting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-    }
   }
 
   addVaultReEvaluationSetting(): void {

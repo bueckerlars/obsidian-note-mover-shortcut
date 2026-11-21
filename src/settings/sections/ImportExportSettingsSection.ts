@@ -10,7 +10,6 @@ import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SettingsValidator } from 'src/utils/SettingsValidator';
 import { strings } from '../../i18n/locale';
 import { RuleMigrationService } from 'src/core/RuleMigrationService';
-import { MobileUtils } from '../../utils/MobileUtils';
 import { debugDebug } from '../../utils/debug';
 import { renderSetting } from '../settingDefinitions';
 import {
@@ -27,13 +26,9 @@ export class ImportExportSettingsSection {
   ) {}
 
   addImportExportSettings(): void {
-    const isMobile = MobileUtils.isMobile();
     renderSetting(this.containerEl, 'importExport.heading');
 
-    const exportSetting = renderSetting(
-      this.containerEl,
-      'importExport.export'
-    ).addButton(btn => {
+    renderSetting(this.containerEl, 'importExport.export').addButton(btn => {
       btn
         .setButtonText(strings().settings.importExportExportButton)
         .setCta()
@@ -49,24 +44,7 @@ export class ImportExportSettingsSection {
         });
     });
 
-    // Add mobile optimization classes
-    if (isMobile) {
-      exportSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const controlEl = exportSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-button-control'
-        );
-      }
-    }
-
-    // Import Settings Button
-    const importSetting = renderSetting(
-      this.containerEl,
-      'importExport.import'
-    ).addButton(btn => {
+    renderSetting(this.containerEl, 'importExport.import').addButton(btn => {
       btn.setButtonText(strings().settings.importExportImportButton);
       btn.buttonEl.addClass('mod-warning');
       btn.onClick(() => {
@@ -76,19 +54,6 @@ export class ImportExportSettingsSection {
         );
       });
     });
-
-    // Add mobile optimization classes
-    if (isMobile) {
-      importSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const controlEl = importSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-button-control'
-        );
-      }
-    }
   }
 
   async exportSettings(): Promise<void> {
