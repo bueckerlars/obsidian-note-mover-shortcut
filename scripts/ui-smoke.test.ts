@@ -204,6 +204,31 @@ describe('collectFailures', () => {
     expect(checks(document)).not.toContain('modalTitle');
   });
 
+  it('flags an entry with more than three full-width buttons', () => {
+    function entryWithButtons(count: number, buttonWidth: number): void {
+      document.body.replaceChildren();
+      const entry = document.createElement('div');
+      entry.className = 'advancedNoteMover-history-entry';
+      box(entry, 0, 0, 320, 80);
+      for (let index = 0; index < count; index += 1) {
+        const button = document.createElement('button');
+        button.textContent = `Action ${index}`;
+        box(button, 0, index * 48, buttonWidth, 44);
+        entry.append(button);
+      }
+      document.body.append(entry);
+    }
+
+    entryWithButtons(3, 320);
+    expect(checks(document)).not.toContain('buttonStack');
+
+    entryWithButtons(4, 320);
+    expect(checks(document)).toContain('buttonStack');
+
+    entryWithButtons(4, 44);
+    expect(checks(document)).not.toContain('buttonStack');
+  });
+
   it('flags horizontal overflow and accepts equal widths', () => {
     widths(document.documentElement, 400, 400);
     expect(checks(document)).not.toContain('overflow');
