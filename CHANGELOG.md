@@ -14,6 +14,7 @@
 - **Mobile toggles**: Toggle descriptions stay on one or two lines, so the switch sits beside the name inside the settings card.
 - **Rule editor**: Name, match mode, conditions, and destination use the same fields on desktop and mobile.
 - **Rule editor**: Editing one condition redraws that row. Typing in the value keeps the cursor in the field.
+- **Rule editor**: Match mode explains each option. Icon buttons name their action.
 - **Settings hints**: Filter, rule, and conflict hints use one short description. Extra detail sits on the info tooltip. Add filter and Add rule are icon buttons.
 - **Settings actions**: Each settings section has at most one primary button. Clear history is the only warning button. Import asks for confirmation and is no longer red.
 - **Rule rows**: A rule row shows the condition and the destination. Edit, duplicate, move, and delete are in the row menu.

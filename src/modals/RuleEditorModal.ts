@@ -154,9 +154,13 @@ export class RuleEditorModal extends BaseModal {
     const buttonContainer = setting.controlEl.createDiv({
       cls: 'advancedNoteMover-rule-aggregation-buttons',
     });
+    const description = container.createDiv({
+      cls: 'advancedNoteMover-rule-aggregation-description',
+    });
     renderAggregationControl(buttonContainer, {
       value: this.workingRule.aggregation,
       buttonClass: 'advancedNoteMover-rule-aggregation-button',
+      descriptionEl: description,
       onChange: value => {
         this.workingRule.aggregation = value;
       },
