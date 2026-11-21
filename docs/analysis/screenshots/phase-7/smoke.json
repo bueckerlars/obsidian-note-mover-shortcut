@@ -1,0 +1,2788 @@
+{
+  "ran": true,
+  "screenshots": 30,
+  "checks": [
+    "touch",
+    "aria",
+    "inlineStyle",
+    "console",
+    "modalTitle",
+    "overflow",
+    "togglePlace",
+    "toggleHeight",
+    "cta",
+    "warning",
+    "buttonStack"
+  ],
+  "openErrors": [],
+  "assertionFailures": 418,
+  "tabWalk": {
+    "pressed": true,
+    "moved": true,
+    "before": "button.mod-button.mod-cta",
+    "after": "button.mod-button",
+    "escapeClosed": false,
+    "note": "Tab moved focus."
+  },
+  "results": [
+    {
+      "viewport": "desktop",
+      "screen": "settings-triggers",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 933px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 3,
+        "critical": 0,
+        "rules": ["color-contrast"],
+        "nodes": [
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(1) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\">Optionen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(2) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Obsidian-Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(3) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Externe Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-filter",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 965px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 3,
+        "critical": 0,
+        "rules": ["color-contrast"],
+        "nodes": [
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(1) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\">Optionen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(2) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Obsidian-Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(3) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Externe Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-rules",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 997px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 3,
+        "critical": 0,
+        "rules": ["color-contrast"],
+        "nodes": [
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(1) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\">Optionen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(2) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Obsidian-Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(3) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Externe Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-attachments",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1029px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 3,
+        "critical": 0,
+        "rules": ["color-contrast"],
+        "nodes": [
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(1) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\">Optionen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(2) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Obsidian-Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(3) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Externe Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-conflict-resolution",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1061px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 3,
+        "critical": 0,
+        "rules": ["color-contrast"],
+        "nodes": [
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(1) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\">Optionen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(2) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Obsidian-Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(3) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Externe Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-history",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1093px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 3,
+        "critical": 0,
+        "rules": ["color-contrast"],
+        "nodes": [
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(1) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\">Optionen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(2) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Obsidian-Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(3) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Externe Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-import-export",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1125px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 3,
+        "critical": 0,
+        "rules": ["color-contrast"],
+        "nodes": [
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(1) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\">Optionen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(2) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Obsidian-Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(3) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Externe Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-performance",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1157px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 3,
+        "critical": 0,
+        "rules": ["color-contrast"],
+        "nodes": [
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(1) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\">Optionen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(2) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Obsidian-Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(3) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Externe Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-updates",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1189px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 3,
+        "critical": 0,
+        "rules": ["color-contrast"],
+        "nodes": [
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(1) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\">Optionen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(2) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Obsidian-Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "impact": "serious",
+            "id": "color-contrast",
+            "owned": false,
+            "target": [
+              ".vertical-tab-header-group:nth-child(3) > .vertical-tab-header-group-title"
+            ],
+            "html": "<div class=\"vertical-tab-header-group-title\" style=\"\">Externe Erweiterungen</div>",
+            "failure": "Fix any of the following:\n  Element has insufficient color contrast of 2.9 (foreground color: #666666, background color: #1e1e1e, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "rule-editor",
+      "failures": [
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1189px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "history",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "preview",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "conflict-cache",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "confirm",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1189px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "desktop",
+      "screen": "update-changelog",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-triggers",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 844px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-filter",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 967px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-rules",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1090px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-attachments",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1213px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-conflict-resolution",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1336px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-history",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1459px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-import-export",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1582px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-performance",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1705px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-updates",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1828px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "rule-editor",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "17x17"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1828px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "history",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "preview",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "conflict-cache",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "confirm",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.advancedNoteMover-focus-scope \"TriggersEnable on-edit triggerMove the n\"",
+          "detail": "padding-bottom: 1828px;"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    },
+    {
+      "viewport": "mobile",
+      "screen": "update-changelog",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "a .external-link \"#114\"",
+          "detail": "46x18"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        }
+      ],
+      "axe": {
+        "ran": true,
+        "serious": 0,
+        "critical": 0,
+        "rules": [],
+        "nodes": []
+      }
+    }
+  ]
+}

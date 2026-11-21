@@ -39,3 +39,11 @@ No argument leaves committed `phase-0` files in place. `--baseline` is the reque
 ## Phase 2 CSS size
 
 `styles.css` is 2433 lines. Deleting unused classes removed 465 lines from a 2909-line file. The rest of phase 2 replaced values in place and added the device-class scopes, the `100dvh` fallback, and the title variables. `10px` spacing stays because the size scale has no 10px step. Live rules were not deleted to reach 2300.
+
+## Phase 7 axe
+
+`npm run ui:smoke -- docs/analysis/screenshots/phase-7` on 2026-11-21. Plugin-owned serious and critical nodes are 0 on every screen. The raw `smoke.json` still lists chrome violations. Do not treat the run as axe-clean.
+
+Chrome that remains: `color-contrast` on `.vertical-tab-header-group-title` (Optionen, Obsidian-Erweiterungen, Externe Erweiterungen). Those nodes sit in the settings tab list, outside `.advancedNoteMover-settings-root`. Desktop settings screens report 3 serious. Mobile settings hide that list, so they report 0.
+
+The smoke Tab walk moved focus once and did not close the dialog. Settings itself is a modal, so Escape there is not a plugin dialog check. `src/modals/modalFocus.test.ts` focuses the first field and restores focus on Escape. The smoke did not walk every control.
