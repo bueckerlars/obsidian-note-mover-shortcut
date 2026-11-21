@@ -8,8 +8,7 @@ import { createError, handleError } from 'src/utils/Error';
 import { NoticeManager } from 'src/utils/NoticeManager';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SettingsValidator } from 'src/utils/SettingsValidator';
-import { fill, strings } from '../../i18n/locale';
-import { pluralize } from '../../utils/pluralize';
+import { fill, plural, strings } from '../../i18n/locale';
 import { looksLikePluginDataRoot } from '../../infrastructure/persistence/plugin-settings-schema';
 import {
   replaceSettings,
@@ -150,8 +149,8 @@ export class ImportExportSettingsSection {
               ConfirmModal.show(this.app, {
                 title: strings().settings.importExportImportTitle,
                 message: fill(strings().settings.importExportImportMessage, {
-                  rules: pluralize(importSummary.rules, 'rule'),
-                  filters: pluralize(importSummary.filters, 'filter'),
+                  rules: plural(importSummary.rules, 'rule'),
+                  filters: plural(importSummary.filters, 'filter'),
                 }),
                 confirmText: strings().settings.importExportImportConfirm,
                 cancelText: strings().common.cancel,

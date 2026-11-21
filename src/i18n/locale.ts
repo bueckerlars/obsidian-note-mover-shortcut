@@ -1,8 +1,17 @@
 import catalogs from 'virtual:languages';
+import { pluralize } from '../utils/pluralize';
 
 export type LocaleCatalog = typeof catalogs.en;
 
 const bundled: Record<string, LocaleCatalog> = catalogs;
+
+const GERMAN_NOUNS: Record<string, readonly [string, string]> = {
+  file: ['Datei', 'Dateien'],
+  rule: ['Regel', 'Regeln'],
+  filter: ['Filter', 'Filter'],
+  note: ['Notiz', 'Notizen'],
+  error: ['Fehler', 'Fehler'],
+};
 
 /** `en-gb` and `EN` both select languages/en.json. */
 export function localeCode(locale: string): string {
@@ -22,9 +31,14 @@ export function loadLocale(
 }
 
 let active = loadLocale('en');
+let activeCode = 'en';
 
-export function useLocale(locale: string): void {
-  active = loadLocale(locale);
+export function useLocale(
+  locale: string,
+  available?: Record<string, LocaleCatalog>
+): void {
+  activeCode = localeCode(locale);
+  active = loadLocale(locale, available);
 }
 
 export function strings(): LocaleCatalog {
@@ -39,4 +53,42 @@ export function fill(
     const value = values[key];
     return value === undefined ? token : String(value);
   });
+}
+
+function readString(catalog: LocaleCatalog, key: string): string | undefined {
+  let current: unknown = catalog;
+  for (const part of key.split('.')) {
+    if (!current || typeof current !== 'object' || !(part in current)) {
+      return undefined;
+    }
+    current = (current as Record<string, unknown>)[part];
+  }
+  return typeof current === 'string' ? current : undefined;
+}
+
+export function t(
+  key: string,
+  params?: Record<string, string | number>
+): string {
+  const template = readString(active, key) ?? readString(bundled.en, key);
+  if (template === undefined) {
+    return key;
+  }
+  return params ? fill(template, params) : template;
+}
+
+export function plural(
+  count: number,
+  singular: string,
+  pluralForm?: string
+): string {
+  if (activeCode !== 'de') {
+    return pluralize(count, singular, pluralForm);
+  }
+  const pair = GERMAN_NOUNS[singular];
+  if (pair) {
+    return `${count} ${count === 1 ? pair[0] : pair[1]}`;
+  }
+  const word = count === 1 ? singular : (pluralForm ?? singular);
+  return `${count} ${word}`;
 }

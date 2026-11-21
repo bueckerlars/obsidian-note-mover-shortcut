@@ -1,9 +1,8 @@
 import { Setting, App, TFile, setIcon } from 'obsidian';
-import { fill, strings } from '../i18n/locale';
+import { fill, plural, strings } from '../i18n/locale';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
-import { pluralize } from '../utils/pluralize';
 import { viewIdle } from '../utils/viewTimers';
 import { MobileUtils } from '../utils/MobileUtils';
 import {
@@ -128,7 +127,7 @@ export class PreviewModal extends BaseModal {
     const stats = this.movePreview;
     contentEl.createEl('p', {
       text: fill(strings().modals.previewSubtitle, {
-        files: pluralize(stats.totalFiles, 'file'),
+        files: plural(stats.totalFiles, 'file'),
         moves: this.selectedEntries().length,
       }),
       cls: 'advancedNoteMover-modal-subtitle',
@@ -357,7 +356,7 @@ export class PreviewModal extends BaseModal {
       this.moveButton = this.createButton(
         buttonContainer,
         fill(strings().modals.previewMoveFiles, {
-          files: pluralize(this.selectedEntries().length, 'file'),
+          files: plural(this.selectedEntries().length, 'file'),
         }),
         () => {
           void this.executeMoves();
@@ -383,7 +382,7 @@ export class PreviewModal extends BaseModal {
     }
     const count = this.selectedEntries().length;
     this.moveButton.textContent = fill(strings().modals.previewMoveFiles, {
-      files: pluralize(count, 'file'),
+      files: plural(count, 'file'),
     });
     this.moveButton.hidden = count === 0;
   }
@@ -516,21 +515,34 @@ export class PreviewModal extends BaseModal {
 
     if (stopped) {
       NoticeManager.info(
-        `Bulk move stopped. ${pluralize(movedCount, 'file')} moved, ${pluralize(errorCount, 'error')}.${skippedDetail}`
+        fill(strings().modals.previewStopped, {
+          moved: plural(movedCount, 'file'),
+          errors: plural(errorCount, 'error'),
+          skipped: skippedDetail,
+        })
       );
     } else if (errorCount === 0 && totalSkipped === 0) {
       NoticeManager.success(
-        `Successfully moved ${pluralize(movedCount, 'file')}!`
+        fill(strings().modals.previewSuccess, {
+          moved: plural(movedCount, 'file'),
+        })
       );
     } else if (errorCount === 0) {
       NoticeManager.info(
-        `Moved ${pluralize(movedCount, 'file')}.${skippedDetail}`
+        fill(strings().modals.previewMoved, {
+          moved: plural(movedCount, 'file'),
+          skipped: skippedDetail,
+        })
       );
     } else {
       NoticeManager.warning(
-        `Moved ${pluralize(movedCount, 'file')} with ${pluralize(errorCount, 'error')}.${skippedDetail}`,
+        fill(strings().modals.previewMovedWithErrors, {
+          moved: plural(movedCount, 'file'),
+          errors: plural(errorCount, 'error'),
+          skipped: skippedDetail,
+        }),
         {
-          detailText: 'Show details',
+          detailText: strings().common.showDetails,
           onDetail: () => {
             NoticeManager.error(moveErrors.join('; '));
           },
