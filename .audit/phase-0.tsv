@@ -1,5 +1,0 @@
-ts	phase	decision	why	evidence	result
-2026-11-21T16:42:27Z	phase-0	created feat/roadmap-findings from 4a64acc	phase 0 stays on one branch and leaves unrelated untracked files unstaged	git rev-parse HEAD	branch exists, main untouched
-2026-11-21T16:55:00Z	phase-0	smoke script opened 15 screens in desktop and mobile	empty settings crashed the settings tab, so the temp vault now writes a full settings object	docs/analysis/screenshots/phase-0/	30 PNGs, exit 0
-2026-11-21T17:05:00Z	phase-0	gate lint type-check test build and ui:smoke	ran the commands after the six task commits	/tmp/anm-smoke-gate.txt	lint 0 with 1 warning, type 0, 188 tests, build 0, smoke 0, 30 png, 469 assertion failures
-2026-11-21T17:08:00Z	phase-0	delete the temp vault only after Obsidian exits	an immediate rm left the profile or failed the run	scripts/ui-smoke.mjs stopObsidian	smoke exit 0 and temp dir removed
