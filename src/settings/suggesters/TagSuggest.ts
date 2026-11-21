@@ -41,4 +41,6 @@ export class TagSuggest extends AbstractInputSuggest<string> {
     this.inputEl.trigger('input');
     this.close();
   }
+
+  destroy(): void {}
 }

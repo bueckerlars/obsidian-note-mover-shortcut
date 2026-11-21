@@ -210,4 +210,6 @@ export class PropertyValueSuggest extends AbstractInputSuggest<string> {
   public refreshSuggestions(): void {
     this.loadAvailableValues();
   }
+
+  destroy(): void {}
 }

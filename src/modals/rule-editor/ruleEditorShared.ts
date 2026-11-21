@@ -133,17 +133,19 @@ export function attachValueSuggester(
   input: HTMLInputElement,
   trigger: Trigger,
   vaultIndexCache?: PluginVaultIndexCache
-): void {
+): { destroy(): void } | null {
   if (trigger.criteriaType === 'tag') {
-    new TagSuggest(app, input, vaultIndexCache);
-  } else if (trigger.criteriaType === 'folder') {
-    new FolderSuggest(app, input);
-  } else if (
+    return new TagSuggest(app, input, vaultIndexCache);
+  }
+  if (trigger.criteriaType === 'folder') {
+    return new FolderSuggest(app, input);
+  }
+  if (
     trigger.criteriaType === 'properties' &&
     trigger.propertyName &&
     trigger.propertyType
   ) {
-    new PropertyValueSuggest(
+    return new PropertyValueSuggest(
       app,
       input,
       trigger.propertyName,
@@ -151,6 +153,7 @@ export function attachValueSuggester(
       vaultIndexCache
     );
   }
+  return null;
 }
 
 export function removeTrigger(triggers: Trigger[], index: number): void {
