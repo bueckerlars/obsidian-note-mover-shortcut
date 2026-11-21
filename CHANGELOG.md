@@ -25,6 +25,7 @@
 - **Reorder**: Move up and Move down stay in the rule menu. The first row cannot move up, and the last row cannot move down. A focused drag handle moves that row with Alt+Arrow Up and Alt+Arrow Down.
 - **Dialog focus**: Opening a dialog focuses its first field. Escape closes it and returns focus to the control that opened it. Keyboard focus uses the accent outline.
 - **Field names**: Checkboxes, text fields, and dropdowns use the setting name that is already on screen.
+- **Close control**: The dialog close control is a button named Close.
 - **Muted text**: Drag handles and file paths use the muted text color.
 - **Bulk preview**: Closing the preview stops further file reads and shows how far the read has got.
 - **Confirm dialog**: Confirm and cancel use one button row on desktop and mobile.
