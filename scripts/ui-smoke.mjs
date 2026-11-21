@@ -158,13 +158,24 @@ function launchObsidian(bin, userData, port) {
   );
 }
 
-function stopObsidian(child, userData) {
+async function stopObsidian(child, userData, tmp) {
   if (child && child.exitCode == null && !child.killed) {
     child.kill('SIGTERM');
   }
   if (userData) {
     spawnSync('pkill', ['-f', userData], { stdio: 'ignore' });
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const probe = spawnSync('pgrep', ['-f', userData], { stdio: 'ignore' });
+      if (probe.status !== 0) {
+        break;
+      }
+      await sleep(200);
+    }
   }
+  if (!tmp) {
+    return;
+  }
+  spawnSync('rm', ['-rf', tmp], { stdio: 'ignore' });
 }
 
 async function waitForPage(port, timeoutMs) {
@@ -832,7 +843,7 @@ async function main() {
     console.error(crashed);
   } finally {
     cdp?.ws.close();
-    stopObsidian(child, run.userData);
+    await stopObsidian(child, run.userData, run.tmp);
   }
 
   const assertionFailureCount = rows.reduce(
