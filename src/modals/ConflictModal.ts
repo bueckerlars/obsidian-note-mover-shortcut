@@ -76,6 +76,7 @@ export class ConflictModal extends BaseModal {
     this.warningEl = contentEl.createDiv({
       cls: 'advancedNoteMover-conflict-modal-warning',
     });
+    this.warningEl.setAttribute('aria-live', 'polite');
     this.updateWarning();
 
     new Setting(contentEl)

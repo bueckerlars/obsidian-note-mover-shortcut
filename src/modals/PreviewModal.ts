@@ -165,6 +165,7 @@ export class PreviewModal extends BaseModal {
         cls: 'advancedNoteMover-preview-bulk-status',
         text,
       });
+      this.readingEl.setAttribute('aria-live', 'polite');
       return;
     }
     this.readingEl.setText(text);
@@ -409,6 +410,7 @@ export class PreviewModal extends BaseModal {
           count: successfulEntries.length,
         }),
       });
+      created.setAttribute('aria-live', 'polite');
       status = created;
       const row = this.actionFooterEl.createDiv({
         cls: 'advancedNoteMover-preview-bulk-actions',
