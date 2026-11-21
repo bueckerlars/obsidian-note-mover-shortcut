@@ -313,15 +313,26 @@ export class HistoryModal extends BaseModal {
           void (async () => {
             button.setDisabled(true);
             try {
-              const success = await this.historyManager.undoBulkOperation(
+              const undone = await this.historyManager.undoBulkOperation(
                 bulkOp.id
               );
-              if (success) {
+              if (undone.success) {
                 this.onOpen();
               } else {
                 NoticeManager.warning(
-                  'Some files could not be moved back. Check console for details.',
-                  { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+                  undone.errors.length === 1
+                    ? undone.errors[0]
+                    : `${pluralize(undone.errors.length, 'error')} while undoing.`,
+                  {
+                    duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
+                    detailText: 'Show details',
+                    onDetail:
+                      undone.errors.length > 1
+                        ? () => {
+                            NoticeManager.error(undone.errors.join('; '));
+                          }
+                        : undefined,
+                  }
                 );
               }
             } finally {

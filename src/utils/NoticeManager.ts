@@ -8,6 +8,8 @@ export interface NoticeOptions {
   showUndoButton?: boolean;
   onUndo?: () => void;
   undoText?: string;
+  detailText?: string;
+  onDetail?: () => void;
 }
 
 export class NoticeManager {
@@ -32,6 +34,15 @@ export class NoticeManager {
     });
     noticeEl.createEl('br');
     noticeEl.createSpan({ text: message });
+
+    if (options.onDetail) {
+      const detailButton = noticeEl.createEl('button', {
+        text: options.detailText ?? 'Show details',
+      });
+      detailButton.onclick = () => {
+        options.onDetail?.();
+      };
+    }
 
     if (options.showUndoButton && options.onUndo) {
       const undoButton = noticeEl.createEl('button', {
