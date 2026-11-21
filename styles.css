@@ -255,8 +255,7 @@ body.is-mobile {
 }
 
 .advancedNoteMover-history-entry-paths {
-  color: var(--text-normal);
-  opacity: 0.78;
+  color: var(--text-muted);
   font-size: 0.92em;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -444,8 +443,7 @@ body.is-mobile {
 }
 
 .advancedNoteMover-current-path {
-  color: var(--text-normal);
-  opacity: 0.78;
+  color: var(--text-muted);
 }
 
 .advancedNoteMover-arrow {
@@ -593,8 +591,7 @@ body.is-mobile {
 /* Drag Handle Styles */
 .advancedNoteMover-drag-handle {
   cursor: grab;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
+  transition: color 0.2s ease;
   color: var(--text-muted);
   padding: 2px 4px;
   border-radius: 3px;
@@ -604,7 +601,6 @@ body.is-mobile {
 }
 
 .advancedNoteMover-drag-handle:hover {
-  opacity: 1;
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
@@ -796,7 +792,10 @@ body.is-mobile {
   color: var(--text-normal);
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .advancedNoteMover-rule-aggregation-button:hover {
@@ -872,7 +871,9 @@ body.is-mobile {
   background: transparent;
   border: none;
   border-radius: 4px;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1032,7 +1033,6 @@ body.is-mobile {
 body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   height: 100%;
 }
 
@@ -1168,7 +1168,10 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
   background: var(--background-primary);
   color: var(--text-normal);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
   padding: 0;
 }
 
@@ -1680,7 +1683,9 @@ body.is-mobile .modal-container.advancedNoteMover-modal-size-mobile {
   margin: 0;
   border-radius: 0;
   max-height: 100vh;
+  max-height: 100dvh;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -1695,7 +1700,6 @@ body.is-mobile
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
 }
 
@@ -2089,7 +2093,6 @@ body.is-mobile
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2286,7 +2289,7 @@ body.is-mobile
 
 .advancedNoteMover-rule-mobile-connector {
   align-self: center;
-  color: var(--text-faint);
+  color: var(--text-muted);
   font-size: var(--font-ui-smaller);
   font-weight: var(--font-semibold);
   letter-spacing: 0.05em;
