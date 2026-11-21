@@ -33,6 +33,7 @@ import type { PerformanceTraceRecorder } from '../infrastructure/debug/performan
 export interface RuleMoveResult {
   destination: string;
   createFolder: boolean;
+  ruleName: string;
 }
 
 export class RuleManagerV2 {
@@ -144,6 +145,7 @@ export class RuleManagerV2 {
             return {
               destination: normalized.path,
               createFolder: this.resolveCreateFolder(matchingRule),
+              ruleName: matchingRule.name,
             };
           }
 

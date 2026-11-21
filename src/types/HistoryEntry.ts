@@ -9,6 +9,8 @@ export interface HistoryEntry {
   destinationPath: string;
   timestamp: number;
   fileName: string;
+  /** Rule that moved the note, when the move came from a rule. */
+  ruleName?: string;
   bulkOperationId?: string; // Groups entries that belong to the same bulk operation
   operationType?: 'single' | 'bulk' | 'periodic'; // Type of operation
   /** Attachment files co-moved with this note (for undo). */

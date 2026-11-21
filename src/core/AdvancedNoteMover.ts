@@ -254,6 +254,7 @@ export class AdvancedNoteMover {
             ),
             interactive,
             bypassConflictSkipCache,
+            ruleName: result.ruleName,
             onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
               await persistConflictResolutionStrategy(this.plugin, strategy);
             },
