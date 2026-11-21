@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.3.1)
+## [1.4.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.4.0)
 
 ### Breaking
 
