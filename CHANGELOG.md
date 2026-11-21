@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- **Release notes**: The current version comes from the manifest, and Show release notes opens them again.
 - **Performance trace**: Export downloads a JSON file instead of writing it into the vault.
 - **Notices**: Titles no longer repeat the plugin name, and the ribbon tooltip names the move action.
 - **Popout windows**: Timers and tablet detection follow the active window and Obsidian's platform flags.
