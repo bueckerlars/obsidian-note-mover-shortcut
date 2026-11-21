@@ -32,6 +32,7 @@
 - **Icon buttons**: Move, delete, and rule actions are buttons, so their names are allowed.
 - **Move all files**: Moving every matching note asks for confirmation first. The dialog shows the count, the first file paths, and that the move can be undone from history.
 - **Import backup**: Import shows how many rules and filters it replaces. Confirming saves the current settings to data.backup.json before writing the new ones. Restore backup puts those settings back.
+- **Why not moved**: Pick a note and see, for each rule, whether it matched and which condition failed.
 - **Muted text**: Drag handles and file paths use the muted text color.
 - **Bulk preview**: Closing the preview stops further file reads and shows how far the read has got.
 - **Confirm dialog**: Confirm and cancel use one button row on desktop and mobile.
