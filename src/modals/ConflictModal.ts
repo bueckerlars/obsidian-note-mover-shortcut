@@ -98,7 +98,7 @@ export class ConflictModal extends BaseModal {
     if (this.applyAlways) {
       this.warningEl.createEl('p', {
         cls: 'advancedNoteMover-conflict-modal-warning-text mod-warning',
-        text: 'Warning: Future conflicts will be handled automatically without asking. Choosing overwrite will replace existing files at the destination.',
+        text: strings().modals.conflictAlwaysWarning,
       });
     }
   }
@@ -108,7 +108,7 @@ export class ConflictModal extends BaseModal {
 
     this.createButton(
       buttonContainer,
-      'Keep in place',
+      strings().modals.conflictKeepInPlace,
       () => this.finish('skip'),
       {
         icon: 'ban',
@@ -116,14 +116,19 @@ export class ConflictModal extends BaseModal {
       }
     ).addClass('advancedNoteMover-conflict-action-skip');
 
-    this.createButton(buttonContainer, 'Rename', () => this.finish('rename'), {
-      icon: 'pencil',
-      tooltip: CONFLICT_ACTION_TOOLTIPS.rename,
-    });
+    this.createButton(
+      buttonContainer,
+      strings().modals.conflictRename,
+      () => this.finish('rename'),
+      {
+        icon: 'pencil',
+        tooltip: CONFLICT_ACTION_TOOLTIPS.rename,
+      }
+    );
 
     this.createButton(
       buttonContainer,
-      'Overwrite',
+      strings().modals.conflictOverwrite,
       () => this.finish('overwrite'),
       {
         isWarning: true,

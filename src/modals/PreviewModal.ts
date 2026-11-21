@@ -215,9 +215,15 @@ export class PreviewModal extends BaseModal {
       );
     }
 
-    this.createButton(buttonContainer, strings().common.cancel, () => {
-      this.close();
-    });
+    this.createButton(
+      buttonContainer,
+      this.movePreview.successfulMoves.length > 0
+        ? strings().common.cancel
+        : strings().common.close,
+      () => {
+        this.close();
+      }
+    );
   }
 
   private async executeMoves() {

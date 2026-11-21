@@ -272,7 +272,7 @@
     "conflictAlwaysDesc": "Apply the selected strategy automatically for future conflicts without asking.",
     "conflictAlwaysWarning": "Warning: future conflicts will be handled automatically without asking. Choosing overwrite will replace existing files at the destination.",
     "conflictKeepInPlace": "Keep in place",
-    "conflictRename": "Rename",
+    "conflictRename": "Keep both (rename)",
     "conflictOverwrite": "Overwrite",
     "conflictSkipTooltip": "Leave the note in its current location and remember this conflict",
     "conflictRenameTooltip": "Move the note with a numeric suffix, for example note (1).md",
