@@ -45,14 +45,14 @@ export class ImportExportSettingsSection {
     });
 
     renderSetting(this.containerEl, 'importExport.import').addButton(btn => {
-      btn.setButtonText(strings().settings.importExportImportButton);
-      btn.buttonEl.addClass('mod-warning');
-      btn.onClick(() => {
-        void runImportAction(
-          disabled => btn.setDisabled(disabled),
-          () => this.importSettings()
-        );
-      });
+      btn
+        .setButtonText(strings().settings.importExportImportButton)
+        .onClick(() => {
+          void runImportAction(
+            disabled => btn.setDisabled(disabled),
+            () => this.importSettings()
+          );
+        });
     });
   }
 

@@ -20,6 +20,7 @@ export class HistorySettingsSection {
     // Clear History Button
     renderSetting(this.containerEl, 'history.clear').addButton(btn => {
       btn.setButtonText(strings().settings.historyClearButton);
+      // Same class as setWarning. setDestructive needs Obsidian 1.13.
       btn.buttonEl.addClass('mod-warning');
       btn.onClick(async () => {
         const confirmed = await ConfirmModal.show(this.app, {
