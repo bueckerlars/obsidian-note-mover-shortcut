@@ -12,6 +12,7 @@ import {
   applyCriteriaType,
   applyPropertyName,
   attachValueSuggester,
+  criteriaLabel,
   getOperatorsForTrigger,
   getValuePlaceholder,
 } from '../ruleEditorShared';
@@ -60,7 +61,7 @@ export function renderConditionRow(
   for (const criteriaType of CRITERIA_TYPES) {
     const option = criteriaTypeSelect.createEl('option', {
       value: criteriaType,
-      text: criteriaType,
+      text: criteriaLabel(criteriaType),
     });
     if (trigger.criteriaType === criteriaType) {
       option.selected = true;
