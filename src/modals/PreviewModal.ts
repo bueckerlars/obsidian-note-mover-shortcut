@@ -35,7 +35,7 @@ export class PreviewModal extends BaseModal {
     super(app, {
       title: 'Move Preview',
       titleIcon: '🔍',
-      cssClass: 'note-mover-preview-modal',
+      cssClass: 'advancedNoteMover-preview-modal',
       size: 'large',
       ...options,
     });

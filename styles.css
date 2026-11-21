@@ -15,9 +15,9 @@
 /* ===== COMMON MODAL STYLES ===== */
 
 /* Consistent vertical rhythm for plugin modals */
-.note-mover-preview-modal,
-.note-mover-update-modal,
-.note-mover-history-modal,
+.advancedNoteMover-preview-modal,
+.advancedNoteMover-update-modal,
+.advancedNoteMover-history-modal,
 .advancedNoteMover-confirm-modal,
 .advancedNoteMover-conflict-modal,
 .advancedNoteMover-conflict-skip-cache-modal {
@@ -98,8 +98,8 @@ body.is-mobile {
   width: auto;
 }
 
-.note-mover-preview-modal .advancedNoteMover-modal-footer,
-.note-mover-history-modal .advancedNoteMover-modal-footer {
+.advancedNoteMover-preview-modal .advancedNoteMover-modal-footer,
+.advancedNoteMover-history-modal .advancedNoteMover-modal-footer {
   align-items: center;
 }
 
@@ -137,17 +137,17 @@ body.is-mobile {
 }
 
 /* Update Modal Footer - Centered links, right-aligned button */
-.note-mover-update-modal .advancedNoteMover-modal-footer {
+.advancedNoteMover-update-modal .advancedNoteMover-modal-footer {
   justify-content: space-between;
   align-items: center;
 }
 
-.note-mover-update-modal .advancedNoteMover-update-modal-links {
+.advancedNoteMover-update-modal .advancedNoteMover-update-modal-links {
   flex: 1;
   text-align: center;
 }
 
-.note-mover-update-modal .advancedNoteMover-modal-button-container {
+.advancedNoteMover-update-modal .advancedNoteMover-modal-button-container {
   flex-shrink: 0;
 }
 
@@ -1319,9 +1319,9 @@ body.is-mobile .advancedNoteMover-rule-editor-mobile-content .setting-item-contr
 body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control,
 body.is-mobile .advancedNoteMover-conflict-skip-cache-modal .setting-item-control,
 body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control,
-body.is-mobile .note-mover-history-modal .setting-item-control,
-body.is-mobile .note-mover-preview-modal .setting-item-control,
-body.is-mobile .note-mover-update-modal .setting-item-control {
+body.is-mobile .advancedNoteMover-history-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-preview-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-update-modal .setting-item-control {
   margin-left: 0;
   width: 100%;
   justify-content: space-between;
@@ -1334,22 +1334,22 @@ body.is-mobile .advancedNoteMover-rule-editor-mobile-content .setting-item-contr
 body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control button,
 body.is-mobile .advancedNoteMover-conflict-skip-cache-modal .setting-item-control button,
 body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control button,
-body.is-mobile .note-mover-history-modal .setting-item-control button,
-body.is-mobile .note-mover-preview-modal .setting-item-control button,
-body.is-mobile .note-mover-update-modal .setting-item-control button {
+body.is-mobile .advancedNoteMover-history-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-preview-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-update-modal .setting-item-control button {
   min-width: 44px;
   min-height: 44px;
   padding: var(--size-4-2);
 }
 
 body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control,
-body.is-mobile .note-mover-history-modal
+body.is-mobile .advancedNoteMover-history-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control,
-body.is-mobile .note-mover-preview-modal
+body.is-mobile .advancedNoteMover-preview-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control,
-body.is-mobile .note-mover-update-modal
+body.is-mobile .advancedNoteMover-update-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control {
   margin-left: 0;
@@ -1358,15 +1358,15 @@ body.is-mobile .note-mover-update-modal
 }
 
 body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control button,
-body.is-mobile .note-mover-history-modal
+body.is-mobile .advancedNoteMover-history-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control
   button,
-body.is-mobile .note-mover-preview-modal
+body.is-mobile .advancedNoteMover-preview-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control
   button,
-body.is-mobile .note-mover-update-modal
+body.is-mobile .advancedNoteMover-update-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control
   button {
@@ -1486,30 +1486,30 @@ body.is-mobile .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item
 }
 
 /* Update Modal - Keep footer horizontal on mobile */
-body.is-mobile .note-mover-update-modal .advancedNoteMover-modal-footer {
+body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-footer {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   padding: 0 var(--size-4-4);
 }
 
-body.is-mobile .note-mover-update-modal .advancedNoteMover-update-modal-links {
+body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-update-modal-links {
   flex: 1;
 }
 
-body.is-mobile .note-mover-update-modal .advancedNoteMover-modal-button-container {
+body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-button-container {
   flex-direction: row;
   width: auto;
   flex-shrink: 0;
 }
 
-body.is-mobile .note-mover-update-modal
+body.is-mobile .advancedNoteMover-update-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control {
   margin: 0;
 }
 
-body.is-mobile .note-mover-update-modal .advancedNoteMover-modal-button-container button {
+body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-button-container button {
   width: auto;
   min-width: 100px;
   padding: var(--size-4-2) var(--size-4-4);
@@ -1665,9 +1665,9 @@ body.is-phone .advancedNoteMover-rule-editor-modal button,
 body.is-phone .advancedNoteMover-rule-editor-mobile-content button,
 body.is-phone .advancedNoteMover-conflict-modal button,
 body.is-phone .advancedNoteMover-conflict-skip-cache-modal button,
-body.is-phone .note-mover-history-modal button,
-body.is-phone .note-mover-preview-modal button,
-body.is-phone .note-mover-update-modal button,
+body.is-phone .advancedNoteMover-history-modal button,
+body.is-phone .advancedNoteMover-preview-modal button,
+body.is-phone .advancedNoteMover-update-modal button,
 body.is-phone .advancedNoteMover-confirm-modal button {
   font-size: var(--font-ui-small);
 }
@@ -1704,7 +1704,7 @@ body.is-mobile
 }
 
 /* History Modal Mobile Styles */
-body.is-mobile .modal-content.note-mover-history-modal {
+body.is-mobile .modal-content.advancedNoteMover-history-modal {
   padding: var(--size-4-4) 0;
 }
 
@@ -1832,7 +1832,7 @@ body.is-mobile .advancedNoteMover-bulk-file-entry {
 }
 
 /* Preview Modal Mobile Styles */
-body.is-mobile .modal-content.note-mover-preview-modal {
+body.is-mobile .modal-content.advancedNoteMover-preview-modal {
   padding: var(--size-4-4) 0;
 }
 
@@ -1910,7 +1910,7 @@ body.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item button {
 }
 
 /* Update Modal Mobile Styles */
-body.is-mobile .modal-content.note-mover-update-modal {
+body.is-mobile .modal-content.advancedNoteMover-update-modal {
   padding: var(--size-4-4) 0;
 }
 
@@ -2424,7 +2424,7 @@ body.is-mobile
 }
 
 /* Preview modal: full-width footer buttons (replaces inline styles) */
-.note-mover-preview-modal
+.advancedNoteMover-preview-modal
   .advancedNoteMover-modal-footer-mobile
   .setting-item
   button {

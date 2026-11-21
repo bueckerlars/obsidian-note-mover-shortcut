@@ -25,7 +25,7 @@ export class HistoryModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
-      cssClass: 'note-mover-history-modal',
+      cssClass: 'advancedNoteMover-history-modal',
       size: 'large',
       ...options,
     });

@@ -18,7 +18,7 @@ export class UpdateModal extends BaseModal {
     super(app, {
       title: `Advanced Note Mover updated to version ${currentVersion}!`,
       titleIcon: '🎉',
-      cssClass: 'note-mover-update-modal',
+      cssClass: 'advancedNoteMover-update-modal',
       size: 'medium',
       ...options,
     });
