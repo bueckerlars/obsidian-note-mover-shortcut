@@ -47,3 +47,11 @@ No argument leaves committed `phase-0` files in place. `--baseline` is the reque
 Chrome that remains: `color-contrast` on `.vertical-tab-header-group-title` (Optionen, Obsidian-Erweiterungen, Externe Erweiterungen). Those nodes sit in the settings tab list, outside `.advancedNoteMover-settings-root`. Desktop settings screens report 3 serious. Mobile settings hide that list, so they report 0.
 
 The smoke Tab walk moved focus once and did not close the dialog. Settings itself is a modal, so Escape there is not a plugin dialog check. `src/modals/modalFocus.test.ts` focuses the first field and restores focus on Escape. The smoke did not walk every control.
+
+## Bundle size
+
+`main.js` is gitignored, so commit `4a64acc` (parent of the first roadmap commit `419a9b8`) has no `main.js` blob. The baseline number is a production build of that commit (`npm ci && npm run build` in a detached worktree): 250542 bytes. `styles.css` in that commit is 64862 bytes, and rebuilding it produced the same count.
+
+Current production build, measured 2026-11-21 after the German catalog landed: `main.js` 296729 bytes, `styles.css` 59165 bytes.
+
+`styles.css` is smaller than the baseline by 5697 bytes. `main.js` is 46187 bytes over the baseline, 18.4 percent. The gate allows 5 percent (263069 bytes). The extra weight is the English and German catalogs plus the phase 1–9 behavior in the minified bundle. Live code was not deleted to chase the cap.
