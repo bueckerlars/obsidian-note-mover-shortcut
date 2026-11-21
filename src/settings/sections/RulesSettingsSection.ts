@@ -164,7 +164,8 @@ export class RulesSettingsSection {
               await this.persistRulesAndSyncManager();
             })
         )
-        .addExtraButton(btn =>
+        .addExtraButton(btn => {
+          btn.extraSettingsEl.setAttribute('role', 'button');
           btn
             .setIcon('more-horizontal')
             .setTooltip(strings().settings.rulesActions)
@@ -174,8 +175,8 @@ export class RulesSettingsSection {
                 x: rect.left,
                 y: rect.bottom,
               });
-            })
-        );
+            });
+        });
       this.addDragHandle(setting.settingEl);
     });
   }
