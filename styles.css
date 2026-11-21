@@ -27,17 +27,13 @@
 
 /* Desktop modal dimensions: applied inline on modalEl in BaseModal.ts (classes scope layout only). */
 
-/* Common Modal Title Styles */
-.advancedNoteMover-modal-title-container {
-  display: flex;
-  align-items: center;
-  gap: var(--size-4-3);
-  margin-bottom: var(--size-4-4);
-}
-
+/* Icon beside the native modal title. */
 .advancedNoteMover-modal-title-icon {
-  font-size: 2em;
+  display: inline-flex;
+  margin-right: var(--size-4-1);
+  font-size: 1em;
   line-height: 1;
+  vertical-align: text-bottom;
 }
 
 .advancedNoteMover-modal-title-icon svg,
@@ -1268,16 +1264,6 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
 }
 
 /* Phone and tablet layout. Follows body.is-mobile, not the window width. */
-/* Modal Title Adjustments */
-body.is-mobile .advancedNoteMover-modal-title-container {
-  gap: var(--size-4-2);
-  margin-bottom: var(--size-4-3);
-}
-
-body.is-mobile .advancedNoteMover-modal-title-icon {
-  font-size: 1.6em;
-}
-
 /* Button Container - Stack vertically on mobile */
 body.is-mobile .advancedNoteMover-modal-button-container {
   flex-direction: column;
@@ -1651,9 +1637,6 @@ body.is-mobile
 }
 
 /* Phone layout. Follows body.is-phone, not a 480px window. */
-body.is-phone .advancedNoteMover-modal-title-icon {
-  font-size: 1.4em;
-}
 
 /* History entries - More compact padding */
 body.is-phone .advancedNoteMover-history-entry {

@@ -178,6 +178,7 @@
   },
   "modals": {
     "confirmDeleteRule": "Are you sure you want to delete the rule {rule}?\n\nThis action cannot be undone.",
+    "historyTitle": "Move history",
     "historyEmpty": "No history entries for the selected time range.",
     "historyTimeFilter": "Show entries from",
     "historyAll": "All",
