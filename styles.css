@@ -2329,3 +2329,8 @@ body.is-mobile
   width: 100%;
   min-height: 48px;
 }
+
+.advancedNoteMover-focus-scope :focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
