@@ -12,6 +12,7 @@
 - **Sentence case**: Settings, modals, commands, and notices use sentence case. Headings and buttons no longer start with a plus sign or end with a colon.
 - **Icons**: History, preview, and update use Lucide icons instead of emoji.
 - **Modal titles**: Dialog titles use Obsidian's title bar. History is titled "Move history".
+- **Conflict choice**: The rename action is labeled "Keep both (rename)". A preview with nothing to move closes with "Close".
 - **Unnamed rule**: A rule without a name is labeled "Unnamed rule".
 
 ### Fixes
