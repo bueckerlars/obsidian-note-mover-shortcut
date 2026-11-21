@@ -119,6 +119,7 @@
     "rulesEmpty": "No rules are configured. Add one using the control below.",
     "rulesAddSearch": "Add rule",
     "rulesAddButton": "Add rule",
+    "rulesNewName": "New rule",
     "rulesCopyName": "{name} copy",
     "rulesActive": "Rule is active",
     "rulesInactive": "Rule is inactive",

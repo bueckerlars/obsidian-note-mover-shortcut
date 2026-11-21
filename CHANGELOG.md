@@ -13,6 +13,7 @@
 - **Icons**: History, preview, and update use Lucide icons instead of emoji.
 - **Modal titles**: Dialog titles use Obsidian's title bar. History is titled "Move history".
 - **Conflict choice**: The rename action is labeled "Keep both (rename)". A preview with nothing to move closes with "Close".
+- **New rule**: A rule created from settings starts as "New rule".
 - **Unnamed rule**: A rule without a name is labeled "Unnamed rule".
 
 ### Fixes
