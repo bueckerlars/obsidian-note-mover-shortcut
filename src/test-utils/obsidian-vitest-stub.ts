@@ -19,6 +19,10 @@ export class AbstractInputSuggest<T> {
   }
 }
 
+export function getLanguage(): string {
+  return 'en';
+}
+
 export function getAllTags(cache: Record<string, unknown>): string[] {
   const tags = cache.tags as { tag: string }[] | undefined;
   if (!tags?.length) return [];

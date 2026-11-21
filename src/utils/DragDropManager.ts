@@ -1,4 +1,5 @@
 import 'obsidian';
+import { strings } from '../i18n/locale';
 
 export interface DragDropItem {
   element: HTMLElement;
@@ -238,10 +239,10 @@ export class DragDropManager {
       text: '⋮⋮',
       attr: {
         draggable: 'true',
-        'aria-label': 'Drag to reorder',
+        'aria-label': strings().settings.rulesDragToReorder,
         role: 'button',
         tabindex: '0',
-        title: 'Drag to reorder',
+        title: strings().settings.rulesDragToReorder,
       },
     });
   }

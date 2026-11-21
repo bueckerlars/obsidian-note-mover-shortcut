@@ -29,14 +29,6 @@ export const NOTIFICATION_CONSTANTS = {
     warning: 10000,
   } as const,
 
-  DEFAULT_TITLES: {
-    info: 'Info:',
-    error: 'Error:',
-    update: 'Update:',
-    success: 'Success:',
-    warning: 'Warning:',
-  } as const,
-
   DURATION_OVERRIDE: 5000, // Used for specific notifications that need different duration
 } as const;
 
@@ -54,73 +46,6 @@ export const SETTINGS_CONSTANTS = {
     retentionPolicy: HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
     createMissingDestinationFolders: true,
   },
-
-  PLACEHOLDER_TEXTS: {
-    FOLDER_PATH: 'Example: folder1/folder2',
-    INTERVAL: '5',
-    FILTER: 'Filter (e.g. tag:, fileName:, path:, property:, ...)',
-    CRITERIA: 'Criteria (e.g. tag:, fileName:, path:, property:, ...)',
-    PATH: 'Path',
-  } as const,
-
-  UI_TEXTS: {
-    UNDO_ALL: 'Undo All',
-    UNDO: 'Undo',
-    CLEAR_HISTORY: 'Clear history',
-    CLEAR_HISTORY_TITLE: 'Clear History',
-    CLEAR_HISTORY_MESSAGE:
-      'Are you sure you want to clear the history?\n\nThis action cannot be undone.',
-    CLEAR_HISTORY_CONFIRM: 'Clear History',
-    CLEAR_HISTORY_CANCEL: 'Cancel',
-    EXPORT_SETTINGS: 'Export Settings',
-    IMPORT_SETTINGS: 'Import Settings',
-    EXPORT_SETTINGS_TITLE: 'Export Settings',
-    EXPORT_SETTINGS_MESSAGE:
-      'This will download your current settings as a JSON file.',
-    EXPORT_SETTINGS_CONFIRM: 'Export',
-    EXPORT_SETTINGS_CANCEL: 'Cancel',
-    IMPORT_SETTINGS_TITLE: 'Import Settings',
-    IMPORT_SETTINGS_MESSAGE:
-      'This will replace your current settings with the imported ones.\n\nThis action cannot be undone. Make sure you have a backup of your current settings.',
-    IMPORT_SETTINGS_CONFIRM: 'Import',
-    IMPORT_SETTINGS_CANCEL: 'Cancel',
-    IMPORT_SUCCESS: 'Settings imported successfully',
-    IMPORT_ERROR: 'Failed to import settings',
-    EXPORT_SUCCESS: 'Settings exported successfully',
-    EXPORT_ERROR: 'Failed to export settings',
-    INVALID_FILE: 'Invalid file format. Please select a valid JSON file.',
-    VALIDATION_ERRORS: 'Settings validation failed',
-    // History time filter texts
-    TIME_FILTER_ALL: 'All',
-    TIME_FILTER_TODAY: 'Today',
-    TIME_FILTER_WEEK: 'This Week',
-    TIME_FILTER_MONTH: 'This Month',
-    TIME_FILTER_LABEL: 'Show entries from:',
-    // Rule / confirm copy
-    DELETE_RULE_TITLE: 'Delete rule',
-    DELETE_RULE_CONFIRM: 'Delete',
-    DISCARD_CHANGES_TITLE: 'Unsaved changes',
-    DISCARD_CHANGES_MESSAGE: 'You have unsaved changes. Discard them?',
-    DISCARD_CHANGES_CONFIRM: 'Discard',
-    // Retention policy texts
-    RETENTION_POLICY_TITLE: 'Retention Policy',
-    RETENTION_POLICY_DESC: 'Configure how long history entries should be kept',
-    RETENTION_POLICY_VALUE_LABEL: 'Keep entries for:',
-    RETENTION_POLICY_UNIT_LABEL: 'Unit:',
-    RETENTION_POLICY_DAYS: 'Days',
-    RETENTION_POLICY_WEEKS: 'Weeks',
-    RETENTION_POLICY_MONTHS: 'Months',
-    // Destination folder creation texts
-    CREATE_MISSING_FOLDERS_NAME: 'Create missing destination folders',
-    CREATE_MISSING_FOLDERS_DESC:
-      'When enabled (default), destination folders are created automatically if they do not exist. When disabled, notes are skipped and not moved if the destination folder is missing. Individual rules can override this in the rule editor.',
-    RULE_CREATE_FOLDER_NAME: 'Create destination folder',
-    RULE_CREATE_FOLDER_DESC:
-      'Control whether a missing destination folder is created for this rule.',
-    RULE_CREATE_FOLDER_INHERIT: 'Use global default',
-    RULE_CREATE_FOLDER_ALWAYS: 'Always create',
-    RULE_CREATE_FOLDER_NEVER: 'Never create',
-  } as const,
 } as const;
 
 // =============================================================================

@@ -1,6 +1,6 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
-import { SETTINGS_CONSTANTS } from '../../config/constants';
+import { strings } from '../../i18n/locale';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { AdvancedSuggest } from '../suggesters/AdvancedSuggest';
 import { MobileUtils } from '../../utils/MobileUtils';
@@ -17,19 +17,18 @@ export class FilterSettingsSection {
 
   addFilterSettings(): void {
     // Filter settings
-    new Setting(this.containerEl).setName('Filter').setHeading();
+    new Setting(this.containerEl)
+      .setName(strings().settings.headingsFilter)
+      .setHeading();
 
-    // Blacklist filter explanation (description-only row reads clearer than a fake "setting" name)
-    new Setting(this.containerEl).setDesc(
-      'Blacklist filters: files that match any criterion are excluded from move operations.'
-    );
+    new Setting(this.containerEl).setDesc(strings().settings.filterSectionDesc);
 
     this.addPeriodicMovementFilterArray();
 
     const isMobile = MobileUtils.isMobile();
     const addFilterSetting = new Setting(this.containerEl).addButton(btn =>
       btn
-        .setButtonText('Add new filter')
+        .setButtonText(strings().settings.filterAdd)
         .setCta()
         .onClick(async () => {
           this.plugin.pluginData.settings.filters.filter.push({ value: '' });
@@ -73,7 +72,7 @@ export class FilterSettingsSection {
     if (this.plugin.pluginData.settings.filters.filter.length === 0) {
       this.containerEl.createEl('p', {
         cls: 'advancedNoteMover-settings-hint',
-        text: 'No filters are configured. Add one using the control below to exclude files from move operations.',
+        text: strings().settings.filterEmpty,
       });
     }
 
@@ -151,7 +150,7 @@ export class FilterSettingsSection {
       );
       this.advancedSuggestInstances.push(advancedSuggest);
       const filter = this.plugin.pluginData.settings.filters.filter[index];
-      cb.setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.FILTER)
+      cb.setPlaceholder(strings().settings.filterPlaceholder)
         .setValue(filter?.value || '')
         .onChange(async value => {
           this.plugin.pluginData.settings.filters.filter[index] = {

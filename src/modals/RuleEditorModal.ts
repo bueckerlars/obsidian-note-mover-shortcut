@@ -19,7 +19,7 @@ import { operatorRequiresValue } from '../utils/OperatorMapping';
 import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault-index-cache';
 import { ConfirmModal } from './ConfirmModal';
 import { NoticeManager } from '../utils/NoticeManager';
-import { SETTINGS_CONSTANTS } from '../config/constants';
+import { fill, strings } from '../i18n/locale';
 import { toMarkdownInlineCode } from '../utils/markdown-confirm';
 import { RuleEditorMobileView } from './rule-editor/RuleEditorMobileView';
 import {
@@ -131,10 +131,10 @@ export class RuleEditorModal extends BaseModal {
 
   private createNameAndActiveRow(container: HTMLElement): void {
     new Setting(container)
-      .setName('Name')
+      .setName(strings().modals.ruleEditorName)
       .addText(text =>
         text
-          .setPlaceholder('Enter rule name')
+          .setPlaceholder(strings().modals.ruleEditorNamePlaceholder)
           .setValue(this.workingRule.name)
           .onChange(value => {
             this.workingRule.name = value;
@@ -154,7 +154,9 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createMatchConditionsSelector(container: HTMLElement): void {
-    const setting = new Setting(container).setName('Match conditions');
+    const setting = new Setting(container).setName(
+      strings().modals.ruleEditorMatch
+    );
 
     const buttonContainer = setting.controlEl.createDiv({
       cls: 'advancedNoteMover-rule-aggregation-buttons',
@@ -185,7 +187,7 @@ export class RuleEditorModal extends BaseModal {
 
   private createDestinationInput(container: HTMLElement): void {
     const setting = new Setting(container)
-      .setName('Destination')
+      .setName(strings().modals.ruleEditorDestination)
       .addSearch(cb => {
         this.destinationSuggest = new FolderSuggest(this.app, cb.inputEl);
         cb.setPlaceholder(
@@ -215,22 +217,13 @@ export class RuleEditorModal extends BaseModal {
 
   private createFolderCreationSelector(container: HTMLElement): void {
     new Setting(container)
-      .setName(SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_NAME)
-      .setDesc(SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_DESC)
+      .setName(strings().modals.ruleEditorCreateFolderName)
+      .setDesc(strings().modals.ruleEditorCreateFolderDesc)
       .addDropdown(dropdown =>
         dropdown
-          .addOption(
-            'inherit',
-            SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_INHERIT
-          )
-          .addOption(
-            'always',
-            SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_ALWAYS
-          )
-          .addOption(
-            'never',
-            SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_NEVER
-          )
+          .addOption('inherit', strings().modals.ruleEditorInherit)
+          .addOption('always', strings().modals.ruleEditorAlwaysCreate)
+          .addOption('never', strings().modals.ruleEditorNeverCreate)
           .setValue(getFolderCreationValue(this.workingRule))
           .onChange(value => {
             applyFolderCreationValue(
@@ -247,7 +240,7 @@ export class RuleEditorModal extends BaseModal {
     });
 
     section.createEl('h3', {
-      text: 'Conditions:',
+      text: strings().modals.ruleEditorConditions,
       cls: 'advancedNoteMover-rule-conditions-title',
     });
 
@@ -260,7 +253,7 @@ export class RuleEditorModal extends BaseModal {
 
     // Add Condition Button
     new Setting(section).addButton(btn =>
-      btn.setButtonText('+ add condition').onClick(() => {
+      btn.setButtonText(strings().modals.ruleEditorAddCondition).onClick(() => {
         this.workingRule.triggers.push(createDefaultTrigger());
         this.renderTriggers();
       })
@@ -514,10 +507,10 @@ export class RuleEditorModal extends BaseModal {
   private async handleRemoveRule(): Promise<void> {
     const ruleLabel = toMarkdownInlineCode(this.workingRule.name);
     const confirmed = await ConfirmModal.show(this.app, {
-      title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
-      message: `Are you sure you want to delete the rule ${ruleLabel}?\n\nThis action cannot be undone.`,
-      confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
-      cancelText: 'Cancel',
+      title: strings().modals.ruleEditorDeleteTitle,
+      message: fill(strings().modals.confirmDeleteRule, { rule: ruleLabel }),
+      confirmText: strings().common.delete,
+      cancelText: strings().common.cancel,
       danger: true,
     });
     if (confirmed && this.ruleOptions.onDelete) {
@@ -539,10 +532,10 @@ export class RuleEditorModal extends BaseModal {
 
   private async confirmDiscardAndClose(): Promise<void> {
     const confirmed = await ConfirmModal.show(this.app, {
-      title: SETTINGS_CONSTANTS.UI_TEXTS.DISCARD_CHANGES_TITLE,
-      message: SETTINGS_CONSTANTS.UI_TEXTS.DISCARD_CHANGES_MESSAGE,
-      confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DISCARD_CHANGES_CONFIRM,
-      cancelText: 'Cancel',
+      title: strings().modals.ruleEditorDiscardTitle,
+      message: strings().modals.ruleEditorDiscardMessage,
+      confirmText: strings().modals.ruleEditorDiscardConfirm,
+      cancelText: strings().common.cancel,
       danger: true,
     });
     if (confirmed) {

@@ -29,10 +29,8 @@ import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
 import { PreviewModal } from '../modals/PreviewModal';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
-import {
-  SETTINGS_CONSTANTS,
-  NOTIFICATION_CONSTANTS,
-} from '../config/constants';
+import { NOTIFICATION_CONSTANTS } from '../config/constants';
+import { fill, strings } from '../i18n/locale';
 
 const BULK_CHUNK_SIZE = 50;
 
@@ -122,7 +120,7 @@ export class AdvancedNoteMover {
         )
       ) {
         NoticeManager.warning(
-          `File "${fileName}" is already in the blacklist.`
+          fill(strings().notices.alreadyBlacklisted, { fileName })
         );
         return;
       }
@@ -136,10 +134,14 @@ export class AdvancedNoteMover {
       // Update RuleManager
       this.updateRuleManager();
 
-      NoticeManager.success(`File "${fileName}" added to blacklist.`);
+      NoticeManager.success(
+        fill(strings().notices.addedToBlacklist, { fileName })
+      );
     } catch (error) {
       NoticeManager.error(
-        `Error adding file to blacklist: ${error instanceof Error ? error.message : String(error)}`
+        fill(strings().notices.errorAddingToBlacklist, {
+          message: error instanceof Error ? error.message : String(error),
+        })
       );
     }
   }
@@ -233,7 +235,9 @@ export class AdvancedNoteMover {
 
           if (!(await ensureFolderExists(app, targetFolder))) {
             throw createError(
-              `Failed to create target folder: ${targetFolder}`
+              fill(strings().notices.failedToCreateFolder, {
+                folder: targetFolder,
+              })
             );
           }
 
@@ -270,7 +274,10 @@ export class AdvancedNoteMover {
           this.maybeNotifySingleFileMove(file, moveOutcome.targetFolder);
           return this.finishFileMove(originalPath, file, moveResult);
         } catch (error) {
-          handleError(error, `Error moving file '${file.path}'`);
+          handleError(
+            error,
+            fill(strings().notices.errorMovingFile, { path: file.path })
+          );
           return this.finishFileMove(originalPath, file, { moved: false });
         }
       },
@@ -293,7 +300,7 @@ export class AdvancedNoteMover {
 
         if (files.length === 0) {
           if (options.showNotifications && options.operationType === 'bulk') {
-            NoticeManager.info('No movable files found in vault');
+            NoticeManager.info(strings().notices.noMovableFiles);
           }
           return;
         }
@@ -364,12 +371,20 @@ export class AdvancedNoteMover {
                 const totalAttempted = successCount + errorCount;
                 const successMessage =
                   errorCount > 0
-                    ? `Moved ${pluralize(successCount, 'file')} of ${totalAttempted}. ${pluralize(errorCount, 'file')} had errors.`
-                    : `Successfully moved ${pluralize(successCount, 'file')}`;
+                    ? fill(strings().notices.movedOf, {
+                        moved: pluralize(successCount, 'file'),
+                        attempted: totalAttempted,
+                        errors: pluralize(errorCount, 'file'),
+                      })
+                    : fill(strings().notices.successfullyMoved, {
+                        moved: pluralize(successCount, 'file'),
+                      });
 
                 NoticeManager.showWithUndo(
                   'info',
-                  `Bulk Operation: ${successMessage}${skippedDetail}`,
+                  fill(strings().notices.bulkOperation, {
+                    message: `${successMessage}${skippedDetail}`,
+                  }),
                   () => {
                     void (async () => {
                       const undone =
@@ -378,17 +393,24 @@ export class AdvancedNoteMover {
                         );
                       if (undone.success) {
                         NoticeManager.success(
-                          `Bulk operation undone: ${pluralize(successCount, 'file')} moved back`,
+                          fill(strings().notices.bulkUndone, {
+                            moved: pluralize(successCount, 'file'),
+                          }),
                           { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
                         );
                       } else {
                         NoticeManager.warning(
                           undone.errors.length === 1
                             ? undone.errors[0]
-                            : `${pluralize(undone.errors.length, 'error')} while undoing.`,
+                            : fill(strings().notices.errorsWhileUndoing, {
+                                errors: pluralize(
+                                  undone.errors.length,
+                                  'error'
+                                ),
+                              }),
                           {
                             duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
-                            detailText: 'Show details',
+                            detailText: strings().common.showDetails,
                             onDetail:
                               undone.errors.length > 1
                                 ? () => {
@@ -402,10 +424,10 @@ export class AdvancedNoteMover {
                       }
                     })();
                   },
-                  SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL,
+                  strings().modals.historyUndoAll,
                   moveErrors.length > 0
                     ? {
-                        detailText: 'Show details',
+                        detailText: strings().common.showDetails,
                         onDetail: () => {
                           NoticeManager.error(moveErrors.join('; '));
                         },
@@ -414,10 +436,12 @@ export class AdvancedNoteMover {
                 );
               } else {
                 NoticeManager.info(
-                  `Bulk Operation: No files moved.${skippedDetail}`,
+                  fill(strings().notices.bulkNoneMoved, {
+                    skipped: skippedDetail,
+                  }),
                   moveErrors.length > 0
                     ? {
-                        detailText: 'Show details',
+                        detailText: strings().common.showDetails,
                         onDetail: () => {
                           NoticeManager.error(moveErrors.join('; '));
                         },
@@ -428,15 +452,23 @@ export class AdvancedNoteMover {
             } else {
               const periodicMessage =
                 successCount > 0
-                  ? `Periodic movement: Successfully moved ${pluralize(successCount, 'file')}${skippedDetail}`
-                  : `Periodic movement: No files moved.${skippedDetail}`;
+                  ? fill(strings().notices.periodicMoved, {
+                      moved: pluralize(successCount, 'file'),
+                      skipped: skippedDetail,
+                    })
+                  : fill(strings().notices.periodicNone, {
+                      skipped: skippedDetail,
+                    });
               NoticeManager.info(
                 errorCount > 0
-                  ? `${periodicMessage} ${pluralize(errorCount, 'error')}.`
+                  ? fill(strings().notices.withErrorCount, {
+                      message: periodicMessage,
+                      errors: pluralize(errorCount, 'error'),
+                    })
                   : periodicMessage,
                 moveErrors.length > 0
                   ? {
-                      detailText: 'Show details',
+                      detailText: strings().common.showDetails,
                       onDetail: () => {
                         NoticeManager.error(moveErrors.join('; '));
                       },
@@ -500,7 +532,7 @@ export class AdvancedNoteMover {
         bypassConflictSkipCache: true,
       });
     } catch (error) {
-      handleError(error, 'moveFocusedNoteToDestination', false);
+      handleError(error, strings().notices.moveFocusedContext, false);
       return;
     }
   }
@@ -529,7 +561,10 @@ export class AdvancedNoteMover {
     }
     this.lastMoveNoticeAtByFileName.set(file.name, now);
     NoticeManager.warning(
-      `"${file.name}" was not moved: destination folder "${targetFolder}" does not exist (auto-create is disabled).`
+      fill(strings().notices.missingFolder, {
+        fileName: file.name,
+        folder: targetFolder,
+      })
     );
   }
 
@@ -556,7 +591,7 @@ export class AdvancedNoteMover {
     this.plugin.ruleCache.invalidateAll();
     const preview = await this.generateVaultMovePreview();
     new PreviewModal(this.plugin.app, this.plugin, preview, {
-      title: 'Re-evaluate vault',
+      title: strings().modals.previewReEvaluateTitle,
     }).open();
   }
 

@@ -1,7 +1,8 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { App, Setting } from 'obsidian';
 import { ConfirmModal } from '../../modals/ConfirmModal';
-import { SETTINGS_CONSTANTS, HISTORY_CONSTANTS } from '../../config/constants';
+import { HISTORY_CONSTANTS } from '../../config/constants';
+import { fill, strings } from '../../i18n/locale';
 import { MobileUtils } from '../../utils/MobileUtils';
 
 export class HistorySettingsSection {
@@ -12,24 +13,26 @@ export class HistorySettingsSection {
 
   addHistorySettings(): void {
     const isMobile = MobileUtils.isMobile();
-    new Setting(this.containerEl).setName('History').setHeading();
+    new Setting(this.containerEl)
+      .setName(strings().settings.headingsHistory)
+      .setHeading();
 
     // Retention Policy Settings
     this.addRetentionPolicySettings();
 
     // Clear History Button
     const clearHistorySetting = new Setting(this.containerEl)
-      .setName('Clear history')
-      .setDesc('Clears the history of moved notes')
+      .setName(strings().settings.historyClearName)
+      .setDesc(strings().settings.historyClearDesc)
       .addButton(btn => {
-        btn.setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY);
+        btn.setButtonText(strings().settings.historyClearButton);
         btn.buttonEl.addClass('mod-warning');
         btn.onClick(async () => {
           const confirmed = await ConfirmModal.show(this.app, {
-            title: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_TITLE,
-            message: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_MESSAGE,
-            confirmText: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CONFIRM,
-            cancelText: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CANCEL,
+            title: strings().settings.historyClearTitle,
+            message: strings().settings.historyClearMessage,
+            confirmText: strings().settings.historyClearConfirm,
+            cancelText: strings().common.cancel,
             danger: true,
           });
 
@@ -69,11 +72,11 @@ export class HistorySettingsSection {
 
     // Retention Policy Section - Single line with value input and unit dropdown
     const retentionSetting = new Setting(this.containerEl)
-      .setName(SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_TITLE)
-      .setDesc(SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_DESC)
+      .setName(strings().settings.historyRetentionName)
+      .setDesc(strings().settings.historyRetentionDesc)
       .addText(text =>
         text
-          .setPlaceholder('30')
+          .setPlaceholder(strings().settings.historyRetentionPlaceholder)
           .setValue(retentionPolicy.value.toString())
           .onChange(async (value: string) => {
             const numValue = parseInt(value);
@@ -85,21 +88,13 @@ export class HistorySettingsSection {
       )
       .addDropdown(dropdown =>
         dropdown
-          .addOption('days', SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_DAYS)
-          .addOption(
-            'weeks',
-            SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_WEEKS
-          )
-          .addOption(
-            'months',
-            SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_MONTHS
-          )
+          .addOption('days', strings().settings.historyDays)
+          .addOption('weeks', strings().settings.historyWeeks)
+          .addOption('months', strings().settings.historyMonths)
           .setValue(retentionPolicy.unit)
           .onChange(async (value: string) => {
             this.plugin.pluginData.settings.retentionPolicy.unit = value as
-              | 'days'
-              | 'weeks'
-              | 'months';
+              'days' | 'weeks' | 'months';
             await this.plugin.save_settings();
           })
       );
@@ -119,13 +114,16 @@ export class HistorySettingsSection {
 
     // Cleanup button
     const cleanupSetting = new Setting(this.containerEl)
-      .setName('Clean up old entries')
+      .setName(strings().settings.historyCleanupName)
       .setDesc(
-        `Remove history entries older than ${retentionPolicy.value} ${retentionPolicy.unit}`
+        fill(strings().settings.historyCleanupDesc, {
+          value: retentionPolicy.value,
+          unit: retentionPolicy.unit,
+        })
       )
       .addButton(btn =>
         btn
-          .setButtonText('Clean up now')
+          .setButtonText(strings().settings.historyCleanupButton)
           .setCta()
           .onClick(async () => {
             await this.plugin.historyManager.cleanupOldEntries();

@@ -1,5 +1,6 @@
 import { Notice } from 'obsidian';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
+import { fill, strings } from '../i18n/locale';
 import { type NotificationType } from '../types/Common';
 import { debugError } from './debug';
 
@@ -30,14 +31,14 @@ export class NoticeManager {
     const noticeEl = notice.messageEl;
 
     noticeEl.createEl('b', {
-      text: NOTIFICATION_CONSTANTS.DEFAULT_TITLES[type],
+      text: strings().noticeTitles[type],
     });
     noticeEl.createEl('br');
     noticeEl.createSpan({ text: message });
 
     if (options.onDetail) {
       const detailButton = noticeEl.createEl('button', {
-        text: options.detailText ?? 'Show details',
+        text: options.detailText ?? strings().common.showDetails,
       });
       detailButton.onclick = () => {
         options.onDetail?.();
@@ -46,7 +47,7 @@ export class NoticeManager {
 
     if (options.showUndoButton && options.onUndo) {
       const undoButton = noticeEl.createEl('button', {
-        text: options.undoText ?? 'Undo',
+        text: options.undoText ?? strings().common.undo,
         cls: 'mod-warning advancedNoteMover-notice-undo-button',
       });
       undoButton.onclick = () => {
@@ -57,7 +58,9 @@ export class NoticeManager {
           debugError('Error in undo button click handler:', error);
           this.show(
             'error',
-            `Error undoing action: ${error instanceof Error ? error.message : String(error)}`
+            fill(strings().notices.errorUndoing, {
+              message: error instanceof Error ? error.message : String(error),
+            })
           );
         }
       };

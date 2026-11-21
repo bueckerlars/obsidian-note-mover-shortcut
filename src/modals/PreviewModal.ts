@@ -1,4 +1,5 @@
 import { Setting, App, TFile } from 'obsidian';
+import { strings } from '../i18n/locale';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
@@ -33,7 +34,7 @@ export class PreviewModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
-      title: 'Move Preview',
+      title: strings().modals.previewTitle,
       titleIcon: '🔍',
       cssClass: 'advancedNoteMover-preview-modal',
       size: 'large',
@@ -66,7 +67,7 @@ export class PreviewModal extends BaseModal {
     if (stats.totalFiles === 0) {
       contentEl.createDiv({
         cls: 'advancedNoteMover-modal-empty',
-        text: 'No files found to analyze.',
+        text: strings().modals.previewEmpty,
       });
     }
 
@@ -164,7 +165,7 @@ export class PreviewModal extends BaseModal {
         });
         rule.createSpan({
           cls: 'advancedNoteMover-rule-label',
-          text: 'Rule:',
+          text: strings().modals.previewRule,
         });
         rule.createEl('code', { text: entry.matchedRule ?? '' });
       }
@@ -175,7 +176,7 @@ export class PreviewModal extends BaseModal {
         });
         tags.createSpan({
           cls: 'advancedNoteMover-tags-label',
-          text: 'Tags:',
+          text: strings().modals.previewTags,
         });
         for (const tag of entry.tags) {
           tags.createSpan({ cls: 'advancedNoteMover-tag', text: ` ${tag}` });
@@ -208,7 +209,7 @@ export class PreviewModal extends BaseModal {
       );
     }
 
-    this.createButton(buttonContainer, 'Cancel', () => {
+    this.createButton(buttonContainer, strings().common.cancel, () => {
       this.close();
     });
   }
@@ -232,7 +233,7 @@ export class PreviewModal extends BaseModal {
         cls: 'advancedNoteMover-preview-bulk-actions',
       });
       new Setting(row).addButton(btn =>
-        btn.setButtonText('Stop').onClick(() => {
+        btn.setButtonText(strings().modals.previewStop).onClick(() => {
           abortCtl.abort();
           status.setText('Stopping after current file…');
         })
