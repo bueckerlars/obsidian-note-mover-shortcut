@@ -21,4 +21,3 @@ ts advancedNoteMover-preview-path-target
 ts advancedNoteMover-rule-destination-setting
 ts advancedNoteMover-rule-operator
 ts advancedNoteMover-template-suggestion
-ts advancedNoteMover-settings-root
