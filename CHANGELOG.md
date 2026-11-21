@@ -9,6 +9,7 @@
 ### Improvements
 
 - **Languages**: Settings, modal, command, and notice copy is read from `languages/en.json`. The active Obsidian language selects `languages/<code>.json` and falls back to English when that file is missing.
+- **German**: Settings, modals, commands, and notices use German when Obsidian's language is German. A missing German phrase stays in English. Counts use German plurals.
 - **Settings tab**: The settings tab is drawn from one list for every supported Obsidian version. It no longer appears in Obsidian 1.13 settings search, which used a second copy of the same settings. The minimum app version stays 1.8.7.
 - **Mobile settings**: Toggles and dropdowns stay beside their names. Only a wide field, such as the interval or the retention row, stacks.
 - **Mobile toggles**: Toggle descriptions stay on one or two lines, so the switch sits beside the name inside the settings card.
