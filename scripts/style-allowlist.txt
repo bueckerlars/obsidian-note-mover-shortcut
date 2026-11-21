@@ -1,0 +1,1 @@
+# No src inline style assignments are allowed. Add a path and a reason on its own line only when a value cannot be a class.

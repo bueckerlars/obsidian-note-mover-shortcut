@@ -777,6 +777,26 @@
 
 /* ===== RULE EDITOR MODAL STYLES ===== */
 
+.modal.advancedNoteMover-modal-size-small,
+.modal-container.advancedNoteMover-modal-size-small {
+  width: 400px;
+  min-width: 350px;
+}
+
+.modal.advancedNoteMover-modal-size-medium,
+.modal-container.advancedNoteMover-modal-size-medium {
+  width: 860px;
+  min-width: 640px;
+  max-width: 95vw;
+}
+
+.modal.advancedNoteMover-modal-size-large,
+.modal-container.advancedNoteMover-modal-size-large {
+  width: 980px;
+  min-width: 760px;
+  max-width: 95vw;
+}
+
 /* Desktop: content-sized height (avoid stretched empty space) */
 .modal-container.advancedNoteMover-modal-size-large
   > .modal-content.advancedNoteMover-rule-editor-modal,
@@ -1651,6 +1671,9 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
 /* Mobile breakpoint: tablets and phones in portrait */
 @media (max-width: 768px) {
   /* Modal Size Adjustments */
+  .modal.advancedNoteMover-modal-size-small,
+  .modal.advancedNoteMover-modal-size-medium,
+  .modal.advancedNoteMover-modal-size-large,
   .modal-container.advancedNoteMover-modal-size-small,
   .modal-container.advancedNoteMover-modal-size-medium,
   .modal-container.advancedNoteMover-modal-size-large {
@@ -2107,6 +2130,7 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
 /* ===== MOBILE MODAL STYLES ===== */
 
 /* Base Modal Mobile Styles */
+body.is-mobile .modal.advancedNoteMover-modal-size-mobile,
 body.is-mobile .modal-container.advancedNoteMover-modal-size-mobile {
   width: 100%;
   max-width: 100%;
@@ -2118,6 +2142,7 @@ body.is-mobile .modal-container.advancedNoteMover-modal-size-mobile {
   flex-direction: column;
 }
 
+body.is-mobile .modal.advancedNoteMover-modal-size-mobile > .modal-content,
 body.is-mobile
   .modal-container.advancedNoteMover-modal-size-mobile
   > .modal-content {
@@ -2506,6 +2531,12 @@ body.is-mobile .modal-content.advancedNoteMover-confirm-modal {
 }
 
 /* ===== MOBILE RULE EDITOR ===== */
+
+body.is-mobile
+  .modal.advancedNoteMover-modal-size-mobile.advancedNoteMover-rule-editor--mobile {
+  max-height: 100dvh;
+  height: 100dvh;
+}
 
 /* Shell: native header stays fixed, content fills the rest */
 .modal.advancedNoteMover-rule-editor--mobile > :not(.modal-content) {
