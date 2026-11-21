@@ -2334,3 +2334,29 @@ body.is-mobile
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
 }
+
+.advancedNoteMover-settings-root button.mod-cta,
+.advancedNoteMover-settings-root button.mod-cta:hover,
+.advancedNoteMover-settings-root button.mod-warning,
+.advancedNoteMover-settings-root button.mod-warning:hover,
+.advancedNoteMover-focus-scope button.mod-cta,
+.advancedNoteMover-focus-scope button.mod-cta:hover,
+.advancedNoteMover-focus-scope button.mod-warning,
+.advancedNoteMover-focus-scope button.mod-warning:hover {
+  background-color: var(--interactive-normal);
+  color: var(--text-normal);
+}
+
+.advancedNoteMover-settings-root button.mod-cta,
+.advancedNoteMover-settings-root button.mod-cta:hover,
+.advancedNoteMover-focus-scope button.mod-cta,
+.advancedNoteMover-focus-scope button.mod-cta:hover {
+  box-shadow: inset 0 0 0 1px var(--interactive-accent);
+}
+
+.advancedNoteMover-settings-root button.mod-warning,
+.advancedNoteMover-settings-root button.mod-warning:hover,
+.advancedNoteMover-focus-scope button.mod-warning,
+.advancedNoteMover-focus-scope button.mod-warning:hover {
+  box-shadow: inset 0 0 0 1px var(--background-modifier-error);
+}

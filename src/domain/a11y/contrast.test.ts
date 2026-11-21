@@ -110,6 +110,21 @@ describe('muted text contrast', () => {
     }
   });
 
+  it('paints plugin primary and warning buttons with the normal text pair', () => {
+    for (const selector of [
+      '.advancedNoteMover-settings-root button.mod-cta',
+      '.advancedNoteMover-settings-root button.mod-warning',
+      '.advancedNoteMover-focus-scope button.mod-cta',
+      '.advancedNoteMover-focus-scope button.mod-warning',
+    ]) {
+      const color = cssDeclaration(css, selector, 'color');
+      const background = cssDeclaration(css, selector, 'background-color');
+      expect(color).toBe('var(--text-normal)');
+      expect(background).toBe('var(--interactive-normal)');
+      expect(`${color} ${background}`).not.toMatch(/#[0-9a-fA-F]{3,8}/);
+    }
+  });
+
   it('keeps muted icons above the icon threshold after icon opacity', () => {
     for (const selector of ICON_SELECTORS) {
       expect(cssDeclaration(css, selector, 'color')).toBe('var(--text-muted)');
