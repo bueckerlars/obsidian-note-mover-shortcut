@@ -51,13 +51,14 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function freePort(start) {
+export function freePort(start) {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
     server.once('error', reject);
     server.listen(start, '127.0.0.1', () => {
       const address = server.address();
-      const port = typeof address === 'object' && address ? address.port : start;
+      const port =
+        typeof address === 'object' && address ? address.port : start;
       server.close(() => resolve(port));
     });
   });
@@ -73,8 +74,7 @@ function requireBuildArtifacts() {
   return `Missing ${missing.join(', ')}. Run npm run build before UI smoke.`;
 }
 
-function prepareVault() {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'anm-ui-smoke-'));
+function prepareVault(tmp) {
   const vault = path.join(tmp, 'vault');
   const userData = path.join(tmp, 'user-data');
   fs.cpSync(FIXTURE, vault, { recursive: true });
@@ -131,6 +131,22 @@ function prepareVault() {
     )}\n`
   );
   return { tmp, vault, userData };
+}
+
+export async function withTempSmokeVault(task) {
+  let tmp;
+  let userData;
+  let child;
+  try {
+    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'anm-ui-smoke-'));
+    const prepared = prepareVault(tmp);
+    userData = prepared.userData;
+    return await task(prepared, nextChild => {
+      child = nextChild;
+    });
+  } finally {
+    await stopObsidian(child, userData, tmp);
+  }
 }
 
 function launchObsidian(bin, userData, port) {
@@ -226,7 +242,10 @@ class Cdp {
   }
 
   recordConsole(message) {
-    if (message.method === 'Runtime.consoleAPICalled' && message.params?.type === 'error') {
+    if (
+      message.method === 'Runtime.consoleAPICalled' &&
+      message.params?.type === 'error'
+    ) {
       const args = message.params.args || [];
       const text = args
         .map(arg => arg.value ?? arg.description ?? arg.type)
@@ -237,7 +256,10 @@ class Cdp {
     }
     if (message.method === 'Runtime.exceptionThrown') {
       const details = message.params?.exceptionDetails;
-      const text = details?.exception?.description || details?.text || 'uncaught exception';
+      const text =
+        details?.exception?.description ||
+        details?.text ||
+        'uncaught exception';
       this.consoleErrors.push(String(text).split('\n')[0]);
     }
   }
@@ -540,7 +562,10 @@ export function collectFailures(doc, options = {}) {
       typeof el.className === 'string'
         ? el.className.trim().split(/\s+/).filter(Boolean).slice(0, 3).join('.')
         : '';
-    const text = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    const text = (el.textContent || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 40);
     return [tag, className && `.${className}`, text && `"${text}"`]
       .filter(Boolean)
       .join(' ');
@@ -684,7 +709,9 @@ async function evaluateExpression(cdp, expression, timeoutMs = 60000) {
   if (result.exceptionDetails) {
     const exception = result.exceptionDetails.exception;
     throw new Error(
-      exception?.description || result.exceptionDetails.text || 'Page eval failed'
+      exception?.description ||
+        result.exceptionDetails.text ||
+        'Page eval failed'
     );
   }
   return result.result?.value;
@@ -694,7 +721,14 @@ async function evaluate(cdp, action, arg, timeoutMs = 60000) {
   return evaluateExpression(cdp, callExpression(action, arg), timeoutMs);
 }
 
-const CHECKS = ['touch', 'aria', 'inlineStyle', 'console', 'modalTitle', 'overflow'];
+const CHECKS = [
+  'touch',
+  'aria',
+  'inlineStyle',
+  'console',
+  'modalTitle',
+  'overflow',
+];
 const SMOKE_REPORT = path.join(ROOT, 'docs/analysis/baseline-smoke.json');
 
 function writeSmokeReport(report) {
@@ -706,7 +740,9 @@ function printAssertionTable(rows) {
   console.log(header);
   for (const row of rows) {
     const cells = CHECKS.map(check => {
-      const count = row.failures.filter(failure => failure.check === check).length;
+      const count = row.failures.filter(
+        failure => failure.check === check
+      ).length;
       return count === 0 ? 'pass' : `fail ${count}`;
     });
     console.log([`${row.viewport}/${row.screen}`, ...cells].join('\t'));
@@ -776,74 +812,82 @@ async function main() {
     return;
   }
 
-  const run = prepareVault();
-  const port = await freePort(9333);
-  fs.mkdirSync(OUT_DIR, { recursive: true });
-  let child;
-  let cdp;
   const failures = [];
   const rows = [];
   let saved = 0;
   let booted = false;
   let crashed;
   try {
-    child = launchObsidian(binary, run.userData, port);
-    cdp = await connect(
-      (await waitForPage(port, 90000)).webSocketDebuggerUrl
-    );
-    const version = await evaluate(cdp, 'boot', null, 120000);
-    booted = true;
-    console.log(`Plugin ${version} loaded from ${run.vault}`);
-    for (const viewport of VIEWPORTS) {
-      if (viewport.mobile) {
-        cdp = await reloadMobile(cdp, port);
-        await evaluate(cdp, 'boot', null, 120000);
-      }
-      await setViewport(cdp, viewport);
-      await sleep(500);
-      for (const screen of SCREENS) {
-        const name = `${viewport.id}/${screen.id}`;
-        try {
-          cdp.takeConsoleErrors();
-          if (screen.kind === 'settings') {
-            await evaluate(cdp, 'settings', screen.heading);
-          } else {
-            await evaluate(cdp, screen.id);
+    await withTempSmokeVault(async (run, setChild) => {
+      const port = await freePort(9333);
+      fs.mkdirSync(OUT_DIR, { recursive: true });
+      let cdp;
+      try {
+        const child = launchObsidian(binary, run.userData, port);
+        setChild(child);
+        cdp = await connect(
+          (await waitForPage(port, 90000)).webSocketDebuggerUrl
+        );
+        const version = await evaluate(cdp, 'boot', null, 120000);
+        booted = true;
+        console.log(`Plugin ${version} loaded from ${run.vault}`);
+        for (const viewport of VIEWPORTS) {
+          if (viewport.mobile) {
+            cdp = await reloadMobile(cdp, port);
+            await evaluate(cdp, 'boot', null, 120000);
           }
-          await sleep(400);
-          const consoleErrors = cdp.takeConsoleErrors();
-          const assertionFailures = await evaluateExpression(
-            cdp,
-            `(${collectFailures.toString()})(document, ${JSON.stringify({
-              mobile: viewport.mobile,
-              consoleErrors,
-            })})`
-          );
-          await saveShot(cdp, viewport, screen);
-          if (screen.kind === 'modal') {
-            await evaluate(cdp, 'close');
+          await setViewport(cdp, viewport);
+          await sleep(500);
+          for (const screen of SCREENS) {
+            const name = `${viewport.id}/${screen.id}`;
+            try {
+              cdp.takeConsoleErrors();
+              if (screen.kind === 'settings') {
+                await evaluate(cdp, 'settings', screen.heading);
+              } else {
+                await evaluate(cdp, screen.id);
+              }
+              await sleep(400);
+              const consoleErrors = cdp.takeConsoleErrors();
+              const assertionFailures = await evaluateExpression(
+                cdp,
+                `(${collectFailures.toString()})(document, ${JSON.stringify({
+                  mobile: viewport.mobile,
+                  consoleErrors,
+                })})`
+              );
+              await saveShot(cdp, viewport, screen);
+              if (screen.kind === 'modal') {
+                await evaluate(cdp, 'close');
+              }
+              saved += 1;
+              rows.push({
+                viewport: viewport.id,
+                screen: screen.id,
+                failures: Array.isArray(assertionFailures)
+                  ? assertionFailures
+                  : [],
+              });
+              console.log(`ok ${name}`);
+            } catch (error) {
+              const message =
+                error instanceof Error ? error.message : String(error);
+              failures.push(`${name}: ${message.split('\n')[0]}`);
+              console.error(`fail ${name}: ${message.split('\n')[0]}`);
+              await evaluate(cdp, 'close').catch(() => undefined);
+            }
           }
-          saved += 1;
-          rows.push({
-            viewport: viewport.id,
-            screen: screen.id,
-            failures: Array.isArray(assertionFailures) ? assertionFailures : [],
-          });
-          console.log(`ok ${name}`);
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
-          failures.push(`${name}: ${message.split('\n')[0]}`);
-          console.error(`fail ${name}: ${message.split('\n')[0]}`);
-          await evaluate(cdp, 'close').catch(() => undefined);
         }
+      } catch (error) {
+        crashed = error instanceof Error ? error.message : String(error);
+        console.error(crashed);
+      } finally {
+        cdp?.ws.close();
       }
-    }
+    });
   } catch (error) {
     crashed = error instanceof Error ? error.message : String(error);
     console.error(crashed);
-  } finally {
-    cdp?.ws.close();
-    await stopObsidian(child, run.userData, run.tmp);
   }
 
   const assertionFailureCount = rows.reduce(

@@ -1,4 +1,6 @@
-import { collectFailures } from './ui-smoke.mjs';
+import fs from 'node:fs';
+import net from 'node:net';
+import { collectFailures, freePort, withTempSmokeVault } from './ui-smoke.mjs';
 
 function rect(el: HTMLElement, width: number, height: number): void {
   el.getBoundingClientRect = () =>
@@ -163,5 +165,29 @@ describe('collectFailures', () => {
         detail: 'scrollWidth 500 > clientWidth 400',
       }),
     ]);
+  });
+});
+
+describe('withTempSmokeVault', () => {
+  it('deletes the temp vault when port 9333 is taken', async () => {
+    const held = net.createServer();
+    await new Promise<void>((resolve, reject) => {
+      held.once('error', reject);
+      held.listen(9333, '127.0.0.1', () => resolve());
+    });
+    let tmp = '';
+    try {
+      await expect(
+        withTempSmokeVault(async (run: { tmp: string }) => {
+          tmp = run.tmp;
+          expect(fs.existsSync(tmp)).toBe(true);
+          await freePort(9333);
+        })
+      ).rejects.toThrow();
+      expect(tmp).not.toBe('');
+      expect(fs.existsSync(tmp)).toBe(false);
+    } finally {
+      await new Promise<void>(resolve => held.close(() => resolve()));
+    }
   });
 });
