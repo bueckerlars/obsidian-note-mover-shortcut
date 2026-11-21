@@ -784,9 +784,7 @@ export function collectFailures(doc, options = {}) {
   const editor = doc.querySelector(
     '.advancedNoteMover-rule-editor-modal, .advancedNoteMover-rule-editor--mobile'
   );
-  const ariaRoots = editor
-    ? [editor.closest('.modal') || editor]
-    : [doc];
+  const ariaRoots = editor ? [editor.closest('.modal') || editor] : [doc];
 
   for (const root of ariaRoots) {
     for (const el of root.querySelectorAll('.clickable-icon')) {
@@ -919,7 +917,11 @@ export function collectFailures(doc, options = {}) {
   }
 
   for (const button of doc.querySelectorAll('.mod-warning')) {
-    const label = (button.getAttribute('aria-label') || button.textContent || '')
+    const label = (
+      button.getAttribute('aria-label') ||
+      button.textContent ||
+      ''
+    )
       .replace(/\s+/g, ' ')
       .trim()
       .toLowerCase();
@@ -1032,6 +1034,110 @@ const CHECKS = [
   'warning',
   'buttonStack',
 ];
+
+function axeSource() {
+  const axePath = path.join(ROOT, 'node_modules/axe-core/axe.min.js');
+  if (!fs.existsSync(axePath)) return '';
+  return fs.readFileSync(axePath, 'utf8');
+}
+
+async function runAxe(cdp) {
+  const source = axeSource();
+  if (!source) {
+    return {
+      ran: false,
+      reason: 'axe-core is not installed',
+      serious: null,
+      critical: null,
+    };
+  }
+  try {
+    const loaded = await evaluateExpression(cdp, 'typeof axe !== "undefined"');
+    if (loaded !== true) {
+      await evaluateExpression(cdp, source, 120000);
+    }
+    const ready = await evaluateExpression(cdp, 'typeof axe !== "undefined"');
+    if (ready !== true) {
+      return {
+        ran: false,
+        reason: 'axe did not load in the page',
+        serious: null,
+        critical: null,
+      };
+    }
+    return await evaluateExpression(
+      cdp,
+      `axe.run(document.querySelector('.modal') || document.querySelector('.advancedNoteMover-settings-root') || document.body).then(result => ({
+        ran: true,
+        serious: result.violations.filter(item => item.impact === 'serious').reduce((sum, item) => sum + item.nodes.length, 0),
+        critical: result.violations.filter(item => item.impact === 'critical').reduce((sum, item) => sum + item.nodes.length, 0),
+        rules: result.violations.filter(item => item.impact === 'serious' || item.impact === 'critical').map(item => item.id)
+      }))`,
+      120000
+    );
+  } catch (error) {
+    return {
+      ran: false,
+      reason: error instanceof Error ? error.message : String(error),
+      serious: null,
+      critical: null,
+    };
+  }
+}
+
+async function pressKey(cdp, key, code, keyCode) {
+  const event = {
+    key,
+    code,
+    windowsVirtualKeyCode: keyCode,
+    nativeVirtualKeyCode: keyCode,
+  };
+  await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', ...event });
+  await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', ...event });
+}
+
+async function tabWalk(cdp) {
+  const active = () =>
+    evaluateExpression(
+      cdp,
+      `(() => {
+        const el = document.activeElement;
+        if (!el || el === document.body) return 'body';
+        const cls = String(el.className || '').split(/\\s+/).filter(Boolean).slice(0, 2).join('.');
+        return el.tagName.toLowerCase() + (cls ? '.' + cls : '');
+      })()`
+    );
+  try {
+    const before = await active();
+    await pressKey(cdp, 'Tab', 'Tab', 9);
+    await sleep(150);
+    const after = await active();
+    const moved = before !== after && after !== 'body';
+    await pressKey(cdp, 'Escape', 'Escape', 27);
+    await sleep(250);
+    const modalOpen = await evaluateExpression(
+      cdp,
+      'document.querySelector(".modal") !== null'
+    );
+    return {
+      pressed: true,
+      moved,
+      before,
+      after,
+      escapeClosed: modalOpen === false,
+      note: moved
+        ? 'Tab moved focus.'
+        : 'Tab did not move focus. The key was sent, and Obsidian left the focused control unchanged.',
+    };
+  } catch (error) {
+    return {
+      pressed: false,
+      moved: false,
+      escapeClosed: null,
+      note: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
 const SMOKE_REPORT = path.join(ROOT, 'docs/analysis/baseline-smoke.json');
 
 function smokeReportPath(outDir) {
@@ -1138,6 +1244,7 @@ async function main() {
   let saved = 0;
   let booted = false;
   let crashed;
+  let tabWalkResult;
   try {
     await withTempSmokeVault(async (run, setChild) => {
       const port = await freePort(9333);
@@ -1177,7 +1284,15 @@ async function main() {
                   consoleErrors,
                 })})`
               );
+              const axe = await runAxe(cdp);
               await saveShot(cdp, viewport, screen, outDir);
+              if (
+                !tabWalkResult &&
+                viewport.id === 'desktop' &&
+                screen.id === 'confirm'
+              ) {
+                tabWalkResult = await tabWalk(cdp);
+              }
               if (screen.kind === 'modal') {
                 await evaluate(cdp, 'close');
               }
@@ -1188,6 +1303,7 @@ async function main() {
                 failures: Array.isArray(assertionFailures)
                   ? assertionFailures
                   : [],
+                axe,
               });
               console.log(`ok ${name}`);
             } catch (error) {
@@ -1222,6 +1338,12 @@ async function main() {
       checks: CHECKS,
       openErrors: failures,
       assertionFailures: assertionFailureCount,
+      tabWalk: tabWalkResult ?? {
+        pressed: false,
+        moved: false,
+        escapeClosed: null,
+        note: 'The tab walk did not run.',
+      },
       ...(crashed ? { reason: crashed } : {}),
       results: rows,
     },
@@ -1232,6 +1354,18 @@ async function main() {
   }
   console.log(`Saved ${saved} PNG files to ${outDir}/`);
   console.log(`Assertion failures: ${assertionFailureCount}`);
+  for (const row of rows) {
+    const axe = row.axe;
+    const count =
+      axe?.ran === true
+        ? `serious ${axe.serious} critical ${axe.critical}`
+        : `did not run (${axe?.reason ?? 'no result'})`;
+    console.log(`axe ${row.viewport}/${row.screen}: ${count}`);
+  }
+  if (tabWalkResult) {
+    console.log(`tab walk: ${tabWalkResult.note}`);
+    console.log(`escape closed modal: ${tabWalkResult.escapeClosed}`);
+  }
   if (crashed || failures.length > 0) {
     if (failures.length > 0) {
       console.error(`UI smoke failed ${failures.length} screen(s).`);

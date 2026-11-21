@@ -1767,7 +1767,7 @@ body.is-mobile .advancedNoteMover-preview-path-mobile {
 }
 
 body.is-mobile .advancedNoteMover-preview-path-current {
-  color: var(--text-normal);
+  color: var(--text-muted);
 }
 
 body.is-mobile .advancedNoteMover-preview-arrow-mobile {
