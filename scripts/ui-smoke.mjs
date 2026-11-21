@@ -198,11 +198,13 @@ class Cdp {
     this.ws = ws;
     this.nextId = 0;
     this.pending = new Map();
+    this.consoleErrors = [];
     this.closed = new Promise(resolve => {
       ws.addEventListener('close', () => resolve());
     });
     ws.addEventListener('message', event => {
       const message = JSON.parse(event.data.toString());
+      this.recordConsole(message);
       const done = this.pending.get(message.id);
       if (!done) {
         return;
@@ -210,6 +212,29 @@ class Cdp {
       this.pending.delete(message.id);
       done(message);
     });
+  }
+
+  recordConsole(message) {
+    if (message.method === 'Runtime.consoleAPICalled' && message.params?.type === 'error') {
+      const args = message.params.args || [];
+      const text = args
+        .map(arg => arg.value ?? arg.description ?? arg.type)
+        .join(' ')
+        .trim();
+      this.consoleErrors.push(text || 'console error');
+      return;
+    }
+    if (message.method === 'Runtime.exceptionThrown') {
+      const details = message.params?.exceptionDetails;
+      const text = details?.exception?.description || details?.text || 'uncaught exception';
+      this.consoleErrors.push(String(text).split('\n')[0]);
+    }
+  }
+
+  takeConsoleErrors() {
+    const errors = this.consoleErrors;
+    this.consoleErrors = [];
+    return errors;
   }
 
   send(method, params = {}, timeoutMs = 20000) {
@@ -491,17 +516,155 @@ async function anmSmoke(action, arg) {
   throw new Error(`Unknown smoke action: ${action}`);
 }
 
+export function collectFailures(doc, options = {}) {
+  const failures = [];
+  const mobile = options.mobile === true;
+  const consoleErrors = Array.isArray(options.consoleErrors)
+    ? options.consoleErrors
+    : [];
+
+  function describe(el) {
+    const tag = el.tagName ? el.tagName.toLowerCase() : 'node';
+    const className =
+      typeof el.className === 'string'
+        ? el.className.trim().split(/\s+/).filter(Boolean).slice(0, 3).join('.')
+        : '';
+    const text = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    return [tag, className && `.${className}`, text && `"${text}"`]
+      .filter(Boolean)
+      .join(' ');
+  }
+
+  if (mobile) {
+    const targets = doc.querySelectorAll(
+      'button, a[href], [role="button"], .clickable-icon, input:not([type="hidden"]), select, textarea, summary'
+    );
+    for (const el of targets) {
+      const rect = el.getBoundingClientRect();
+      const width = rect?.width ?? 0;
+      const height = rect?.height ?? 0;
+      if (width === 0 && height === 0) {
+        continue;
+      }
+      if (width < 44 || height < 44) {
+        failures.push({
+          check: 'touch',
+          target: describe(el),
+          detail: `${Math.round(width)}x${Math.round(height)}`,
+        });
+      }
+    }
+  }
+
+  for (const el of doc.querySelectorAll('.clickable-icon')) {
+    const label = el.getAttribute('aria-label');
+    if (!label || !label.trim()) {
+      failures.push({
+        check: 'aria',
+        target: describe(el),
+        detail: 'missing aria-label',
+      });
+    }
+  }
+
+  for (const el of doc.querySelectorAll('button')) {
+    if (el.matches('.clickable-icon')) {
+      continue;
+    }
+    if (!el.querySelector('svg')) {
+      continue;
+    }
+    const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (text) {
+      continue;
+    }
+    const label = el.getAttribute('aria-label');
+    if (!label || !label.trim()) {
+      failures.push({
+        check: 'aria',
+        target: describe(el),
+        detail: 'missing aria-label',
+      });
+    }
+  }
+
+  for (const el of doc.querySelectorAll('[class]')) {
+    const classes =
+      typeof el.className === 'string' ? el.className.split(/\s+/) : [];
+    const pluginOwned = classes.some(
+      name => name.startsWith('advancedNoteMover-') || name.startsWith('anm-')
+    );
+    if (!pluginOwned) {
+      continue;
+    }
+    const style = el.getAttribute('style');
+    if (!style || !style.trim()) {
+      continue;
+    }
+    failures.push({
+      check: 'inlineStyle',
+      target: describe(el),
+      detail: style.trim().slice(0, 120),
+    });
+  }
+
+  for (const message of consoleErrors) {
+    if (!message) {
+      continue;
+    }
+    failures.push({
+      check: 'console',
+      target: 'console',
+      detail: String(message).split('\n')[0].slice(0, 200),
+    });
+  }
+
+  for (const modal of doc.querySelectorAll('.modal')) {
+    if (!modal.querySelector('.modal-title')) {
+      failures.push({
+        check: 'modalTitle',
+        target: describe(modal),
+        detail: 'missing .modal-title',
+      });
+    }
+  }
+
+  const overflowRoots = [
+    doc.documentElement,
+    doc.body,
+    ...doc.querySelectorAll(
+      '.modal, .vertical-tab-content, .advancedNoteMover-settings-root'
+    ),
+  ].filter(Boolean);
+  const seen = new Set();
+  for (const el of overflowRoots) {
+    if (seen.has(el)) {
+      continue;
+    }
+    seen.add(el);
+    if (el.scrollWidth > el.clientWidth) {
+      failures.push({
+        check: 'overflow',
+        target: describe(el),
+        detail: `scrollWidth ${el.scrollWidth} > clientWidth ${el.clientWidth}`,
+      });
+    }
+  }
+
+  return failures;
+}
+
 function callExpression(action, arg) {
   return `(${anmSmoke.toString()})(${JSON.stringify(action)}, ${JSON.stringify(
     arg ?? null
   )})`;
 }
 
-async function evaluate(cdp, action, arg, timeoutMs = 60000) {
+async function evaluateExpression(cdp, expression, timeoutMs = 60000) {
   const result = await cdp.send(
     'Runtime.evaluate',
     {
-      expression: callExpression(action, arg),
+      expression,
       awaitPromise: true,
       returnByValue: true,
     },
@@ -514,6 +677,29 @@ async function evaluate(cdp, action, arg, timeoutMs = 60000) {
     );
   }
   return result.result?.value;
+}
+
+async function evaluate(cdp, action, arg, timeoutMs = 60000) {
+  return evaluateExpression(cdp, callExpression(action, arg), timeoutMs);
+}
+
+const CHECKS = ['touch', 'aria', 'inlineStyle', 'console', 'modalTitle', 'overflow'];
+const SMOKE_REPORT = path.join(ROOT, 'docs/analysis/baseline-smoke.json');
+
+function writeSmokeReport(report) {
+  fs.writeFileSync(SMOKE_REPORT, `${JSON.stringify(report, null, 2)}\n`);
+}
+
+function printAssertionTable(rows) {
+  const header = ['screen', ...CHECKS].join('\t');
+  console.log(header);
+  for (const row of rows) {
+    const cells = CHECKS.map(check => {
+      const count = row.failures.filter(failure => failure.check === check).length;
+      return count === 0 ? 'pass' : `fail ${count}`;
+    });
+    console.log([`${row.viewport}/${row.screen}`, ...cells].join('\t'));
+  }
 }
 
 async function setViewport(cdp, viewport) {
@@ -564,15 +750,17 @@ async function reloadMobile(cdp, port) {
 async function main() {
   const binary = findObsidianBinary();
   if (!binary) {
-    console.error(
-      'Obsidian binary not found. Set OBSIDIAN_BIN or install Obsidian. UI smoke did not run.'
-    );
+    const reason =
+      'Obsidian binary not found. Set OBSIDIAN_BIN or install Obsidian. UI smoke did not run.';
+    console.error(reason);
+    writeSmokeReport({ ran: false, reason });
     process.exitCode = 1;
     return;
   }
   const missingBuild = requireBuildArtifacts();
   if (missingBuild) {
     console.error(missingBuild);
+    writeSmokeReport({ ran: false, reason: missingBuild });
     process.exitCode = 1;
     return;
   }
@@ -583,13 +771,17 @@ async function main() {
   let child;
   let cdp;
   const failures = [];
+  const rows = [];
   let saved = 0;
+  let booted = false;
+  let crashed;
   try {
     child = launchObsidian(binary, run.userData, port);
     cdp = await connect(
       (await waitForPage(port, 90000)).webSocketDebuggerUrl
     );
     const version = await evaluate(cdp, 'boot', null, 120000);
+    booted = true;
     console.log(`Plugin ${version} loaded from ${run.vault}`);
     for (const viewport of VIEWPORTS) {
       if (viewport.mobile) {
@@ -601,17 +793,31 @@ async function main() {
       for (const screen of SCREENS) {
         const name = `${viewport.id}/${screen.id}`;
         try {
+          cdp.takeConsoleErrors();
           if (screen.kind === 'settings') {
             await evaluate(cdp, 'settings', screen.heading);
           } else {
             await evaluate(cdp, screen.id);
           }
           await sleep(400);
+          const consoleErrors = cdp.takeConsoleErrors();
+          const assertionFailures = await evaluateExpression(
+            cdp,
+            `(${collectFailures.toString()})(document, ${JSON.stringify({
+              mobile: viewport.mobile,
+              consoleErrors,
+            })})`
+          );
           await saveShot(cdp, viewport, screen);
           if (screen.kind === 'modal') {
             await evaluate(cdp, 'close');
           }
           saved += 1;
+          rows.push({
+            viewport: viewport.id,
+            screen: screen.id,
+            failures: Array.isArray(assertionFailures) ? assertionFailures : [],
+          });
           console.log(`ok ${name}`);
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
@@ -621,16 +827,38 @@ async function main() {
         }
       }
     }
+  } catch (error) {
+    crashed = error instanceof Error ? error.message : String(error);
+    console.error(crashed);
   } finally {
     cdp?.ws.close();
     stopObsidian(child, run.userData);
   }
 
+  const assertionFailureCount = rows.reduce(
+    (sum, row) => sum + row.failures.length,
+    0
+  );
+  writeSmokeReport({
+    ran: booted && !crashed,
+    screenshots: saved,
+    checks: CHECKS,
+    openErrors: failures,
+    assertionFailures: assertionFailureCount,
+    ...(crashed ? { reason: crashed } : {}),
+    results: rows,
+  });
+  if (rows.length > 0) {
+    printAssertionTable(rows);
+  }
   console.log(`Saved ${saved} PNG files to docs/analysis/screenshots/phase-0/`);
-  if (failures.length > 0) {
-    console.error(`UI smoke failed ${failures.length} screen(s).`);
-    for (const failure of failures) {
-      console.error(`- ${failure}`);
+  console.log(`Assertion failures: ${assertionFailureCount}`);
+  if (crashed || failures.length > 0) {
+    if (failures.length > 0) {
+      console.error(`UI smoke failed ${failures.length} screen(s).`);
+      for (const failure of failures) {
+        console.error(`- ${failure}`);
+      }
     }
     process.exitCode = 1;
   }
