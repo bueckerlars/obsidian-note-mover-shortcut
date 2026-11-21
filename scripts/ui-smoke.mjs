@@ -936,6 +936,33 @@ export function collectFailures(doc, options = {}) {
     }
   }
 
+  const stackRoots = doc.querySelectorAll(
+    '.advancedNoteMover-history-entry, .advancedNoteMover-modal-list-item, .advancedNoteMover-conflict-modal'
+  );
+  for (const entry of stackRoots) {
+    const entryRect = entry.getBoundingClientRect();
+    if (!entryRect || entryRect.width === 0) {
+      continue;
+    }
+    let fullWidth = 0;
+    for (const button of entry.querySelectorAll('button')) {
+      const rect = button.getBoundingClientRect();
+      if (!rect || rect.width === 0 || rect.height === 0) {
+        continue;
+      }
+      if (rect.width >= entryRect.width - 8) {
+        fullWidth += 1;
+      }
+    }
+    if (fullWidth > 3) {
+      failures.push({
+        check: 'buttonStack',
+        target: describe(entry),
+        detail: `${fullWidth} full-width buttons`,
+      });
+    }
+  }
+
   const overflowRoots = [
     doc.documentElement,
     doc.body,
@@ -1003,6 +1030,7 @@ const CHECKS = [
   'toggleHeight',
   'cta',
   'warning',
+  'buttonStack',
 ];
 const SMOKE_REPORT = path.join(ROOT, 'docs/analysis/baseline-smoke.json');
 
