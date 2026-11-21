@@ -10,6 +10,7 @@ import { toMarkdownInlineCode } from '../../utils/markdown-confirm';
 import { handleError } from '../../utils/Error';
 import { NoticeManager } from '../../utils/NoticeManager';
 import { cloneRule } from '../cloneRule';
+import { renderSetting } from '../settingDefinitions';
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -21,38 +22,34 @@ export class RulesSettingsSection {
   ) {}
 
   addRulesSetting(): void {
-    new Setting(this.containerEl)
-      .setName(strings().settings.headingsRules)
-      .setHeading();
-
+    const setting = renderSetting(this.containerEl, 'rules.heading');
     const descUseRules = createFragment();
     descUseRules.append(
       strings().settings.rulesIntroLead,
       createEl('br'),
       strings().settings.rulesIntroTail
     );
-
-    new Setting(this.containerEl).setDesc(descUseRules);
+    setting.setDesc(descUseRules);
   }
 
   addCreateMissingFoldersSetting(): void {
     const isMobile = MobileUtils.isMobile();
-    const setting = new Setting(this.containerEl)
-      .setName(strings().settings.rulesCreateFoldersName)
-      .setDesc(strings().settings.rulesCreateFoldersDesc)
-      .addToggle(toggle =>
-        toggle
-          .setValue(
-            this.plugin.pluginData.settings.createMissingDestinationFolders !==
-              false
-          )
-          .onChange(async value => {
-            this.plugin.pluginData.settings.createMissingDestinationFolders =
-              value;
-            await this.plugin.save_settings();
-            this.plugin.advancedNoteMover.updateRuleManager();
-          })
-      );
+    const setting = renderSetting(
+      this.containerEl,
+      'rules.createFolders'
+    ).addToggle(toggle =>
+      toggle
+        .setValue(
+          this.plugin.pluginData.settings.createMissingDestinationFolders !==
+            false
+        )
+        .onChange(async value => {
+          this.plugin.pluginData.settings.createMissingDestinationFolders =
+            value;
+          await this.plugin.save_settings();
+          this.plugin.advancedNoteMover.updateRuleManager();
+        })
+    );
 
     if (isMobile) {
       setting.settingEl.addClass('advancedNoteMover-mobile-optimized');
@@ -62,49 +59,46 @@ export class RulesSettingsSection {
   addVaultReEvaluationSetting(): void {
     let reEvaluateButton: ButtonComponent | undefined;
 
-    new Setting(this.containerEl)
-      .setName(strings().settings.rulesReEvaluateName)
-      .setDesc(strings().settings.rulesReEvaluateDesc)
-      .addButton(btn => {
-        reEvaluateButton = btn
-          .setButtonText(strings().settings.rulesReEvaluateButton)
-          .onClick(() => {
-            if (reEvaluateButton) {
-              reEvaluateButton.setDisabled(true);
-              reEvaluateButton.setButtonText(
-                strings().settings.rulesGeneratingPreview
+    renderSetting(this.containerEl, 'rules.reEvaluate').addButton(btn => {
+      reEvaluateButton = btn
+        .setButtonText(strings().settings.rulesReEvaluateButton)
+        .onClick(() => {
+          if (reEvaluateButton) {
+            reEvaluateButton.setDisabled(true);
+            reEvaluateButton.setButtonText(
+              strings().settings.rulesGeneratingPreview
+            );
+          }
+          void (async () => {
+            try {
+              await this.plugin.advancedNoteMover.openVaultReEvaluationPreview();
+            } catch (error) {
+              handleError(
+                error,
+                strings().notices.errorGeneratingVaultPreviewContext,
+                false
               );
-            }
-            void (async () => {
-              try {
-                await this.plugin.advancedNoteMover.openVaultReEvaluationPreview();
-              } catch (error) {
-                handleError(
-                  error,
-                  strings().notices.errorGeneratingVaultPreviewContext,
-                  false
+              NoticeManager.error(
+                fill(strings().notices.errorGeneratingPreview, {
+                  message:
+                    error instanceof Error ? error.message : String(error),
+                })
+              );
+            } finally {
+              if (reEvaluateButton) {
+                reEvaluateButton.setDisabled(false);
+                reEvaluateButton.setButtonText(
+                  strings().settings.rulesReEvaluateButton
                 );
-                NoticeManager.error(
-                  fill(strings().notices.errorGeneratingPreview, {
-                    message:
-                      error instanceof Error ? error.message : String(error),
-                  })
-                );
-              } finally {
-                if (reEvaluateButton) {
-                  reEvaluateButton.setDisabled(false);
-                  reEvaluateButton.setButtonText(
-                    strings().settings.rulesReEvaluateButton
-                  );
-                }
               }
-            })();
-          });
-      });
+            }
+          })();
+        });
+    });
   }
 
   addAddRuleButtonSetting(): void {
-    new Setting(this.containerEl).addButton(btn =>
+    renderSetting(this.containerEl, 'rules.add').addButton(btn =>
       btn
         .setButtonText(strings().settings.rulesAddButton)
         .setCta()
@@ -160,10 +154,7 @@ export class RulesSettingsSection {
     this.setupDragDropManagerV2(rulesContainer);
 
     if (this.plugin.pluginData.settings.rulesV2.length === 0) {
-      this.containerEl.createEl('p', {
-        cls: 'advancedNoteMover-settings-hint',
-        text: strings().settings.rulesEmpty,
-      });
+      renderSetting(this.containerEl, 'rules.empty');
     }
 
     this.plugin.pluginData.settings.rulesV2.forEach(rule => {

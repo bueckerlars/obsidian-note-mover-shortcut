@@ -4,6 +4,7 @@ import { strings } from '../../i18n/locale';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { AdvancedSuggest } from '../suggesters/AdvancedSuggest';
 import { MobileUtils } from '../../utils/MobileUtils';
+import { renderSetting } from '../settingDefinitions';
 
 export class FilterSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -16,17 +17,15 @@ export class FilterSettingsSection {
   ) {}
 
   addFilterSettings(): void {
-    // Filter settings
-    new Setting(this.containerEl)
-      .setName(strings().settings.headingsFilter)
-      .setHeading();
-
-    new Setting(this.containerEl).setDesc(strings().settings.filterSectionDesc);
+    renderSetting(this.containerEl, 'filters.heading');
 
     this.addPeriodicMovementFilterArray();
 
     const isMobile = MobileUtils.isMobile();
-    const addFilterSetting = new Setting(this.containerEl).addButton(btn =>
+    const addFilterSetting = renderSetting(
+      this.containerEl,
+      'filters.add'
+    ).addButton(btn =>
       btn
         .setButtonText(strings().settings.filterAdd)
         .setCta()
@@ -70,10 +69,7 @@ export class FilterSettingsSection {
     this.setupDragDropManager(filtersContainer);
 
     if (this.plugin.pluginData.settings.filters.filter.length === 0) {
-      this.containerEl.createEl('p', {
-        cls: 'advancedNoteMover-settings-hint',
-        text: strings().settings.filterEmpty,
-      });
+      renderSetting(this.containerEl, 'filters.empty');
     }
 
     this.plugin.pluginData.settings.filters.filter.forEach((filter, index) => {
