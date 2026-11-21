@@ -8,10 +8,6 @@ export default defineConfig({
   resolve: {
     conditions: ['browser', 'development'],
     alias: {
-      'virtual:languages': path.resolve(
-        __dirname,
-        'scripts/languages-virtual.mjs'
-      ),
       obsidian: path.resolve(
         __dirname,
         'src/test-utils/obsidian-vitest-stub.ts'
@@ -23,6 +19,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    setupFiles: ['src/test-utils/install-locale-catalogs.ts'],
     include: ['src/**/*.test.ts', 'src/**/*.spec.ts', 'scripts/**/*.test.ts'],
     coverage: {
       provider: 'v8',

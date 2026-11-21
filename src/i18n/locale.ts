@@ -1,17 +1,33 @@
-import catalogs from 'virtual:languages';
 import { pluralize } from '../utils/pluralize';
 
-export type LocaleCatalog = typeof catalogs.en;
+export type LocaleCatalog = typeof import('../../languages/en.json');
 
-const bundled: Record<string, LocaleCatalog> = catalogs;
+const FALLBACK = {
+  unnamedRule: 'Unnamed rule',
+  common: {
+    cancel: 'Cancel',
+    close: 'Close',
+    save: 'Save',
+    ok: 'OK',
+    delete: 'Delete',
+  },
+  commands: {
+    moveActiveNote: 'Move active note to note folder',
+    moveAllFiles: 'Move all files in vault',
+    whyNotMoved: 'Why not moved?',
+    showReleaseNotes: 'Show release notes',
+    showHistory: 'Show history',
+    reviewSkippedConflicts: 'Review skipped move conflicts',
+    previewBulk: 'Preview bulk movement for all files',
+    reEvaluateVault: 'Re-evaluate entire vault with current rules',
+    previewActiveNote: 'Preview active note movement',
+    addCurrentFileToBlacklist: 'Add current file to blacklist',
+  },
+} as LocaleCatalog;
 
-const GERMAN_NOUNS: Record<string, readonly [string, string]> = {
-  file: ['Datei', 'Dateien'],
-  rule: ['Regel', 'Regeln'],
-  filter: ['Filter', 'Filter'],
-  note: ['Notiz', 'Notizen'],
-  error: ['Fehler', 'Fehler'],
-};
+let installed: Record<string, LocaleCatalog> = { en: FALLBACK };
+let active: LocaleCatalog = FALLBACK;
+let activeCode = 'en';
 
 /** `en-gb` and `EN` both select languages/en.json. */
 export function localeCode(locale: string): string {
@@ -19,19 +35,24 @@ export function localeCode(locale: string): string {
   return code || 'en';
 }
 
-export function loadLocale(
-  locale: string,
-  available: Record<string, LocaleCatalog> = bundled
-): LocaleCatalog {
-  const catalog = available[localeCode(locale)] ?? available.en;
-  if (!catalog) {
-    throw new Error('languages/en.json is missing');
-  }
-  return catalog;
+export function localeCatalogFile(locale: string): string {
+  return `languages/${localeCode(locale)}.json`;
 }
 
-let active = loadLocale('en');
-let activeCode = 'en';
+export function installCatalogs(catalogs: Record<string, LocaleCatalog>): void {
+  installed = catalogs.en ? catalogs : { ...catalogs, en: FALLBACK };
+  active = loadLocale(activeCode);
+}
+
+export function loadLocale(
+  locale: string,
+  available?: Record<string, LocaleCatalog>
+): LocaleCatalog {
+  const catalogs = available ?? installed;
+  return (
+    catalogs[localeCode(locale)] ?? catalogs.en ?? installed.en ?? FALLBACK
+  );
+}
 
 export function useLocale(
   locale: string,
@@ -70,12 +91,21 @@ export function t(
   key: string,
   params?: Record<string, string | number>
 ): string {
-  const template = readString(active, key) ?? readString(bundled.en, key);
+  const template =
+    readString(active, key) ?? readString(installed.en ?? FALLBACK, key);
   if (template === undefined) {
     return key;
   }
   return params ? fill(template, params) : template;
 }
+
+const GERMAN_NOUNS: Record<string, readonly [string, string]> = {
+  file: ['Datei', 'Dateien'],
+  rule: ['Regel', 'Regeln'],
+  filter: ['Filter', 'Filter'],
+  note: ['Notiz', 'Notizen'],
+  error: ['Fehler', 'Fehler'],
+};
 
 export function plural(
   count: number,

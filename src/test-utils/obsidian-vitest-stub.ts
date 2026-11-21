@@ -23,6 +23,18 @@ export function getLanguage(): string {
   return 'en';
 }
 
+export function normalizePath(path: string): string {
+  const parts: string[] = [];
+  for (const part of path.replace(/\\/g, '/').split('/')) {
+    if (part === '..') {
+      parts.pop();
+    } else if (part !== '.' && part !== '') {
+      parts.push(part);
+    }
+  }
+  return parts.join('/');
+}
+
 export function getAllTags(cache: Record<string, unknown>): string[] {
   const tags = cache.tags as { tag: string }[] | undefined;
   if (!tags?.length) return [];

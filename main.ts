@@ -21,7 +21,8 @@ import { PerformanceTraceRecorder } from 'src/infrastructure/debug/performance-t
 import { createPluginApplicationServices } from 'src/application/plugin-application-services';
 import type { PluginApplicationServices } from 'src/application/plugin-application-services';
 import { setDebugEnabled } from 'src/utils/debug';
-import { strings, useLocale } from 'src/i18n/locale';
+import { strings } from 'src/i18n/locale';
+import { loadPluginLocale } from 'src/i18n/plugin-locale';
 
 export default class AdvancedNoteMoverPlugin extends Plugin {
   /** Persisted plugin payload (not Obsidian 1.13+ `Plugin.settings`). */
@@ -41,7 +42,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
   public appServices!: PluginApplicationServices;
 
   async onload() {
-    useLocale(getLanguage());
+    await loadPluginLocale(this.app, this.manifest, getLanguage());
     await loadPersistedSettings(this);
     setDebugEnabled(this.pluginData.settings.enablePerformanceDebug === true);
 
