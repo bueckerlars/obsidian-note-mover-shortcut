@@ -10,7 +10,7 @@
     "overflow"
   ],
   "openErrors": [],
-  "assertionFailures": 469,
+  "assertionFailures": 491,
   "results": [
     {
       "viewport": "desktop",
@@ -65,6 +65,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 933px;"
         }
       ]
     },
@@ -121,6 +126,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 965px;"
         }
       ]
     },
@@ -177,6 +187,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 997px;"
         }
       ]
     },
@@ -233,6 +248,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1029px;"
         }
       ]
     },
@@ -289,6 +309,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1061px;"
         }
       ]
     },
@@ -345,6 +370,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1093px;"
         }
       ]
     },
@@ -401,6 +431,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1125px;"
         }
       ]
     },
@@ -457,6 +492,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1157px;"
         }
       ]
     },
@@ -513,6 +553,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1189px;"
         }
       ]
     },
@@ -579,6 +624,11 @@
           "check": "aria",
           "target": "button .advancedNoteMover-rule-trigger-delete-btn.clickable-icon",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1189px;"
         },
         {
           "check": "inlineStyle",
@@ -816,6 +866,11 @@
         },
         {
           "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1189px;"
+        },
+        {
+          "check": "inlineStyle",
           "target": "div .modal.is-desktop.advancedNoteMover-modal-size-small \"Clear HistoryAre you sure you want to cl\"",
           "detail": "width: 400px !important; min-width: 350px !important;"
         }
@@ -990,6 +1045,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 844px;"
         }
       ]
     },
@@ -1101,6 +1161,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 967px;"
         }
       ]
     },
@@ -1212,6 +1277,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1090px;"
         }
       ]
     },
@@ -1323,6 +1393,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1213px;"
         }
       ]
     },
@@ -1434,6 +1509,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1336px;"
         }
       ]
     },
@@ -1545,6 +1625,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1459px;"
         }
       ]
     },
@@ -1656,6 +1741,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1582px;"
         }
       ]
     },
@@ -1767,6 +1857,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1705px;"
         }
       ]
     },
@@ -1878,6 +1973,11 @@
           "check": "aria",
           "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1828px;"
         }
       ]
     },
@@ -1999,6 +2099,11 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1828px;"
         },
         {
           "check": "inlineStyle",
@@ -2333,6 +2438,11 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
+          "detail": "padding-bottom: 1828px;"
         },
         {
           "check": "inlineStyle",
