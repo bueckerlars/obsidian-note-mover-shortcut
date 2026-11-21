@@ -34,13 +34,15 @@ import {
   applyFolderCreationValue,
   applyPropertyName,
   attachValueSuggester,
-  createDefaultTrigger,
   getFolderCreationValue,
   getOperatorsForTrigger,
   getValuePlaceholder,
-  moveTrigger,
-  removeTrigger,
 } from './ruleEditorShared';
+import {
+  addCondition,
+  removeCondition,
+  reorderConditions,
+} from './ruleEditorState';
 
 const CLS = 'advancedNoteMover-rule-mobile';
 
@@ -254,7 +256,7 @@ export class RuleEditorMobileView {
         button.buttonEl.prepend(iconEl);
       })
       .onClick(() => {
-        this.rule.triggers.push(createDefaultTrigger());
+        this.rule.triggers = addCondition(this.rule).triggers;
         this.renderConditions();
         const cards = this.conditionsListEl?.querySelectorAll(
           `.${CLS}-condition`
@@ -353,7 +355,11 @@ export class RuleEditorMobileView {
       .setTooltip(strings().modals.ruleEditorMoveUp)
       .setDisabled(index === 0)
       .onClick(() => {
-        moveTrigger(triggers, index, index - 1);
+        this.rule.triggers = reorderConditions(
+          this.rule,
+          index,
+          index - 1
+        ).triggers;
         this.renderConditions();
       });
     new ExtraButtonComponent(actions)
@@ -361,14 +367,18 @@ export class RuleEditorMobileView {
       .setTooltip(strings().modals.ruleEditorMoveDown)
       .setDisabled(index === triggers.length - 1)
       .onClick(() => {
-        moveTrigger(triggers, index, index + 1);
+        this.rule.triggers = reorderConditions(
+          this.rule,
+          index,
+          index + 1
+        ).triggers;
         this.renderConditions();
       });
     new ExtraButtonComponent(actions)
       .setIcon('trash-2')
       .setTooltip(strings().modals.ruleEditorDeleteCondition)
       .onClick(() => {
-        removeTrigger(triggers, index);
+        this.rule.triggers = removeCondition(this.rule, index).triggers;
         this.renderConditions();
       })
       .then(button => {
