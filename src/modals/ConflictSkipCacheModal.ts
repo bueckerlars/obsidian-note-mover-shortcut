@@ -19,6 +19,7 @@ export class ConflictSkipCacheModal extends BaseModal {
       cssClass: 'advancedNoteMover-conflict-skip-cache-modal',
       size: 'large',
       ...options,
+      useNativeTitle: true,
     });
   }
 
@@ -264,8 +265,8 @@ export class ConflictSkipCacheModal extends BaseModal {
   }
 
   private refreshContent(): void {
-    const { contentEl } = this;
-    contentEl.empty();
+    this.contentEl.empty();
+    this.createTitle();
     this.createContent();
   }
 }

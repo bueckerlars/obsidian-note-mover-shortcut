@@ -62,6 +62,98 @@ export function parseYaml(yaml: string): Record<string, unknown> {
   return result;
 }
 
+export class Modal {
+  modalEl: HTMLElement = document.createElement('div');
+  contentEl: HTMLElement = document.createElement('div');
+  titleEl: HTMLElement = document.createElement('div');
+  containerEl: HTMLElement = document.createElement('div');
+
+  constructor(public app: unknown) {
+    this.modalEl.className = 'modal';
+    this.titleEl.className = 'modal-title';
+    this.contentEl.className = 'modal-content';
+    this.modalEl.append(this.titleEl, this.contentEl);
+    document.body.append(this.modalEl);
+  }
+
+  setTitle(title: string): void {
+    this.titleEl.textContent = title;
+  }
+
+  open(): void {
+    this.onOpen();
+  }
+
+  onOpen(): void {}
+
+  close(): void {
+    this.onClose();
+  }
+
+  onClose(): void {}
+}
+
+export class Setting {
+  settingEl: HTMLElement = document.createElement('div');
+
+  constructor(containerEl: HTMLElement) {
+    containerEl.append(this.settingEl);
+  }
+
+  addButton(
+    cb: (button: {
+      setButtonText: (text: string) => unknown;
+      setTooltip: (text: string) => unknown;
+      onClick: (fn: () => void) => unknown;
+    }) => void
+  ): this {
+    const button = document.createElement('button');
+    const api = {
+      setButtonText(text: string) {
+        button.textContent = text;
+        return api;
+      },
+      setTooltip() {
+        return api;
+      },
+      onClick(fn: () => void) {
+        button.addEventListener('click', () => {
+          fn();
+        });
+        return api;
+      },
+    };
+    this.settingEl.append(button);
+    cb(api);
+    return this;
+  }
+}
+
+export class Notice {
+  messageEl: HTMLElement = document.createElement('div');
+  hide(): void {}
+}
+
+export const Platform = {
+  isMobile: false,
+  isDesktop: true,
+  isIosApp: false,
+  isAndroidApp: false,
+  isPhone: false,
+  isTablet: false,
+};
+
+export function setIcon(): void {}
+export function setTooltip(): void {}
+
+export class Component {
+  unload(): void {}
+}
+
+export const MarkdownRenderer = {
+  render: async (): Promise<void> => {},
+};
+
 export function parseFrontMatterTags(frontmatter: Record<string, unknown>) {
   const raw = frontmatter.tags;
   if (!raw) return null;
