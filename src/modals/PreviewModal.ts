@@ -301,6 +301,7 @@ export class PreviewModal extends BaseModal {
               false
             ),
             bypassConflictSkipCache: true,
+            ruleName: entry.matchedRule,
             onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
               await persistConflictResolutionStrategy(this.plugin, strategy);
             },

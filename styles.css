@@ -270,6 +270,31 @@ body.is-mobile {
   white-space: nowrap;
 }
 
+.advancedNoteMover-history-day-label {
+  margin: var(--size-4-3) 0 var(--size-2-1);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.advancedNoteMover-history-entry-meta {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.advancedNoteMover-history-actions {
+  display: flex;
+  flex-direction: row;
+  flex: 0 0 auto;
+  gap: var(--size-2-1);
+}
+
+.advancedNoteMover-history-modal .advancedNoteMover-history-action {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  padding: 0;
+}
+
 /* Bulk Operation Styles */
 .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
   background: var(--background-secondary);

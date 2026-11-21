@@ -58,7 +58,11 @@ describe('RuleManagerV2 createFolder resolution', () => {
     manager.setCreateMissingFolders(true);
 
     const result = await manager.moveFileBasedOnTags(makeFile());
-    expect(result).toEqual({ destination: 'Projects', createFolder: true });
+    expect(result).toEqual({
+      destination: 'Projects',
+      createFolder: true,
+      ruleName: 'to-projects',
+    });
   });
 
   it('uses the global default (false) when the rule has no override', async () => {
@@ -67,7 +71,11 @@ describe('RuleManagerV2 createFolder resolution', () => {
     manager.setCreateMissingFolders(false);
 
     const result = await manager.moveFileBasedOnTags(makeFile());
-    expect(result).toEqual({ destination: 'Projects', createFolder: false });
+    expect(result).toEqual({
+      destination: 'Projects',
+      createFolder: false,
+      ruleName: 'to-projects',
+    });
   });
 
   it('per-rule override true wins over global default false', async () => {

@@ -21,6 +21,7 @@ export interface PerformNoteMoveOptions {
   overwriteTargetPath?: string;
   /** Runs after a successful rename while the plugin-move guard is still active. */
   beforePluginMoveEnd?: () => Promise<void>;
+  ruleName?: string;
 }
 
 async function readTargetBackup(
@@ -60,6 +61,7 @@ export async function performNoteMove(
     attachmentSettings,
     overwriteTargetPath,
     beforePluginMoveEnd,
+    ruleName,
   } = options;
 
   const shouldCoMove =
@@ -109,6 +111,7 @@ export async function performNoteMove(
       sourcePath: originalPath,
       destinationPath: newPath,
       fileName: file.name,
+      ruleName,
       attachmentMoves: attachmentMoves.length > 0 ? attachmentMoves : undefined,
     });
 

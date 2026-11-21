@@ -52,6 +52,7 @@ export interface ExecuteNoteMoveWithConflictOptions {
   interactive: boolean;
   bypassConflictSkipCache?: boolean;
   onPersistStrategy?: (strategy: ConflictResolutionStrategy) => Promise<void>;
+  ruleName?: string;
 }
 
 export type ExecuteNoteMoveWithConflictResult =
@@ -79,6 +80,7 @@ export async function executeNoteMoveWithConflictHandling(
     conflictSkipCache,
     bypassConflictSkipCache = false,
     onPersistStrategy,
+    ruleName,
   } = options;
 
   const newPath = combinePath(targetFolder, file.name);
@@ -155,6 +157,7 @@ export async function executeNoteMoveWithConflictHandling(
         conflictOutcome.resolved.action === 'overwrite'
           ? resolvedPath
           : undefined,
+      ruleName,
       beforePluginMoveEnd: async () => {
         await conflictSkipCache.removeForSource(originalPath);
       },
