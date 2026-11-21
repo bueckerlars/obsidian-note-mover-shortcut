@@ -1,4 +1,5 @@
 import type AdvancedNoteMoverPlugin from 'main';
+import { RulesSettingsSection } from './sections/RulesSettingsSection';
 import { AdvancedNoteMoverSettingsTab } from './Settings';
 import {
   SETTING_DEFINITIONS,
@@ -250,5 +251,47 @@ describe('setting definitions', () => {
     expect(outsideLists.every(el => el.hasAttribute('data-setting-id'))).toBe(
       true
     );
+  });
+
+  it('shows the rule condition and one action menu', () => {
+    installObsidianDom();
+    const plugin = revealedPlugin();
+    plugin.pluginData.settings.rulesV2 = [
+      {
+        name: 'Inbox',
+        destination: 'Projects',
+        aggregation: 'all',
+        active: true,
+        triggers: [
+          {
+            criteriaType: 'tag',
+            operator: 'includes item',
+            value: '#x',
+          },
+        ],
+      },
+    ];
+    const root = document.createElement('div');
+    document.body.append(root);
+    new RulesSettingsSection(plugin, root, () => {}).addRulesArray();
+
+    const row = root.querySelector(
+      '.advancedNoteMover-rules-v2-container .setting-item'
+    );
+    expect(row?.querySelector('.setting-item-description')?.textContent).toBe(
+      'Tag includes item #x → Projects'
+    );
+    expect(row?.querySelector('.checkbox-container')).not.toBeNull();
+    row
+      ?.querySelector('[data-icon="more-horizontal"]')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(
+      Array.from(document.querySelectorAll('.menu-item')).map(
+        item => (item as HTMLElement).dataset.title
+      )
+    ).toEqual(['Edit', 'Duplicate', 'Move up', 'Move down', 'Delete']);
+
+    root.remove();
+    document.querySelector('.menu')?.remove();
   });
 });

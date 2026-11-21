@@ -674,45 +674,7 @@ body.is-mobile {
 /* ===== RULE V2 STYLES ===== */
 
 .advancedNoteMover-rules-v2-container .setting-item {
-  padding: 0;
-}
-
-.advancedNoteMover-rule-v2-custom-container {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: var(--size-4-4);
-  padding: var(--size-4-2) var(--size-4-3);
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-rule-v2-name {
-  flex: 1;
-  padding: 0;
-  font-weight: 500;
-  color: var(--text-normal);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.advancedNoteMover-rule-v2-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--size-4-1);
-  flex-shrink: 0;
-}
-
-.advancedNoteMover-rule-v2-actions .setting-item-control {
-  display: flex;
-  align-items: center;
-  gap: var(--size-4-1);
-}
-
-.advancedNoteMover-rule-v2-actions .advancedNoteMover-drag-handle-container {
-  margin-left: var(--size-4-1);
 }
 
 /* ===== RULE EDITOR MODAL STYLES ===== */
@@ -1057,36 +1019,24 @@ body.is-mobile
   margin-left: 0;
 }
 
-/* Mobile rules container */
-.advancedNoteMover-mobile-rules-container
-  .advancedNoteMover-rule-v2-custom-container.advancedNoteMover-mobile-rule-container {
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--size-4-3);
+/* Wide settings fields stack on phones. Rule rows stay in one line. */
+body.is-mobile
+  .advancedNoteMover-rules-v2-container
+  .setting-item.advancedNoteMover-with-drag-handle {
+  flex-direction: row;
+  align-items: center;
 }
 
-.advancedNoteMover-mobile-rules-container .advancedNoteMover-rule-v2-name {
-  width: 100%;
-  white-space: normal;
-  word-break: break-word;
-}
-
-.advancedNoteMover-mobile-rules-container
-  .advancedNoteMover-rule-v2-actions.advancedNoteMover-mobile-rule-actions {
-  width: 100%;
-  justify-content: center;
-  gap: var(--size-4-3);
-  flex-wrap: wrap;
-}
-
-.advancedNoteMover-mobile-rules-container
-  .advancedNoteMover-rule-v2-actions
-  .clickable-icon,
-.advancedNoteMover-mobile-rules-container
-  .advancedNoteMover-rule-v2-actions
-  .checkbox-container {
-  min-width: 44px;
-  min-height: 44px;
+body.is-mobile
+  .advancedNoteMover-rules-v2-container
+  .setting-item.advancedNoteMover-with-drag-handle
+  .setting-item-info,
+body.is-mobile
+  .advancedNoteMover-rules-v2-container
+  .setting-item.advancedNoteMover-with-drag-handle
+  .setting-item-control {
+  width: auto;
+  margin-top: 0;
 }
 
 /* Phone and tablet layout. Follows body.is-mobile, not the window width. */
@@ -1415,36 +1365,6 @@ body.is-mobile .advancedNoteMover-drag-handle {
   min-height: 44px;
   padding: var(--size-4-2);
   border-radius: var(--radius-m);
-}
-
-/* Rule V2 Mobile Layout */
-body.is-mobile .advancedNoteMover-rule-v2-custom-container {
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--size-4-3);
-  padding: var(--size-4-3) var(--size-4-3);
-}
-
-body.is-mobile .advancedNoteMover-rule-v2-name {
-  width: 100%;
-  white-space: normal;
-  word-break: break-word;
-  font-size: 1em;
-}
-
-body.is-mobile .advancedNoteMover-rule-v2-actions {
-  width: 100%;
-  justify-content: space-between;
-}
-
-body.is-mobile .advancedNoteMover-rule-v2-actions .setting-item-control {
-  width: 100%;
-  justify-content: space-between;
-}
-
-body.is-mobile .advancedNoteMover-rule-v2-actions button {
-  min-width: 44px;
-  min-height: 44px;
 }
 
 /* Empty state adjustments */

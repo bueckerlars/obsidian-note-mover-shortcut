@@ -1,16 +1,16 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { App, ButtonComponent, Setting } from 'obsidian';
+import { App, ButtonComponent, Menu, Setting } from 'obsidian';
 import { fill, strings } from '../../i18n/locale';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { RuleEditorModal } from '../../modals/RuleEditorModal';
 import { RuleV2 } from '../../types/RuleV2';
-import { MobileUtils } from '../../utils/MobileUtils';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { toMarkdownInlineCode } from '../../utils/markdown-confirm';
 import { handleError } from '../../utils/Error';
 import { NoticeManager } from '../../utils/NoticeManager';
 import { cloneRule } from '../cloneRule';
 import { renderSetting } from '../settingDefinitions';
+import { ruleSubtitle } from '../ruleSubtitle';
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -131,14 +131,9 @@ export class RulesSettingsSection {
       this.plugin.pluginData.settings.rulesV2 = [];
     }
 
-    const isMobile = MobileUtils.isMobile();
-
     const rulesContainer = this.containerEl.createDiv({
       cls: 'advancedNoteMover-rules-v2-container',
     });
-    if (isMobile) {
-      rulesContainer.addClass('advancedNoteMover-mobile-rules-container');
-    }
 
     // Setup drag & drop manager for V2 rules
     this.setupDragDropManagerV2(rulesContainer);
@@ -148,139 +143,149 @@ export class RulesSettingsSection {
     }
 
     this.plugin.pluginData.settings.rulesV2.forEach(rule => {
-      const s = new Setting(rulesContainer);
-
-      // Remove default info element
-      s.infoEl.remove();
-
-      // Create custom layout container
-      const customContainer = s.settingEl.createDiv({
-        cls: 'advancedNoteMover-rule-v2-custom-container',
-      });
-
-      // Add mobile class if on mobile
-      if (isMobile) {
-        customContainer.addClass('advancedNoteMover-mobile-rule-container');
-      }
-
-      // Rule name display (left side)
-      const nameEl = customContainer.createDiv({
-        cls: 'advancedNoteMover-rule-v2-name',
-      });
-      nameEl.textContent = rule.name || strings().unnamedRule;
-
-      // Actions container (right side)
-      const actionsContainer = customContainer.createDiv({
-        cls: 'advancedNoteMover-rule-v2-actions',
-      });
-
-      // Add mobile class if on mobile
-      if (isMobile) {
-        actionsContainer.addClass('advancedNoteMover-mobile-rule-actions');
-      }
-
-      // Add delete button to actions container
-      s.addExtraButton(btn =>
-        btn
-          .setIcon('trash')
-          .setTooltip(strings().settings.rulesDelete)
-          .onClick(async () => {
-            const currentIndex = this.findRuleIndex(rule);
-            if (currentIndex < 0) {
-              return;
-            }
-            const ruleLabel = toMarkdownInlineCode(
-              rule.name || strings().unnamedRule
-            );
-            const confirmed = await ConfirmModal.show(this.app, {
-              title: strings().modals.ruleEditorDeleteTitle,
-              message: fill(strings().modals.confirmDeleteRule, {
-                rule: ruleLabel,
-              }),
-              confirmText: strings().common.delete,
-              cancelText: strings().common.cancel,
-              danger: true,
-            });
-            if (confirmed) {
-              this.plugin.pluginData.settings.rulesV2!.splice(currentIndex, 1);
+      const setting = new Setting(rulesContainer)
+        .setName(rule.name || strings().unnamedRule)
+        .setDesc(ruleSubtitle(rule))
+        .addToggle(toggle =>
+          toggle
+            .setValue(rule.active)
+            .setTooltip(
+              rule.active
+                ? strings().settings.rulesActive
+                : strings().settings.rulesInactive
+            )
+            .onChange(async value => {
+              const currentIndex = this.findRuleIndex(rule);
+              if (currentIndex < 0) {
+                return;
+              }
+              this.plugin.pluginData.settings.rulesV2![currentIndex].active =
+                value;
               await this.persistRulesAndSyncManager();
-            }
-          })
-      );
-
-      // Add clone button to actions container
-      s.addExtraButton(btn =>
-        btn
-          .setIcon('copy')
-          .setTooltip(strings().settings.rulesClone)
-          .onClick(async () => {
-            if (!this.plugin.pluginData.settings.rulesV2) {
-              this.plugin.pluginData.settings.rulesV2 = [];
-            }
-            const currentIndex = this.findRuleIndex(rule);
-            if (currentIndex < 0) {
-              return;
-            }
-            const clonedRule = cloneRule(
-              rule,
-              this.plugin.pluginData.settings.rulesV2
-            );
-            this.plugin.pluginData.settings.rulesV2.splice(
-              currentIndex + 1,
-              0,
-              clonedRule
-            );
-            await this.persistRulesAndSyncManager();
-          })
-      );
-
-      // Add edit button to actions container
-      s.addExtraButton(btn =>
-        btn
-          .setIcon('pencil')
-          .setTooltip(strings().settings.rulesEdit)
-          .onClick(() => {
-            const currentIndex = this.findRuleIndex(rule);
-            if (currentIndex < 0) {
-              return;
-            }
-            this.openRuleEditorModal(currentIndex);
-          })
-      );
-
-      // Add active toggle to actions container
-      s.addToggle(toggle =>
-        toggle
-          .setValue(rule.active)
-          .setTooltip(
-            rule.active
-              ? strings().settings.rulesActive
-              : strings().settings.rulesInactive
-          )
-          .onChange(async value => {
-            const currentIndex = this.findRuleIndex(rule);
-            if (currentIndex < 0) {
-              return;
-            }
-            this.plugin.pluginData.settings.rulesV2![currentIndex].active =
-              value;
-            await this.persistRulesAndSyncManager();
-          })
-      );
-
-      // Move controls to actions container
-      const controlEl = s.settingEl.querySelector('.setting-item-control');
-      if (controlEl) {
-        actionsContainer.appendChild(controlEl);
-      }
-
-      // Add drag handle to actions container (rightmost position)
-      const handleContainer = actionsContainer.createDiv({
-        cls: 'advancedNoteMover-drag-handle-container',
-      });
-      const handle = DragDropManager.createDragHandle();
-      handleContainer.appendChild(handle);
+            })
+        )
+        .addExtraButton(btn =>
+          btn
+            .setIcon('more-horizontal')
+            .setTooltip(strings().settings.rulesActions)
+            .onClick(() => {
+              const rect = btn.extraSettingsEl.getBoundingClientRect();
+              this.showRuleMenu(rule, {
+                x: rect.left,
+                y: rect.bottom,
+              });
+            })
+        );
+      this.addDragHandle(setting.settingEl);
     });
+  }
+
+  private showRuleMenu(rule: RuleV2, position: { x: number; y: number }): void {
+    const menu = new Menu();
+    const labels = strings().settings;
+    menu.addItem(item =>
+      item
+        .setTitle(labels.rulesMenuEdit)
+        .setIcon('pencil')
+        .onClick(() => {
+          const currentIndex = this.findRuleIndex(rule);
+          if (currentIndex >= 0) {
+            this.openRuleEditorModal(currentIndex);
+          }
+        })
+    );
+    menu.addItem(item =>
+      item
+        .setTitle(labels.rulesMenuDuplicate)
+        .setIcon('copy')
+        .onClick(() => {
+          void this.duplicateRule(rule);
+        })
+    );
+    menu.addItem(item =>
+      item
+        .setTitle(labels.rulesMenuUp)
+        .setIcon('chevron-up')
+        .onClick(() => {
+          void this.moveRule(rule, -1);
+        })
+    );
+    menu.addItem(item =>
+      item
+        .setTitle(labels.rulesMenuDown)
+        .setIcon('chevron-down')
+        .onClick(() => {
+          void this.moveRule(rule, 1);
+        })
+    );
+    menu.addItem(item =>
+      item
+        .setTitle(labels.rulesMenuDelete)
+        .setIcon('trash')
+        .onClick(() => {
+          void this.deleteRule(rule);
+        })
+    );
+    menu.showAtPosition(position);
+  }
+
+  private async duplicateRule(rule: RuleV2): Promise<void> {
+    if (!this.plugin.pluginData.settings.rulesV2) {
+      this.plugin.pluginData.settings.rulesV2 = [];
+    }
+    const currentIndex = this.findRuleIndex(rule);
+    if (currentIndex < 0) {
+      return;
+    }
+    const clonedRule = cloneRule(rule, this.plugin.pluginData.settings.rulesV2);
+    this.plugin.pluginData.settings.rulesV2.splice(
+      currentIndex + 1,
+      0,
+      clonedRule
+    );
+    await this.persistRulesAndSyncManager();
+  }
+
+  private async moveRule(rule: RuleV2, direction: -1 | 1): Promise<void> {
+    const index = this.findRuleIndex(rule);
+    const rules = this.plugin.pluginData.settings.rulesV2 ?? [];
+    const next = index + direction;
+    if (index < 0 || next < 0 || next >= rules.length) {
+      return;
+    }
+    this.reorderRulesV2(index, next);
+    await this.persistRulesAndSyncManager();
+  }
+
+  private async deleteRule(rule: RuleV2): Promise<void> {
+    const currentIndex = this.findRuleIndex(rule);
+    if (currentIndex < 0) {
+      return;
+    }
+    const ruleLabel = toMarkdownInlineCode(rule.name || strings().unnamedRule);
+    const confirmed = await ConfirmModal.show(this.app, {
+      title: strings().modals.ruleEditorDeleteTitle,
+      message: fill(strings().modals.confirmDeleteRule, {
+        rule: ruleLabel,
+      }),
+      confirmText: strings().common.delete,
+      cancelText: strings().common.cancel,
+      danger: true,
+    });
+    if (confirmed) {
+      this.plugin.pluginData.settings.rulesV2!.splice(currentIndex, 1);
+      await this.persistRulesAndSyncManager();
+    }
+  }
+
+  private addDragHandle(settingEl: HTMLElement): void {
+    const handle = DragDropManager.createDragHandle();
+    const handleContainer = createDiv({
+      cls: 'advancedNoteMover-drag-handle-container',
+    });
+    handleContainer.appendChild(handle);
+    settingEl.insertBefore(handleContainer, settingEl.firstChild);
+    settingEl.classList.add('advancedNoteMover-with-drag-handle');
   }
 
   /**
