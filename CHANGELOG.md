@@ -11,6 +11,7 @@
 - **Languages**: Settings, modal, command, and notice copy is read from `languages/en.json`. The active Obsidian language selects `languages/<code>.json` and falls back to English when that file is missing.
 - **Settings tab**: The settings tab is drawn from one list for every supported Obsidian version. It no longer appears in Obsidian 1.13 settings search, which used a second copy of the same settings. The minimum app version stays 1.8.7.
 - **Mobile settings**: Toggles and dropdowns stay beside their names. Only a wide field, such as the interval or the retention row, stacks.
+- **Settings hints**: Filter, rule, and conflict hints use one short description. Extra detail sits on the info tooltip. Add filter and Add rule are icon buttons.
 - **Sentence case**: Settings, modals, commands, and notices use sentence case. Headings and buttons no longer start with a plus sign or end with a colon.
 - **Icons**: History, preview, and update use Lucide icons instead of emoji.
 - **Modal titles**: Dialog titles use Obsidian's title bar. History is titled "Move history".

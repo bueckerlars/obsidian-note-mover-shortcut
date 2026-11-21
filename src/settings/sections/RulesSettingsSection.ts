@@ -22,30 +22,27 @@ export class RulesSettingsSection {
   ) {}
 
   addRulesSetting(): void {
-    const setting = renderSetting(this.containerEl, 'rules.heading');
-    const descUseRules = createFragment();
-    descUseRules.append(
-      strings().settings.rulesIntroLead,
-      createEl('br'),
+    renderSetting(this.containerEl, 'rules.heading').setTooltip(
       strings().settings.rulesIntroTail
     );
-    setting.setDesc(descUseRules);
   }
 
   addCreateMissingFoldersSetting(): void {
-    renderSetting(this.containerEl, 'rules.createFolders').addToggle(toggle =>
-      toggle
-        .setValue(
-          this.plugin.pluginData.settings.createMissingDestinationFolders !==
-            false
-        )
-        .onChange(async value => {
-          this.plugin.pluginData.settings.createMissingDestinationFolders =
-            value;
-          await this.plugin.save_settings();
-          this.plugin.advancedNoteMover.updateRuleManager();
-        })
-    );
+    renderSetting(this.containerEl, 'rules.createFolders')
+      .setTooltip(strings().settings.rulesCreateFoldersDetail)
+      .addToggle(toggle =>
+        toggle
+          .setValue(
+            this.plugin.pluginData.settings.createMissingDestinationFolders !==
+              false
+          )
+          .onChange(async value => {
+            this.plugin.pluginData.settings.createMissingDestinationFolders =
+              value;
+            await this.plugin.save_settings();
+            this.plugin.advancedNoteMover.updateRuleManager();
+          })
+      );
   }
 
   addVaultReEvaluationSetting(): void {
@@ -92,7 +89,8 @@ export class RulesSettingsSection {
   addAddRuleButtonSetting(): void {
     renderSetting(this.containerEl, 'rules.add').addButton(btn =>
       btn
-        .setButtonText(strings().settings.rulesAddButton)
+        .setIcon('plus')
+        .setTooltip(strings().settings.rulesAddButton)
         .setCta()
         .onClick(() => {
           this.openRuleEditorModal(null);

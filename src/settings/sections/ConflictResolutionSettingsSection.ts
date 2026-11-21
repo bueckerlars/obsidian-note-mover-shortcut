@@ -54,12 +54,19 @@ export class ConflictResolutionSettingsSection {
     }
     if (strategy === 'ask') {
       this.warningSetting.setDesc('');
+      this.warningSetting.setTooltip('');
       return;
     }
+    const overwrite = strategyRequiresWarning(strategy);
     this.warningSetting.setDesc(
-      strategyRequiresWarning(strategy)
+      overwrite
         ? strings().settings.conflictOverwriteWarning
         : strings().settings.conflictAutoWarning
+    );
+    this.warningSetting.setTooltip(
+      overwrite
+        ? strings().settings.conflictOverwriteDetail
+        : strings().settings.conflictAutoDetail
     );
   }
 }
