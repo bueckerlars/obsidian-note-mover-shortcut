@@ -23,6 +23,8 @@ export interface ConditionRowOptions {
   vaultIndexCache?: PluginVaultIndexCache;
   /** Criteria, operator, or property type changed. The value field does not call this. */
   onStructureChange: () => void;
+  /** Value text changed. Does not redraw the row. */
+  onDraftChange?: () => void;
   onRemove: () => void;
 }
 
@@ -116,6 +118,7 @@ export function renderConditionRow(
     valueInput.setAttribute('aria-label', strings().modals.ruleEditorValue);
     valueInput.addEventListener('input', () => {
       trigger.value = valueInput.value;
+      options.onDraftChange?.();
     });
     options.suggests.add(
       attachValueSuggester(

@@ -11,6 +11,12 @@ import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault
 import { ConfirmModal } from './ConfirmModal';
 import { NoticeManager } from '../utils/NoticeManager';
 import { fill, strings } from '../i18n/locale';
+import { pluralize } from '../utils/pluralize';
+import {
+  createRuleLivePreview,
+  fileMetadataFromCache,
+  isAbortError,
+} from './rule-editor/ruleLivePreview';
 import { toMarkdownInlineCode } from '../utils/markdown-confirm';
 import { RuleEditorMobileView } from './rule-editor/RuleEditorMobileView';
 import { renderAggregationControl } from './rule-editor/components/AggregationControl';
@@ -52,6 +58,8 @@ export class RuleEditorModal extends BaseModal {
   private rowSuggests: SuggestRegistry[] = [];
   private destinationSuggest: DestroyableSuggest | null = null;
   private mobileView: RuleEditorMobileView | null = null;
+  private readonly livePreview = createRuleLivePreview(300);
+  private previewEl: HTMLElement | null = null;
 
   constructor(app: App, options: RuleEditorModalOptions) {
     const isMobileLayout = MobileUtils.isMobile();
@@ -87,6 +95,8 @@ export class RuleEditorModal extends BaseModal {
         onSave: () => void this.handleSave(),
         onCancel: () => void this.requestClose(),
         onDelete: () => void this.handleRemoveRule(),
+        onDraftChange: () => this.schedulePreview(),
+        renderLivePreview: parent => this.renderLivePreview(parent),
       });
       this.mobileView.render(contentEl);
       return;
@@ -144,6 +154,7 @@ export class RuleEditorModal extends BaseModal {
         )
         .onChange(value => {
           this.workingRule.active = value;
+          this.schedulePreview();
           toggle.setTooltip(
             value
               ? strings().settings.rulesActive
@@ -169,6 +180,7 @@ export class RuleEditorModal extends BaseModal {
       descriptionEl: description,
       onChange: value => {
         this.workingRule.aggregation = value;
+        this.schedulePreview();
       },
     });
   }
@@ -219,6 +231,7 @@ export class RuleEditorModal extends BaseModal {
       text: strings().modals.ruleEditorConditions,
       cls: 'advancedNoteMover-rule-conditions-title',
     });
+    this.renderLivePreview(section);
 
     // Triggers container
     this.triggersContainer = section.createDiv({
@@ -232,6 +245,7 @@ export class RuleEditorModal extends BaseModal {
       btn.setButtonText(strings().modals.ruleEditorAddCondition).onClick(() => {
         this.workingRule.triggers = addCondition(this.workingRule).triggers;
         this.renderTriggers();
+        this.schedulePreview();
       })
     );
   }
@@ -269,13 +283,18 @@ export class RuleEditorModal extends BaseModal {
       trigger,
       suggests,
       vaultIndexCache: this.ruleOptions.vaultIndexCache,
-      onStructureChange: () => this.renderTriggerAt(index),
+      onStructureChange: () => {
+        this.renderTriggerAt(index);
+        this.schedulePreview();
+      },
+      onDraftChange: () => this.schedulePreview(),
       onRemove: () => {
         this.workingRule.triggers = removeCondition(
           this.workingRule,
           index
         ).triggers;
         this.renderTriggers();
+        this.schedulePreview();
       },
     });
     const row = container.lastElementChild;
@@ -305,6 +324,7 @@ export class RuleEditorModal extends BaseModal {
           adjustedToIndex
         ).triggers;
         this.renderTriggers();
+        this.schedulePreview();
       },
       onSave: async () => {
         // No additional action needed
@@ -413,7 +433,42 @@ export class RuleEditorModal extends BaseModal {
     void this.confirmDiscardAndClose();
   }
 
+  private renderLivePreview(parent: HTMLElement): void {
+    this.previewEl = parent.createDiv({
+      cls: 'advancedNoteMover-rule-live-preview',
+    });
+    this.schedulePreview();
+  }
+
+  private previewFiles() {
+    const files = this.ruleOptions.vaultIndexCache
+      ? this.ruleOptions.vaultIndexCache.getMarkdownFilesCached(this.app)
+      : this.app.vault.getMarkdownFiles();
+    return files.map(file =>
+      fileMetadataFromCache(file, this.app.metadataCache.getFileCache(file))
+    );
+  }
+
+  private schedulePreview(): void {
+    const rule = this.workingRule;
+    void this.livePreview.update(rule, this.previewFiles()).then(
+      count => {
+        this.previewEl?.setText(
+          fill(strings().modals.ruleEditorLivePreview, {
+            matches: pluralize(count, 'note'),
+          })
+        );
+      },
+      error => {
+        if (!isAbortError(error)) {
+          return;
+        }
+      }
+    );
+  }
+
   onClose(): void {
+    this.livePreview.dispose();
     this.destroyRowSuggests();
     this.destinationSuggest?.destroy();
     this.destinationSuggest = null;
