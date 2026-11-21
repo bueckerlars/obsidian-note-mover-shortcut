@@ -6,10 +6,12 @@ Thank you for your interest in contributing to Advanced Note Mover! This documen
 
 ### Prerequisites
 
-- Node.js (version 16 or higher)
-- npm or yarn
+- Node.js 20 or higher. CI installs Node.js 20.
+- npm
 - Git
 - Basic knowledge of TypeScript and Obsidian plugin development
+
+Architecture, UI text, and command rules are in `AGENTS.md`.
 
 ### Development Setup
 
@@ -177,6 +179,8 @@ npm run lint
 npm run format:check
 npm run type-check
 ```
+
+`npm run ui:smoke` opens each settings section and modal in an isolated Obsidian vault, at desktop 1400x1100 and mobile 390x844. It needs the Obsidian app. Set `OBSIDIAN_BIN` when the app is not `/Applications/Obsidian.app`. The command writes PNGs under `docs/analysis/screenshots/phase-0/` and the assertion list to `docs/analysis/baseline-smoke.json`.
 
 ## Project Structure
 
