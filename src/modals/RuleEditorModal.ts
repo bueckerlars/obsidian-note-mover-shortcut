@@ -326,6 +326,16 @@ export class RuleEditorModal extends BaseModal {
         this.renderTriggers();
         this.schedulePreview();
       },
+      onMove: (index, direction) => {
+        const next = index + direction;
+        this.workingRule.triggers = reorderConditions(
+          this.workingRule,
+          index,
+          next
+        ).triggers;
+        this.renderTriggers();
+        this.schedulePreview();
+      },
       onSave: async () => {
         // No additional action needed
         return Promise.resolve();

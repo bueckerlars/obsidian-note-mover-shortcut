@@ -22,6 +22,7 @@
 - **Move history**: History is grouped by day. Each row shows the time and the rule. Desktop actions are icon buttons. Mobile actions are one menu. Add to blacklist is no longer a warning button.
 - **Move preview**: An empty preview explains why nothing moves and links to rules. Each file shows the rule or the reason, and a checkbox selects it.
 - **Move preview**: On a phone, the checkbox on each file is a 44 pixel touch target.
+- **Reorder**: Move up and Move down stay in the rule menu. The first row cannot move up, and the last row cannot move down. A focused drag handle moves that row with Alt+Arrow Up and Alt+Arrow Down.
 - **Bulk preview**: Closing the preview stops further file reads and shows how far the read has got.
 - **Confirm dialog**: Confirm and cancel use one button row on desktop and mobile.
 - **Status text**: Preview progress and the conflict warning are announced as they change.
