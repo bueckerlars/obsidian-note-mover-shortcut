@@ -159,6 +159,26 @@ describe('collectFailures', () => {
     expect(checks(document)).toContain('modalTitle');
   });
 
+  it('keeps a conflict-cache title outside the cleared content', () => {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    const title = document.createElement('div');
+    title.className = 'modal-title';
+    title.textContent = 'Skipped move conflicts';
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.textContent = 'a.md';
+    modal.append(title, content);
+    document.body.append(modal);
+
+    content.replaceChildren();
+
+    expect(modal.querySelector('.modal-title')?.textContent).toBe(
+      'Skipped move conflicts'
+    );
+    expect(checks(document)).not.toContain('modalTitle');
+  });
+
   it('flags horizontal overflow and accepts equal widths', () => {
     widths(document.documentElement, 400, 400);
     expect(checks(document)).not.toContain('overflow');
