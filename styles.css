@@ -1319,16 +1319,32 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
     word-break: break-word;
   }
 
-  /* Scoped to plugin elements only (exclude modal footer buttons) */
+  /* Plugin setting controls. Footer buttons keep their own rule below. */
   .advancedNoteMover-time-filter-container .setting-item-control,
-  [class*='noteMover'] .setting-item-control {
+  .advancedNoteMover-settings-root .setting-item-control,
+  .advancedNoteMover-rule-editor-modal .setting-item-control,
+  .advancedNoteMover-rule-editor-mobile-content .setting-item-control,
+  .advancedNoteMover-conflict-modal .setting-item-control,
+  .advancedNoteMover-conflict-skip-cache-modal .setting-item-control,
+  .advancedNoteMover-confirm-modal .setting-item-control,
+  .note-mover-history-modal .setting-item-control,
+  .note-mover-preview-modal .setting-item-control,
+  .note-mover-update-modal .setting-item-control {
     margin-left: 0;
     width: 100%;
     justify-content: space-between;
   }
 
   .advancedNoteMover-time-filter-container .setting-item-control button,
-  [class*='noteMover'] .setting-item-control button {
+  .advancedNoteMover-settings-root .setting-item-control button,
+  .advancedNoteMover-rule-editor-modal .setting-item-control button,
+  .advancedNoteMover-rule-editor-mobile-content .setting-item-control button,
+  .advancedNoteMover-conflict-modal .setting-item-control button,
+  .advancedNoteMover-conflict-skip-cache-modal .setting-item-control button,
+  .advancedNoteMover-confirm-modal .setting-item-control button,
+  .note-mover-history-modal .setting-item-control button,
+  .note-mover-preview-modal .setting-item-control button,
+  .note-mover-update-modal .setting-item-control button {
     min-width: 44px;
     min-height: 44px;
     padding: 8px;
@@ -1674,8 +1690,12 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
     font-size: 0.95em;
   }
 
-  /* Smaller button fonts to fit better - scoped to plugin elements only */
-  [class*='noteMover'] button,
+  /* Smaller button fonts inside plugin roots */
+  .advancedNoteMover-settings-root button,
+  .advancedNoteMover-rule-editor-modal button,
+  .advancedNoteMover-rule-editor-mobile-content button,
+  .advancedNoteMover-conflict-modal button,
+  .advancedNoteMover-conflict-skip-cache-modal button,
   .note-mover-history-modal button,
   .note-mover-preview-modal button,
   .note-mover-update-modal button,
