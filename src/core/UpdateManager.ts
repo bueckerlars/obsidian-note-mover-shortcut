@@ -60,6 +60,7 @@ export class UpdateManager {
 
     const updateModal = new UpdateModal(
       this.plugin.app,
+      this.plugin,
       currentVersion,
       lastSeenVersion || '',
       changelogEntries
