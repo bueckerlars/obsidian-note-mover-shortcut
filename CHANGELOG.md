@@ -9,6 +9,7 @@
 ### Improvements
 
 - **Languages**: Settings, modal, command, and notice copy is read from `languages/en.json`. The active Obsidian language selects `languages/<code>.json` and falls back to English when that file is missing.
+- **Sentence case**: Settings, modals, commands, and notices use sentence case. Headings and buttons no longer start with a plus sign or end with a colon.
 - **Unnamed rule**: A rule without a name is labeled "Unnamed rule".
 
 ### Fixes
