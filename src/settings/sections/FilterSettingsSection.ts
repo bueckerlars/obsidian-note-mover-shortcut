@@ -66,7 +66,6 @@ export class FilterSettingsSection {
 
       // Add drag handle to the setting
       this.addDragHandle(s.settingEl, index);
-      s.infoEl.remove();
       s.setClass('advancedNoteMover-setting-stack');
     });
   }

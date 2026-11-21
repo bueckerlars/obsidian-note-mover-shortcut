@@ -6,7 +6,7 @@ Accepted. `minAppVersion` stays `1.8.7`.
 
 ## Context
 
-The settings tab is built twice. `src/settings/sections/` draws it with `Setting` for Obsidian 1.8.7 and later. `getSettingDefinitions()` in `src/settings/Settings.ts` draws the same settings again for Obsidian 1.13. The two copies already disagree on labels.
+The settings tab is built twice. `src/settings/sections/` draws it with `Setting` for Obsidian 1.8.7 and later. `getSettingDefinitions()` in `src/settings/AdvancedNoteMoverSettingsTab.ts` draws the same settings again for Obsidian 1.13. The two copies already disagree on labels.
 
 `manifest.json` sets `minAppVersion` to `1.8.7`. In `node_modules/obsidian/obsidian.d.ts`, `SettingGroup` is marked `@since 1.11.0`. `Setting.setHeading()` is marked `@since 0.9.16`. `getSettingDefinitions()` is marked `@since 1.13.0`.
 

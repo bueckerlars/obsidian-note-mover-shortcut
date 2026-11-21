@@ -677,6 +677,15 @@ body.is-mobile {
   align-items: center;
 }
 
+.advancedNoteMover-filters-container .setting-item-control {
+  flex: 1;
+  min-width: 0;
+}
+
+.advancedNoteMover-filters-container .setting-item-info {
+  display: none;
+}
+
 /* ===== RULE EDITOR MODAL STYLES ===== */
 
 .modal.advancedNoteMover-modal-size-small,
