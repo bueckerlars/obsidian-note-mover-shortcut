@@ -316,21 +316,23 @@ export class RuleManagerV2 {
       'RuleManagerV2.generateMovePreview',
       async () => {
         const successfulMoves: PreviewEntry[] = [];
+        const analyzed: PreviewEntry[] = [];
 
         for (const file of files) {
           const preview = await this.generatePreviewForFile(
             file,
             !enableFilter
           );
+          analyzed.push(preview);
 
           if (preview.willBeMoved) {
             successfulMoves.push(preview);
           }
-          // Only include files that will be moved - blocked files are ignored
         }
 
         return {
           successfulMoves,
+          analyzed,
           totalFiles: files.length,
           settings: {
             isFilterWhitelist: false, // Always blacklist mode

@@ -21,11 +21,14 @@ import { persistConflictResolutionStrategy } from '../application/persist-confli
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import { deriveConflictInteractive } from '../utils/conflict-resolution-settings';
+import { previewRowLabel } from '../domain/preview/previewReasons';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 
 export class PreviewModal extends BaseModal {
   private movePreview: MovePreview;
   private actionFooterEl: HTMLElement | null = null;
+  private moveButton: HTMLButtonElement | null = null;
+  private readonly selectedPaths = new Set<string>();
 
   constructor(
     app: App,
@@ -41,44 +44,77 @@ export class PreviewModal extends BaseModal {
       ...options,
     });
     this.movePreview = movePreview;
+    for (const entry of movePreview.successfulMoves) {
+      this.selectedPaths.add(entry.currentPath);
+    }
+  }
+
+  private selectedEntries(): PreviewEntry[] {
+    return this.movePreview.successfulMoves.filter(entry =>
+      this.selectedPaths.has(entry.currentPath)
+    );
   }
 
   protected createContent(): void {
     const { contentEl } = this;
-
-    // Subtitle with statistics
     const stats = this.movePreview;
-    const subtitle = `${pluralize(stats.totalFiles, 'file')} analyzed • ${stats.successfulMoves.length} will be moved`;
     contentEl.createEl('p', {
-      text: subtitle,
+      text: fill(strings().modals.previewSubtitle, {
+        files: pluralize(stats.totalFiles, 'file'),
+        moves: this.selectedEntries().length,
+      }),
       cls: 'advancedNoteMover-modal-subtitle',
     });
 
-    // Settings info removed - Rules and Filter are always enabled now
-
-    // Successful moves section
-    if (stats.successfulMoves.length > 0) {
-      this.createSuccessfulMovesSection(contentEl, stats.successfulMoves);
-    }
-
-    // Blocked moves section removed - only files that will be moved are shown
-
-    // No files message
     if (stats.totalFiles === 0) {
-      contentEl.createDiv({
-        cls: 'advancedNoteMover-modal-empty',
-        text: strings().modals.previewEmpty,
-      });
+      this.renderEmptyState(contentEl, strings().modals.previewEmpty);
+    } else if (
+      this.selectedEntries().length === 0 &&
+      stats.successfulMoves.length === 0
+    ) {
+      this.renderEmptyState(contentEl, strings().modals.previewEmptyExplain);
     }
 
-    // Action buttons
+    const files = stats.analyzed ?? stats.successfulMoves;
+    if (files.length > 0) {
+      this.createFileSection(contentEl, files);
+    }
+
     this.createActionButtons(contentEl);
   }
 
-  private createSuccessfulMovesSection(
-    container: HTMLElement,
-    entries: PreviewEntry[]
-  ) {
+  private renderEmptyState(container: HTMLElement, message: string): void {
+    container.createDiv({
+      cls: 'advancedNoteMover-modal-empty',
+      text: message,
+    });
+    const actions = container.createDiv({
+      cls: 'advancedNoteMover-preview-empty-actions',
+    });
+    this.createButton(actions, strings().modals.previewOpenRules, () => {
+      this.openRules();
+    });
+  }
+
+  private openRules(): void {
+    this.close();
+    const setting = (
+      this.app as App & {
+        setting?: {
+          open: () => void;
+          openTabById: (id: string) => void;
+        };
+      }
+    ).setting;
+    // shortcut: Obsidian has no public API for opening a plugin settings tab.
+    if (!setting) {
+      return;
+    }
+    setting.open();
+    setting.openTabById('note-mover-shortcut');
+  }
+
+  private createFileSection(container: HTMLElement, entries: PreviewEntry[]) {
     const isMobile = MobileUtils.isMobile();
     const section = this.createSection(
       container,
@@ -95,7 +131,7 @@ export class PreviewModal extends BaseModal {
     iconEl.ariaHidden = 'true';
     setIcon(iconEl, 'check');
     heading.createSpan({
-      text: fill(strings().modals.previewFilesToMove, {
+      text: fill(strings().modals.previewFiles, {
         count: entries.length,
       }),
     });
@@ -113,7 +149,33 @@ export class PreviewModal extends BaseModal {
           : 'advancedNoteMover-modal-list-item advancedNoteMover-preview-item-success',
       });
 
-      const mainInfo = item.createDiv({
+      const row = item.createDiv({
+        cls: 'advancedNoteMover-preview-item-row',
+      });
+      const selectLabel = row.createEl('label', {
+        cls: 'advancedNoteMover-preview-select',
+      });
+      const checkbox = selectLabel.createEl('input', { type: 'checkbox' });
+      checkbox.checked =
+        entry.willBeMoved && this.selectedPaths.has(entry.currentPath);
+      checkbox.disabled = !entry.willBeMoved;
+      checkbox.setAttribute(
+        'aria-label',
+        fill(strings().modals.previewSelect, { fileName: entry.fileName })
+      );
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          this.selectedPaths.add(entry.currentPath);
+        } else {
+          this.selectedPaths.delete(entry.currentPath);
+        }
+        this.updateMoveButton();
+      });
+      const body = row.createDiv({
+        cls: 'advancedNoteMover-preview-item-body',
+      });
+
+      const mainInfo = body.createDiv({
         cls: 'advancedNoteMover-preview-item-main',
       });
       const fileName = mainInfo.createDiv({
@@ -159,22 +221,23 @@ export class PreviewModal extends BaseModal {
         });
       }
 
-      const details = item.createDiv({
+      const details = body.createDiv({
         cls: isMobile
           ? 'advancedNoteMover-preview-item-details advancedNoteMover-preview-item-details-mobile'
           : 'advancedNoteMover-preview-item-details',
       });
 
-      if (entry.matchedRule) {
-        const rule = details.createDiv({
-          cls: 'advancedNoteMover-preview-item-rule',
-        });
-        rule.createSpan({
-          cls: 'advancedNoteMover-rule-label',
-          text: strings().modals.previewRule,
-        });
-        rule.createEl('code', { text: entry.matchedRule ?? '' });
-      }
+      const showsRule = entry.willBeMoved && Boolean(entry.matchedRule);
+      const reason = details.createDiv({
+        cls: 'advancedNoteMover-preview-item-rule',
+      });
+      reason.createSpan({
+        cls: 'advancedNoteMover-rule-label',
+        text: showsRule
+          ? strings().modals.previewRule
+          : strings().modals.previewReasonLabel,
+      });
+      reason.createSpan({ text: previewRowLabel(entry) });
 
       if (entry.tags && entry.tags.length > 0) {
         const tags = details.createDiv({
@@ -191,8 +254,6 @@ export class PreviewModal extends BaseModal {
     });
   }
 
-  // createBlockedMovesSection removed - only files that will be moved are shown
-
   private createActionButtons(container: HTMLElement) {
     const isMobile = MobileUtils.isMobile();
     const footer = container.createDiv({
@@ -204,10 +265,12 @@ export class PreviewModal extends BaseModal {
 
     const buttonContainer = this.createButtonContainer(footer);
 
-    if (this.movePreview.successfulMoves.length > 0) {
-      this.createButton(
+    if (this.selectedEntries().length > 0) {
+      this.moveButton = this.createButton(
         buttonContainer,
-        `Move ${pluralize(this.movePreview.successfulMoves.length, 'file')}`,
+        fill(strings().modals.previewMoveFiles, {
+          files: pluralize(this.selectedEntries().length, 'file'),
+        }),
         () => {
           void this.executeMoves();
         },
@@ -217,7 +280,7 @@ export class PreviewModal extends BaseModal {
 
     this.createButton(
       buttonContainer,
-      this.movePreview.successfulMoves.length > 0
+      this.selectedEntries().length > 0
         ? strings().common.cancel
         : strings().common.close,
       () => {
@@ -226,8 +289,22 @@ export class PreviewModal extends BaseModal {
     );
   }
 
+  private updateMoveButton(): void {
+    if (!this.moveButton) {
+      return;
+    }
+    const count = this.selectedEntries().length;
+    this.moveButton.textContent = fill(strings().modals.previewMoveFiles, {
+      files: pluralize(count, 'file'),
+    });
+    this.moveButton.hidden = count === 0;
+  }
+
   private async executeMoves() {
-    const successfulEntries = this.movePreview.successfulMoves;
+    const successfulEntries = this.selectedEntries();
+    if (successfulEntries.length === 0) {
+      return;
+    }
     let movedCount = 0;
     let errorCount = 0;
     let missingFolderSkippedCount = 0;

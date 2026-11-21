@@ -25,6 +25,8 @@ export interface PreviewEntry {
 export interface MovePreview {
   /** Files that would be successfully moved */
   successfulMoves: PreviewEntry[];
+  /** Every analyzed file, including ones that will not move. */
+  analyzed: PreviewEntry[];
   /** Total number of files analyzed */
   totalFiles: number;
   /** Settings used for this preview */
