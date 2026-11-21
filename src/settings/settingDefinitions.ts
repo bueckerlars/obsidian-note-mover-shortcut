@@ -201,6 +201,13 @@ export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
     control: 'button',
   },
   {
+    id: 'importExport.restore',
+    sectionId: 'importExport',
+    nameKey: 'settings.importExportRestoreName',
+    descriptionKey: 'settings.importExportRestoreDesc',
+    control: 'button',
+  },
+  {
     id: 'performance.heading',
     sectionId: 'performance',
     nameKey: 'settings.headingsPerformance',

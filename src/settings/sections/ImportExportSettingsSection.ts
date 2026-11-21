@@ -1,5 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
-import type { App } from 'obsidian';
+import { normalizePath, type App } from 'obsidian';
 import type { PluginData, SettingsData } from '../../types/PluginData';
 import type { RetentionPolicy } from '../../types/HistoryEntry';
 import type { LegacyRuleV1 } from '../../core/RuleMigrationService';
@@ -8,7 +8,15 @@ import { createError, handleError } from 'src/utils/Error';
 import { NoticeManager } from 'src/utils/NoticeManager';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SettingsValidator } from 'src/utils/SettingsValidator';
-import { strings } from '../../i18n/locale';
+import { fill, strings } from '../../i18n/locale';
+import { pluralize } from '../../utils/pluralize';
+import { looksLikePluginDataRoot } from '../../infrastructure/persistence/plugin-settings-schema';
+import {
+  replaceSettings,
+  restoreSettingsBackup,
+  SETTINGS_BACKUP_FILE,
+  summarizeSettingsImport,
+} from '../importBackup';
 import { RuleMigrationService } from 'src/core/RuleMigrationService';
 import { debugDebug } from '../../utils/debug';
 import { renderSetting } from '../settingDefinitions';
@@ -52,6 +60,14 @@ export class ImportExportSettingsSection {
             disabled => btn.setDisabled(disabled),
             () => this.importSettings()
           );
+        });
+    });
+
+    renderSetting(this.containerEl, 'importExport.restore').addButton(btn => {
+      btn
+        .setButtonText(strings().settings.importExportRestoreButton)
+        .onClick(() => {
+          void this.restoreBackup();
         });
     });
   }
@@ -125,161 +141,33 @@ export class ImportExportSettingsSection {
             );
           }
 
-          // Show confirmation modal
-          const confirmed = await ConfirmModal.show(this.app, {
-            title: strings().settings.importExportImportTitle,
-            message: strings().settings.importExportImportMessage,
-            confirmText: strings().settings.importExportImportConfirm,
-            cancelText: strings().common.cancel,
-            danger: true,
+          const currentSnapshot = JSON.stringify(this.plugin.pluginData);
+          const summary = summarizeSettingsImport(importedSettings);
+          await replaceSettings({
+            current: currentSnapshot,
+            summary,
+            confirm: importSummary =>
+              ConfirmModal.show(this.app, {
+                title: strings().settings.importExportImportTitle,
+                message: fill(strings().settings.importExportImportMessage, {
+                  rules: pluralize(importSummary.rules, 'rule'),
+                  filters: pluralize(importSummary.filters, 'filter'),
+                }),
+                confirmText: strings().settings.importExportImportConfirm,
+                cancelText: strings().common.cancel,
+              }),
+            writeBackup: contents => this.writeSettingsBackup(contents),
+            backupExists: () => this.settingsBackupExists(),
+            apply: () => {
+              this.applyImportedSettings(importedSettings);
+            },
+            save: async () => {
+              await this.plugin.save_settings();
+              this.plugin.advancedNoteMover.updateRuleManager();
+              this.refreshDisplay();
+              NoticeManager.success(strings().notices.importSuccess);
+            },
           });
-
-          if (confirmed) {
-            const current = this.plugin.pluginData;
-
-            // If imported in new PluginData shape, apply directly
-            const pluginImport =
-              importedSettings &&
-              typeof importedSettings === 'object' &&
-              'settings' in importedSettings &&
-              importedSettings.settings &&
-              typeof importedSettings.settings === 'object'
-                ? (importedSettings as Partial<PluginData>)
-                : null;
-
-            if (pluginImport?.settings) {
-              const s = pluginImport.settings as unknown as Record<
-                string,
-                unknown
-              >;
-
-              const triggers = s.triggers;
-              if (triggers && typeof triggers === 'object') {
-                const t = triggers as Record<string, unknown>;
-                if (t.enablePeriodicMovement !== undefined) {
-                  current.settings.triggers.enablePeriodicMovement =
-                    !!t.enablePeriodicMovement;
-                }
-                if (t.periodicMovementInterval !== undefined) {
-                  current.settings.triggers.periodicMovementInterval = Number(
-                    t.periodicMovementInterval
-                  );
-                }
-                if (t.enableOnEditTrigger !== undefined) {
-                  current.settings.triggers.enableOnEditTrigger =
-                    !!t.enableOnEditTrigger;
-                }
-              }
-
-              const filters = s.filters;
-              if (filters && typeof filters === 'object') {
-                const f = filters as { filter?: unknown };
-                const arr = Array.isArray(f.filter) ? f.filter : [];
-                current.settings.filters.filter = arr
-                  .filter(
-                    (item): item is { value: string } =>
-                      !!item &&
-                      typeof item === 'object' &&
-                      'value' in item &&
-                      typeof (item as { value: unknown }).value === 'string'
-                  )
-                  .map(item => ({ value: item.value }));
-              }
-
-              if (Array.isArray(s.rules)) {
-                (
-                  current.settings as SettingsData & LegacySettingsFields
-                ).rules = s.rules as LegacyRuleV1[];
-              }
-
-              if (s.retentionPolicy && typeof s.retentionPolicy === 'object') {
-                current.settings.retentionPolicy =
-                  s.retentionPolicy as RetentionPolicy;
-              }
-
-              if (pluginImport.lastSeenVersion !== undefined) {
-                current.lastSeenVersion = pluginImport.lastSeenVersion;
-              }
-
-              if (pluginImport.schemaVersion !== undefined) {
-                current.schemaVersion = pluginImport.schemaVersion;
-              }
-
-              if (Array.isArray(s.rulesV2)) {
-                current.settings.rulesV2 = s.rulesV2 as SettingsData['rulesV2'];
-              }
-            } else {
-              // Legacy import path: sanitize and map into new structure
-              const sanitizedSettings =
-                SettingsValidator.sanitizeSettings(importedSettings);
-
-              if (sanitizedSettings.enablePeriodicMovement !== undefined) {
-                current.settings.triggers.enablePeriodicMovement =
-                  !!sanitizedSettings.enablePeriodicMovement;
-              }
-              if (sanitizedSettings.periodicMovementInterval !== undefined) {
-                current.settings.triggers.periodicMovementInterval = Number(
-                  sanitizedSettings.periodicMovementInterval
-                );
-              }
-              if (sanitizedSettings.enableOnEditTrigger !== undefined) {
-                current.settings.triggers.enableOnEditTrigger =
-                  !!sanitizedSettings.enableOnEditTrigger;
-              }
-              if (Array.isArray(sanitizedSettings.filter)) {
-                current.settings.filters.filter = sanitizedSettings.filter
-                  .filter((v: unknown) => typeof v === 'string')
-                  .map((v: string) => ({ value: v }));
-              }
-              if (Array.isArray(sanitizedSettings.rules)) {
-                (
-                  current.settings as SettingsData & LegacySettingsFields
-                ).rules = sanitizedSettings.rules as LegacyRuleV1[];
-              }
-              if (
-                sanitizedSettings.retentionPolicy &&
-                typeof sanitizedSettings.retentionPolicy === 'object'
-              ) {
-                current.settings.retentionPolicy =
-                  sanitizedSettings.retentionPolicy as RetentionPolicy;
-              }
-              if (typeof sanitizedSettings.lastSeenVersion === 'string') {
-                current.lastSeenVersion = sanitizedSettings.lastSeenVersion;
-              }
-            }
-
-            const legacyRules = (
-              current.settings as SettingsData & LegacySettingsFields
-            ).rules;
-            if (
-              Array.isArray(legacyRules) &&
-              RuleMigrationService.shouldMigrate(
-                legacyRules,
-                current.settings.rulesV2 ?? []
-              )
-            ) {
-              debugDebug('Migrating imported Rule V1 to Rule V2...');
-              current.settings.rulesV2 =
-                RuleMigrationService.migrateRules(legacyRules);
-              (current.settings as SettingsData & LegacySettingsFields).rules =
-                [];
-              debugDebug(
-                `Migrated ${(current.settings.rulesV2 ?? []).length} imported rules to V2 format`
-              );
-            }
-
-            // Save settings
-            await this.plugin.save_settings();
-
-            // Update RuleManager
-            this.plugin.advancedNoteMover.updateRuleManager();
-
-            // Refresh the settings display
-            this.refreshDisplay();
-
-            // Show success message
-            NoticeManager.success(strings().notices.importSuccess);
-          }
         }
       );
       if (!loaded.applied) {
@@ -298,6 +186,189 @@ export class ImportExportSettingsSection {
           false
         );
       }
+    }
+  }
+
+  private applyImportedSettings(importedSettings: unknown): void {
+    const current = this.plugin.pluginData;
+
+    // If imported in new PluginData shape, apply directly
+    const pluginImport =
+      importedSettings &&
+      typeof importedSettings === 'object' &&
+      'settings' in importedSettings &&
+      importedSettings.settings &&
+      typeof importedSettings.settings === 'object'
+        ? (importedSettings as Partial<PluginData>)
+        : null;
+
+    if (pluginImport?.settings) {
+      const s = pluginImport.settings as unknown as Record<string, unknown>;
+
+      const triggers = s.triggers;
+      if (triggers && typeof triggers === 'object') {
+        const t = triggers as Record<string, unknown>;
+        if (t.enablePeriodicMovement !== undefined) {
+          current.settings.triggers.enablePeriodicMovement =
+            !!t.enablePeriodicMovement;
+        }
+        if (t.periodicMovementInterval !== undefined) {
+          current.settings.triggers.periodicMovementInterval = Number(
+            t.periodicMovementInterval
+          );
+        }
+        if (t.enableOnEditTrigger !== undefined) {
+          current.settings.triggers.enableOnEditTrigger =
+            !!t.enableOnEditTrigger;
+        }
+      }
+
+      const filters = s.filters;
+      if (filters && typeof filters === 'object') {
+        const f = filters as { filter?: unknown };
+        const arr = Array.isArray(f.filter) ? f.filter : [];
+        current.settings.filters.filter = arr
+          .filter(
+            (item): item is { value: string } =>
+              !!item &&
+              typeof item === 'object' &&
+              'value' in item &&
+              typeof (item as { value: unknown }).value === 'string'
+          )
+          .map(item => ({ value: item.value }));
+      }
+
+      if (Array.isArray(s.rules)) {
+        (current.settings as SettingsData & LegacySettingsFields).rules =
+          s.rules as LegacyRuleV1[];
+      }
+
+      if (s.retentionPolicy && typeof s.retentionPolicy === 'object') {
+        current.settings.retentionPolicy = s.retentionPolicy as RetentionPolicy;
+      }
+
+      if (pluginImport.lastSeenVersion !== undefined) {
+        current.lastSeenVersion = pluginImport.lastSeenVersion;
+      }
+
+      if (pluginImport.schemaVersion !== undefined) {
+        current.schemaVersion = pluginImport.schemaVersion;
+      }
+
+      if (Array.isArray(s.rulesV2)) {
+        current.settings.rulesV2 = s.rulesV2 as SettingsData['rulesV2'];
+      }
+    } else {
+      const sanitizedSettings =
+        SettingsValidator.sanitizeSettings(importedSettings);
+
+      if (sanitizedSettings.enablePeriodicMovement !== undefined) {
+        current.settings.triggers.enablePeriodicMovement =
+          !!sanitizedSettings.enablePeriodicMovement;
+      }
+      if (sanitizedSettings.periodicMovementInterval !== undefined) {
+        current.settings.triggers.periodicMovementInterval = Number(
+          sanitizedSettings.periodicMovementInterval
+        );
+      }
+      if (sanitizedSettings.enableOnEditTrigger !== undefined) {
+        current.settings.triggers.enableOnEditTrigger =
+          !!sanitizedSettings.enableOnEditTrigger;
+      }
+      if (Array.isArray(sanitizedSettings.filter)) {
+        current.settings.filters.filter = sanitizedSettings.filter
+          .filter((v: unknown) => typeof v === 'string')
+          .map((v: string) => ({ value: v }));
+      }
+      if (Array.isArray(sanitizedSettings.rules)) {
+        (current.settings as SettingsData & LegacySettingsFields).rules =
+          sanitizedSettings.rules as LegacyRuleV1[];
+      }
+      if (
+        sanitizedSettings.retentionPolicy &&
+        typeof sanitizedSettings.retentionPolicy === 'object'
+      ) {
+        current.settings.retentionPolicy =
+          sanitizedSettings.retentionPolicy as RetentionPolicy;
+      }
+      if (typeof sanitizedSettings.lastSeenVersion === 'string') {
+        current.lastSeenVersion = sanitizedSettings.lastSeenVersion;
+      }
+    }
+
+    const legacyRules = (
+      current.settings as SettingsData & LegacySettingsFields
+    ).rules;
+    if (
+      Array.isArray(legacyRules) &&
+      RuleMigrationService.shouldMigrate(
+        legacyRules,
+        current.settings.rulesV2 ?? []
+      )
+    ) {
+      debugDebug('Migrating imported Rule V1 to Rule V2...');
+      current.settings.rulesV2 = RuleMigrationService.migrateRules(legacyRules);
+      (current.settings as SettingsData & LegacySettingsFields).rules = [];
+      debugDebug(
+        `Migrated ${(current.settings.rulesV2 ?? []).length} imported rules to V2 format`
+      );
+    }
+  }
+
+  private settingsBackupPath(): string {
+    const { configDir } = this.plugin.app.vault;
+    return normalizePath(
+      `${configDir}/plugins/${this.plugin.manifest.id}/${SETTINGS_BACKUP_FILE}`
+    );
+  }
+
+  private async writeSettingsBackup(contents: string): Promise<void> {
+    await this.plugin.app.vault.adapter.write(
+      this.settingsBackupPath(),
+      contents
+    );
+  }
+
+  private async settingsBackupExists(): Promise<boolean> {
+    return this.plugin.app.vault.adapter.exists(this.settingsBackupPath());
+  }
+
+  async restoreBackup(): Promise<void> {
+    try {
+      const path = this.settingsBackupPath();
+      if (!(await this.plugin.app.vault.adapter.exists(path))) {
+        NoticeManager.warning(strings().notices.importNoBackup);
+        return;
+      }
+      const confirmed = await ConfirmModal.show(this.app, {
+        title: strings().settings.importExportRestoreTitle,
+        message: strings().settings.importExportRestoreMessage,
+        confirmText: strings().settings.importExportRestoreButton,
+        cancelText: strings().common.cancel,
+      });
+      if (!confirmed) {
+        return;
+      }
+      const restored = await restoreSettingsBackup({
+        readBackup: () => this.plugin.app.vault.adapter.read(path),
+        writeCurrent: async contents => {
+          const parsed: unknown = JSON.parse(contents);
+          if (!looksLikePluginDataRoot(parsed)) {
+            throw createError(strings().notices.importBackupInvalid);
+          }
+          this.plugin.pluginData = parsed as PluginData;
+          await this.plugin.save_settings();
+        },
+      });
+      if (restored === null) {
+        NoticeManager.warning(strings().notices.importNoBackup);
+        return;
+      }
+      this.plugin.advancedNoteMover.updateRuleManager();
+      this.refreshDisplay();
+      NoticeManager.success(strings().notices.importRestored);
+    } catch (error) {
+      handleError(error, strings().notices.importSettingsContext, false);
     }
   }
 
