@@ -1,4 +1,5 @@
 import { App, Setting, TFile } from 'obsidian';
+import { strings } from '../i18n/locale';
 import AdvancedNoteMoverPlugin from 'main';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
@@ -14,7 +15,7 @@ export class ConflictSkipCacheModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
-      title: 'Skipped move conflicts',
+      title: strings().modals.conflictCacheTitle,
       titleIcon: '⚠️',
       cssClass: 'advancedNoteMover-conflict-skip-cache-modal',
       size: 'large',
@@ -29,13 +30,13 @@ export class ConflictSkipCacheModal extends BaseModal {
 
     contentEl.createEl('p', {
       cls: 'advancedNoteMover-modal-subtitle',
-      text: 'Notes that were skipped because a file already exists at the destination.',
+      text: strings().modals.conflictCacheIntro,
     });
 
     if (entries.length === 0) {
       contentEl.createDiv({
         cls: 'advancedNoteMover-modal-empty',
-        text: 'No skipped move conflicts.',
+        text: strings().modals.conflictCacheEmpty,
       });
       return;
     }
@@ -119,13 +120,13 @@ export class ConflictSkipCacheModal extends BaseModal {
     new Setting(item)
       .addButton(btn =>
         btn
-          .setButtonText('Open note')
+          .setButtonText(strings().modals.conflictCacheOpenNote)
           .setTooltip('Open the source note')
           .onClick(() => this.openSourceNote(entry))
       )
       .addButton(btn =>
         btn
-          .setButtonText('Retry move')
+          .setButtonText(strings().modals.conflictCacheRetry)
           .setTooltip('Remove from cache and try moving again')
           .onClick(() => {
             void this.retryEntry(entry);
@@ -133,7 +134,7 @@ export class ConflictSkipCacheModal extends BaseModal {
       )
       .addButton(btn =>
         btn
-          .setButtonText('Dismiss')
+          .setButtonText(strings().modals.conflictCacheDismiss)
           .setTooltip('Remove from cache without moving')
           .onClick(() => {
             void this.dismissEntry(entry);
@@ -146,15 +147,17 @@ export class ConflictSkipCacheModal extends BaseModal {
     entry: ConflictSkipCacheEntry
   ): void {
     new Setting(item).addButton(btn =>
-      btn.setButtonText('Open note').onClick(() => this.openSourceNote(entry))
+      btn
+        .setButtonText(strings().modals.conflictCacheOpenNote)
+        .onClick(() => this.openSourceNote(entry))
     );
     new Setting(item).addButton(btn =>
-      btn.setButtonText('Retry move').onClick(() => {
+      btn.setButtonText(strings().modals.conflictCacheRetry).onClick(() => {
         void this.retryEntry(entry);
       })
     );
     new Setting(item).addButton(btn =>
-      btn.setButtonText('Dismiss').onClick(() => {
+      btn.setButtonText(strings().modals.conflictCacheDismiss).onClick(() => {
         void this.dismissEntry(entry);
       })
     );
@@ -249,7 +252,7 @@ export class ConflictSkipCacheModal extends BaseModal {
 
   private async clearAllEntries(): Promise<void> {
     const confirmed = await ConfirmModal.show(this.app, {
-      title: 'Clear skipped conflicts',
+      title: strings().modals.conflictCacheClearTitle,
       message:
         'Remove all skipped move conflict entries? Automatic triggers will try to move these notes again.',
       confirmText: 'Clear all',

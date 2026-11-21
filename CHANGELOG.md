@@ -6,6 +6,11 @@
 
 - **Modal CSS classes**: Custom snippets that target `note-mover-preview-modal`, `note-mover-update-modal`, or `note-mover-history-modal` need the new names `advancedNoteMover-preview-modal`, `advancedNoteMover-update-modal`, and `advancedNoteMover-history-modal`.
 
+### Improvements
+
+- **Languages**: Settings, modal, command, and notice copy is read from `languages/en.json`. The active Obsidian language selects `languages/<code>.json` and falls back to English when that file is missing.
+- **Unnamed rule**: A rule without a name is labeled "Unnamed rule".
+
 ### Fixes
 
 - **Bulk errors**: One summary names the error count, and Show details lists the failed files.

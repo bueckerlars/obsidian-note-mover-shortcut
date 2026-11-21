@@ -1,4 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
+import { strings } from '../../i18n/locale';
 import { Setting } from 'obsidian';
 import { setDebugEnabled } from '../../utils/debug';
 import { NoticeManager } from '../../utils/NoticeManager';
@@ -14,7 +15,9 @@ export class PerformanceDebugSettingsSection {
   ) {}
 
   addPerformanceDebugSettings(): void {
-    new Setting(this.containerEl).setName('Performance').setHeading();
+    new Setting(this.containerEl)
+      .setName(strings().settings.headingsPerformance)
+      .setHeading();
 
     const cacheDesc = createFragment();
     cacheDesc.append(
@@ -24,7 +27,7 @@ export class PerformanceDebugSettingsSection {
     );
 
     new Setting(this.containerEl)
-      .setName('Enable rule evaluation cache')
+      .setName(strings().settings.performanceCacheName)
       .setDesc(cacheDesc)
       .addToggle(toggle =>
         toggle
@@ -41,7 +44,7 @@ export class PerformanceDebugSettingsSection {
       );
 
     new Setting(this.containerEl)
-      .setName('Enable vault index cache')
+      .setName(strings().settings.performanceVaultCacheName)
       .setDesc(
         'Caches movable file lists (notes, canvases, bases) and derived tag/property indices from markdown. Turn off to always scan the vault (useful for debugging stale suggestions).'
       )
@@ -60,7 +63,7 @@ export class PerformanceDebugSettingsSection {
       );
 
     new Setting(this.containerEl)
-      .setName('Enable performance debug logs')
+      .setName(strings().settings.performanceDebugName)
       .setDesc(
         'Logs timing spans to the developer console as [Advanced Note Mover perf] and records them for export. Disable when not profiling.'
       )
@@ -81,7 +84,7 @@ export class PerformanceDebugSettingsSection {
       this.plugin.pluginData.settings.enablePerformanceDebug === true;
 
     new Setting(this.containerEl)
-      .setName('Export performance trace')
+      .setName(strings().settings.performanceExportName)
       .setDesc(
         debugOn
           ? 'Downloads recorded timings as JSON for before/after comparison.'
@@ -89,7 +92,7 @@ export class PerformanceDebugSettingsSection {
       )
       .addButton(btn =>
         btn
-          .setButtonText('Export trace JSON')
+          .setButtonText(strings().settings.performanceExportButton)
           .setDisabled(!debugOn)
           .onClick(async () => {
             if (

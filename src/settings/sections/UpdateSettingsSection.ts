@@ -1,5 +1,6 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { Setting } from 'obsidian';
+import { strings } from '../../i18n/locale';
 
 export class UpdateSettingsSection {
   constructor(
@@ -8,13 +9,13 @@ export class UpdateSettingsSection {
   ) {}
 
   addUpdateSettings(): void {
-    new Setting(this.containerEl).setName('Updates').setHeading();
+    new Setting(this.containerEl)
+      .setName(strings().settings.headingsUpdates)
+      .setHeading();
 
     new Setting(this.containerEl)
-      .setName('Show release notes after plugin update')
-      .setDesc(
-        'When enabled, opens the changelog modal once after you install a newer plugin version. Applies across all vaults; does not show on every startup or vault switch.'
-      )
+      .setName(strings().settings.updatesReleaseNotesName)
+      .setDesc(strings().settings.updatesReleaseNotesDesc)
       .addToggle(toggle =>
         toggle
           .setValue(

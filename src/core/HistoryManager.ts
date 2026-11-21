@@ -8,6 +8,7 @@ import {
 import { TFile } from 'obsidian';
 import AdvancedNoteMoverPlugin from 'main';
 import { createError, handleError } from '../utils/Error';
+import { fill, strings } from '../i18n/locale';
 import { NoticeManager } from '../utils/NoticeManager';
 import { HISTORY_CONSTANTS } from '../config/constants';
 import { type OperationType } from '../types/Common';
@@ -266,7 +267,12 @@ export class HistoryManager {
     if (removedHistoryCount > 0 || removedBulkCount > 0) {
       await this.saveHistory();
       NoticeManager.info(
-        `Cleaned up ${removedHistoryCount} history entries and ${removedBulkCount} bulk operations older than ${retentionPolicy.value} ${retentionPolicy.unit}`
+        fill(strings().notices.cleanedUp, {
+          history: removedHistoryCount,
+          bulk: removedBulkCount,
+          value: retentionPolicy.value,
+          unit: retentionPolicy.unit,
+        })
       );
     }
   }
@@ -454,8 +460,12 @@ export class HistoryManager {
       !(await ensureFolderExists(this.plugin.app, sourceFolderPath))
     ) {
       handleError(
-        createError(`Failed to create source folder ${sourceFolderPath}`),
-        'undoLastMove',
+        createError(
+          fill(strings().notices.failedToCreateSourceFolder, {
+            folder: sourceFolderPath,
+          })
+        ),
+        strings().notices.undoLastMoveContext,
         false
       );
       return false;
@@ -463,7 +473,10 @@ export class HistoryManager {
 
     try {
       NoticeManager.info(
-        `Attempting to move file from ${entry.destinationPath} to ${entry.sourcePath}`
+        fill(strings().notices.attemptingUndo, {
+          from: entry.destinationPath,
+          to: entry.sourcePath,
+        })
       );
       this.markPluginMoveStart();
       await this.plugin.app.fileManager.renameFile(file, entry.sourcePath);
@@ -476,10 +489,10 @@ export class HistoryManager {
         await this.saveHistory();
       }
 
-      NoticeManager.success('Move successful');
+      NoticeManager.success(strings().notices.moveSuccessful);
       return true;
     } catch (error) {
-      handleError(error, 'Error during undo', false);
+      handleError(error, strings().notices.errorDuringUndoContext, false);
       return false;
     } finally {
       this.markPluginMoveEnd();

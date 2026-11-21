@@ -1,5 +1,6 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { UpdateModal } from '../modals/UpdateModal';
+import { fill, strings } from '../i18n/locale';
 import { NoticeManager } from '../utils/NoticeManager';
 import { ChangelogEntry, CHANGELOG_ENTRIES } from '../generated/changelog';
 import {
@@ -98,7 +99,9 @@ export class UpdateManager {
       );
     } catch (error) {
       NoticeManager.error(
-        `Error loading changelog: ${error instanceof Error ? error.message : String(error)}`
+        fill(strings().notices.errorLoadingChangelog, {
+          message: error instanceof Error ? error.message : String(error),
+        })
       );
       return [];
     }

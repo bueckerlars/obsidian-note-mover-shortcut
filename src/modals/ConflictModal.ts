@@ -1,4 +1,5 @@
 import { App, Component, MarkdownRenderer, Setting } from 'obsidian';
+import { strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import { toMarkdownInlineCode } from '../utils/markdown-confirm';
@@ -71,7 +72,7 @@ export class ConflictModal extends BaseModal {
     this.updateWarning();
 
     new Setting(contentEl)
-      .setName('Always use this choice')
+      .setName(strings().modals.conflictAlwaysName)
       .setDesc(
         'Apply the selected strategy automatically for future conflicts without asking.'
       )
@@ -139,9 +140,17 @@ export class ConflictModal extends BaseModal {
       primary?: boolean;
       warning?: boolean;
     }> = [
-      { text: 'Keep in place', action: 'skip', primary: true },
-      { text: 'Rename', action: 'rename' },
-      { text: 'Overwrite', action: 'overwrite', warning: true },
+      {
+        text: strings().modals.conflictKeepInPlace,
+        action: 'skip',
+        primary: true,
+      },
+      { text: strings().modals.conflictRename, action: 'rename' },
+      {
+        text: strings().modals.conflictOverwrite,
+        action: 'overwrite',
+        warning: true,
+      },
     ];
 
     for (const { text, action, primary, warning } of actions) {

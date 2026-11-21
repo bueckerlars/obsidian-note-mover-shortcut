@@ -4,23 +4,7 @@ import { MobileUtils } from '../../utils/MobileUtils';
 import type { ConflictResolutionStrategy } from '../../types/ConflictResolution';
 import { strategyRequiresWarning } from '../../domain/conflicts/note-move-conflict';
 import { persistConflictResolutionStrategy } from '../../application/persist-conflict-resolution-strategy';
-
-export const STRATEGY_LABELS: Record<ConflictResolutionStrategy, string> = {
-  ask: 'Ask every time',
-  skip: 'Always skip',
-  rename: 'Always rename',
-  overwrite: 'Always overwrite',
-};
-
-export const STRATEGY_DESCRIPTIONS: Record<ConflictResolutionStrategy, string> =
-  {
-    ask: 'Show a dialog when a file with the same name already exists at the destination.',
-    skip: 'Leave the note in its current location and notify you when a conflict occurs.',
-    rename:
-      'Automatically append a numeric suffix (e.g. note (1).md) to avoid overwriting.',
-    overwrite:
-      'Replace the existing file at the destination without asking. Existing content will be lost.',
-  };
+import { strings } from '../../i18n/locale';
 
 export class ConflictResolutionSettingsSection {
   private warningEl: HTMLElement | null = null;
@@ -33,7 +17,9 @@ export class ConflictResolutionSettingsSection {
   addConflictResolutionSettings(): void {
     const isMobile = MobileUtils.isMobile();
 
-    new Setting(this.containerEl).setName('Conflict resolution').setHeading();
+    new Setting(this.containerEl)
+      .setName(strings().settings.headingsConflict)
+      .setHeading();
 
     if (!this.plugin.pluginData.settings.conflictResolution) {
       this.plugin.pluginData.settings.conflictResolution = { strategy: 'skip' };
@@ -43,16 +29,20 @@ export class ConflictResolutionSettingsSection {
       this.plugin.pluginData.settings.conflictResolution.strategy ?? 'skip';
 
     const strategySetting = new Setting(this.containerEl)
-      .setName('When target file exists')
-      .setDesc(STRATEGY_DESCRIPTIONS[currentStrategy])
+      .setName(strings().settings.conflictWhenExists)
+      .setDesc(strings().conflictStrategyDescriptions[currentStrategy])
       .addDropdown(dropdown => {
-        for (const [value, label] of Object.entries(STRATEGY_LABELS)) {
+        for (const [value, label] of Object.entries(
+          strings().conflictStrategies
+        )) {
           dropdown.addOption(value, label);
         }
         dropdown.setValue(currentStrategy).onChange(async value => {
           const strategy = value as ConflictResolutionStrategy;
           await persistConflictResolutionStrategy(this.plugin, strategy);
-          strategySetting.setDesc(STRATEGY_DESCRIPTIONS[strategy]);
+          strategySetting.setDesc(
+            strings().conflictStrategyDescriptions[strategy]
+          );
           this.updateWarning(strategy);
         });
       });
@@ -78,8 +68,8 @@ export class ConflictResolutionSettingsSection {
     }
 
     const warningText = strategyRequiresWarning(strategy)
-      ? 'Warning: Always overwrite will replace existing files at the destination without confirmation. You may lose data.'
-      : 'Warning: Conflicts will be handled automatically without asking. You can change this setting at any time.';
+      ? strings().settings.conflictOverwriteWarning
+      : strings().settings.conflictAutoWarning;
 
     this.warningEl.createEl('p', {
       cls: strategyRequiresWarning(strategy)

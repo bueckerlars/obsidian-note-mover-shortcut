@@ -1,3 +1,4 @@
+import { fill, strings } from '../i18n/locale';
 import type { FileMoveResult } from '../types/Common';
 import type { ExecuteNoteMoveWithConflictResult } from './execute-note-move-with-conflict';
 
@@ -55,10 +56,16 @@ export function formatMoveSkippedDetail(counts: MoveSkippedCounts): string {
 
   const parts: string[] = [];
   if (counts.missingFolder > 0) {
-    parts.push(`${counts.missingFolder} skipped (destination folder missing)`);
+    parts.push(
+      fill(strings().notices.skippedMissingFolder, {
+        count: counts.missingFolder,
+      })
+    );
   }
   if (counts.conflict > 0) {
-    parts.push(`${counts.conflict} skipped due to conflicts`);
+    parts.push(
+      fill(strings().notices.skippedConflict, { count: counts.conflict })
+    );
   }
   return ` ${parts.join(', ')}.`;
 }
