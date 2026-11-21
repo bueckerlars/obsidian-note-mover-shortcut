@@ -612,7 +612,7 @@ async function anmSmoke(action, arg) {
       'Rules section not found'
     );
     const button = [...document.querySelectorAll('button')].find(el =>
-      /add rule/i.test(labelOf(el))
+      /add rule/i.test(el.getAttribute('aria-label') || labelOf(el))
     );
     if (!button) {
       throw new Error('Add rule button not found');
