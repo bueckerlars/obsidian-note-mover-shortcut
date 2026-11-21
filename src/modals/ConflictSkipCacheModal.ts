@@ -16,7 +16,7 @@ export class ConflictSkipCacheModal extends BaseModal {
   ) {
     super(app, {
       title: strings().modals.conflictCacheTitle,
-      titleIcon: '⚠️',
+      titleIcon: 'alert-triangle',
       cssClass: 'advancedNoteMover-conflict-skip-cache-modal',
       size: 'large',
       ...options,

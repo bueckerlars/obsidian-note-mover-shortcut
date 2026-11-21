@@ -1,16 +1,29 @@
-import { Setting, App, TFile } from 'obsidian';
+import { Setting, App, TFile, setIcon } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
 import { BulkOperation, HistoryEntry, TimeFilter } from '../types/HistoryEntry';
 import { NoticeManager } from '../utils/NoticeManager';
 import { pluralize } from '../utils/pluralize';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
-import { strings } from '../i18n/locale';
+import { fill, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import AdvancedNoteMoverPlugin from 'main';
 
 export class HistoryModal extends BaseModal {
   private currentTimeFilter: TimeFilter = 'all';
+
+  private createIconLabel(
+    parent: HTMLElement,
+    cls: string,
+    icon: string,
+    text: string
+  ): void {
+    const row = parent.createDiv({ cls });
+    const iconEl = row.createSpan({ cls: 'advancedNoteMover-icon' });
+    iconEl.ariaHidden = 'true';
+    setIcon(iconEl, icon);
+    row.createSpan({ text });
+  }
 
   private formatHistoryDate(timestamp: number): string {
     return new Date(timestamp).toLocaleString();
@@ -130,13 +143,20 @@ export class HistoryModal extends BaseModal {
     const formattedDate = this.formatHistoryDate(bulkOp.timestamp);
 
     const operationTypeText =
-      bulkOp.operationType === 'bulk' ? 'Bulk Move' : 'Periodic Move';
-    const operationIcon = bulkOp.operationType === 'bulk' ? '📦' : '🕐';
+      bulkOp.operationType === 'bulk'
+        ? strings().modals.historyBulkMove
+        : strings().modals.historyPeriodicMove;
 
-    headerEl.createDiv({
-      cls: 'advancedNoteMover-bulk-operation-info',
-      text: `${operationIcon} ${operationTypeText}: ${pluralize(bulkOp.totalFiles, 'file')} - ${formattedDate}`,
-    });
+    this.createIconLabel(
+      headerEl,
+      'advancedNoteMover-bulk-operation-info',
+      bulkOp.operationType === 'bulk' ? 'package' : 'clock',
+      fill(strings().modals.historyBulkSummary, {
+        operation: operationTypeText,
+        files: pluralize(bulkOp.totalFiles, 'file'),
+        date: formattedDate,
+      })
+    );
 
     // Expandable details (opened by default)
     const detailsEl = bulkEntryEl.createEl('details', {
@@ -172,10 +192,15 @@ export class HistoryModal extends BaseModal {
       });
       const formattedDate = this.formatHistoryDate(entry.timestamp);
 
-      contentEl.createDiv({
-        cls: 'advancedNoteMover-history-entry-info',
-        text: `📄 ${entry.fileName} - ${formattedDate}`,
-      });
+      this.createIconLabel(
+        contentEl,
+        'advancedNoteMover-history-entry-info',
+        'file-text',
+        fill(strings().modals.historyFileLine, {
+          fileName: entry.fileName,
+          date: formattedDate,
+        })
+      );
 
       contentEl.createDiv({
         cls: 'advancedNoteMover-history-entry-paths',
@@ -364,10 +389,15 @@ export class HistoryModal extends BaseModal {
     });
     const formattedDate = this.formatHistoryDate(entry.timestamp);
 
-    contentEl.createDiv({
-      cls: 'advancedNoteMover-history-entry-info',
-      text: `📄 ${entry.fileName} - ${formattedDate}`,
-    });
+    this.createIconLabel(
+      contentEl,
+      'advancedNoteMover-history-entry-info',
+      'file-text',
+      fill(strings().modals.historyFileLine, {
+        fileName: entry.fileName,
+        date: formattedDate,
+      })
+    );
 
     contentEl.createDiv({
       cls: 'advancedNoteMover-history-entry-paths',
