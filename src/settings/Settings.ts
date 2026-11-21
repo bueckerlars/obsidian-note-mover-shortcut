@@ -265,6 +265,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     ) {
       this.rulesSettings.cleanup();
     }
+    this.periodicMovementSettings.cleanup();
     // Note: Other sections don't have AdvancedSuggest instances, so no cleanup needed
   }
 
