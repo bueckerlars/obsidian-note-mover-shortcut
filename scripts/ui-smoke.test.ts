@@ -1,6 +1,12 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import net from 'node:net';
-import { collectFailures, freePort, withTempSmokeVault } from './ui-smoke.mjs';
+import {
+  CdpWebSocket,
+  collectFailures,
+  freePort,
+  withTempSmokeVault,
+} from './ui-smoke.mjs';
 
 function rect(el: HTMLElement, width: number, height: number): void {
   el.getBoundingClientRect = () =>
@@ -188,6 +194,126 @@ describe('withTempSmokeVault', () => {
       expect(fs.existsSync(tmp)).toBe(false);
     } finally {
       await new Promise<void>(resolve => held.close(() => resolve()));
+    }
+  });
+});
+
+function serverTextFrame(text: string): Buffer {
+  const payload = Buffer.from(text);
+  const header = Buffer.alloc(10);
+  header[0] = 0x81;
+  header[1] = 127;
+  header.writeBigUInt64BE(BigInt(payload.length), 2);
+  return Buffer.concat([header, payload]);
+}
+
+function decodeClientTexts(buffer: Buffer): string[] {
+  const texts: string[] = [];
+  let offset = 0;
+  while (offset + 2 <= buffer.length) {
+    const opcode = buffer[offset] & 0x0f;
+    let length = buffer[offset + 1] & 0x7f;
+    let header = 2;
+    if (length === 126) {
+      length = buffer.readUInt16BE(offset + 2);
+      header = 4;
+    } else if (length === 127) {
+      length = Number(buffer.readBigUInt64BE(offset + 2));
+      header = 10;
+    }
+    const masked = (buffer[offset + 1] & 0x80) !== 0;
+    const maskLength = masked ? 4 : 0;
+    const start = offset + header + maskLength;
+    const payload = Buffer.from(buffer.subarray(start, start + length));
+    if (masked) {
+      const mask = buffer.subarray(offset + header, start);
+      for (let index = 0; index < payload.length; index += 1) {
+        payload[index] ^= mask[index & 3];
+      }
+    }
+    if (opcode === 0x1) {
+      texts.push(payload.toString('utf8'));
+    }
+    offset = start + length;
+  }
+  return texts;
+}
+
+describe('CdpWebSocket', () => {
+  it('exchanges a large CDP text frame without a global WebSocket', async () => {
+    const payload = 'x'.repeat(70000);
+    const clientBytes: Buffer[] = [];
+    const server = net.createServer(socket => {
+      let pending = Buffer.alloc(0);
+      let accepted = false;
+      socket.on('data', chunk => {
+        pending = Buffer.concat([pending, chunk]);
+        if (!accepted) {
+          const end = pending.indexOf('\r\n\r\n');
+          if (end === -1) {
+            return;
+          }
+          const head = pending.subarray(0, end).toString('latin1');
+          const key = head.match(/Sec-WebSocket-Key: (\S+)/)?.[1];
+          if (!key) {
+            socket.destroy();
+            return;
+          }
+          const accept = crypto
+            .createHash('sha1')
+            .update(`${key}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`)
+            .digest('base64');
+          socket.write(
+            'HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ' +
+              `${accept}\r\n\r\n`
+          );
+          pending = Buffer.from(pending.subarray(end + 4));
+          accepted = true;
+          socket.write(Buffer.from([0x89, 4]));
+          socket.write(Buffer.from('ping'));
+          const frame = serverTextFrame(payload);
+          socket.write(frame.subarray(0, 30));
+          socket.write(frame.subarray(30));
+        }
+        if (pending.length > 0) {
+          clientBytes.push(Buffer.from(pending));
+          pending = Buffer.alloc(0);
+        }
+      });
+    });
+    await new Promise<void>(resolve => {
+      server.listen(0, '127.0.0.1', () => resolve());
+    });
+    const address = server.address();
+    if (address === null || typeof address === 'string') {
+      throw new Error('debug server has no port');
+    }
+    const socket = new CdpWebSocket(
+      `ws://127.0.0.1:${address.port}/devtools/page/1`
+    );
+    try {
+      const text = await new Promise<string>((resolve, reject) => {
+        socket.addEventListener(
+          'message',
+          (event: Event & { data?: unknown }) => {
+            resolve(String(event.data));
+          }
+        );
+        socket.addEventListener(
+          'error',
+          () => reject(new Error('CDP socket failed')),
+          { once: true }
+        );
+      });
+      expect(text).toBe(payload);
+      socket.send('{"id":1,"method":"Runtime.enable"}');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      expect(decodeClientTexts(Buffer.concat(clientBytes))).toEqual([
+        '{"id":1,"method":"Runtime.enable"}',
+      ]);
+    } finally {
+      socket.close();
+      await new Promise<void>(resolve => server.close(() => resolve()));
     }
   });
 });

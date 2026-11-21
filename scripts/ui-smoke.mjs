@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import net from 'node:net';
 import os from 'node:os';
@@ -290,15 +291,163 @@ class Cdp {
   }
 }
 
+function encodeClientFrame(opcode, payload) {
+  const body = Buffer.from(payload);
+  const mask = crypto.randomBytes(4);
+  const length = body.length;
+  let header;
+  if (length < 126) {
+    header = Buffer.alloc(2);
+    header[0] = 0x80 | opcode;
+    header[1] = 0x80 | length;
+  } else if (length < 65536) {
+    header = Buffer.alloc(4);
+    header[0] = 0x80 | opcode;
+    header[1] = 0xfe;
+    header.writeUInt16BE(length, 2);
+  } else {
+    header = Buffer.alloc(10);
+    header[0] = 0x80 | opcode;
+    header[1] = 0xff;
+    header.writeBigUInt64BE(BigInt(length), 2);
+  }
+  const masked = Buffer.alloc(length);
+  for (let index = 0; index < length; index += 1) {
+    masked[index] = body[index] ^ mask[index & 3];
+  }
+  return Buffer.concat([header, mask, masked]);
+}
+
+export class CdpWebSocket extends EventTarget {
+  constructor(url) {
+    super();
+    const target = new URL(url);
+    this.buffer = Buffer.alloc(0);
+    this.fragments = [];
+    this.opened = false;
+    this.socket = net.connect(Number(target.port), target.hostname);
+    const key = crypto.randomBytes(16).toString('base64');
+    const requestPath = `${target.pathname}${target.search}` || '/';
+    this.socket.on('connect', () => {
+      this.socket.write(
+        `GET ${requestPath} HTTP/1.1\r\nHost: ${target.host}\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ${key}\r\nSec-WebSocket-Version: 13\r\n\r\n`
+      );
+    });
+    this.socket.on('data', chunk => {
+      this.buffer = Buffer.concat([this.buffer, chunk]);
+      if (!this.opened) {
+        const end = this.buffer.indexOf('\r\n\r\n');
+        if (end === -1) {
+          return;
+        }
+        const head = this.buffer.subarray(0, end).toString('latin1');
+        this.buffer = Buffer.from(this.buffer.subarray(end + 4));
+        if (!/^HTTP\/1\.[01] 101\b/.test(head)) {
+          this.dispatchEvent(new Event('error'));
+          this.socket.destroy();
+          return;
+        }
+        this.opened = true;
+        this.dispatchEvent(new Event('open'));
+      }
+      this.readFrames();
+    });
+    this.socket.on('error', () => {
+      this.dispatchEvent(new Event('error'));
+    });
+    this.socket.on('close', () => {
+      this.dispatchEvent(new Event('close'));
+    });
+  }
+
+  send(data) {
+    this.socket.write(encodeClientFrame(0x1, Buffer.from(String(data))));
+  }
+
+  close() {
+    this.socket.end();
+  }
+
+  readFrames() {
+    while (this.buffer.length >= 2) {
+      const opcode = this.buffer[0] & 0x0f;
+      const fin = (this.buffer[0] & 0x80) !== 0;
+      let length = this.buffer[1] & 0x7f;
+      let offset = 2;
+      if (length === 126) {
+        if (this.buffer.length < 4) {
+          return;
+        }
+        length = this.buffer.readUInt16BE(2);
+        offset = 4;
+      } else if (length === 127) {
+        if (this.buffer.length < 10) {
+          return;
+        }
+        length = Number(this.buffer.readBigUInt64BE(2));
+        offset = 10;
+      }
+      const masked = (this.buffer[1] & 0x80) !== 0;
+      const maskLength = masked ? 4 : 0;
+      if (this.buffer.length < offset + maskLength + length) {
+        return;
+      }
+      const payload = Buffer.from(
+        this.buffer.subarray(offset + maskLength, offset + maskLength + length)
+      );
+      if (masked) {
+        const mask = this.buffer.subarray(offset, offset + 4);
+        for (let index = 0; index < payload.length; index += 1) {
+          payload[index] ^= mask[index & 3];
+        }
+      }
+      this.buffer = Buffer.from(
+        this.buffer.subarray(offset + maskLength + length)
+      );
+      if (opcode === 0x8) {
+        this.socket.end();
+        continue;
+      }
+      if (opcode === 0x9) {
+        this.socket.write(encodeClientFrame(0xa, payload));
+        continue;
+      }
+      if (opcode !== 0x0 && opcode !== 0x1 && opcode !== 0x2) {
+        continue;
+      }
+      if (opcode !== 0x0) {
+        this.fragments = [];
+      }
+      this.fragments.push(payload);
+      if (!fin) {
+        continue;
+      }
+      const text = Buffer.concat(this.fragments).toString('utf8');
+      this.fragments = [];
+      const event = new Event('message');
+      event.data = text;
+      this.dispatchEvent(event);
+    }
+  }
+}
+
+function openCdpSocket(url) {
+  if (typeof globalThis.WebSocket === 'function') {
+    return new WebSocket(url);
+  }
+  return new CdpWebSocket(url);
+}
+
 async function connect(webSocketUrl) {
-  const ws = new WebSocket(webSocketUrl);
-  await new Promise((resolve, reject) => {
+  const ws = openCdpSocket(webSocketUrl);
+  const opened = new Promise((resolve, reject) => {
     ws.addEventListener('open', resolve, { once: true });
     ws.addEventListener('error', () => reject(new Error('CDP socket failed')), {
       once: true,
     });
   });
   const cdp = new Cdp(ws);
+  await opened;
   await cdp.send('Runtime.enable');
   await cdp.send('Page.enable');
   return cdp;
