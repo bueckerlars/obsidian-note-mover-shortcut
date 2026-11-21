@@ -27,6 +27,7 @@
 - **Field names**: Checkboxes, text fields, and dropdowns use the setting name that is already on screen.
 - **Close control**: The dialog close control is a button named Close.
 - **Button contrast**: Primary and warning buttons use the normal text color on the normal button background.
+- **Match buttons**: The selected match option uses the normal text color.
 - **Muted text**: Drag handles and file paths use the muted text color.
 - **Bulk preview**: Closing the preview stops further file reads and shows how far the read has got.
 - **Confirm dialog**: Confirm and cancel use one button row on desktop and mobile.

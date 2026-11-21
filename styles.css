@@ -869,9 +869,10 @@ body.is-mobile .advancedNoteMover-preview-select input[type='checkbox'] {
 }
 
 .advancedNoteMover-rule-aggregation-button.is-active {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
   border-color: var(--interactive-accent);
+  box-shadow: inset 0 0 0 1px var(--interactive-accent);
 }
 
 .advancedNoteMover-rule-aggregation-button:focus-visible {
@@ -2098,8 +2099,9 @@ body.is-mobile
 
 .advancedNoteMover-rule-mobile
   .advancedNoteMover-rule-mobile-segment.is-active {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  box-shadow: inset 0 0 0 1px var(--interactive-accent);
 }
 
 /* Destination template help */

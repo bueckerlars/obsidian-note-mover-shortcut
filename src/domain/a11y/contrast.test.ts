@@ -110,6 +110,18 @@ describe('muted text contrast', () => {
     }
   });
 
+  it('paints the selected match option with the normal text pair', () => {
+    for (const selector of [
+      '.advancedNoteMover-rule-aggregation-button.is-active',
+      '.advancedNoteMover-rule-mobile .advancedNoteMover-rule-mobile-segment.is-active',
+    ]) {
+      expect(cssDeclaration(css, selector, 'color')).toBe('var(--text-normal)');
+      expect(cssDeclaration(css, selector, 'background')).toBe(
+        'var(--interactive-normal)'
+      );
+    }
+  });
+
   it('paints plugin primary and warning buttons with the normal text pair', () => {
     for (const selector of [
       '.advancedNoteMover-settings-root button.mod-cta',
