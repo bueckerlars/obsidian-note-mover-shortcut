@@ -41,35 +41,6 @@ export const AGGREGATION_TYPES: readonly AggregationType[] = [
 
 export type FolderCreationValue = 'inherit' | 'always' | 'never';
 
-export const DESTINATION_DESCRIPTION =
-  'Folder or template where files matching this rule will be moved. Supports {{tag.*}}, {{property.*}}, and {{file.*}} placeholders. Use frontmatter dates via Archive/{{property.created.year}} or formats such as Journal/{{property.created.YYYY-MM-DD}}; use filesystem times via Inbox/{{file.created.DD-MM-YYYY}} or {{file.modified.year}}. Type {{tag., {{property., or {{file. to get template suggestions.';
-
-export const DESTINATION_SHORT_HINT =
-  'Folder path or template. Type {{ for suggestions.';
-
-export const DESTINATION_TEMPLATE_EXAMPLES: ReadonlyArray<{
-  template: string;
-  description: string;
-}> = [
-  { template: 'Projects/{{tag.project}}', description: 'Value of a tag' },
-  {
-    template: 'Tasks/{{property.status}}',
-    description: 'Value of a property',
-  },
-  {
-    template: 'Archive/{{property.created.year}}',
-    description: 'Date component of a property',
-  },
-  {
-    template: 'Journal/{{property.created.YYYY-MM-DD}}',
-    description: 'Formatted date of a property',
-  },
-  {
-    template: 'Inbox/{{file.created.DD-MM-YYYY}}',
-    description: 'Filesystem creation date',
-  },
-];
-
 export function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }

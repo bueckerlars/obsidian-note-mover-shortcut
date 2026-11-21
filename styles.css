@@ -2052,9 +2052,21 @@ body.is-mobile
   list-style: none;
 }
 
-.advancedNoteMover-rule-mobile-help-list code {
+.advancedNoteMover-rule-mobile-help-list code,
+.advancedNoteMover-rule-template-chip {
+  font-family: var(--font-monospace);
   font-size: var(--font-ui-small);
   overflow-wrap: anywhere;
+}
+
+.advancedNoteMover-rule-template-chip {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+  border: none;
+  border-radius: var(--radius-s);
+  padding: var(--size-4-1) var(--size-4-2);
+  cursor: pointer;
+  text-align: start;
 }
 
 /* Conditions */

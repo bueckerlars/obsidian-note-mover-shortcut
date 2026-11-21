@@ -15,10 +15,12 @@ import { toMarkdownInlineCode } from '../utils/markdown-confirm';
 import { RuleEditorMobileView } from './rule-editor/RuleEditorMobileView';
 import { renderAggregationControl } from './rule-editor/components/AggregationControl';
 import { renderConditionRow } from './rule-editor/components/ConditionRow';
-import { renderDestinationSetting } from './rule-editor/components/DestinationField';
+import {
+  renderDestinationHelp,
+  renderDestinationSetting,
+} from './rule-editor/components/DestinationField';
 import { renderRuleNameField } from './rule-editor/components/RuleNameField';
 import {
-  DESTINATION_DESCRIPTION,
   FolderCreationValue,
   applyFolderCreationValue,
   createDefaultTrigger,
@@ -179,16 +181,10 @@ export class RuleEditorModal extends BaseModal {
     this.destinationSuggest = {
       destroy: () => destination.destroy(),
     };
-
-    const descriptionEl = container.createDiv({
-      cls: 'advancedNoteMover-rule-destination-description',
-      text: DESTINATION_DESCRIPTION,
+    renderDestinationHelp(container, template => {
+      this.workingRule.destination = template;
+      destination.input.value = template;
     });
-    const descriptionId = 'advancedNoteMover-rule-destination-description';
-    descriptionEl.setAttr('id', descriptionId);
-    destination.setting.settingEl
-      .querySelector('input')
-      ?.setAttribute('aria-describedby', descriptionId);
   }
 
   private createFolderCreationSelector(container: HTMLElement): void {

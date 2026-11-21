@@ -22,13 +22,13 @@ import { operatorRequiresValue } from '../../utils/OperatorMapping';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 import { fill, strings } from '../../i18n/locale';
 import { renderAggregationControl } from './components/AggregationControl';
-import { renderDestinationInput } from './components/DestinationField';
+import {
+  renderDestinationHelp,
+  renderDestinationInput,
+} from './components/DestinationField';
 import { renderRuleNameField } from './components/RuleNameField';
 import {
   CRITERIA_TYPES,
-  DESTINATION_DESCRIPTION,
-  DESTINATION_SHORT_HINT,
-  DESTINATION_TEMPLATE_EXAMPLES,
   FolderCreationValue,
   applyCriteriaType,
   applyFolderCreationValue,
@@ -192,40 +192,24 @@ export class RuleEditorMobileView {
     const destinationField = this.createField(
       group,
       strings().modals.ruleEditorDestination,
-      { description: DESTINATION_SHORT_HINT }
+      { description: strings().modals.ruleEditorDestinationShort }
     );
     this.destinationSuggest?.destroy();
-    this.destinationSuggest = renderDestinationInput(
-      destinationField.controlEl,
-      {
-        app: this.options.app,
-        value: this.rule.destination,
-        placeholder: strings().modals.ruleEditorMobileDestinationPlaceholder,
-        id: destinationField.inputId,
-        className: `${CLS}-input`,
-        onChange: value => {
-          this.rule.destination = value;
-        },
-      }
-    );
+    const destination = renderDestinationInput(destinationField.controlEl, {
+      app: this.options.app,
+      value: this.rule.destination,
+      placeholder: strings().modals.ruleEditorMobileDestinationPlaceholder,
+      id: destinationField.inputId,
+      className: `${CLS}-input`,
+      onChange: value => {
+        this.rule.destination = value;
+      },
+    });
+    this.destinationSuggest = destination.suggest;
 
-    const details = group.createEl('details', { cls: `${CLS}-help` });
-    details.createEl('summary', {
-      text: strings().modals.ruleEditorTemplateExamples,
-    });
-    const helpBody = details.createDiv({ cls: `${CLS}-help-body` });
-    const list = helpBody.createEl('ul', { cls: `${CLS}-help-list` });
-    DESTINATION_TEMPLATE_EXAMPLES.forEach(example => {
-      const item = list.createEl('li');
-      item.createEl('code', { text: example.template });
-      item.createDiv({
-        cls: `${CLS}-description`,
-        text: example.description,
-      });
-    });
-    helpBody.createDiv({
-      cls: `${CLS}-description`,
-      text: DESTINATION_DESCRIPTION,
+    renderDestinationHelp(group, template => {
+      this.rule.destination = template;
+      destination.input.value = template;
     });
 
     const folderField = this.createField(
