@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- **Notices**: Titles no longer repeat the plugin name, and the ribbon tooltip names the move action.
 - **Popout windows**: Timers and tablet detection follow the active window and Obsidian's platform flags.
 - **Counts**: Notices and buttons say "1 file" and "2 files".
 - **Periodic interval**: Invalid intervals are ignored. A valid change restarts the timer once.

@@ -2,6 +2,7 @@ import type { App } from 'obsidian';
 import { TFile } from 'obsidian';
 import type { AttachmentMovePlan } from '../domain/attachments/note-attachments';
 import { ensureFolderExists, getParentPath } from '../utils/PathUtils';
+import { debugWarn } from '../utils/debug';
 
 export interface AttachmentMoveRecord {
   sourcePath: string;
@@ -25,7 +26,7 @@ export async function coMoveAttachmentsAfterNoteRename(
   for (const plan of options.plans) {
     const destExists = await app.vault.adapter.exists(plan.destinationPath);
     if (destExists) {
-      console.warn(
+      debugWarn(
         `[Advanced Note Mover] Skipping attachment move; destination exists: ${plan.destinationPath}`
       );
       continue;
@@ -33,17 +34,15 @@ export async function coMoveAttachmentsAfterNoteRename(
 
     const destFolder = getParentPath(plan.destinationPath);
     if (destFolder && !(await ensureFolderExists(app, destFolder))) {
-      console.warn(
+      debugWarn(
         `[Advanced Note Mover] Failed to create folder for attachment: ${destFolder}`
       );
       continue;
     }
 
-    const file =
-      plan.file ??
-      (app.vault.getAbstractFileByPath(plan.sourcePath) as TFile | null);
+    const file = plan.file ?? app.vault.getAbstractFileByPath(plan.sourcePath);
     if (!(file instanceof TFile)) {
-      console.warn(
+      debugWarn(
         `[Advanced Note Mover] Attachment not found: ${plan.sourcePath}`
       );
       continue;
@@ -56,7 +55,7 @@ export async function coMoveAttachmentsAfterNoteRename(
         destinationPath: plan.destinationPath,
       });
     } catch (error) {
-      console.warn(
+      debugWarn(
         `[Advanced Note Mover] Failed to move attachment ${plan.sourcePath}:`,
         error
       );

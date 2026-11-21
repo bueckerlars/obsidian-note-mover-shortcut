@@ -20,6 +20,7 @@ import { PluginVaultIndexCache } from 'src/infrastructure/cache/plugin-vault-ind
 import { PerformanceTraceRecorder } from 'src/infrastructure/debug/performance-trace';
 import { createPluginApplicationServices } from 'src/application/plugin-application-services';
 import type { PluginApplicationServices } from 'src/application/plugin-application-services';
+import { setDebugEnabled } from 'src/utils/debug';
 
 export default class AdvancedNoteMoverPlugin extends Plugin {
   /** Persisted plugin payload (not Obsidian 1.13+ `Plugin.settings`). */
@@ -40,6 +41,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
 
   async onload() {
     await loadPersistedSettings(this);
+    setDebugEnabled(this.pluginData.settings.enablePerformanceDebug === true);
 
     this.ruleCache = new RuleEvaluationCache();
     this.vaultIndexCache = new PluginVaultIndexCache();
@@ -65,7 +67,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
     this.command_handler = new CommandHandler(this);
     this.command_handler.setup();
 
-    this.addRibbonIcon('book-plus', 'Advanced Note Mover', () => {
+    this.addRibbonIcon('book-plus', 'Move active note to note folder', () => {
       void this.advancedNoteMover.moveFocusedNoteToDestination();
     });
 

@@ -30,11 +30,11 @@ export const NOTIFICATION_CONSTANTS = {
   } as const,
 
   DEFAULT_TITLES: {
-    info: 'Advanced Note Mover info:',
-    error: 'Advanced Note Mover error:',
-    update: 'Advanced Note Mover update:',
-    success: 'Advanced Note Mover success:',
-    warning: 'Advanced Note Mover warning:',
+    info: 'Info:',
+    error: 'Error:',
+    update: 'Update:',
+    success: 'Success:',
+    warning: 'Warning:',
   } as const,
 
   DURATION_OVERRIDE: 5000, // Used for specific notifications that need different duration

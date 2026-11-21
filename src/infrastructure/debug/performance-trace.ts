@@ -1,5 +1,6 @@
 import type { App } from 'obsidian';
 import { normalizePath } from 'obsidian';
+import { debugDebug } from '../../utils/debug';
 
 const LOG_PREFIX = '[Advanced Note Mover perf]';
 
@@ -70,7 +71,7 @@ export class PerformanceTraceRecorder {
     };
     this.seq += 1;
     this.entries.push(entry);
-    console.debug(
+    debugDebug(
       `${LOG_PREFIX} #${this.seq} ${name} ${durationMs.toFixed(2)}ms`,
       meta ?? ''
     );

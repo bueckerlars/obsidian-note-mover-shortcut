@@ -1,4 +1,5 @@
 import { App } from 'obsidian';
+import { debugError } from './debug';
 
 /**
  * Sanitizes a single vault-relative path segment (folder name).
@@ -183,7 +184,7 @@ export async function folderExists(
   try {
     return await app.vault.adapter.exists(formattedPath);
   } catch (error) {
-    console.error(`Failed to check folder ${formattedPath}:`, error);
+    debugError(`Failed to check folder ${formattedPath}:`, error);
     return false;
   }
 }
@@ -220,7 +221,7 @@ export async function ensureFolderExists(
     await app.vault.createFolder(formattedPath);
     return true;
   } catch (error) {
-    console.error(`Failed to create folder ${formattedPath}:`, error);
+    debugError(`Failed to create folder ${formattedPath}:`, error);
     return false;
   }
 }

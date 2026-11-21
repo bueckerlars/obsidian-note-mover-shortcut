@@ -1,5 +1,6 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { Setting } from 'obsidian';
+import { setDebugEnabled } from '../../utils/debug';
 import { NoticeManager } from '../../utils/NoticeManager';
 
 /**
@@ -70,6 +71,7 @@ export class PerformanceDebugSettingsSection {
           )
           .onChange(async value => {
             this.plugin.pluginData.settings.enablePerformanceDebug = value;
+            setDebugEnabled(value);
             await this.plugin.save_settings();
             this.refreshDisplay();
           })
