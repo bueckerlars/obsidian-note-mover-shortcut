@@ -1117,6 +1117,16 @@ body.is-mobile .advancedNoteMover-update-modal .setting-item-control {
   justify-content: space-between;
 }
 
+/* A full-width control squeezes the label onto extra lines. */
+body.is-mobile
+  .advancedNoteMover-settings-root
+  .setting-item.mod-toggle
+  .setting-item-control {
+  width: auto;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
 body.is-mobile
   .advancedNoteMover-time-filter-container
   .setting-item-control

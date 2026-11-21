@@ -17,28 +17,19 @@ export class PerformanceDebugSettingsSection {
   addPerformanceDebugSettings(): void {
     renderSetting(this.containerEl, 'performance.heading');
 
-    const cacheDesc = createFragment();
-    cacheDesc.append(
-      strings().settings.performanceCacheLead,
-      createEl('br'),
-      strings().settings.performanceCacheTail
+    renderSetting(this.containerEl, 'performance.cache').addToggle(toggle =>
+      toggle
+        .setValue(
+          this.plugin.pluginData.settings.enableRuleEvaluationCache ?? true
+        )
+        .onChange(async value => {
+          this.plugin.pluginData.settings.enableRuleEvaluationCache = value;
+          await this.plugin.save_settings();
+          if (!value) {
+            this.plugin.ruleCache.invalidateAll();
+          }
+        })
     );
-
-    renderSetting(this.containerEl, 'performance.cache')
-      .setDesc(cacheDesc)
-      .addToggle(toggle =>
-        toggle
-          .setValue(
-            this.plugin.pluginData.settings.enableRuleEvaluationCache ?? true
-          )
-          .onChange(async value => {
-            this.plugin.pluginData.settings.enableRuleEvaluationCache = value;
-            await this.plugin.save_settings();
-            if (!value) {
-              this.plugin.ruleCache.invalidateAll();
-            }
-          })
-      );
 
     renderSetting(this.containerEl, 'performance.vaultCache').addToggle(
       toggle =>
