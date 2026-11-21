@@ -622,7 +622,7 @@ body.is-mobile {
 .setting-item.advancedNoteMover-dragging {
   opacity: 0.5;
   transform: rotate(1deg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-l);
   z-index: 1000;
   position: relative;
 }
@@ -1178,7 +1178,7 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
 }
 
 .advancedNoteMover-mobile-move-button:active {
-  background: var(--background-modifier-active);
+  background: var(--background-modifier-active-hover);
   transform: scale(0.98);
 }
 
