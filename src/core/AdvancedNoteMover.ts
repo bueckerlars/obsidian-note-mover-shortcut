@@ -1,6 +1,5 @@
 import { TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
-import { pluralize } from '../utils/pluralize';
 import { viewIdle } from '../utils/viewTimers';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
@@ -32,7 +31,7 @@ import { ConfirmModal } from '../modals/ConfirmModal';
 import { PreviewModal } from '../modals/PreviewModal';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
-import { fill, strings } from '../i18n/locale';
+import { fill, plural, strings } from '../i18n/locale';
 
 const BULK_CHUNK_SIZE = 50;
 
@@ -375,12 +374,12 @@ export class AdvancedNoteMover {
                 const successMessage =
                   errorCount > 0
                     ? fill(strings().notices.movedOf, {
-                        moved: pluralize(successCount, 'file'),
+                        moved: plural(successCount, 'file'),
                         attempted: totalAttempted,
-                        errors: pluralize(errorCount, 'file'),
+                        errors: plural(errorCount, 'file'),
                       })
                     : fill(strings().notices.successfullyMoved, {
-                        moved: pluralize(successCount, 'file'),
+                        moved: plural(successCount, 'file'),
                       });
 
                 NoticeManager.showWithUndo(
@@ -397,7 +396,7 @@ export class AdvancedNoteMover {
                       if (undone.success) {
                         NoticeManager.success(
                           fill(strings().notices.bulkUndone, {
-                            moved: pluralize(successCount, 'file'),
+                            moved: plural(successCount, 'file'),
                           }),
                           { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
                         );
@@ -406,10 +405,7 @@ export class AdvancedNoteMover {
                           undone.errors.length === 1
                             ? undone.errors[0]
                             : fill(strings().notices.errorsWhileUndoing, {
-                                errors: pluralize(
-                                  undone.errors.length,
-                                  'error'
-                                ),
+                                errors: plural(undone.errors.length, 'error'),
                               }),
                           {
                             duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
@@ -456,7 +452,7 @@ export class AdvancedNoteMover {
               const periodicMessage =
                 successCount > 0
                   ? fill(strings().notices.periodicMoved, {
-                      moved: pluralize(successCount, 'file'),
+                      moved: plural(successCount, 'file'),
                       skipped: skippedDetail,
                     })
                   : fill(strings().notices.periodicNone, {
@@ -466,7 +462,7 @@ export class AdvancedNoteMover {
                 errorCount > 0
                   ? fill(strings().notices.withErrorCount, {
                       message: periodicMessage,
-                      errors: pluralize(errorCount, 'error'),
+                      errors: plural(errorCount, 'error'),
                     })
                   : periodicMessage,
                 moveErrors.length > 0
@@ -526,7 +522,7 @@ export class AdvancedNoteMover {
           ConfirmModal.show(this.plugin.app, {
             title: strings().modals.bulkMoveTitle,
             message: fill(strings().modals.bulkMoveMessage, {
-              count: pluralize(prompt.count, 'file'),
+              count: plural(prompt.count, 'file'),
             }),
             details: [...prompt.paths, prompt.undoHint],
             confirmText: strings().modals.bulkMoveConfirm,
@@ -563,7 +559,7 @@ export class AdvancedNoteMover {
         NoticeManager.info(
           moved > 0
             ? fill(strings().notices.successfullyMoved, {
-                moved: pluralize(moved, 'file'),
+                moved: plural(moved, 'file'),
               })
             : fill(strings().notices.bulkNoneMoved, { skipped: '' })
         );

@@ -10,8 +10,7 @@ import { MobileUtils } from '../utils/MobileUtils';
 import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault-index-cache';
 import { ConfirmModal } from './ConfirmModal';
 import { NoticeManager } from '../utils/NoticeManager';
-import { fill, strings } from '../i18n/locale';
-import { pluralize } from '../utils/pluralize';
+import { fill, plural, strings } from '../i18n/locale';
 import {
   createRuleLivePreview,
   fileMetadataFromCache,
@@ -470,7 +469,7 @@ export class RuleEditorModal extends BaseModal {
       count => {
         this.previewEl?.setText(
           fill(strings().modals.ruleEditorLivePreview, {
-            matches: pluralize(count, 'note'),
+            matches: plural(count, 'note'),
           })
         );
       },
