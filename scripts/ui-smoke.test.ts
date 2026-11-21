@@ -218,6 +218,31 @@ describe('collectFailures', () => {
     ]);
   });
 
+  it('checks icon labels inside the rule editor and ignores the workspace behind it', () => {
+    const workspace = document.createElement('span');
+    workspace.className = 'clickable-icon';
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    const editor = document.createElement('div');
+    editor.className = 'advancedNoteMover-rule-editor-modal';
+    const labeled = document.createElement('button');
+    labeled.className =
+      'clickable-icon advancedNoteMover-rule-trigger-delete-btn';
+    labeled.setAttribute('aria-label', 'Delete condition');
+    const unlabeled = document.createElement('button');
+    unlabeled.className = 'clickable-icon';
+    editor.append(labeled, unlabeled);
+    modal.append(editor);
+    document.body.append(workspace, modal);
+
+    const failures = collectFailures(document).filter(
+      item => item.check === 'aria'
+    );
+    expect(failures).toHaveLength(1);
+    expect(failures[0]?.target).toContain('clickable-icon');
+    expect(failures[0]?.target).not.toContain('delete');
+  });
+
   it('requires a mobile toggle to sit beside its name and stay at most 96px', () => {
     const root = document.createElement('div');
     root.className = 'advancedNoteMover-settings-root';

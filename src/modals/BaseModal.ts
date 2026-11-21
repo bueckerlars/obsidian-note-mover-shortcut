@@ -1,4 +1,5 @@
 import { Modal, App, setIcon, setTooltip } from 'obsidian';
+import { strings } from '../i18n/locale';
 import { MobileUtils } from '../utils/MobileUtils';
 import { viewFrame, viewTimeout } from '../utils/viewTimers';
 
@@ -35,6 +36,7 @@ export abstract class BaseModal extends Modal {
     this.addMobileClasses();
     this.setModalSize();
     this.createTitle();
+    this.labelCloseButton();
     this.createContent();
     this.setupAutoFocus();
     this.resetScrollPosition();
@@ -147,6 +149,13 @@ export abstract class BaseModal extends Modal {
   /**
    * Create modal title if provided
    */
+  protected labelCloseButton(): void {
+    const closeButton = this.modalEl?.querySelector('.modal-close-button');
+    if (closeButton && !closeButton.getAttribute('aria-label')) {
+      closeButton.setAttribute('aria-label', strings().common.close);
+    }
+  }
+
   protected createTitle(): void {
     if (!this.options.title) return;
 

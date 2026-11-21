@@ -781,35 +781,46 @@ export function collectFailures(doc, options = {}) {
     }
   }
 
-  for (const el of doc.querySelectorAll('.clickable-icon')) {
-    const label = el.getAttribute('aria-label');
-    if (!label || !label.trim()) {
-      failures.push({
-        check: 'aria',
-        target: describe(el),
-        detail: 'missing aria-label',
-      });
+  const editor = doc.querySelector(
+    '.advancedNoteMover-rule-editor-modal, .advancedNoteMover-rule-editor--mobile'
+  );
+  const ariaRoots = editor
+    ? [editor.closest('.modal') || editor]
+    : [doc];
+
+  for (const root of ariaRoots) {
+    for (const el of root.querySelectorAll('.clickable-icon')) {
+      const label = el.getAttribute('aria-label');
+      if (!label || !label.trim()) {
+        failures.push({
+          check: 'aria',
+          target: describe(el),
+          detail: 'missing aria-label',
+        });
+      }
     }
   }
 
-  for (const el of doc.querySelectorAll('button')) {
-    if (el.matches('.clickable-icon')) {
-      continue;
-    }
-    if (!el.querySelector('svg')) {
-      continue;
-    }
-    const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
-    if (text) {
-      continue;
-    }
-    const label = el.getAttribute('aria-label');
-    if (!label || !label.trim()) {
-      failures.push({
-        check: 'aria',
-        target: describe(el),
-        detail: 'missing aria-label',
-      });
+  for (const root of ariaRoots) {
+    for (const el of root.querySelectorAll('button')) {
+      if (el.matches('.clickable-icon')) {
+        continue;
+      }
+      if (!el.querySelector('svg')) {
+        continue;
+      }
+      const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text) {
+        continue;
+      }
+      const label = el.getAttribute('aria-label');
+      if (!label || !label.trim()) {
+        failures.push({
+          check: 'aria',
+          target: describe(el),
+          detail: 'missing aria-label',
+        });
+      }
     }
   }
 
