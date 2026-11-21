@@ -596,6 +596,9 @@ export class HistoryManager {
         const attachmentsOk = await this.undoAttachmentMoves(
           entry.attachmentMoves
         );
+        if (!attachmentsOk) {
+          errors.push(`Could not move attachments for ${entry.fileName} back`);
+        }
         // Remove from individual history
         const historyIndex = this.history.findIndex(h => h.id === entry.id);
         if (historyIndex !== -1) {
