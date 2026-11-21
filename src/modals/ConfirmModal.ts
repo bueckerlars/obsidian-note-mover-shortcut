@@ -7,6 +7,8 @@ export interface ConfirmModalOptions extends BaseModalOptions {
   title: string;
   /** Markdown body (rendered via MarkdownRenderer). */
   message: string;
+  /** Plain lines. File paths belong here, not in `message`. */
+  details?: readonly string[];
   confirmText?: string;
   cancelText?: string;
   danger?: boolean;
@@ -48,6 +50,19 @@ export class ConfirmModal extends BaseModal {
       '',
       this.messageRenderComponent
     );
+
+    const details = this.confirmOptions.details ?? [];
+    if (details.length > 0) {
+      const list = contentEl.createDiv({
+        cls: 'advancedNoteMover-confirm-modal-details',
+      });
+      for (const line of details) {
+        list.createDiv({
+          cls: 'advancedNoteMover-confirm-modal-detail',
+          text: line,
+        });
+      }
+    }
 
     const buttonContainer = this.createButtonContainer(contentEl);
     this.createButton(

@@ -14,6 +14,7 @@ import {
   filterConflictSkipEntriesByExpectedTarget,
   normalizeConflictCachePath,
 } from '../domain/conflicts/conflict-skip-cache';
+import { runConfirmedBulkMove } from '../application/bulkMoveGuard';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
 import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
@@ -27,6 +28,7 @@ import {
 } from '../application/note-move-skip-outcome';
 import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
+import { ConfirmModal } from '../modals/ConfirmModal';
 import { PreviewModal } from '../modals/PreviewModal';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
@@ -488,12 +490,85 @@ export class AdvancedNoteMover {
   }
 
   async moveAllFilesInVault(opts?: { signal?: AbortSignal }) {
-    await this.moveAllFiles({
-      createFolders: true,
-      showNotifications: true,
-      operationType: 'bulk',
-      signal: opts?.signal,
-    });
+    let preview;
+    try {
+      preview = await this.generateVaultMovePreview(opts?.signal);
+    } catch (error) {
+      handleError(
+        error,
+        strings().notices.errorGeneratingVaultPreviewContext,
+        false
+      );
+      return;
+    }
+
+    const previewed = preview.successfulMoves
+      .filter(entry => entry.willBeMoved && entry.targetPath)
+      .map(entry => ({ path: entry.currentPath }));
+
+    if (previewed.length === 0) {
+      NoticeManager.info(
+        preview.totalFiles === 0
+          ? strings().notices.noMovableFiles
+          : strings().notices.bulkMoveNone
+      );
+      return;
+    }
+
+    let started = false;
+    let moved = 0;
+    let index = 0;
+    try {
+      await runConfirmedBulkMove({
+        previewed,
+        undoHint: strings().modals.bulkMoveUndo,
+        confirm: prompt =>
+          ConfirmModal.show(this.plugin.app, {
+            title: strings().modals.bulkMoveTitle,
+            message: fill(strings().modals.bulkMoveMessage, {
+              count: pluralize(prompt.count, 'file'),
+            }),
+            details: [...prompt.paths, prompt.undoHint],
+            confirmText: strings().modals.bulkMoveConfirm,
+            cancelText: strings().common.cancel,
+          }),
+        renameFile: async file => {
+          if (!started) {
+            this.plugin.historyManager.startBulkOperation('bulk');
+            started = true;
+          }
+          const vaultFile = this.plugin.app.vault.getAbstractFileByPath(
+            file.path
+          );
+          if (!(vaultFile instanceof TFile)) {
+            return;
+          }
+          const result = await this.moveFileBasedOnTags(vaultFile, '/', false, {
+            bypassConflictSkipCache: false,
+          });
+          if (result.moved) {
+            moved += 1;
+          }
+          index += 1;
+          if (index % BULK_CHUNK_SIZE === 0 && index < previewed.length) {
+            await new Promise<void>(resolve => {
+              viewIdle(resolve, 250);
+            });
+          }
+        },
+      });
+    } finally {
+      if (started) {
+        this.plugin.historyManager.endBulkOperation();
+        NoticeManager.info(
+          moved > 0
+            ? fill(strings().notices.successfullyMoved, {
+                moved: pluralize(moved, 'file'),
+              })
+            : fill(strings().notices.bulkNoneMoved, { skipped: '' })
+        );
+      }
+    }
   }
 
   /**
