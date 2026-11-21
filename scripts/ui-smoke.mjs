@@ -511,6 +511,34 @@ async function anmSmoke(action, arg) {
     );
   }
 
+  function revealSetting(heading) {
+    const item = heading.closest('.setting-item') || heading;
+    let scroller = item.parentElement;
+    while (scroller && scroller !== document.body) {
+      const overflow = getComputedStyle(scroller).overflowY;
+      if (overflow === 'auto' || overflow === 'scroll') {
+        break;
+      }
+      scroller = scroller.parentElement;
+    }
+    if (scroller && scroller !== document.body) {
+      scroller.style.paddingBottom = `${scroller.clientHeight}px`;
+    }
+    item.scrollIntoView({ block: 'start' });
+    if (scroller && scroller !== document.body) {
+      const delta =
+        item.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+      if (Math.abs(delta) > 1) {
+        scroller.scrollTop += delta;
+      }
+      const gap =
+        item.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+      if (gap > 24) {
+        throw new Error('Settings section is not at the top of the view');
+      }
+    }
+  }
+
   if (action === 'boot') {
     await waitFor(() => app()?.vault, 45000, 'Obsidian did not finish loading');
     const started = Date.now();
@@ -559,7 +587,7 @@ async function anmSmoke(action, arg) {
       8000,
       `Settings section not found: ${arg}`
     );
-    heading.scrollIntoView({ block: 'start' });
+    revealSetting(heading);
     return arg;
   }
 
