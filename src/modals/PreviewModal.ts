@@ -1,5 +1,5 @@
-import { Setting, App, TFile } from 'obsidian';
-import { strings } from '../i18n/locale';
+import { Setting, App, TFile, setIcon } from 'obsidian';
+import { fill, strings } from '../i18n/locale';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
@@ -35,7 +35,7 @@ export class PreviewModal extends BaseModal {
   ) {
     super(app, {
       title: strings().modals.previewTitle,
-      titleIcon: '🔍',
+      titleIcon: 'search',
       cssClass: 'advancedNoteMover-preview-modal',
       size: 'large',
       ...options,
@@ -90,8 +90,14 @@ export class PreviewModal extends BaseModal {
     const header = section.createDiv({
       cls: 'advancedNoteMover-modal-section-header',
     });
-    header.createEl('h3', {
-      text: `✅ Files to be moved (${entries.length})`,
+    const heading = header.createEl('h3');
+    const iconEl = heading.createSpan({ cls: 'advancedNoteMover-icon' });
+    iconEl.ariaHidden = 'true';
+    setIcon(iconEl, 'check');
+    heading.createSpan({
+      text: fill(strings().modals.previewFilesToMove, {
+        count: entries.length,
+      }),
     });
 
     const list = section.createDiv({

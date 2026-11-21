@@ -164,7 +164,8 @@ export abstract class BaseModal extends Modal {
       const titleIcon = titleContainer.createSpan({
         cls: 'advancedNoteMover-modal-title-icon',
       });
-      titleIcon.textContent = this.options.titleIcon;
+      titleIcon.ariaHidden = 'true';
+      setIcon(titleIcon, this.options.titleIcon);
       titleContainer.createEl('h2', {
         text: this.options.title,
         cls: 'advancedNoteMover-modal-title',
