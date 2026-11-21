@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- **Performance trace**: Export downloads a JSON file instead of writing it into the vault.
 - **Notices**: Titles no longer repeat the plugin name, and the ribbon tooltip names the move action.
 - **Popout windows**: Timers and tablet detection follow the active window and Obsidian's platform flags.
 - **Counts**: Notices and buttons say "1 file" and "2 files".
