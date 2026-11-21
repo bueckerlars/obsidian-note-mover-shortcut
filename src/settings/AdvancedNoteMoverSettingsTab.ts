@@ -1,7 +1,7 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { PluginSettingTab, type SettingDefinitionItem } from 'obsidian';
 import {
-  PeriodicMovementSettingsSection,
+  TriggerSettingsSection,
   AttachmentsSettingsSection,
   FilterSettingsSection,
   RulesSettingsSection,
@@ -15,65 +15,26 @@ import { DebounceManager } from '../utils/DebounceManager';
 import { MobileUtils } from '../utils/MobileUtils';
 
 export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
-  private periodicMovementSettings: PeriodicMovementSettingsSection;
-  private attachmentsSettings: AttachmentsSettingsSection;
-  private filterSettings: FilterSettingsSection;
-  private rulesSettings: RulesSettingsSection;
-  private historySettings: HistorySettingsSection;
-  private importExportSettings: ImportExportSettingsSection;
-  private performanceDebugSettings: PerformanceDebugSettingsSection;
-  private updateSettings: UpdateSettingsSection;
-  private conflictResolutionSettings: ConflictResolutionSettingsSection;
+  private triggerSettings?: TriggerSettingsSection;
+  private attachmentsSettings?: AttachmentsSettingsSection;
+  private filterSettings?: FilterSettingsSection;
+  private rulesSettings?: RulesSettingsSection;
+  private historySettings?: HistorySettingsSection;
+  private importExportSettings?: ImportExportSettingsSection;
+  private performanceDebugSettings?: PerformanceDebugSettingsSection;
+  private updateSettings?: UpdateSettingsSection;
+  private conflictResolutionSettings?: ConflictResolutionSettingsSection;
   private debounceManager: DebounceManager;
+  private readonly refreshSettings: () => void;
 
   constructor(private plugin: AdvancedNoteMoverPlugin) {
     super(plugin.app, plugin);
 
-    // Initialize debounce manager
     this.debounceManager = new DebounceManager();
-
-    const debouncedDisplay = this.debounceManager.debounce(
+    this.refreshSettings = this.debounceManager.debounce(
       'display',
       () => this.refreshSettingsUi(),
-      150 // 150ms delay to prevent rapid refreshes
-    );
-
-    // Initialize section classes
-    this.periodicMovementSettings = new PeriodicMovementSettingsSection(
-      plugin,
-      this.containerEl,
-      debouncedDisplay
-    );
-    this.attachmentsSettings = new AttachmentsSettingsSection(
-      plugin,
-      this.containerEl,
-      debouncedDisplay
-    );
-    this.filterSettings = new FilterSettingsSection(
-      plugin,
-      this.containerEl,
-      debouncedDisplay
-    );
-    this.rulesSettings = new RulesSettingsSection(
-      plugin,
-      this.containerEl,
-      debouncedDisplay
-    );
-    this.historySettings = new HistorySettingsSection(plugin, this.containerEl);
-    this.importExportSettings = new ImportExportSettingsSection(
-      plugin,
-      this.containerEl,
-      debouncedDisplay
-    );
-    this.performanceDebugSettings = new PerformanceDebugSettingsSection(
-      plugin,
-      this.containerEl,
-      debouncedDisplay
-    );
-    this.updateSettings = new UpdateSettingsSection(plugin, this.containerEl);
-    this.conflictResolutionSettings = new ConflictResolutionSettingsSection(
-      plugin,
-      this.containerEl
+      150
     );
   }
 
@@ -116,32 +77,25 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     // Ensure arrays exist but don't remove empty rules during display
     this.ensureArraysExist();
 
-    const debouncedDisplay = this.debounceManager.debounce(
-      'display',
-      () => this.refreshSettingsUi(),
-      150 // 150ms delay to prevent rapid refreshes
-    );
-
-    // Update containerEl references for all sections
-    this.periodicMovementSettings = new PeriodicMovementSettingsSection(
+    this.triggerSettings = new TriggerSettingsSection(
       this.plugin,
       this.containerEl,
-      debouncedDisplay
+      this.refreshSettings
     );
     this.attachmentsSettings = new AttachmentsSettingsSection(
       this.plugin,
       this.containerEl,
-      debouncedDisplay
+      this.refreshSettings
     );
     this.filterSettings = new FilterSettingsSection(
       this.plugin,
       this.containerEl,
-      debouncedDisplay
+      this.refreshSettings
     );
     this.rulesSettings = new RulesSettingsSection(
       this.plugin,
       this.containerEl,
-      debouncedDisplay
+      this.refreshSettings
     );
     this.historySettings = new HistorySettingsSection(
       this.plugin,
@@ -150,12 +104,12 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.importExportSettings = new ImportExportSettingsSection(
       this.plugin,
       this.containerEl,
-      debouncedDisplay
+      this.refreshSettings
     );
     this.performanceDebugSettings = new PerformanceDebugSettingsSection(
       this.plugin,
       this.containerEl,
-      debouncedDisplay
+      this.refreshSettings
     );
     this.updateSettings = new UpdateSettingsSection(
       this.plugin,
@@ -166,7 +120,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
       this.containerEl
     );
 
-    this.periodicMovementSettings.addTriggerSettings();
+    this.triggerSettings.addTriggerSettings();
 
     this.filterSettings.addFilterSettings();
 
@@ -205,20 +159,9 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
    * Clean up existing section instances to prevent memory leaks
    */
   private cleanupExistingSections(): void {
-    if (
-      this.filterSettings &&
-      typeof this.filterSettings.cleanup === 'function'
-    ) {
-      this.filterSettings.cleanup();
-    }
-    if (
-      this.rulesSettings &&
-      typeof this.rulesSettings.cleanup === 'function'
-    ) {
-      this.rulesSettings.cleanup();
-    }
-    this.periodicMovementSettings.cleanup();
-    // Note: Other sections don't have AdvancedSuggest instances, so no cleanup needed
+    this.filterSettings?.cleanup();
+    this.rulesSettings?.cleanup();
+    this.triggerSettings?.cleanup();
   }
 
   /**

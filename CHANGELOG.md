@@ -14,6 +14,7 @@
 - **Settings hints**: Filter, rule, and conflict hints use one short description. Extra detail sits on the info tooltip. Add filter and Add rule are icon buttons.
 - **Settings actions**: Each settings section has at most one primary button. Clear history is the only warning button. Import asks for confirmation and is no longer red.
 - **Rule rows**: A rule row shows the condition and the destination. Edit, duplicate, move, and delete are in the row menu.
+- **Settings tab**: Each settings section is created when the tab opens. Filter rows keep the standard setting structure.
 - **Sentence case**: Settings, modals, commands, and notices use sentence case. Headings and buttons no longer start with a plus sign or end with a colon.
 - **Icons**: History, preview, and update use Lucide icons instead of emoji.
 - **Modal titles**: Dialog titles use Obsidian's title bar. History is titled "Move history".

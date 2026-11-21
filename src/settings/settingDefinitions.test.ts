@@ -1,6 +1,7 @@
 import type AdvancedNoteMoverPlugin from 'main';
+import { FilterSettingsSection } from './sections/FilterSettingsSection';
 import { RulesSettingsSection } from './sections/RulesSettingsSection';
-import { AdvancedNoteMoverSettingsTab } from './Settings';
+import { AdvancedNoteMoverSettingsTab } from './AdvancedNoteMoverSettingsTab';
 import {
   SETTING_DEFINITIONS,
   catalogText,
@@ -278,6 +279,8 @@ describe('setting definitions', () => {
     const row = root.querySelector(
       '.advancedNoteMover-rules-v2-container .setting-item'
     );
+    expect(row?.querySelector('.setting-item-info')).not.toBeNull();
+    expect(row?.querySelector('.setting-item-control')).not.toBeNull();
     expect(row?.querySelector('.setting-item-description')?.textContent).toBe(
       'Tag includes item #x → Projects'
     );
@@ -293,5 +296,25 @@ describe('setting definitions', () => {
 
     root.remove();
     document.querySelector('.menu')?.remove();
+  });
+
+  it('leaves the filter setting structure in place', () => {
+    installObsidianDom();
+    const plugin = revealedPlugin();
+    plugin.app = {
+      metadataCache: {
+        on: () => ({}),
+        offref: () => {},
+      },
+    } as unknown as AdvancedNoteMoverPlugin['app'];
+    plugin.pluginData.settings.filters.filter = [{ value: 'tag:#x' }];
+    const root = document.createElement('div');
+    new FilterSettingsSection(plugin, root, () => {}).addFilterSettings();
+
+    const row = root.querySelector(
+      '.advancedNoteMover-filters-container .setting-item'
+    );
+    expect(row?.querySelector('.setting-item-info')).not.toBeNull();
+    expect(row?.querySelector('.setting-item-control input')).not.toBeNull();
   });
 });
