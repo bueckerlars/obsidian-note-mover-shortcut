@@ -2196,7 +2196,7 @@ body.is-mobile
 }
 
 .advancedNoteMover-rule-mobile .advancedNoteMover-rule-mobile-segment {
-  min-height: calc(var(--anm-rule-mobile-touch) - 4px);
+  min-height: var(--anm-rule-mobile-touch);
   margin: 0;
   border: none;
   border-radius: var(--radius-s);
