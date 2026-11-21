@@ -33,6 +33,9 @@ Obsidian binary found at `/Applications/Obsidian.app/Contents/MacOS/Obsidian`.
 
 The same command wrote `docs/analysis/baseline-smoke.json`. The phase 2 run exited 0, opened all 30 screens, and recorded 456 assertion failures: 90 touch, 342 missing `aria-label`, 22 inline `style`, and 2 console errors from `renderMarkdown`. All 90 touch failures are on mobile screens. Desktop touch passed. Modal title and horizontal overflow did not fail.
 
+`npm run ui:smoke -- docs/analysis/screenshots/phase-N` writes that directory. `SMOKE_OUT` sets the same path.
+No argument leaves committed `phase-0` files in place. `--baseline` is the request that writes `phase-0`.
+
 ## Phase 2 CSS size
 
 `styles.css` is 2433 lines. Deleting unused classes removed 465 lines from a 2909-line file. The rest of phase 2 replaced values in place and added the device-class scopes, the `100dvh` fallback, and the title variables. `10px` spacing stays because the size scale has no 10px step. Live rules were not deleted to reach 2300.
