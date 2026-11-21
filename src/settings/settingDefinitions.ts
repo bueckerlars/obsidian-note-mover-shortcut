@@ -473,7 +473,7 @@ export function buildSettingDefinitions(
           name: 'Export performance trace',
           desc:
             settings.enablePerformanceDebug === true
-              ? 'Writes recorded timings as JSON to _note-mover-traces/ in your vault for before/after comparison.'
+              ? 'Downloads recorded timings as JSON for before/after comparison.'
               : 'Turn on performance debug logs first to record timings.',
           render: setting => {
             setting.addButton(btn =>
@@ -490,11 +490,13 @@ export function buildSettingDefinitions(
                     return;
                   }
                   try {
-                    const path =
-                      await plugin.performanceTrace.writeExportToVault(
-                        plugin.app
+                    const fileName =
+                      await plugin.performanceTrace.downloadExport();
+                    if (fileName) {
+                      NoticeManager.success(
+                        `Performance trace downloaded: ${fileName}`
                       );
-                    NoticeManager.success(`Performance trace saved: ${path}`);
+                    }
                   } catch (err) {
                     NoticeManager.error(
                       `Could not export trace: ${err instanceof Error ? err.message : String(err)}`

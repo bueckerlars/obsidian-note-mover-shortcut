@@ -84,7 +84,7 @@ export class PerformanceDebugSettingsSection {
       .setName('Export performance trace')
       .setDesc(
         debugOn
-          ? 'Writes recorded timings as JSON to _note-mover-traces/ in your vault for before/after comparison.'
+          ? 'Downloads recorded timings as JSON for before/after comparison.'
           : 'Turn on performance debug logs first to record timings.'
       )
       .addButton(btn =>
@@ -101,11 +101,13 @@ export class PerformanceDebugSettingsSection {
               return;
             }
             try {
-              const path =
-                await this.plugin.performanceTrace.writeExportToVault(
-                  this.plugin.app
+              const fileName =
+                await this.plugin.performanceTrace.downloadExport();
+              if (fileName) {
+                NoticeManager.success(
+                  `Performance trace downloaded: ${fileName}`
                 );
-              NoticeManager.success(`Performance trace saved: ${path}`);
+              }
             } catch (err) {
               NoticeManager.error(
                 `Could not export trace: ${err instanceof Error ? err.message : String(err)}`
