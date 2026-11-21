@@ -1,6 +1,6 @@
 import { strings } from '../../../i18n/locale';
 import type { AggregationType } from '../../../types/RuleV2';
-import { AGGREGATION_TYPES, capitalize } from '../ruleEditorShared';
+import { AGGREGATION_TYPES } from '../ruleEditorShared';
 
 export interface AggregationControlOptions {
   value: AggregationType;
@@ -33,9 +33,15 @@ export function renderAggregationControl(
     }
   };
 
+  const labels = {
+    all: strings().modals.ruleEditorMatchAll,
+    any: strings().modals.ruleEditorMatchAny,
+    none: strings().modals.ruleEditorMatchNone,
+  } as const;
+
   for (const aggregation of AGGREGATION_TYPES) {
     const button = parent.createEl('button', {
-      text: capitalize(aggregation),
+      text: labels[aggregation],
       cls: options.buttonClass,
     });
     button.setAttribute('type', 'button');

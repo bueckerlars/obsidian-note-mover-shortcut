@@ -39,8 +39,8 @@ export const AGGREGATION_TYPES: readonly AggregationType[] = [
 
 export type FolderCreationValue = 'inherit' | 'always' | 'never';
 
-export function capitalize(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
+export function criteriaLabel(criteriaType: CriteriaType): string {
+  return strings().ruleCriteria[criteriaType];
 }
 
 export function createDefaultTrigger(): Trigger {
