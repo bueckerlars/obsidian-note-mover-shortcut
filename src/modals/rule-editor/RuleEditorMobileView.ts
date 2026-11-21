@@ -55,6 +55,8 @@ export interface RuleEditorMobileViewOptions {
   onSave: () => void;
   onCancel: () => void;
   onDelete: () => void;
+  onDraftChange?: () => void;
+  renderLivePreview?: (parent: HTMLElement) => void;
 }
 
 interface Field {
@@ -100,6 +102,10 @@ export class RuleEditorMobileView {
 
   private get rule(): RuleV2 {
     return this.options.rule;
+  }
+
+  private noteDraft(): void {
+    this.options.onDraftChange?.();
   }
 
   render(container: HTMLElement): void {
@@ -157,6 +163,7 @@ export class RuleEditorMobileView {
       .onChange(value => {
         this.rule.active = value;
         updateActiveDesc(value);
+        this.noteDraft();
       })
       .then(toggle => {
         toggle.toggleEl.setAttr('aria-labelledby', activeLabelId);
@@ -184,6 +191,7 @@ export class RuleEditorMobileView {
       onChange: value => {
         this.rule.aggregation = value;
         this.updateConditionConnectors();
+        this.noteDraft();
       },
     });
   }
@@ -236,6 +244,8 @@ export class RuleEditorMobileView {
   private renderConditionsSection(parent: HTMLElement): void {
     const section = parent.createDiv({ cls: `${CLS}-conditions` });
 
+    this.options.renderLivePreview?.(section);
+
     const header = section.createDiv({ cls: `${CLS}-section-header` });
     header.createDiv({
       cls: `${CLS}-section-title`,
@@ -258,6 +268,7 @@ export class RuleEditorMobileView {
       .onClick(() => {
         this.rule.triggers = addCondition(this.rule).triggers;
         this.renderConditions();
+        this.noteDraft();
         const cards = this.conditionsListEl?.querySelectorAll(
           `.${CLS}-condition`
         );
@@ -361,6 +372,7 @@ export class RuleEditorMobileView {
           index - 1
         ).triggers;
         this.renderConditions();
+        this.noteDraft();
       });
     new ExtraButtonComponent(actions)
       .setIcon('arrow-down')
@@ -373,6 +385,7 @@ export class RuleEditorMobileView {
           index + 1
         ).triggers;
         this.renderConditions();
+        this.noteDraft();
       });
     new ExtraButtonComponent(actions)
       .setIcon('trash-2')
@@ -380,6 +393,7 @@ export class RuleEditorMobileView {
       .onClick(() => {
         this.rule.triggers = removeCondition(this.rule, index).triggers;
         this.renderConditions();
+        this.noteDraft();
       })
       .then(button => {
         button.extraSettingsEl.addClass(`${CLS}-delete-icon`);
@@ -406,6 +420,7 @@ export class RuleEditorMobileView {
     typeDropdown.setValue(trigger.criteriaType).onChange(value => {
       applyCriteriaType(trigger, value as CriteriaType);
       this.renderConditionBody(body, trigger);
+      this.noteDraft();
     });
     typeDropdown.selectEl.id = typeField.inputId;
     typeDropdown.selectEl.addClass(`${CLS}-select`);
@@ -435,6 +450,7 @@ export class RuleEditorMobileView {
         .setValue(trigger.value)
         .onChange(value => {
           trigger.value = value;
+          this.noteDraft();
         })
         .then(text => {
           const input = text.inputEl;
@@ -467,6 +483,7 @@ export class RuleEditorMobileView {
     operatorDropdown.onChange(value => {
       trigger.operator = value as Operator;
       renderValue();
+      this.noteDraft();
     });
 
     if (trigger.criteriaType === 'properties') {
@@ -489,6 +506,7 @@ export class RuleEditorMobileView {
             renderOperators();
             renderValue();
           }
+          this.noteDraft();
         })
         .then(text => {
           const input = text.inputEl;

@@ -764,6 +764,13 @@ body.is-mobile {
   gap: var(--size-4-2);
 }
 
+.advancedNoteMover-rule-live-preview {
+  margin: var(--size-4-2) 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  line-height: var(--line-height-tight);
+}
+
 .advancedNoteMover-rule-aggregation-description {
   margin: var(--size-4-1) 0 0 0;
   color: var(--text-muted);

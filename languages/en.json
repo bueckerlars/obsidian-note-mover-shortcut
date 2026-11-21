@@ -284,6 +284,7 @@
     "ruleEditorValueEmpty": "Condition {index}: value cannot be empty.",
     "ruleEditorInvalidRegex": "Condition {index}: invalid regex pattern: {message}",
     "ruleEditorUnknownError": "Unknown error",
+    "ruleEditorLivePreview": "This rule currently matches {matches}.",
     "conflictExists": "A file named {fileName} already exists at the destination.",
     "conflictCurrent": "**Current:** {path}",
     "conflictTarget": "**Target:** {path}",
