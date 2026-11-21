@@ -1,5 +1,6 @@
 import { TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
+import { pluralize } from '../utils/pluralize';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
 import {
@@ -369,8 +370,8 @@ export class AdvancedNoteMover {
                 const totalAttempted = successCount + errorCount;
                 const successMessage =
                   errorCount > 0
-                    ? `Moved ${successCount}/${totalAttempted} files. ${errorCount} files had errors.`
-                    : `Successfully moved ${successCount} files`;
+                    ? `Moved ${pluralize(successCount, 'file')} of ${totalAttempted}. ${pluralize(errorCount, 'file')} had errors.`
+                    : `Successfully moved ${pluralize(successCount, 'file')}`;
 
                 NoticeManager.showWithUndo(
                   'info',
@@ -383,7 +384,7 @@ export class AdvancedNoteMover {
                         );
                       if (success) {
                         NoticeManager.success(
-                          `Bulk operation undone: ${successCount} files moved back`,
+                          `Bulk operation undone: ${pluralize(successCount, 'file')} moved back`,
                           { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
                         );
                       } else {
@@ -404,7 +405,7 @@ export class AdvancedNoteMover {
             } else {
               const periodicMessage =
                 successCount > 0
-                  ? `Periodic movement: Successfully moved ${successCount} files${skippedDetail}`
+                  ? `Periodic movement: Successfully moved ${pluralize(successCount, 'file')}${skippedDetail}`
                   : `Periodic movement: No files moved.${skippedDetail}`;
               NoticeManager.info(periodicMessage);
             }
