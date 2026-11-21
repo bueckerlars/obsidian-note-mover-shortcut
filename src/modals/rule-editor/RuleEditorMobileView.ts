@@ -166,7 +166,8 @@ export class RuleEditorMobileView {
         this.noteDraft();
       })
       .then(toggle => {
-        toggle.toggleEl.setAttr('aria-labelledby', activeLabelId);
+        const input = toggle.toggleEl.querySelector('input') ?? toggle.toggleEl;
+        input.setAttribute('aria-labelledby', activeLabelId);
       });
   }
 
