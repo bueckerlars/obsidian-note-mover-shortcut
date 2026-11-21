@@ -1,5 +1,29 @@
 import { describe, expect, it, afterEach } from 'vitest';
+import de from '../../languages/de.json';
+import en from '../../languages/en.json';
 import { loadLocale, plural, t, useLocale, type LocaleCatalog } from './locale';
+
+function leaves(
+  value: unknown,
+  prefix: string,
+  out: Map<string, string>
+): void {
+  if (typeof value === 'string') {
+    out.set(prefix, value);
+    return;
+  }
+  if (value && typeof value === 'object') {
+    for (const [key, child] of Object.entries(value)) {
+      leaves(child, prefix ? `${prefix}.${key}` : key, out);
+    }
+  }
+}
+
+function placeholders(value: string): string[] {
+  return [
+    ...value.matchAll(/\{\{[^}]*\}\}|\{\{[^},\s]*|\{[A-Za-z0-9]+\}/g),
+  ].map(match => match[0]);
+}
 
 describe('t', () => {
   afterEach(() => {
@@ -22,6 +46,30 @@ describe('t', () => {
 
   it('returns the key when neither catalog has it', () => {
     expect(t('missing.key')).toBe('missing.key');
+  });
+});
+
+describe('languages/de.json', () => {
+  const english = new Map<string, string>();
+  const german = new Map<string, string>();
+  leaves(en, '', english);
+  leaves(de, '', german);
+
+  it('has the same keys as English', () => {
+    expect([...german.keys()].sort()).toEqual([...english.keys()].sort());
+  });
+
+  it('keeps placeholders identical, including names and order', () => {
+    for (const [key, value] of english) {
+      expect(placeholders(german.get(key) ?? ''), key).toEqual(
+        placeholders(value)
+      );
+    }
+  });
+
+  it('keeps a German noun capitalized inside a sentence', () => {
+    expect(de.settings.rulesIntroTail).toContain('Kriterien');
+    expect(de.settings.rulesIntroTail).toContain('Regeln');
   });
 });
 
