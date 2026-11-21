@@ -1,5 +1,6 @@
 import { App, AbstractInputSuggest } from 'obsidian';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
+import { collectPropertySamples } from '../../domain/property/extractFrontmatterProperties';
 import { inferPropertyTypeFromSamples } from '../../utils/OperatorMapping';
 import { stringifyUnknown } from '../../utils/stringify-unknown';
 import { SuggestLifecycle } from './suggestLifecycle';
@@ -51,27 +52,12 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
 
   private loadProperties(): void {
     this.properties.clear();
-    const files = this.app.vault.getMarkdownFiles();
+    const propertyValues = collectPropertySamples(
+      this.app.vault
+        .getMarkdownFiles()
+        .map(file => this.app.metadataCache.getFileCache(file)?.frontmatter)
+    );
 
-    // First pass: collect all property values
-    const propertyValues = new Map<string, unknown[]>();
-
-    files.forEach(file => {
-      const cachedMetadata = this.app.metadataCache.getFileCache(file);
-      if (cachedMetadata?.frontmatter) {
-        Object.entries(cachedMetadata.frontmatter).forEach(([key, value]) => {
-          // Skip Obsidian internal properties
-          if (!key.startsWith('position') && key !== 'tags') {
-            if (!propertyValues.has(key)) {
-              propertyValues.set(key, []);
-            }
-            propertyValues.get(key)!.push(value);
-          }
-        });
-      }
-    });
-
-    // Second pass: determine types and create property info
     propertyValues.forEach((values, key) => {
       const propertyType = inferPropertyTypeFromSamples(values);
       this.properties.set(key, {

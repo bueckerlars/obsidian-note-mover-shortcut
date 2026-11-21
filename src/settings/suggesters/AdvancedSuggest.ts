@@ -1,5 +1,9 @@
 import { App, AbstractInputSuggest, TFolder } from 'obsidian';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
+import {
+  collectPropertySamples,
+  propertyValueStrings,
+} from '../../domain/property/extractFrontmatterProperties';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 import { SuggestLifecycle } from './suggestLifecycle';
 import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
@@ -110,40 +114,21 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
       return;
     }
 
-    const files = this.app.vault.getMarkdownFiles();
-    files.forEach(file => {
-      const cachedMetadata = this.app.metadataCache.getFileCache(file);
-      if (cachedMetadata?.frontmatter) {
-        Object.entries(cachedMetadata.frontmatter).forEach(([key, value]) => {
-          // Skip Obsidian internal properties
-          if (!key.startsWith('position') && key !== 'tags') {
-            this.propertyKeys.add(key);
-
-            // Collect values for this property
-            if (!this.propertyValues.has(key)) {
-              this.propertyValues.set(key, new Set());
-            }
-
-            // Handle different value types
-            if (value !== null && value !== undefined) {
-              // Check if this is a list property
-              if (this.metadataExtractor.isListProperty(value)) {
-                // Parse list property and add individual values
-                const listItems =
-                  this.metadataExtractor.parseListProperty(value);
-                listItems.forEach(item => {
-                  this.propertyValues.get(key)!.add(item);
-                });
-              } else {
-                // Regular single value
-                const valueStr = String(value);
-                this.propertyValues.get(key)!.add(valueStr);
-              }
-            }
-          }
-        });
+    const samples = collectPropertySamples(
+      this.app.vault
+        .getMarkdownFiles()
+        .map(file => this.app.metadataCache.getFileCache(file)?.frontmatter)
+    );
+    for (const [key, values] of samples) {
+      this.propertyKeys.add(key);
+      const valueSet = new Set<string>();
+      for (const value of values) {
+        for (const item of propertyValueStrings(value)) {
+          valueSet.add(item);
+        }
       }
-    });
+      this.propertyValues.set(key, valueSet);
+    }
   }
 
   getSuggestions(query: string): string[] {

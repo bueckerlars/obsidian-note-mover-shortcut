@@ -5,6 +5,7 @@ import {
   buildDatePlaceholderSuggestions,
   type DateFormatSeparator,
 } from '../../domain/dates/property-date';
+import { collectPropertySamples } from '../../domain/property/extractFrontmatterProperties';
 import { inferPropertyTypeFromSamples } from '../../utils/OperatorMapping';
 import type { PropertyType } from './PropertySuggest';
 
@@ -443,22 +444,11 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
       return this.cachedPropertyInfo;
     }
 
-    const files = this.app.vault.getMarkdownFiles();
-    const propertyValues = new Map<string, unknown[]>();
-
-    files.forEach(file => {
-      const cachedMetadata = this.app.metadataCache.getFileCache(file);
-      if (cachedMetadata?.frontmatter) {
-        Object.entries(cachedMetadata.frontmatter).forEach(([key, value]) => {
-          if (!key.startsWith('position') && key !== 'tags') {
-            if (!propertyValues.has(key)) {
-              propertyValues.set(key, []);
-            }
-            propertyValues.get(key)!.push(value);
-          }
-        });
-      }
-    });
+    const propertyValues = collectPropertySamples(
+      this.app.vault
+        .getMarkdownFiles()
+        .map(file => this.app.metadataCache.getFileCache(file)?.frontmatter)
+    );
 
     const propertyInfo = new Map<string, PropertyType>();
     propertyValues.forEach((values, key) => {
