@@ -52,6 +52,7 @@ export class RuleEditorModal extends BaseModal {
   private workingRule: RuleV2;
   private originalRule: RuleV2;
   private isForceClosing = false;
+  private discardRequested = false;
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
   private readonly isMobileLayout: boolean;
@@ -440,7 +441,11 @@ export class RuleEditorModal extends BaseModal {
       super.close();
       return;
     }
-    void this.confirmDiscardAndClose();
+    if (this.discardRequested) return;
+    this.discardRequested = true;
+    void this.confirmDiscardAndClose().finally(() => {
+      this.discardRequested = false;
+    });
   }
 
   private renderLivePreview(parent: HTMLElement): void {

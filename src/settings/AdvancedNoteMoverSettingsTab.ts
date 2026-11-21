@@ -64,6 +64,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
 
     // Add mobile-specific classes to container
     this.containerEl.addClass('advancedNoteMover-settings-root');
+    this.containerEl.addClass('advancedNoteMover-focus-scope');
     MobileUtils.addMobileClass(this.containerEl);
     if (MobileUtils.isMobile()) {
       this.containerEl
