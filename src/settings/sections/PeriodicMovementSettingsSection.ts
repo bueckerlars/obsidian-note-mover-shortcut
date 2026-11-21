@@ -1,6 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { strings } from '../../i18n/locale';
-import { MobileUtils } from '../../utils/MobileUtils';
 import { applyPeriodicInterval } from '../intervalInput';
 import { renderSetting } from '../settingDefinitions';
 import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
@@ -22,13 +21,9 @@ export class TriggerSettingsSection {
   }
 
   addTriggerSettings(): void {
-    const isMobile = MobileUtils.isMobile();
     renderSetting(this.containerEl, 'triggers.heading');
 
-    const onEditSetting = renderSetting(
-      this.containerEl,
-      'triggers.onEdit'
-    ).addToggle(toggle =>
+    renderSetting(this.containerEl, 'triggers.onEdit').addToggle(toggle =>
       toggle
         .setValue(
           this.plugin.pluginData.settings.triggers.enableOnEditTrigger === true
@@ -44,24 +39,7 @@ export class TriggerSettingsSection {
         })
     );
 
-    // Add mobile optimization classes
-    if (isMobile) {
-      onEditSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const controlEl = onEditSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-toggle-control'
-        );
-      }
-    }
-
-    // Periodic Movement Toggle
-    const periodicSetting = renderSetting(
-      this.containerEl,
-      'triggers.periodic'
-    ).addToggle(toggle =>
+    renderSetting(this.containerEl, 'triggers.periodic').addToggle(toggle =>
       toggle
         .setValue(
           this.plugin.pluginData.settings.triggers.enablePeriodicMovement
@@ -77,19 +55,6 @@ export class TriggerSettingsSection {
           this.refreshDisplay();
         })
     );
-
-    // Add mobile optimization classes
-    if (isMobile) {
-      periodicSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const controlEl = periodicSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-toggle-control'
-        );
-      }
-    }
 
     if (this.plugin.pluginData.settings.triggers.enablePeriodicMovement) {
       const intervalSetting = renderSetting(
@@ -130,27 +95,7 @@ export class TriggerSettingsSection {
           })
       );
 
-      // Add mobile optimization classes
-      if (isMobile) {
-        intervalSetting.settingEl.addClass(
-          'advancedNoteMover-mobile-optimized'
-        );
-        const controlEl = intervalSetting.settingEl.querySelector(
-          '.setting-item-control'
-        );
-        if (controlEl) {
-          (controlEl as HTMLElement).addClass(
-            'advancedNoteMover-mobile-input-control'
-          );
-        }
-        const inputEl =
-          intervalSetting.settingEl.querySelector('input[type="text"]');
-        if (inputEl) {
-          (inputEl as HTMLElement).addClass(
-            'advancedNoteMover-mobile-text-input'
-          );
-        }
-      }
+      intervalSetting.setClass('advancedNoteMover-setting-stack');
     }
   }
 }

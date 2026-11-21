@@ -3,7 +3,6 @@ import type { App } from 'obsidian';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { HISTORY_CONSTANTS } from '../../config/constants';
 import { fill, strings } from '../../i18n/locale';
-import { MobileUtils } from '../../utils/MobileUtils';
 import { renderSetting } from '../settingDefinitions';
 
 export class HistorySettingsSection {
@@ -13,17 +12,13 @@ export class HistorySettingsSection {
   ) {}
 
   addHistorySettings(): void {
-    const isMobile = MobileUtils.isMobile();
     renderSetting(this.containerEl, 'history.heading');
 
     // Retention Policy Settings
     this.addRetentionPolicySettings();
 
     // Clear History Button
-    const clearHistorySetting = renderSetting(
-      this.containerEl,
-      'history.clear'
-    ).addButton(btn => {
+    renderSetting(this.containerEl, 'history.clear').addButton(btn => {
       btn.setButtonText(strings().settings.historyClearButton);
       btn.buttonEl.addClass('mod-warning');
       btn.onClick(async () => {
@@ -40,27 +35,9 @@ export class HistorySettingsSection {
         }
       });
     });
-
-    // Add mobile optimization classes
-    if (isMobile) {
-      clearHistorySetting.settingEl.addClass(
-        'advancedNoteMover-mobile-optimized'
-      );
-      const controlEl = clearHistorySetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-button-control'
-        );
-      }
-    }
   }
 
   private addRetentionPolicySettings(): void {
-    const isMobile = MobileUtils.isMobile();
-
-    // Initialize retention policy if not set
     if (!this.plugin.pluginData.settings.retentionPolicy) {
       this.plugin.pluginData.settings.retentionPolicy = {
         ...HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
@@ -99,21 +76,9 @@ export class HistorySettingsSection {
           })
       );
 
-    // Add mobile optimization classes
-    if (isMobile) {
-      retentionSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const controlEl = retentionSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-retention-controls'
-        );
-      }
-    }
+    retentionSetting.setClass('advancedNoteMover-setting-stack');
 
-    // Cleanup button
-    const cleanupSetting = renderSetting(this.containerEl, 'history.cleanup')
+    renderSetting(this.containerEl, 'history.cleanup')
       .setDesc(
         fill(strings().settings.historyCleanupDesc, {
           value: retentionPolicy.value,
@@ -128,19 +93,6 @@ export class HistorySettingsSection {
             await this.plugin.historyManager.cleanupOldEntries();
           })
       );
-
-    // Add mobile optimization classes
-    if (isMobile) {
-      cleanupSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const controlEl = cleanupSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-button-control'
-        );
-      }
-    }
   }
 
   private get app(): App {

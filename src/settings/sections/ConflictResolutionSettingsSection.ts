@@ -1,6 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { Setting } from 'obsidian';
-import { MobileUtils } from '../../utils/MobileUtils';
 import type { ConflictResolutionStrategy } from '../../types/ConflictResolution';
 import { strategyRequiresWarning } from '../../domain/conflicts/note-move-conflict';
 import { persistConflictResolutionStrategy } from '../../application/persist-conflict-resolution-strategy';
@@ -16,8 +15,6 @@ export class ConflictResolutionSettingsSection {
   ) {}
 
   addConflictResolutionSettings(): void {
-    const isMobile = MobileUtils.isMobile();
-
     renderSetting(this.containerEl, 'conflict.heading');
 
     if (!this.plugin.pluginData.settings.conflictResolution) {
@@ -44,10 +41,6 @@ export class ConflictResolutionSettingsSection {
           this.updateWarning(strategy);
         });
       });
-
-    if (isMobile) {
-      strategySetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-    }
 
     if (currentStrategy !== 'ask') {
       this.warningSetting = renderSetting(this.containerEl, 'conflict.warning');
