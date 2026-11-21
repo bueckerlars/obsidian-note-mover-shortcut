@@ -23,12 +23,15 @@ import { renderRuleNameField } from './rule-editor/components/RuleNameField';
 import {
   FolderCreationValue,
   applyFolderCreationValue,
-  createDefaultTrigger,
   getFolderCreationValue,
-  moveTrigger,
-  removeTrigger,
-  validateRule,
 } from './rule-editor/ruleEditorShared';
+import {
+  addCondition,
+  openEditor,
+  removeCondition,
+  reorderConditions,
+  validateRule,
+} from './rule-editor/ruleEditorState';
 
 interface RuleEditorModalOptions {
   rule: RuleV2;
@@ -66,8 +69,9 @@ export class RuleEditorModal extends BaseModal {
     });
     this.isMobileLayout = isMobileLayout;
     this.ruleOptions = options;
-    this.workingRule = structuredClone(options.rule);
-    this.originalRule = structuredClone(options.rule);
+    const session = openEditor(options.rule);
+    this.workingRule = session.draft;
+    this.originalRule = session.saved;
   }
 
   protected createContent(): void {
@@ -226,7 +230,7 @@ export class RuleEditorModal extends BaseModal {
     // Add Condition Button
     new Setting(section).addButton(btn =>
       btn.setButtonText(strings().modals.ruleEditorAddCondition).onClick(() => {
-        this.workingRule.triggers.push(createDefaultTrigger());
+        this.workingRule.triggers = addCondition(this.workingRule).triggers;
         this.renderTriggers();
       })
     );
@@ -267,7 +271,10 @@ export class RuleEditorModal extends BaseModal {
       vaultIndexCache: this.ruleOptions.vaultIndexCache,
       onStructureChange: () => this.renderTriggerAt(index),
       onRemove: () => {
-        removeTrigger(this.workingRule.triggers, index);
+        this.workingRule.triggers = removeCondition(
+          this.workingRule,
+          index
+        ).triggers;
         this.renderTriggers();
       },
     });
@@ -292,36 +299,12 @@ export class RuleEditorModal extends BaseModal {
       onReorder: (fromIndex: number, toIndex: number) => {
         // DragDropManager reports the insertion index before removal
         const adjustedToIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
-        moveTrigger(this.workingRule.triggers, fromIndex, adjustedToIndex);
-
-        // Manually move the DOM element
-        const items = Array.from(
-          this.triggersContainer!.querySelectorAll(
-            '.advancedNoteMover-rule-trigger-row'
-          )
-        );
-        const movedElement = items[fromIndex] as HTMLElement;
-
-        if (movedElement) {
-          // Remove the element from its current position
-          movedElement.remove();
-
-          // Insert at the new position
-          const allItems = Array.from(
-            this.triggersContainer!.querySelectorAll(
-              '.advancedNoteMover-rule-trigger-row'
-            )
-          );
-
-          if (adjustedToIndex >= allItems.length) {
-            // Insert at the end
-            this.triggersContainer!.appendChild(movedElement);
-          } else {
-            // Insert before the element at adjustedToIndex
-            const referenceElement = allItems[adjustedToIndex];
-            referenceElement.before(movedElement);
-          }
-        }
+        this.workingRule.triggers = reorderConditions(
+          this.workingRule,
+          fromIndex,
+          adjustedToIndex
+        ).triggers;
+        this.renderTriggers();
       },
       onSave: async () => {
         // No additional action needed

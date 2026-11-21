@@ -16,6 +16,7 @@
 - **Rule editor**: Editing one condition redraws that row. Typing in the value keeps the cursor in the field.
 - **Rule editor**: Match mode explains each option. Icon buttons name their action.
 - **Rule editor**: Destination examples stay collapsed until you open them. A chip inserts the placeholder.
+- **Rule editor**: Adding, removing, or reordering a condition updates the rule and redraws the list.
 - **Settings hints**: Filter, rule, and conflict hints use one short description. Extra detail sits on the info tooltip. Add filter and Add rule are icon buttons.
 - **Settings actions**: Each settings section has at most one primary button. Clear history is the only warning button. Import asks for confirmation and is no longer red.
 - **Rule rows**: A rule row shows the condition and the destination. Edit, duplicate, move, and delete are in the row menu.
