@@ -17,9 +17,14 @@ export interface DragDropOptions {
 }
 
 export class DragDropManager {
-  private draggedElement: HTMLElement | null = null;
+  private draggedElement: Element | null = null;
   private draggedIndex = -1;
   private draggedData: unknown = null;
+  private gesture: {
+    items: Element[];
+    rects: Map<Element, DOMRect>;
+  } | null = null;
+  private marked: Element | null = null;
   private container: HTMLElement;
   private options: DragDropOptions;
 
@@ -37,7 +42,7 @@ export class DragDropManager {
     this.onDragStartBound = (e: DragEvent) => this.handleDragStart(e);
     this.onDragOverBound = (e: DragEvent) => this.handleDragOver(e);
     this.onDropBound = (e: DragEvent) => this.handleDrop(e);
-    this.onDragEndBound = (e: DragEvent) => this.handleDragEnd(e);
+    this.onDragEndBound = () => this.handleDragEnd();
     this.onDragEnterBound = (e: DragEvent) => this.handleDragEnter(e);
     this.onDragLeaveBound = (e: DragEvent) => this.handleDragLeave(e);
     this.onKeyDownBound = (e: KeyboardEvent) => this.handleKeyDown(e);
@@ -88,20 +93,58 @@ export class DragDropManager {
     this.options.onMove(index, direction);
   }
 
-  private handleDragStart(event: DragEvent): void {
-    const target = event.target as HTMLElement;
-    const handle = target.closest(
-      this.options.handleSelector || '.advancedNoteMover-drag-handle'
-    );
+  private eventElement(event: Event): Element | null {
+    const target = event.target;
+    if (target instanceof Element) return target;
+    if (
+      target !== null &&
+      typeof target === 'object' &&
+      'parentElement' in target
+    ) {
+      const parent = target.parentElement;
+      return parent instanceof Element ? parent : null;
+    }
+    return null;
+  }
 
+  /** One measurement of every row for this drag. dragover reads this cache. */
+  private beginGesture(): void {
+    const items = Array.from(
+      this.container.querySelectorAll(this.itemSelector())
+    );
+    const rects = new Map<Element, DOMRect>();
+    for (const item of items) {
+      rects.set(item, item.getBoundingClientRect());
+    }
+    this.gesture = { items, rects };
+  }
+
+  private endGesture(): void {
+    this.clearMarker();
+    this.gesture = null;
+  }
+
+  private rowFrom(event: Event): Element | null {
+    const target = this.eventElement(event);
+    if (!target || !this.gesture) return null;
+    const item = target.closest(this.itemSelector());
+    if (!item || !this.gesture.rects.has(item)) return null;
+    return item;
+  }
+
+  private handleDragStart(event: DragEvent): void {
+    const target = this.eventElement(event);
+    if (!target) return;
+    const handle = target.closest(this.handleSelector());
     if (!handle) return;
 
-    const item = target.closest(this.options.itemSelector || '.setting-item');
+    const item = target.closest(this.itemSelector());
     if (!item) return;
 
-    this.draggedElement = item as HTMLElement;
-    this.draggedIndex = this.getItemIndex(item as HTMLElement);
-    this.draggedData = this.getItemData(item as HTMLElement);
+    this.beginGesture();
+    this.draggedElement = item;
+    this.draggedIndex = this.gesture?.items.indexOf(item) ?? -1;
+    this.draggedData = this.getItemData(item);
 
     // Set drag data
     if (event.dataTransfer) {
@@ -122,22 +165,17 @@ export class DragDropManager {
       event.dataTransfer.dropEffect = 'move';
     }
 
-    const target = event.target as HTMLElement;
-    const item = target.closest(this.options.itemSelector || '.setting-item');
-
+    const item = this.rowFrom(event);
     if (!item || item === this.draggedElement) return;
 
-    // Remove previous drag-over classes
-    this.clearDragOverClasses();
+    this.clearMarker();
 
-    // Determine drop position
-    const rect = item.getBoundingClientRect();
-    const midpoint = rect.top + rect.height / 2;
-    const isAbove = event.clientY < midpoint;
+    const rect = this.gesture?.rects.get(item);
+    const targetIndex = this.gesture?.items.indexOf(item) ?? -1;
+    if (!rect || targetIndex < 0) return;
+    const isAbove = event.clientY < rect.top + rect.height / 2;
 
-    // Check if this would result in the same position
-    const targetIndex = this.getItemIndex(item as HTMLElement);
-    const draggedIndex = this.getItemIndex(this.draggedElement);
+    const draggedIndex = this.draggedIndex;
 
     // Calculate what the new index would be
     const newIndex = isAbove ? targetIndex : targetIndex + 1;
@@ -147,47 +185,43 @@ export class DragDropManager {
       return;
     }
 
-    if (isAbove) {
-      item.classList.add('advancedNoteMover-drag-over-top');
-    } else {
-      item.classList.add('advancedNoteMover-drag-over-bottom');
-    }
+    item.classList.add(
+      isAbove
+        ? 'advancedNoteMover-drag-over-top'
+        : 'advancedNoteMover-drag-over-bottom'
+    );
+    this.marked = item;
   }
 
   private handleDragEnter(event: DragEvent): void {
     if (!this.draggedElement) return;
 
-    const target = event.target as HTMLElement;
-    const item = target.closest(this.options.itemSelector || '.setting-item');
+    const item = this.rowFrom(event);
 
     if (item && item !== this.draggedElement) {
-      // Check if this would result in the same position
-      const targetIndex = this.getItemIndex(item as HTMLElement);
-      const draggedIndex = this.getItemIndex(this.draggedElement);
+      const targetIndex = this.gesture?.items.indexOf(item) ?? -1;
+      const draggedIndex = this.draggedIndex;
 
       // Only add drag-over class if it's not the same position
       if (targetIndex !== draggedIndex && targetIndex !== draggedIndex + 1) {
+        if (this.marked && this.marked !== item) this.clearMarker();
         item.classList.add('advancedNoteMover-drag-over');
+        this.marked = item;
       }
     }
   }
 
   private handleDragLeave(event: DragEvent): void {
-    const target = event.target as HTMLElement;
-    const item = target.closest(this.options.itemSelector || '.setting-item');
+    const item = this.rowFrom(event);
 
     if (item && item !== this.draggedElement) {
-      // Only remove if we're actually leaving the item
-      const rect = item.getBoundingClientRect();
+      const rect = this.gesture?.rects.get(item);
+      if (!rect) return;
       const x = event.clientX;
       const y = event.clientY;
 
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-        item.classList.remove(
-          'advancedNoteMover-drag-over',
-          'advancedNoteMover-drag-over-top',
-          'advancedNoteMover-drag-over-bottom'
-        );
+        if (this.marked === item) this.clearMarker();
       }
     }
   }
@@ -197,17 +231,14 @@ export class DragDropManager {
 
     event.preventDefault();
 
-    const target = event.target as HTMLElement;
-    const item = target.closest(this.options.itemSelector || '.setting-item');
-
+    const item = this.rowFrom(event);
     if (!item || item === this.draggedElement) return;
 
-    const targetIndex = this.getItemIndex(item as HTMLElement);
+    const targetIndex = this.gesture?.items.indexOf(item) ?? -1;
+    const rect = this.gesture?.rects.get(item);
+    if (!rect || targetIndex < 0) return;
 
-    // Determine final drop position
-    const rect = item.getBoundingClientRect();
-    const midpoint = rect.top + rect.height / 2;
-    const isAbove = event.clientY < midpoint;
+    const isAbove = event.clientY < rect.top + rect.height / 2;
 
     const finalIndex = isAbove ? targetIndex : targetIndex + 1;
 
@@ -224,50 +255,34 @@ export class DragDropManager {
       }
     }
 
-    this.clearDragOverClasses();
+    this.clearMarker();
   }
 
-  private handleDragEnd(event: DragEvent): void {
-    // Clean up
+  private handleDragEnd(): void {
     if (this.draggedElement) {
       this.draggedElement.classList.remove('advancedNoteMover-dragging');
     }
 
-    this.clearDragOverClasses();
+    this.endGesture();
     this.draggedElement = null;
     this.draggedIndex = -1;
     this.draggedData = null;
   }
 
-  private getItemIndex(item: HTMLElement): number {
-    const items = Array.from(
-      this.container.querySelectorAll(
-        this.options.itemSelector || '.setting-item'
-      )
-    );
-    return items.indexOf(item);
-  }
-
-  private getItemData(item: HTMLElement): unknown {
-    // Extract data from the item if needed
-    // This can be customized based on requirements
+  private getItemData(item: Element): unknown {
     return {
       element: item,
-      index: this.getItemIndex(item),
+      index: this.gesture?.items.indexOf(item) ?? -1,
     };
   }
 
-  private clearDragOverClasses(): void {
-    const items = this.container.querySelectorAll(
-      '.advancedNoteMover-drag-over, .advancedNoteMover-drag-over-top, .advancedNoteMover-drag-over-bottom'
+  private clearMarker(): void {
+    this.marked?.classList.remove(
+      'advancedNoteMover-drag-over',
+      'advancedNoteMover-drag-over-top',
+      'advancedNoteMover-drag-over-bottom'
     );
-    items.forEach(item => {
-      item.classList.remove(
-        'advancedNoteMover-drag-over',
-        'advancedNoteMover-drag-over-top',
-        'advancedNoteMover-drag-over-bottom'
-      );
-    });
+    this.marked = null;
   }
 
   // Public method to create a drag handle
