@@ -1,5 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { PluginSettingTab, SettingDefinitionItem } from 'obsidian';
+import { PluginSettingTab, type SettingDefinitionItem } from 'obsidian';
 import {
   PeriodicMovementSettingsSection,
   AttachmentsSettingsSection,
@@ -13,12 +13,6 @@ import {
 } from './sections';
 import { DebounceManager } from '../utils/DebounceManager';
 import { MobileUtils } from '../utils/MobileUtils';
-import {
-  buildSettingDefinitions,
-  getNestedSettingValue,
-  setNestedSettingValue,
-  type SettingDefinitionsHost,
-} from './settingDefinitions';
 
 export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   private periodicMovementSettings: PeriodicMovementSettingsSection;
@@ -87,63 +81,21 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.renderSettingsTab();
   }
 
+  /**
+   * Obsidian skips display() when this returns items. The sections render the
+   * tab, so this stays empty and settings search on 1.13 does not list them.
+   */
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    return [];
+  }
+
   hide(): void {
     this.cleanupExistingSections();
     super.hide();
   }
 
-  /**
-   * 1.13.0+: used for settings search and for rendering this tab.
-   * Older Obsidian versions ignore this and call {@link display} instead.
-   */
-  getSettingDefinitions(): SettingDefinitionItem[] {
-    this.ensureArraysExist();
-    return buildSettingDefinitions(this.asSettingDefinitionsHost());
-  }
-
-  getControlValue(key: string): unknown {
-    return getNestedSettingValue(this.plugin, key);
-  }
-
-  async setControlValue(key: string, value: unknown): Promise<void> {
-    await setNestedSettingValue(this.asSettingDefinitionsHost(), key, value);
-  }
-
-  private asSettingDefinitionsHost(): SettingDefinitionsHost {
-    return {
-      plugin: this.plugin,
-      filterSettings: this.filterSettings,
-      rulesSettings: this.rulesSettings,
-      importExportSettings: this.importExportSettings,
-      update: () => this.callOptionalTabApi('update'),
-      refreshDomState: () => this.callOptionalTabApi('refreshDomState'),
-    };
-  }
-
-  /**
-   * Rebuild the tab after a structural change. Uses the declarative API on
-   * Obsidian 1.13+ and the imperative renderer on older versions.
-   */
   private refreshSettingsUi(): void {
-    if (this.callOptionalTabApi('update')) {
-      return;
-    }
     this.renderSettingsTab();
-  }
-
-  /**
-   * Invokes 1.13+ SettingTab methods when the host provides them.
-   * Looked up by name so `obsidianmd/no-unsupported-api` allows minAppVersion 1.8.7.
-   */
-  private callOptionalTabApi(
-    methodName: 'update' | 'refreshDomState'
-  ): boolean {
-    const method = (this as unknown as Record<string, unknown>)[methodName];
-    if (typeof method !== 'function') {
-      return false;
-    }
-    (method as () => void).call(this);
-    return true;
   }
 
   private renderSettingsTab(): void {

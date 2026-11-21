@@ -16,6 +16,8 @@ export default defineConfig({
         __dirname,
         'src/test-utils/obsidian-vitest-stub.ts'
       ),
+      main: path.resolve(__dirname, 'main.ts'),
+      src: path.resolve(__dirname, 'src'),
     },
   },
   test: {

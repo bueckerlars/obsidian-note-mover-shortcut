@@ -1,5 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { App, Setting } from 'obsidian';
+import type { App } from 'obsidian';
 import type { PluginData, SettingsData } from '../../types/PluginData';
 import type { RetentionPolicy } from '../../types/HistoryEntry';
 import type { LegacyRuleV1 } from '../../core/RuleMigrationService';
@@ -12,6 +12,7 @@ import { strings } from '../../i18n/locale';
 import { RuleMigrationService } from 'src/core/RuleMigrationService';
 import { MobileUtils } from '../../utils/MobileUtils';
 import { debugDebug } from '../../utils/debug';
+import { renderSetting } from '../settingDefinitions';
 import {
   loadSettingsImport,
   pickSettingsFile,
@@ -27,29 +28,26 @@ export class ImportExportSettingsSection {
 
   addImportExportSettings(): void {
     const isMobile = MobileUtils.isMobile();
-    new Setting(this.containerEl)
-      .setName(strings().settings.headingsImportExport)
-      .setHeading();
+    renderSetting(this.containerEl, 'importExport.heading');
 
-    // Export Settings Button
-    const exportSetting = new Setting(this.containerEl)
-      .setName(strings().settings.importExportExportName)
-      .setDesc(strings().settings.importExportExportDesc)
-      .addButton(btn => {
-        btn
-          .setButtonText(strings().settings.importExportExportButton)
-          .setCta()
-          .onClick(() => {
-            void (async () => {
-              btn.setDisabled(true);
-              try {
-                await this.exportSettings();
-              } finally {
-                btn.setDisabled(false);
-              }
-            })();
-          });
-      });
+    const exportSetting = renderSetting(
+      this.containerEl,
+      'importExport.export'
+    ).addButton(btn => {
+      btn
+        .setButtonText(strings().settings.importExportExportButton)
+        .setCta()
+        .onClick(() => {
+          void (async () => {
+            btn.setDisabled(true);
+            try {
+              await this.exportSettings();
+            } finally {
+              btn.setDisabled(false);
+            }
+          })();
+        });
+    });
 
     // Add mobile optimization classes
     if (isMobile) {
@@ -65,19 +63,19 @@ export class ImportExportSettingsSection {
     }
 
     // Import Settings Button
-    const importSetting = new Setting(this.containerEl)
-      .setName(strings().settings.importExportImportName)
-      .setDesc(strings().settings.importExportImportDesc)
-      .addButton(btn => {
-        btn.setButtonText(strings().settings.importExportImportButton);
-        btn.buttonEl.addClass('mod-warning');
-        btn.onClick(() => {
-          void runImportAction(
-            disabled => btn.setDisabled(disabled),
-            () => this.importSettings()
-          );
-        });
+    const importSetting = renderSetting(
+      this.containerEl,
+      'importExport.import'
+    ).addButton(btn => {
+      btn.setButtonText(strings().settings.importExportImportButton);
+      btn.buttonEl.addClass('mod-warning');
+      btn.onClick(() => {
+        void runImportAction(
+          disabled => btn.setDisabled(disabled),
+          () => this.importSettings()
+        );
       });
+    });
 
     // Add mobile optimization classes
     if (isMobile) {

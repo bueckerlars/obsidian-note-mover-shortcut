@@ -1,9 +1,10 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { App, Setting } from 'obsidian';
+import type { App } from 'obsidian';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { HISTORY_CONSTANTS } from '../../config/constants';
 import { fill, strings } from '../../i18n/locale';
 import { MobileUtils } from '../../utils/MobileUtils';
+import { renderSetting } from '../settingDefinitions';
 
 export class HistorySettingsSection {
   constructor(
@@ -13,34 +14,32 @@ export class HistorySettingsSection {
 
   addHistorySettings(): void {
     const isMobile = MobileUtils.isMobile();
-    new Setting(this.containerEl)
-      .setName(strings().settings.headingsHistory)
-      .setHeading();
+    renderSetting(this.containerEl, 'history.heading');
 
     // Retention Policy Settings
     this.addRetentionPolicySettings();
 
     // Clear History Button
-    const clearHistorySetting = new Setting(this.containerEl)
-      .setName(strings().settings.historyClearName)
-      .setDesc(strings().settings.historyClearDesc)
-      .addButton(btn => {
-        btn.setButtonText(strings().settings.historyClearButton);
-        btn.buttonEl.addClass('mod-warning');
-        btn.onClick(async () => {
-          const confirmed = await ConfirmModal.show(this.app, {
-            title: strings().settings.historyClearTitle,
-            message: strings().settings.historyClearMessage,
-            confirmText: strings().settings.historyClearConfirm,
-            cancelText: strings().common.cancel,
-            danger: true,
-          });
-
-          if (confirmed) {
-            await this.plugin.historyManager.clearHistory();
-          }
+    const clearHistorySetting = renderSetting(
+      this.containerEl,
+      'history.clear'
+    ).addButton(btn => {
+      btn.setButtonText(strings().settings.historyClearButton);
+      btn.buttonEl.addClass('mod-warning');
+      btn.onClick(async () => {
+        const confirmed = await ConfirmModal.show(this.app, {
+          title: strings().settings.historyClearTitle,
+          message: strings().settings.historyClearMessage,
+          confirmText: strings().settings.historyClearConfirm,
+          cancelText: strings().common.cancel,
+          danger: true,
         });
+
+        if (confirmed) {
+          await this.plugin.historyManager.clearHistory();
+        }
       });
+    });
 
     // Add mobile optimization classes
     if (isMobile) {
@@ -71,9 +70,10 @@ export class HistorySettingsSection {
     const retentionPolicy = this.plugin.pluginData.settings.retentionPolicy;
 
     // Retention Policy Section - Single line with value input and unit dropdown
-    const retentionSetting = new Setting(this.containerEl)
-      .setName(strings().settings.historyRetentionName)
-      .setDesc(strings().settings.historyRetentionDesc)
+    const retentionSetting = renderSetting(
+      this.containerEl,
+      'history.retention'
+    )
       .addText(text =>
         text
           .setPlaceholder(strings().settings.historyRetentionPlaceholder)
@@ -113,8 +113,7 @@ export class HistorySettingsSection {
     }
 
     // Cleanup button
-    const cleanupSetting = new Setting(this.containerEl)
-      .setName(strings().settings.historyCleanupName)
+    const cleanupSetting = renderSetting(this.containerEl, 'history.cleanup')
       .setDesc(
         fill(strings().settings.historyCleanupDesc, {
           value: retentionPolicy.value,

@@ -16,7 +16,7 @@ One list in `src/settings/settingDefinitions.ts` is the source of truth. Each en
 
 Headings use `Setting.setHeading()`. The tab does not call `SettingGroup`, and it does not raise `minAppVersion` to reach that class.
 
-`getSettingDefinitions()` is the duplicate renderer. The next change deletes it. Obsidian 1.8.7 and current Obsidian both use the section renderer. Settings search that depended on the 1.13 method stops until `minAppVersion` can move to 1.13.
+`getSettingDefinitions()` returns an empty array. Obsidian calls `display()` when that array is empty, so the sections stay the only renderer. The empty method keeps the settings tab on Obsidian 1.13 and satisfies the lint rule that looks for the method. It does not describe settings, so settings search on 1.13 does not list them.
 
 ## Consequences
 

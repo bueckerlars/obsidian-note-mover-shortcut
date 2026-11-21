@@ -1,8 +1,8 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { strings } from '../../i18n/locale';
-import { Setting } from 'obsidian';
+import { fill, strings } from '../../i18n/locale';
 import { setDebugEnabled } from '../../utils/debug';
 import { NoticeManager } from '../../utils/NoticeManager';
+import { renderSetting } from '../settingDefinitions';
 
 /**
  * Vault index cache toggle, performance debug logging, and trace export.
@@ -15,19 +15,16 @@ export class PerformanceDebugSettingsSection {
   ) {}
 
   addPerformanceDebugSettings(): void {
-    new Setting(this.containerEl)
-      .setName(strings().settings.headingsPerformance)
-      .setHeading();
+    renderSetting(this.containerEl, 'performance.heading');
 
     const cacheDesc = createFragment();
     cacheDesc.append(
-      'Cache rule evaluation results so unchanged files are not re-evaluated on every periodic or on-edit run.',
+      strings().settings.performanceCacheLead,
       createEl('br'),
-      'This significantly improves performance for vaults with many files and rules.'
+      strings().settings.performanceCacheTail
     );
 
-    new Setting(this.containerEl)
-      .setName(strings().settings.performanceCacheName)
+    renderSetting(this.containerEl, 'performance.cache')
       .setDesc(cacheDesc)
       .addToggle(toggle =>
         toggle
@@ -43,12 +40,8 @@ export class PerformanceDebugSettingsSection {
           })
       );
 
-    new Setting(this.containerEl)
-      .setName(strings().settings.performanceVaultCacheName)
-      .setDesc(
-        'Caches movable file lists (notes, canvases, bases) and derived tag/property indices from markdown. Turn off to always scan the vault (useful for debugging stale suggestions).'
-      )
-      .addToggle(toggle =>
+    renderSetting(this.containerEl, 'performance.vaultCache').addToggle(
+      toggle =>
         toggle
           .setValue(
             this.plugin.pluginData.settings.enableVaultIndexCache !== false
@@ -60,35 +53,29 @@ export class PerformanceDebugSettingsSection {
             this.plugin.vaultIndexCache.invalidateMarkdownList();
             this.refreshDisplay();
           })
-      );
+    );
 
-    new Setting(this.containerEl)
-      .setName(strings().settings.performanceDebugName)
-      .setDesc(
-        'Logs timing spans to the developer console as [Advanced Note Mover perf] and records them for export. Disable when not profiling.'
-      )
-      .addToggle(toggle =>
-        toggle
-          .setValue(
-            this.plugin.pluginData.settings.enablePerformanceDebug === true
-          )
-          .onChange(async value => {
-            this.plugin.pluginData.settings.enablePerformanceDebug = value;
-            setDebugEnabled(value);
-            await this.plugin.save_settings();
-            this.refreshDisplay();
-          })
-      );
+    renderSetting(this.containerEl, 'performance.debug').addToggle(toggle =>
+      toggle
+        .setValue(
+          this.plugin.pluginData.settings.enablePerformanceDebug === true
+        )
+        .onChange(async value => {
+          this.plugin.pluginData.settings.enablePerformanceDebug = value;
+          setDebugEnabled(value);
+          await this.plugin.save_settings();
+          this.refreshDisplay();
+        })
+    );
 
     const debugOn =
       this.plugin.pluginData.settings.enablePerformanceDebug === true;
 
-    new Setting(this.containerEl)
-      .setName(strings().settings.performanceExportName)
+    renderSetting(this.containerEl, 'performance.export')
       .setDesc(
         debugOn
-          ? 'Downloads recorded timings as JSON for before/after comparison.'
-          : 'Turn on performance debug logs first to record timings.'
+          ? strings().settings.performanceExportReady
+          : strings().settings.performanceExportOff
       )
       .addButton(btn =>
         btn
@@ -98,9 +85,7 @@ export class PerformanceDebugSettingsSection {
             if (
               this.plugin.pluginData.settings.enablePerformanceDebug !== true
             ) {
-              NoticeManager.warning(
-                'Enable performance debug logs first, then run the actions you want to measure.'
-              );
+              NoticeManager.warning(strings().notices.enableDebugFirst);
               return;
             }
             try {
@@ -108,12 +93,14 @@ export class PerformanceDebugSettingsSection {
                 await this.plugin.performanceTrace.downloadExport();
               if (fileName) {
                 NoticeManager.success(
-                  `Performance trace downloaded: ${fileName}`
+                  fill(strings().notices.traceDownloaded, { fileName })
                 );
               }
             } catch (err) {
               NoticeManager.error(
-                `Could not export trace: ${err instanceof Error ? err.message : String(err)}`
+                fill(strings().notices.couldNotExportTrace, {
+                  message: err instanceof Error ? err.message : String(err),
+                })
               );
             }
           })
