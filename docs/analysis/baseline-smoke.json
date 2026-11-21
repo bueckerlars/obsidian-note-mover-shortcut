@@ -1,0 +1,2541 @@
+{
+  "ran": true,
+  "screenshots": 30,
+  "checks": [
+    "touch",
+    "aria",
+    "inlineStyle",
+    "console",
+    "modalTitle",
+    "overflow"
+  ],
+  "openErrors": [],
+  "assertionFailures": 469,
+  "results": [
+    {
+      "viewport": "desktop",
+      "screen": "settings-triggers",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-filter",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-rules",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-attachments",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-conflict-resolution",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-history",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-import-export",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-performance",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "settings-updates",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "rule-editor",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "button .advancedNoteMover-rule-trigger-delete-btn.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-large \"Rule EditorNameMatch conditionsAllAnyNon\"",
+          "detail": "width: 980px !important; min-width: 760px !important; max-width: 95vw !important;"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "history",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-large \"Show entries from:AllTodayThis WeekThis \"",
+          "detail": "width: 980px !important; min-width: 760px !important; max-width: 95vw !important;"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "preview",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-large \"🔍Move Preview1 files analyzed • 0 will \"",
+          "detail": "width: 980px !important; min-width: 760px !important; max-width: 95vw !important;"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "conflict-cache",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-large \"⚠️Skipped move conflictsNotes that were \"",
+          "detail": "width: 980px !important; min-width: 760px !important; max-width: 95vw !important;"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "confirm",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-small \"Clear HistoryAre you sure you want to cl\"",
+          "detail": "width: 400px !important; min-width: 350px !important;"
+        }
+      ]
+    },
+    {
+      "viewport": "desktop",
+      "screen": "update-changelog",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.search-results-result-count",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-medium \"🎉Advanced Note Mover updated to version\"",
+          "detail": "width: 860px !important; min-width: 640px !important; max-width: 95vw !important;"
+        },
+        {
+          "check": "console",
+          "target": "console",
+          "detail": "Error: Plugin \"note-mover-shortcut\" is not passing Component in renderMarkdown. This is needed to avoid memory leaks when embedded contents register global event handlers."
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-triggers",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-filter",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-rules",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-attachments",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-conflict-resolution",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-history",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-import-export",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-performance",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "settings-updates",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "rule-editor",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "17x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-mobile.is-phone \"Rule editorNameActiveThis rule is applie\"",
+          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "history",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-mobile.is-phone \"Show entries from:AllTodayThis WeekThis \"",
+          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "preview",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-mobile.is-phone \"🔍Move Preview1 files analyzed • 0 will \"",
+          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "conflict-cache",
+      "failures": [
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-mobile.is-phone \"⚠️Skipped move conflictsNotes that were \"",
+          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "confirm",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "touch",
+          "target": "input",
+          "detail": "52x17"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.modal-setting-back-button.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-mobile.is-phone \"Clear HistoryAre you sure you want to cl\"",
+          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "screen": "update-changelog",
+      "failures": [
+        {
+          "check": "touch",
+          "target": "a .external-link \"#114\"",
+          "detail": "46x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#110\"",
+          "detail": "46x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#111\"",
+          "detail": "43x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#108\"",
+          "detail": "49x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#106\"",
+          "detail": "49x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#25\"",
+          "detail": "41x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#103\"",
+          "detail": "48x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#92\"",
+          "detail": "41x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#95\"",
+          "detail": "42x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#80\"",
+          "detail": "42x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#98\"",
+          "detail": "42x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#92\"",
+          "detail": "41x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#92\"",
+          "detail": "41x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#86\"",
+          "detail": "42x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#76\"",
+          "detail": "41x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#89\"",
+          "detail": "42x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#87\"",
+          "detail": "41x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#88\"",
+          "detail": "42x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#83\"",
+          "detail": "42x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#76\"",
+          "detail": "41x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#77\"",
+          "detail": "40x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#48\"",
+          "detail": "42x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#25\"",
+          "detail": "41x18"
+        },
+        {
+          "check": "touch",
+          "target": "a .external-link \"#48\"",
+          "detail": "42x18"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon.workspace-drawer-header-icon.mod-raised",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .clickable-icon \"1\"",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "span .clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "aria",
+          "target": "div .modal-close-button.mod-raised.clickable-icon",
+          "detail": "missing aria-label"
+        },
+        {
+          "check": "inlineStyle",
+          "target": "div .modal.is-mobile.is-phone \"🎉Advanced Note Mover updated to version\"",
+          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
+        },
+        {
+          "check": "console",
+          "target": "console",
+          "detail": "Error: Plugin \"note-mover-shortcut\" is not passing Component in renderMarkdown. This is needed to avoid memory leaks when embedded contents register global event handlers."
+        }
+      ]
+    }
+  ]
+}

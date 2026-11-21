@@ -23,4 +23,6 @@ No lint findings at this commit.
 
 Obsidian binary found at `/Applications/Obsidian.app/Contents/MacOS/Obsidian`.
 
-`node scripts/ui-smoke.mjs` on 2026-11-21 exited 0 and saved 30 PNGs under `docs/analysis/screenshots/phase-0/`. That is 15 screens at desktop 1400x1100 and mobile 390x844. This run does not check the DOM assertions. Those land with the assertion functions.
+`node scripts/ui-smoke.mjs` on 2026-11-21 exited 0 and saved 30 PNGs under `docs/analysis/screenshots/phase-0/`. That is 15 screens at desktop 1400x1100 and mobile 390x844.
+
+The same command wrote `docs/analysis/baseline-smoke.json`. Live smoke ran, all 30 screens opened, and the file records 469 assertion failures. Touch size, missing `aria-label`, and inline `style` on plugin classes fail. Modal title and horizontal overflow did not fail. The update screen also records one console error from `renderMarkdown`.
