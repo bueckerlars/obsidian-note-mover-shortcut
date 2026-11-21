@@ -165,37 +165,6 @@
   margin: 24px 0;
 }
 
-/* Common Info Box Styles */
-.advancedNoteMover-modal-info-box {
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  background: var(--background-secondary);
-  border-radius: 6px;
-  border: 1px solid var(--background-modifier-border);
-}
-
-.advancedNoteMover-modal-info-row {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-  font-size: 0.9em;
-  color: var(--text-normal);
-  opacity: 0.8;
-}
-
-.advancedNoteMover-modal-info-row span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.advancedNoteMover-modal-info-row code {
-  background: var(--background-primary);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 0.85em;
-}
-
 /* Time Filter Container */
 .advancedNoteMover-time-filter-container {
   margin-bottom: 20px;
@@ -224,22 +193,6 @@
   align-items: center;
   height: 100%;
   margin-right: 16px;
-}
-
-/* Retention Policy Settings - Inline layout */
-.advancedNoteMover-settings-root
-  .setting-item
-  .setting-item-control
-  input.advancedNoteMover-retention-value-input {
-  width: 80px;
-  margin-right: 8px;
-}
-
-.advancedNoteMover-settings-root
-  .setting-item
-  .setting-item-control
-  select.advancedNoteMover-retention-unit-dropdown {
-  width: 100px;
 }
 
 .advancedNoteMover-history-list {
@@ -297,14 +250,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.note-mover-history-title {
-  margin: 0 0 16px 0;
-  font-size: 1.4em;
-  font-weight: bold;
-  text-align: left;
-  color: var(--text-normal);
 }
 
 /* Bulk Operation Styles */
@@ -463,19 +408,8 @@
   color: var(--text-success);
 }
 
-.advancedNoteMover-preview-section-blocked
-  .advancedNoteMover-modal-section-header
-  h3 {
-  color: var(--text-error);
-}
-
 .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success {
   border-left: 3px solid var(--text-success);
-  background: var(--background-primary-alt);
-}
-
-.advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-blocked {
-  border-left: 3px solid var(--text-error);
   background: var(--background-primary-alt);
 }
 
@@ -521,8 +455,6 @@
 }
 
 .advancedNoteMover-preview-item-rule,
-.advancedNoteMover-preview-item-block-reason,
-.advancedNoteMover-preview-item-blocking-filter,
 .advancedNoteMover-preview-item-tags {
   display: flex;
   align-items: center;
@@ -530,25 +462,18 @@
 }
 
 .advancedNoteMover-rule-label,
-.advancedNoteMover-block-reason-label,
-.advancedNoteMover-filter-label,
 .advancedNoteMover-tags-label {
   font-weight: 500;
   color: var(--text-muted);
   min-width: 60px;
 }
 
-.advancedNoteMover-preview-item-rule code,
-.advancedNoteMover-preview-item-blocking-filter code {
+.advancedNoteMover-preview-item-rule code {
   background: var(--background-secondary);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 0.8em;
   color: var(--text-normal);
-}
-
-.advancedNoteMover-preview-item-block-reason {
-  color: var(--text-error);
 }
 
 .advancedNoteMover-tag {
@@ -956,21 +881,18 @@
   flex-shrink: 0;
 }
 
-.advancedNoteMover-rule-criteria-type,
-.advancedNoteMover-rule-rule-type {
+.advancedNoteMover-rule-criteria-type {
   padding: 6px 8px;
   min-width: 150px;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.advancedNoteMover-rule-criteria-type:focus,
-.advancedNoteMover-rule-rule-type:focus {
+.advancedNoteMover-rule-criteria-type:focus {
   outline: none;
 }
 
-.advancedNoteMover-rule-criteria-type:focus-visible,
-.advancedNoteMover-rule-rule-type:focus-visible {
+.advancedNoteMover-rule-criteria-type:focus-visible {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
   border-color: var(--interactive-accent);
@@ -1095,216 +1017,12 @@
 
 /* ===== MOBILE RESPONSIVE STYLES ===== */
 
-/* Mobile-First Settings Container */
-.advancedNoteMover-mobile-settings-container {
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
 /* Ensure parent container allows scrolling - scoped to plugin only */
 body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   height: 100%;
-}
-
-/* Ensure settings container doesn't interfere with scrolling */
-.is-mobile .vertical-tab-content .advancedNoteMover-mobile-settings-container {
-  min-height: min-content;
-}
-
-.advancedNoteMover-mobile-section-heading {
-  font-size: 1.2em;
-  font-weight: 600;
-  margin-bottom: 12px;
-  margin-top: 16px;
-  color: var(--text-normal);
-}
-
-/* Mobile Section Description */
-.advancedNoteMover-mobile-section-description {
-  font-size: 0.9em;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-
-/* Mobile Section Container */
-.advancedNoteMover-mobile-section-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-/* Mobile Setting Cards */
-.advancedNoteMover-mobile-setting-card {
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  background: var(--background-secondary);
-  border: 1px solid var(--background-modifier-border);
-  width: 100%;
-  box-sizing: border-box;
-  position: relative;
-}
-
-.advancedNoteMover-mobile-setting-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-setting-title {
-  font-weight: 600;
-  font-size: 1em;
-  flex: 1;
-  color: var(--text-normal);
-  margin-right: 12px;
-}
-
-.advancedNoteMover-mobile-setting-description {
-  font-size: 0.85em;
-  color: var(--text-muted);
-  margin-top: 4px;
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-.advancedNoteMover-mobile-setting-control {
-  width: 100%;
-  margin-top: 8px;
-}
-
-/* Mobile Toggle Settings */
-.advancedNoteMover-mobile-toggle-setting
-  .advancedNoteMover-mobile-setting-header {
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.advancedNoteMover-mobile-toggle-setting
-  .advancedNoteMover-mobile-setting-description {
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-
-.advancedNoteMover-mobile-toggle-setting
-  .advancedNoteMover-mobile-setting-control {
-  display: none;
-}
-
-.advancedNoteMover-mobile-toggle-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 48px;
-}
-
-.advancedNoteMover-mobile-toggle-switch {
-  position: relative;
-  width: 52px;
-  height: 32px;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-left: auto;
-  z-index: 1;
-}
-
-.advancedNoteMover-mobile-toggle-input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  position: absolute;
-}
-
-.advancedNoteMover-mobile-toggle-slider {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--background-modifier-border);
-  border-radius: 34px;
-  transition: 0.3s;
-}
-
-.advancedNoteMover-mobile-toggle-slider:before {
-  position: absolute;
-  content: '';
-  height: 24px;
-  width: 24px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  border-radius: 50%;
-  transition: 0.3s;
-}
-
-.advancedNoteMover-mobile-toggle-switch.is-active
-  .advancedNoteMover-mobile-toggle-slider {
-  background-color: var(--interactive-accent);
-}
-
-.advancedNoteMover-mobile-toggle-switch.is-active
-  .advancedNoteMover-mobile-toggle-slider:before {
-  transform: translateX(20px);
-}
-
-/* Mobile Input Settings */
-.advancedNoteMover-mobile-input-setting .advancedNoteMover-mobile-text-input {
-  width: 100%;
-  min-height: 48px;
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  background: var(--background-primary);
-  color: var(--text-normal);
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-input-label {
-  font-weight: 500;
-  font-size: 0.9em;
-  color: var(--text-normal);
-  margin-bottom: 8px;
-}
-
-/* Mobile Filter Cards */
-.advancedNoteMover-mobile-filter-card {
-  padding: 12px;
-  margin-bottom: 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  background: var(--background-secondary);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-filters-list-container {
-  margin-bottom: 12px;
-}
-
-/* Mobile Button Settings */
-.advancedNoteMover-mobile-button-setting .advancedNoteMover-mobile-action-btn {
-  width: 100%;
-  min-height: 48px;
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: opacity 0.2s ease;
 }
 
 .advancedNoteMover-mobile-action-btn:hover {
@@ -1320,86 +1038,11 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
   outline-offset: 2px;
 }
 
-/* Mobile Rule Cards */
-.advancedNoteMover-mobile-rule-card {
-  padding: 12px;
-  margin-bottom: 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  background: var(--background-secondary);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-rule-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-rule-name {
-  font-weight: 600;
-  flex: 1;
-  margin-right: 12px;
-  color: var(--text-normal);
-  word-break: break-word;
-}
-
-.advancedNoteMover-mobile-rule-toggle {
-  flex-shrink: 0;
-  position: relative;
-  width: 52px;
-  height: 32px;
-  cursor: pointer;
-}
-
-.advancedNoteMover-mobile-rule-toggle .advancedNoteMover-mobile-toggle-slider {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--background-modifier-border);
-  border-radius: 34px;
-  transition: 0.3s;
-}
-
-.advancedNoteMover-mobile-rule-toggle
-  .advancedNoteMover-mobile-toggle-slider:before {
-  position: absolute;
-  content: '';
-  height: 24px;
-  width: 24px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  border-radius: 50%;
-  transition: 0.3s;
-}
-
-.advancedNoteMover-mobile-rule-toggle.is-active
-  .advancedNoteMover-mobile-toggle-slider {
-  background-color: var(--interactive-accent);
-}
-
-.advancedNoteMover-mobile-rule-toggle.is-active
-  .advancedNoteMover-mobile-toggle-slider:before {
-  transform: translateX(20px);
-}
-
 .advancedNoteMover-mobile-rule-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
-}
-
-button.advancedNoteMover-mobile-edit-btn.mod-cta {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
 }
 
 .advancedNoteMover-mobile-delete-btn {
@@ -1424,14 +1067,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   opacity: 0.8;
 }
 
-/* Mobile Rules List Container */
-.advancedNoteMover-mobile-rules-list-container {
-  margin-top: 12px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Mobile Retention Controls */
 .advancedNoteMover-mobile-retention-controls {
   display: flex;
@@ -1441,7 +1076,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
 }
 
 .advancedNoteMover-mobile-retention-controls input[type='text'],
-.advancedNoteMover-mobile-retention-controls .advancedNoteMover-mobile-dropdown,
 .advancedNoteMover-mobile-retention-controls select,
 .advancedNoteMover-mobile-retention-controls .dropdown {
   width: 100%;
@@ -1453,32 +1087,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   background: var(--background-primary);
   color: var(--text-normal);
   box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-dropdown {
-  width: 100%;
-  min-height: 48px;
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  background: var(--background-primary);
-  color: var(--text-normal);
-  box-sizing: border-box;
-}
-
-/* Mobile utility classes */
-.advancedNoteMover-mobile-stack {
-  flex-direction: column;
-}
-
-.advancedNoteMover-mobile-full-width {
-  width: 100%;
-}
-
-.advancedNoteMover-mobile-center {
-  justify-content: center;
-  align-items: center;
 }
 
 /* Mobile-optimized settings */
@@ -1537,14 +1145,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   font-size: 16px; /* Prevents zoom on iOS */
 }
 
-/* Mobile move buttons */
-.advancedNoteMover-mobile-move-buttons-container {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  margin-bottom: 8px;
-}
-
 .advancedNoteMover-mobile-move-button {
   flex: 1;
   min-height: 48px;
@@ -1588,10 +1188,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   outline-offset: 2px;
 }
 
-.advancedNoteMover-mobile-move-button.advancedNoteMover-mobile-move-button-hidden {
-  display: none;
-}
-
 /* Mobile rules container */
 .advancedNoteMover-mobile-rules-container
   .advancedNoteMover-rule-v2-custom-container.advancedNoteMover-mobile-rule-container {
@@ -1622,29 +1218,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   .checkbox-container {
   min-width: 44px;
   min-height: 44px;
-}
-
-/* Mobile rule items (V1) */
-.advancedNoteMover-mobile-rule-item {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 12px;
-}
-
-.advancedNoteMover-mobile-rule-controls {
-  width: 100%;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.advancedNoteMover-mobile-rule-controls .search-input-container {
-  width: 100%;
-}
-
-.advancedNoteMover-mobile-rule-controls input[type='search'] {
-  min-height: 44px;
-  width: 100%;
-  font-size: 16px;
 }
 
 /* Mobile filters container */
@@ -1722,12 +1295,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
 
   .advancedNoteMover-modal-section-header h3 {
     font-size: 1.1em;
-  }
-
-  /* Info Row Adjustments */
-  .advancedNoteMover-modal-info-row {
-    gap: 12px;
-    font-size: 0.85em;
   }
 
   /* History Modal Adjustments */
@@ -1870,7 +1437,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   }
 
   .advancedNoteMover-rule-criteria-type,
-  .advancedNoteMover-rule-rule-type,
   .advancedNoteMover-rule-trigger-value {
     width: 100%;
     min-width: unset;
@@ -1901,16 +1467,13 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   }
 
   .advancedNoteMover-rule-label,
-  .advancedNoteMover-block-reason-label,
-  .advancedNoteMover-filter-label,
   .advancedNoteMover-tags-label {
     min-width: unset;
     width: auto;
   }
 
   /* Preview Item - Adjust layout */
-  .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success,
-  .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-blocked {
+  .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success {
     padding: 12px;
   }
 
@@ -2014,11 +1577,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
     font-size: 1em;
   }
 
-  /* Info box mobile adjustments */
-  .advancedNoteMover-modal-info-box {
-    padding: 10px 12px;
-  }
-
   /* Confirm modal button adjustments */
   .advancedNoteMover-confirm-modal
     .advancedNoteMover-modal-button-container
@@ -2061,7 +1619,6 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
 
   /* Smaller inputs but still touch-friendly */
   .advancedNoteMover-rule-criteria-type,
-  .advancedNoteMover-rule-rule-type,
   .advancedNoteMover-rule-trigger-value,
   .advancedNoteMover-rule-property-name {
     font-size: 0.95em;
@@ -2436,23 +1993,6 @@ body.is-mobile .modal-content.note-mover-update-modal {
 
 .is-mobile .advancedNoteMover-update-modal-github-link-mobile:active {
   opacity: 0.8;
-}
-
-.is-mobile .advancedNoteMover-update-modal-footer-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.is-mobile .advancedNoteMover-update-modal-footer-mobile .setting-item {
-  width: 100%;
-  margin-bottom: 0;
-}
-
-.is-mobile .advancedNoteMover-update-modal-footer-mobile .setting-item button {
-  width: 100%;
-  min-height: 48px;
-  font-size: 16px;
 }
 
 /* Confirm Modal Mobile Styles */

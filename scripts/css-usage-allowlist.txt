@@ -1,0 +1,24 @@
+# prefix NAME
+#   A CSS class equal to NAME, or starting with NAME-, counts as used.
+# keep NAME
+#   A CSS class counts as used even when no TypeScript reference is visible.
+# ts NAME
+#   A TypeScript class is allowed to have no CSS rule.
+
+prefix advancedNoteMover-rule-mobile
+
+keep advancedNoteMover-mobile-rule-actions
+keep advancedNoteMover-mobile-toggle-control
+keep advancedNoteMover-mobile-move-button
+
+# Set in TypeScript. styles.css has no selector for these names.
+ts advancedNoteMover-changelog-section-breaking
+ts advancedNoteMover-conflict-action-skip
+ts advancedNoteMover-conflict-modal-message-mobile
+ts advancedNoteMover-conflict-skip-cache-item-mobile
+ts advancedNoteMover-filters-container
+ts advancedNoteMover-preview-path-target
+ts advancedNoteMover-rule-destination-setting
+ts advancedNoteMover-rule-operator
+ts advancedNoteMover-template-suggestion
+ts advancedNoteMover-settings-root
