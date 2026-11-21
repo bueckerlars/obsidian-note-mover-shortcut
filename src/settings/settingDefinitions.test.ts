@@ -199,6 +199,30 @@ describe('setting definitions', () => {
         ?.classList.contains('advancedNoteMover-setting-stack')
     ).toBe(true);
 
+    for (const id of ['filters.add', 'rules.add'] as const) {
+      const button = root.querySelector(`[data-setting-id="${id}"] button`);
+      expect(button?.getAttribute('aria-label')).toBe(
+        catalogText(settingDefinition(id).nameKey)
+      );
+      expect(button?.querySelector('svg')).not.toBeNull();
+      expect(button?.textContent).toBe('');
+    }
+    expect(
+      root
+        .querySelector('[data-setting-id="filters.heading"]')
+        ?.getAttribute('title')
+    ).toBe(catalogText('settings.filterSectionDesc'));
+    expect(
+      root
+        .querySelector('[data-setting-id="rules.heading"]')
+        ?.getAttribute('title')
+    ).toBe(catalogText('settings.rulesIntroTail'));
+    expect(
+      root.querySelector(
+        '[data-setting-id="conflict.warning"] .setting-item-description'
+      )?.textContent
+    ).toBe(catalogText('settings.conflictAutoWarning'));
+
     const outsideLists = Array.from(
       root.querySelectorAll('.setting-item')
     ).filter(

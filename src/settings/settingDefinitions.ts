@@ -66,6 +66,7 @@ export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
     id: 'filters.empty',
     sectionId: 'filters',
     nameKey: 'settings.filterEmpty',
+    descriptionKey: 'settings.filterEmptyDesc',
     control: 'info',
   },
   {
@@ -78,6 +79,7 @@ export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
     id: 'rules.heading',
     sectionId: 'rules',
     nameKey: 'settings.headingsRules',
+    descriptionKey: 'settings.rulesIntroLead',
     control: 'heading',
   },
   {
@@ -91,6 +93,7 @@ export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
     id: 'rules.empty',
     sectionId: 'rules',
     nameKey: 'settings.rulesEmpty',
+    descriptionKey: 'settings.rulesEmptyDesc',
     control: 'info',
   },
   {

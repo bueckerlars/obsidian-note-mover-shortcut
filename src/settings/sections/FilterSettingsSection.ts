@@ -16,13 +16,16 @@ export class FilterSettingsSection {
   ) {}
 
   addFilterSettings(): void {
-    renderSetting(this.containerEl, 'filters.heading');
+    renderSetting(this.containerEl, 'filters.heading').setTooltip(
+      strings().settings.filterSectionDesc
+    );
 
     this.addPeriodicMovementFilterArray();
 
     renderSetting(this.containerEl, 'filters.add').addButton(btn =>
       btn
-        .setButtonText(strings().settings.filterAdd)
+        .setIcon('plus')
+        .setTooltip(strings().settings.filterAdd)
         .setCta()
         .onClick(async () => {
           this.plugin.pluginData.settings.filters.filter.push({ value: '' });
