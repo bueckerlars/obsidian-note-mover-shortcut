@@ -12,6 +12,7 @@
 - **Settings tab**: The settings tab is drawn from one list for every supported Obsidian version. It no longer appears in Obsidian 1.13 settings search, which used a second copy of the same settings. The minimum app version stays 1.8.7.
 - **Mobile settings**: Toggles and dropdowns stay beside their names. Only a wide field, such as the interval or the retention row, stacks.
 - **Mobile toggles**: Toggle descriptions stay on one or two lines, so the switch sits beside the name inside the settings card.
+- **Rule editor**: Name, match mode, conditions, and destination use the same fields on desktop and mobile.
 - **Settings hints**: Filter, rule, and conflict hints use one short description. Extra detail sits on the info tooltip. Add filter and Add rule are icon buttons.
 - **Settings actions**: Each settings section has at most one primary button. Clear history is the only warning button. Import asks for confirmation and is no longer red.
 - **Rule rows**: A rule row shows the condition and the destination. Edit, duplicate, move, and delete are in the row menu.

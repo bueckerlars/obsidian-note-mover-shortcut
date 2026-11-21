@@ -8,13 +8,11 @@ import {
   setIcon,
 } from 'obsidian';
 import type {
-  AggregationType,
   CriteriaType,
   Operator,
   RuleV2,
   Trigger,
 } from '../../types/RuleV2';
-import { FolderSuggest } from '../../settings/suggesters/FolderSuggest';
 import { PropertySuggest } from '../../settings/suggesters/PropertySuggest';
 import {
   SuggestRegistry,
@@ -22,9 +20,11 @@ import {
 } from '../../settings/suggesters/suggestLifecycle';
 import { operatorRequiresValue } from '../../utils/OperatorMapping';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
-import { strings } from '../../i18n/locale';
+import { fill, strings } from '../../i18n/locale';
+import { renderAggregationControl } from './components/AggregationControl';
+import { renderDestinationInput } from './components/DestinationField';
+import { renderRuleNameField } from './components/RuleNameField';
 import {
-  AGGREGATION_TYPES,
   CRITERIA_TYPES,
   DESTINATION_DESCRIPTION,
   DESTINATION_SHORT_HINT,
@@ -34,7 +34,6 @@ import {
   applyFolderCreationValue,
   applyPropertyName,
   attachValueSuggester,
-  capitalize,
   createDefaultTrigger,
   getFolderCreationValue,
   getOperatorsForTrigger,
@@ -44,12 +43,6 @@ import {
 } from './ruleEditorShared';
 
 const CLS = 'advancedNoteMover-rule-mobile';
-
-const AGGREGATION_DESCRIPTIONS: Record<AggregationType, string> = {
-  all: 'Every condition must match.',
-  any: 'At least one condition must match.',
-  none: 'No condition may match.',
-};
 
 export interface RuleEditorMobileViewOptions {
   app: App;
@@ -129,17 +122,15 @@ export class RuleEditorMobileView {
   private renderGeneralGroup(parent: HTMLElement): void {
     const group = this.createGroup(parent);
 
-    const nameField = this.createField(group, 'Name');
-    new TextComponent(nameField.controlEl)
-      .setPlaceholder(strings().modals.ruleEditorNamePlaceholder)
-      .setValue(this.rule.name)
-      .onChange(value => {
+    const nameField = this.createField(group, strings().modals.ruleEditorName);
+    renderRuleNameField(nameField.controlEl, {
+      value: this.rule.name,
+      id: nameField.inputId,
+      className: `${CLS}-input`,
+      onChange: value => {
         this.rule.name = value;
-      })
-      .then(text => {
-        text.inputEl.id = nameField.inputId;
-        text.inputEl.addClass(`${CLS}-input`);
-      });
+      },
+    });
 
     const activeRow = group.createDiv({ cls: `${CLS}-switch-row` });
     const activeText = activeRow.createDiv({ cls: `${CLS}-switch-text` });
@@ -153,8 +144,8 @@ export class RuleEditorMobileView {
     const updateActiveDesc = (active: boolean) => {
       activeDesc.setText(
         active
-          ? 'This rule is applied when notes are moved.'
-          : 'This rule is skipped.'
+          ? strings().modals.ruleEditorActiveOn
+          : strings().modals.ruleEditorActiveOff
       );
     };
     updateActiveDesc(this.rule.active);
@@ -181,58 +172,42 @@ export class RuleEditorMobileView {
 
     const segmented = group.createDiv({
       cls: `${CLS}-segmented`,
-      attr: { role: 'radiogroup', 'aria-labelledby': labelId },
+      attr: { 'aria-labelledby': labelId },
     });
     const description = group.createDiv({ cls: `${CLS}-description` });
-
-    const buttons: HTMLButtonElement[] = [];
-    const update = () => {
-      buttons.forEach((button, i) => {
-        const selected = AGGREGATION_TYPES[i] === this.rule.aggregation;
-        button.toggleClass('is-active', selected);
-        button.setAttr('aria-checked', String(selected));
-        button.tabIndex = selected ? 0 : -1;
-      });
-      description.setText(AGGREGATION_DESCRIPTIONS[this.rule.aggregation]);
-      this.updateConditionConnectors();
-    };
-
-    AGGREGATION_TYPES.forEach(aggregation => {
-      const button = segmented.createEl('button', {
-        cls: `${CLS}-segment`,
-        text: capitalize(aggregation),
-        attr: { type: 'button', role: 'radio' },
-      });
-      button.addEventListener('click', () => {
-        this.rule.aggregation = aggregation;
-        update();
-      });
-      buttons.push(button);
+    renderAggregationControl(segmented, {
+      value: this.rule.aggregation,
+      buttonClass: `${CLS}-segment`,
+      descriptionEl: description,
+      onChange: value => {
+        this.rule.aggregation = value;
+        this.updateConditionConnectors();
+      },
     });
-
-    update();
   }
 
   private renderDestinationGroup(parent: HTMLElement): void {
     const group = this.createGroup(parent);
 
-    const destinationField = this.createField(group, 'Destination', {
-      description: DESTINATION_SHORT_HINT,
-    });
-    new TextComponent(destinationField.controlEl)
-      .setPlaceholder('Example: Projects/{{tag.project}}')
-      .setValue(this.rule.destination)
-      .onChange(value => {
-        this.rule.destination = value;
-      })
-      .then(text => {
-        const input = text.inputEl;
-        input.id = destinationField.inputId;
-        input.addClass(`${CLS}-input`);
-        this.disableTextAssistance(input);
-        this.destinationSuggest?.destroy();
-        this.destinationSuggest = new FolderSuggest(this.options.app, input);
-      });
+    const destinationField = this.createField(
+      group,
+      strings().modals.ruleEditorDestination,
+      { description: DESTINATION_SHORT_HINT }
+    );
+    this.destinationSuggest?.destroy();
+    this.destinationSuggest = renderDestinationInput(
+      destinationField.controlEl,
+      {
+        app: this.options.app,
+        value: this.rule.destination,
+        placeholder: strings().modals.ruleEditorMobileDestinationPlaceholder,
+        id: destinationField.inputId,
+        className: `${CLS}-input`,
+        onChange: value => {
+          this.rule.destination = value;
+        },
+      }
+    );
 
     const details = group.createEl('details', { cls: `${CLS}-help` });
     details.createEl('summary', {
@@ -363,7 +338,10 @@ export class RuleEditorMobileView {
   }
 
   private updateConditionConnectors(): void {
-    const text = this.rule.aggregation === 'all' ? 'and' : 'or';
+    const text =
+      this.rule.aggregation === 'all'
+        ? strings().modals.ruleEditorConnectorAll
+        : strings().modals.ruleEditorConnectorAny;
     this.conditionsListEl
       ?.querySelectorAll<HTMLElement>(`.${CLS}-connector`)
       .forEach(el => el.setText(text));
@@ -380,13 +358,15 @@ export class RuleEditorMobileView {
     const header = card.createDiv({ cls: `${CLS}-condition-header` });
     header.createDiv({
       cls: `${CLS}-condition-title`,
-      text: `Condition ${index + 1}`,
+      text: fill(strings().modals.ruleEditorCondition, {
+        index: String(index + 1),
+      }),
     });
     const actions = header.createDiv({ cls: `${CLS}-condition-actions` });
 
     new ExtraButtonComponent(actions)
       .setIcon('arrow-up')
-      .setTooltip('Move up')
+      .setTooltip(strings().modals.ruleEditorMoveUp)
       .setDisabled(index === 0)
       .onClick(() => {
         moveTrigger(triggers, index, index - 1);
@@ -394,7 +374,7 @@ export class RuleEditorMobileView {
       });
     new ExtraButtonComponent(actions)
       .setIcon('arrow-down')
-      .setTooltip('Move down')
+      .setTooltip(strings().modals.ruleEditorMoveDown)
       .setDisabled(index === triggers.length - 1)
       .onClick(() => {
         moveTrigger(triggers, index, index + 1);
@@ -402,7 +382,7 @@ export class RuleEditorMobileView {
       });
     new ExtraButtonComponent(actions)
       .setIcon('trash-2')
-      .setTooltip('Delete condition')
+      .setTooltip(strings().modals.ruleEditorDeleteCondition)
       .onClick(() => {
         removeTrigger(triggers, index);
         this.renderConditions();
@@ -421,7 +401,10 @@ export class RuleEditorMobileView {
 
     const selectors = body.createDiv({ cls: `${CLS}-condition-selectors` });
 
-    const typeField = this.createField(selectors, 'Type');
+    const typeField = this.createField(
+      selectors,
+      strings().modals.ruleEditorCriteriaType
+    );
     const typeDropdown = new DropdownComponent(typeField.controlEl);
     CRITERIA_TYPES.forEach(ct => {
       typeDropdown.addOption(ct, ct);
@@ -433,7 +416,10 @@ export class RuleEditorMobileView {
     typeDropdown.selectEl.id = typeField.inputId;
     typeDropdown.selectEl.addClass(`${CLS}-select`);
 
-    const operatorField = this.createField(selectors, 'Operator');
+    const operatorField = this.createField(
+      selectors,
+      strings().modals.ruleEditorOperator
+    );
     const operatorDropdown = new DropdownComponent(operatorField.controlEl);
     operatorDropdown.selectEl.id = operatorField.inputId;
     operatorDropdown.selectEl.addClass(`${CLS}-select`);
@@ -446,7 +432,10 @@ export class RuleEditorMobileView {
       if (!operatorRequiresValue(trigger.operator)) {
         return;
       }
-      const valueField = this.createField(valueSlot, 'Value');
+      const valueField = this.createField(
+        valueSlot,
+        strings().modals.ruleEditorValue
+      );
       new TextComponent(valueField.controlEl)
         .setPlaceholder(getValuePlaceholder(trigger))
         .setValue(trigger.value)
@@ -487,9 +476,12 @@ export class RuleEditorMobileView {
     });
 
     if (trigger.criteriaType === 'properties') {
-      const propertyField = this.createField(propertySlot, 'Property');
+      const propertyField = this.createField(
+        propertySlot,
+        strings().modals.ruleEditorPropertyName
+      );
       new TextComponent(propertyField.controlEl)
-        .setPlaceholder('Property name')
+        .setPlaceholder(strings().modals.ruleEditorPropertyName)
         .setValue(trigger.propertyName ?? '')
         .onChange(value => {
           const previousType = trigger.propertyType;

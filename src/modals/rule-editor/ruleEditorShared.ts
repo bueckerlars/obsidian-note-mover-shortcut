@@ -17,6 +17,7 @@ import {
   isRegexOperator,
   operatorRequiresValue,
 } from '../../utils/OperatorMapping';
+import { strings } from '../../i18n/locale';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 
 export const CRITERIA_TYPES: readonly CriteriaType[] = [
@@ -125,7 +126,9 @@ export function applyPropertyName(
 }
 
 export function getValuePlaceholder(trigger: Trigger): string {
-  return trigger.criteriaType === 'tag' ? '#tag' : 'Value';
+  return trigger.criteriaType === 'tag'
+    ? strings().modals.ruleEditorTagPlaceholder
+    : strings().modals.ruleEditorValuePlaceholder;
 }
 
 export function attachValueSuggester(
