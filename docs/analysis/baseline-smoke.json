@@ -10,7 +10,7 @@
     "overflow"
   ],
   "openErrors": [],
-  "assertionFailures": 491,
+  "assertionFailures": 456,
   "results": [
     {
       "viewport": "desktop",
@@ -629,11 +629,6 @@
           "check": "inlineStyle",
           "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
           "detail": "padding-bottom: 1189px;"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-large \"Rule EditorNameMatch conditionsAllAnyNon\"",
-          "detail": "width: 980px !important; min-width: 760px !important; max-width: 95vw !important;"
         }
       ]
     },
@@ -685,11 +680,6 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-large \"Show entries from:AllTodayThis WeekThis \"",
-          "detail": "width: 980px !important; min-width: 760px !important; max-width: 95vw !important;"
         }
       ]
     },
@@ -741,11 +731,6 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-large \"🔍Move Preview1 files analyzed • 0 will \"",
-          "detail": "width: 980px !important; min-width: 760px !important; max-width: 95vw !important;"
         }
       ]
     },
@@ -797,11 +782,6 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-large \"⚠️Skipped move conflictsNotes that were \"",
-          "detail": "width: 980px !important; min-width: 760px !important; max-width: 95vw !important;"
         }
       ]
     },
@@ -868,11 +848,6 @@
           "check": "inlineStyle",
           "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-desktop \"TriggersEnable on-edit triggerAutomatica\"",
           "detail": "padding-bottom: 1189px;"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-small \"Clear HistoryAre you sure you want to cl\"",
-          "detail": "width: 400px !important; min-width: 350px !important;"
         }
       ]
     },
@@ -924,11 +899,6 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-desktop.advancedNoteMover-modal-size-medium \"🎉Advanced Note Mover updated to version\"",
-          "detail": "width: 860px !important; min-width: 640px !important; max-width: 95vw !important;"
         },
         {
           "check": "console",
@@ -2104,11 +2074,6 @@
           "check": "inlineStyle",
           "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
           "detail": "padding-bottom: 1828px;"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-mobile.is-phone \"Rule editorNameActiveThis rule is applie\"",
-          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
         }
       ]
     },
@@ -2175,11 +2140,6 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-mobile.is-phone \"Show entries from:AllTodayThis WeekThis \"",
-          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
         }
       ]
     },
@@ -2246,11 +2206,6 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-mobile.is-phone \"🔍Move Preview1 files analyzed • 0 will \"",
-          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
         }
       ]
     },
@@ -2317,11 +2272,6 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-mobile.is-phone \"⚠️Skipped move conflictsNotes that were \"",
-          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
         }
       ]
     },
@@ -2443,11 +2393,6 @@
           "check": "inlineStyle",
           "target": "div .vertical-tab-content.advancedNoteMover-settings-root.is-mobile \"TriggersEnable on-edit triggerAutomatica\"",
           "detail": "padding-bottom: 1828px;"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-mobile.is-phone \"Clear HistoryAre you sure you want to cl\"",
-          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
         }
       ]
     },
@@ -2459,121 +2404,6 @@
           "check": "touch",
           "target": "a .external-link \"#114\"",
           "detail": "46x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#110\"",
-          "detail": "46x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#111\"",
-          "detail": "43x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#108\"",
-          "detail": "49x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#106\"",
-          "detail": "49x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#25\"",
-          "detail": "41x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#103\"",
-          "detail": "48x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#92\"",
-          "detail": "41x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#95\"",
-          "detail": "42x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#80\"",
-          "detail": "42x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#98\"",
-          "detail": "42x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#92\"",
-          "detail": "41x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#92\"",
-          "detail": "41x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#86\"",
-          "detail": "42x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#76\"",
-          "detail": "41x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#89\"",
-          "detail": "42x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#87\"",
-          "detail": "41x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#88\"",
-          "detail": "42x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#83\"",
-          "detail": "42x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#76\"",
-          "detail": "41x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#77\"",
-          "detail": "40x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#48\"",
-          "detail": "42x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#25\"",
-          "detail": "41x18"
-        },
-        {
-          "check": "touch",
-          "target": "a .external-link \"#48\"",
-          "detail": "42x18"
         },
         {
           "check": "aria",
@@ -2634,11 +2464,6 @@
           "check": "aria",
           "target": "div .modal-close-button.mod-raised.clickable-icon",
           "detail": "missing aria-label"
-        },
-        {
-          "check": "inlineStyle",
-          "target": "div .modal.is-mobile.is-phone \"🎉Advanced Note Mover updated to version\"",
-          "detail": "width: 100% !important; max-width: 100% !important; margin: 0px !important; border-radius: 0px !important; max-height: 1"
         },
         {
           "check": "console",

@@ -31,4 +31,8 @@ Obsidian binary found at `/Applications/Obsidian.app/Contents/MacOS/Obsidian`.
 
 `node scripts/ui-smoke.mjs` on 2026-11-21 exited 0 and saved 30 PNGs under `docs/analysis/screenshots/phase-0/`. That is 15 screens at desktop 1400x1100 and mobile 390x844.
 
-The same command wrote `docs/analysis/baseline-smoke.json`. Live smoke ran, all 30 screens opened, and the file records 469 assertion failures. Touch size, missing `aria-label`, and inline `style` on plugin classes fail. Modal title and horizontal overflow did not fail. The update screen also records one console error from `renderMarkdown`.
+The same command wrote `docs/analysis/baseline-smoke.json`. The phase 2 run exited 0, opened all 30 screens, and recorded 456 assertion failures: 90 touch, 342 missing `aria-label`, 22 inline `style`, and 2 console errors from `renderMarkdown`. All 90 touch failures are on mobile screens. Desktop touch passed. Modal title and horizontal overflow did not fail.
+
+## Phase 2 CSS size
+
+`styles.css` is 2433 lines. Deleting unused classes removed 465 lines from a 2909-line file. The rest of phase 2 replaced values in place and added the device-class scopes, the `100dvh` fallback, and the title variables. `10px` spacing stays because the size scale has no 10px step. Live rules were not deleted to reach 2300.
