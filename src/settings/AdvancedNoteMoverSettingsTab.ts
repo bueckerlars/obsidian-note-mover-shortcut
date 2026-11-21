@@ -11,6 +11,7 @@ import {
   UpdateSettingsSection,
   ConflictResolutionSettingsSection,
 } from './sections';
+import { associateSettingLabels } from '../domain/a11y/associateSettingLabels';
 import { DebounceManager } from '../utils/DebounceManager';
 import { MobileUtils } from '../utils/MobileUtils';
 
@@ -142,6 +143,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.performanceDebugSettings.addPerformanceDebugSettings();
 
     this.updateSettings.addUpdateSettings();
+    associateSettingLabels(this.containerEl);
   }
 
   /**
