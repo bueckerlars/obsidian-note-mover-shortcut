@@ -223,6 +223,22 @@ describe('setting definitions', () => {
       )?.textContent
     ).toBe(catalogText('settings.conflictAutoWarning'));
 
+    const ctaCounts = new Map<string, number>();
+    for (const button of Array.from(root.querySelectorAll('.mod-cta'))) {
+      const sectionId =
+        button.closest('[data-section-id]')?.getAttribute('data-section-id') ??
+        '';
+      ctaCounts.set(sectionId, (ctaCounts.get(sectionId) ?? 0) + 1);
+    }
+    for (const count of ctaCounts.values()) {
+      expect(count).toBeLessThanOrEqual(1);
+    }
+    expect(
+      Array.from(root.querySelectorAll('.mod-warning')).map(button =>
+        button.closest('[data-setting-id]')?.getAttribute('data-setting-id')
+      )
+    ).toEqual(['history.clear']);
+
     const outsideLists = Array.from(
       root.querySelectorAll('.setting-item')
     ).filter(
