@@ -146,11 +146,17 @@ export class RuleEditorModal extends BaseModal {
         toggle
           .setValue(this.workingRule.active)
           .setTooltip(
-            this.workingRule.active ? 'Rule is active' : 'Rule is inactive'
+            this.workingRule.active
+              ? strings().settings.rulesActive
+              : strings().settings.rulesInactive
           )
           .onChange(value => {
             this.workingRule.active = value;
-            toggle.setTooltip(value ? 'Rule is active' : 'Rule is inactive');
+            toggle.setTooltip(
+              value
+                ? strings().settings.rulesActive
+                : strings().settings.rulesInactive
+            );
           })
       );
   }
@@ -192,9 +198,7 @@ export class RuleEditorModal extends BaseModal {
       .setName(strings().modals.ruleEditorDestination)
       .addSearch(cb => {
         this.destinationSuggest = new FolderSuggest(this.app, cb.inputEl);
-        cb.setPlaceholder(
-          'Example: Personal/Tasks/{{property.status}} or {{tag.tasks/personal}}/Incoming'
-        )
+        cb.setPlaceholder(strings().modals.ruleEditorDestinationPlaceholder)
           .setValue(this.workingRule.destination)
           .onChange(value => {
             this.workingRule.destination = value;
@@ -330,7 +334,7 @@ export class RuleEditorModal extends BaseModal {
       const propertyNameInput = row.createEl('input', {
         type: 'text',
         cls: 'advancedNoteMover-rule-property-name',
-        placeholder: 'Property Name',
+        placeholder: strings().modals.ruleEditorPropertyName,
         value: trigger.propertyName || '',
       });
 
@@ -468,7 +472,7 @@ export class RuleEditorModal extends BaseModal {
       const leftButtons = this.createButtonContainer(leftSide);
       this.createButton(
         leftButtons,
-        'Remove rule',
+        strings().modals.ruleEditorRemoveRule,
         () => {
           void this.handleRemoveRule();
         },
@@ -481,13 +485,13 @@ export class RuleEditorModal extends BaseModal {
     });
     const rightButtons = this.createButtonContainer(rightSide);
 
-    this.createButton(rightButtons, 'Cancel', () => {
+    this.createButton(rightButtons, strings().common.cancel, () => {
       void this.requestClose();
     });
 
     this.createButton(
       rightButtons,
-      'Save',
+      strings().common.save,
       () => {
         void this.handleSave();
       },

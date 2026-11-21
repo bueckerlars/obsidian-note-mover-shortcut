@@ -356,7 +356,7 @@ export class RulesSettingsSection {
     } else {
       // Create mode: new rule
       rule = {
-        name: 'New Rule',
+        name: strings().settings.rulesNewName,
         destination: '',
         aggregation: 'all',
         triggers: [

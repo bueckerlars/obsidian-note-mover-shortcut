@@ -1,5 +1,5 @@
 import { App, Setting, TFile } from 'obsidian';
-import { strings } from '../i18n/locale';
+import { fill, strings } from '../i18n/locale';
 import AdvancedNoteMoverPlugin from 'main';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
@@ -171,20 +171,23 @@ export class ConflictSkipCacheModal extends BaseModal {
 
     this.createButton(
       buttonContainer,
-      'Remove stale entries',
+      strings().modals.conflictCacheRemoveStale,
       () => {
         void this.removeStaleEntries();
       },
-      { tooltip: 'Remove entries whose source or target no longer exists' }
+      { tooltip: strings().modals.conflictCacheRemoveStaleTooltip }
     );
 
     this.createButton(
       buttonContainer,
-      'Clear all',
+      strings().modals.conflictCacheClearAll,
       () => {
         void this.clearAllEntries();
       },
-      { isWarning: true, tooltip: 'Remove all skipped conflict entries' }
+      {
+        isWarning: true,
+        tooltip: strings().modals.conflictCacheClearAllTooltip,
+      }
     );
   }
 
@@ -241,10 +244,12 @@ export class ConflictSkipCacheModal extends BaseModal {
   private async removeStaleEntries(): Promise<void> {
     const removed = await this.plugin.conflictSkipCacheManager.prune(this.app);
     if (removed === 0) {
-      NoticeManager.info('No stale entries to remove.');
+      NoticeManager.info(strings().notices.noStaleEntries);
     } else {
       NoticeManager.success(
-        `Removed ${removed} stale entr${removed === 1 ? 'y' : 'ies'}.`
+        removed === 1
+          ? strings().notices.removedStaleOne
+          : fill(strings().notices.removedStaleMany, { count: removed })
       );
     }
     this.refreshContent();
@@ -253,10 +258,9 @@ export class ConflictSkipCacheModal extends BaseModal {
   private async clearAllEntries(): Promise<void> {
     const confirmed = await ConfirmModal.show(this.app, {
       title: strings().modals.conflictCacheClearTitle,
-      message:
-        'Remove all skipped move conflict entries? Automatic triggers will try to move these notes again.',
-      confirmText: 'Clear all',
-      cancelText: 'Cancel',
+      message: strings().modals.conflictCacheClearMessage,
+      confirmText: strings().modals.conflictCacheClearAll,
+      cancelText: strings().common.cancel,
       danger: true,
     });
     if (!confirmed) {
