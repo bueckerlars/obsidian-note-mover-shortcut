@@ -3,6 +3,7 @@ import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
 import { pluralize } from '../utils/pluralize';
+import { viewIdle } from '../utils/viewTimers';
 import { MobileUtils } from '../utils/MobileUtils';
 import {
   combinePath,
@@ -302,11 +303,7 @@ export class PreviewModal extends BaseModal {
         }
         if ((i + 1) % 50 === 0 && i + 1 < successfulEntries.length) {
           await new Promise<void>(resolve => {
-            if (typeof window.requestIdleCallback === 'function') {
-              window.requestIdleCallback(() => resolve(), { timeout: 250 });
-            } else {
-              window.setTimeout(() => resolve(), 0);
-            }
+            viewIdle(resolve, 250);
           });
         }
       }

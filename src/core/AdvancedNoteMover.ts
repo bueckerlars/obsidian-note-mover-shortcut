@@ -1,6 +1,7 @@
 import { TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
 import { pluralize } from '../utils/pluralize';
+import { viewIdle } from '../utils/viewTimers';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
 import {
@@ -340,13 +341,7 @@ export class AdvancedNoteMover {
             // Yield to the UI thread periodically to prevent freezing
             if ((i + 1) % BULK_CHUNK_SIZE === 0 && i + 1 < files.length) {
               await new Promise<void>(resolve => {
-                if (typeof window.requestIdleCallback === 'function') {
-                  window.requestIdleCallback(() => resolve(), {
-                    timeout: 250,
-                  });
-                } else {
-                  window.setTimeout(() => resolve(), 0);
-                }
+                viewIdle(resolve, 250);
               });
             }
           }
