@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { strings } from '../i18n/locale';
 import { BaseModal } from './BaseModal';
 
 function installDom(): void {
@@ -84,12 +85,17 @@ describe('modal focus', () => {
     opener.focus();
 
     const modal = new SampleModal({} as never, { title: 'Example' });
+    const closeButton = document.createElement('div');
+    closeButton.className = 'modal-close-button';
+    modal.modalEl.append(closeButton);
     modal.open();
     await new Promise(resolve => setTimeout(resolve, 30));
 
     const input = modal.contentEl.querySelector('input');
     expect(input).toBeInstanceOf(HTMLInputElement);
     expect(document.activeElement).toBe(input);
+    expect(closeButton.getAttribute('role')).toBe('button');
+    expect(closeButton.getAttribute('aria-label')).toBe(strings().common.close);
     expect(
       modal.modalEl.classList.contains('advancedNoteMover-focus-scope')
     ).toBe(true);

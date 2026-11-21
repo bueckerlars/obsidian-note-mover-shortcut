@@ -180,8 +180,13 @@ export abstract class BaseModal extends Modal {
    * Create modal title if provided
    */
   protected labelCloseButton(): void {
-    const closeButton = this.modalEl?.querySelector('.modal-close-button');
-    if (closeButton && !closeButton.getAttribute('aria-label')) {
+    const closeButton =
+      this.modalEl?.querySelector('.modal-close-button') ?? null;
+    if (!isHtmlElement(closeButton)) return;
+    if (!closeButton.getAttribute('role')) {
+      closeButton.setAttribute('role', 'button');
+    }
+    if (!closeButton.getAttribute('aria-label')) {
       closeButton.setAttribute('aria-label', strings().common.close);
     }
   }
