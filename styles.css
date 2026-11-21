@@ -610,6 +610,19 @@ body.is-mobile .advancedNoteMover-preview-select input[type='checkbox'] {
   overflow-wrap: anywhere;
 }
 
+.advancedNoteMover-rule-test-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-1);
+  padding: var(--size-4-2) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.advancedNoteMover-rule-test-name,
+.advancedNoteMover-rule-test-reason {
+  color: var(--text-normal);
+}
+
 .advancedNoteMover-confirm-modal .advancedNoteMover-modal-button-container {
   border-top: 1px solid var(--background-modifier-border);
   padding-top: var(--size-4-4);

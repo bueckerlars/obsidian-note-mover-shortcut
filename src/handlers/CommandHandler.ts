@@ -2,6 +2,7 @@ import AdvancedNoteMoverPlugin from 'main';
 import { HistoryModal } from '../modals/HistoryModal';
 import { ConflictSkipCacheModal } from '../modals/ConflictSkipCacheModal';
 import { PreviewModal } from '../modals/PreviewModal';
+import { openWhyNotMoved } from '../modals/RuleTestModal';
 import { handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
 import { isMovableVaultFile } from '../domain/vault/movable-vault-files';
@@ -35,6 +36,17 @@ export class CommandHandler {
       name: strings().commands.moveAllFiles,
       callback: () => {
         void this.plugin.advancedNoteMover.moveAllFilesInVault();
+      },
+    });
+
+    this.plugin.addCommand({
+      id: 'why-not-moved',
+      name: strings().commands.whyNotMoved,
+      callback: () => {
+        openWhyNotMoved(
+          this.plugin.app,
+          this.plugin.pluginData.settings.rulesV2 ?? []
+        );
       },
     });
 

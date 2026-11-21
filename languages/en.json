@@ -19,7 +19,8 @@
     "previewBulk": "Preview bulk movement for all files",
     "reEvaluateVault": "Re-evaluate entire vault with current rules",
     "previewActiveNote": "Preview active note movement",
-    "addCurrentFileToBlacklist": "Add current file to blacklist"
+    "addCurrentFileToBlacklist": "Add current file to blacklist",
+    "whyNotMoved": "Why not moved?"
   },
   "notices": {
     "couldNotFindFile": "Could not find file {fileName}",
@@ -225,6 +226,13 @@
     "bulkMoveMessage": "Move {count}?",
     "bulkMoveUndo": "You can undo this from move history.",
     "bulkMoveConfirm": "Move files",
+    "whyNotMovedTitle": "Why not moved?",
+    "whyNotMovedPick": "Choose a note",
+    "whyNotMovedMatched": "Matched",
+    "whyNotMovedInactive": "Inactive",
+    "whyNotMovedEmpty": "No conditions",
+    "whyNotMovedFailed": "Did not match {condition}",
+    "whyNotMovedNoRules": "No rules to test.",
     "previewTitle": "Move preview",
     "previewReEvaluateTitle": "Re-evaluate vault",
     "previewSubtitle": "{files} analyzed • {moves} will be moved",
