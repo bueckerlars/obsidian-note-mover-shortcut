@@ -477,6 +477,18 @@ body.is-mobile {
   flex: 0 0 auto;
 }
 
+/* The smoke measures the input, so the checkbox itself is the touch target. */
+body.is-mobile .advancedNoteMover-preview-select input[type='checkbox'] {
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--interactive-accent);
+}
+
 .advancedNoteMover-preview-empty-actions {
   display: flex;
   margin-top: var(--size-4-2);
