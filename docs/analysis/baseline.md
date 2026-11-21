@@ -21,4 +21,6 @@ No lint findings at this commit.
 
 ## Smoke
 
-Not run yet.
+Obsidian binary found at `/Applications/Obsidian.app/Contents/MacOS/Obsidian`.
+
+`node scripts/ui-smoke.mjs` on 2026-11-21 exited 0 and saved 30 PNGs under `docs/analysis/screenshots/phase-0/`. That is 15 screens at desktop 1400x1100 and mobile 390x844. This run does not check the DOM assertions. Those land with the assertion functions.
