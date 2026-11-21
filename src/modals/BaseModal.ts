@@ -1,4 +1,5 @@
 import { Modal, App, setIcon, setTooltip } from 'obsidian';
+import { associateSettingLabels } from '../domain/a11y/associateSettingLabels';
 import { strings } from '../i18n/locale';
 import { MobileUtils } from '../utils/MobileUtils';
 import { viewFrame, viewTimeout } from '../utils/viewTimers';
@@ -51,6 +52,7 @@ export abstract class BaseModal extends Modal {
     this.createTitle();
     this.labelCloseButton();
     this.createContent();
+    associateSettingLabels(this.contentEl);
     this.modalEl?.addEventListener('keydown', this.onEscapeKey, true);
     this.setupAutoFocus();
     this.resetScrollPosition();

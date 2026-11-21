@@ -7,6 +7,7 @@ import { fill, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import AdvancedNoteMoverPlugin from 'main';
+import { associateSettingLabels } from '../domain/a11y/associateSettingLabels';
 import {
   groupHistoryByDay,
   type HistoryAction,
@@ -118,6 +119,7 @@ export class HistoryModal extends BaseModal {
   private refreshContent(): void {
     this.contentEl.empty();
     this.createContent();
+    associateSettingLabels(this.contentEl);
   }
 
   private renderRow(
