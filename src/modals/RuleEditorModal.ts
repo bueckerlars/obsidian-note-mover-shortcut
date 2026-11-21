@@ -44,7 +44,7 @@ export class RuleEditorModal extends BaseModal {
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
   private readonly isMobileLayout: boolean;
-  private readonly triggerSuggests = new SuggestRegistry();
+  private rowSuggests: SuggestRegistry[] = [];
   private destinationSuggest: DestroyableSuggest | null = null;
   private mobileView: RuleEditorMobileView | null = null;
 
@@ -236,30 +236,53 @@ export class RuleEditorModal extends BaseModal {
     if (!this.triggersContainer) return;
 
     this.triggersContainer.empty();
-    this.triggerSuggests.destroy();
+    this.destroyRowSuggests();
 
-    // Clean up existing drag drop manager
     if (this.dragDropManager) {
       this.dragDropManager.destroy();
       this.dragDropManager = null;
     }
 
-    this.workingRule.triggers.forEach((trigger, index) => {
-      renderConditionRow(this.triggersContainer!, {
-        app: this.app,
-        trigger,
-        suggests: this.triggerSuggests,
-        vaultIndexCache: this.ruleOptions.vaultIndexCache,
-        onStructureChange: () => this.renderTriggers(),
-        onRemove: () => {
-          removeTrigger(this.workingRule.triggers, index);
-          this.renderTriggers();
-        },
-      });
+    this.workingRule.triggers.forEach((_trigger, index) => {
+      this.renderTriggerAt(index);
     });
 
-    // Setup drag & drop for triggers
     this.setupTriggersDragDrop();
+  }
+
+  /** Rebuilds one condition. Typing in its value field does not come through here. */
+  private renderTriggerAt(index: number): void {
+    const container = this.triggersContainer;
+    const trigger = this.workingRule.triggers[index];
+    if (!container || !trigger) {
+      return;
+    }
+    this.rowSuggests[index]?.destroy();
+    const suggests = new SuggestRegistry();
+    this.rowSuggests[index] = suggests;
+    renderConditionRow(container, {
+      app: this.app,
+      trigger,
+      suggests,
+      vaultIndexCache: this.ruleOptions.vaultIndexCache,
+      onStructureChange: () => this.renderTriggerAt(index),
+      onRemove: () => {
+        removeTrigger(this.workingRule.triggers, index);
+        this.renderTriggers();
+      },
+    });
+    const row = container.lastElementChild;
+    const current = container.children[index];
+    if (row && current && row !== current) {
+      current.replaceWith(row);
+    }
+  }
+
+  private destroyRowSuggests(): void {
+    for (const registry of this.rowSuggests) {
+      registry.destroy();
+    }
+    this.rowSuggests = [];
   }
 
   private setupTriggersDragDrop(): void {
@@ -408,7 +431,7 @@ export class RuleEditorModal extends BaseModal {
   }
 
   onClose(): void {
-    this.triggerSuggests.destroy();
+    this.destroyRowSuggests();
     this.destinationSuggest?.destroy();
     this.destinationSuggest = null;
     this.mobileView?.destroy();
