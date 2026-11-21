@@ -10,7 +10,7 @@ import {
   ensureFolderExists,
   folderExists,
 } from '../utils/PathUtils';
-import { handleError, createError } from '../utils/Error';
+import { createError } from '../utils/Error';
 import {
   formatMoveSkippedDetail,
   isNoteMoveConflictSkipOutcome,
@@ -219,6 +219,7 @@ export class PreviewModal extends BaseModal {
     let errorCount = 0;
     let missingFolderSkippedCount = 0;
     let conflictSkippedCount = 0;
+    const moveErrors: string[] = [];
     const abortCtl = new AbortController();
 
     if (this.actionFooterEl) {
@@ -298,8 +299,10 @@ export class PreviewModal extends BaseModal {
             conflictSkippedCount++;
           }
         } catch (error) {
-          handleError(error, `Error moving file ${entry.fileName}`, false);
           errorCount++;
+          const message =
+            error instanceof Error ? error.message : String(error);
+          moveErrors.push(`${entry.fileName}: ${message}`);
         }
         if ((i + 1) % 50 === 0 && i + 1 < successfulEntries.length) {
           await new Promise<void>(resolve => {
@@ -333,7 +336,13 @@ export class PreviewModal extends BaseModal {
       );
     } else {
       NoticeManager.warning(
-        `Moved ${pluralize(movedCount, 'file')} with ${pluralize(errorCount, 'error')}.${skippedDetail} Check console for details.`
+        `Moved ${pluralize(movedCount, 'file')} with ${pluralize(errorCount, 'error')}.${skippedDetail}`,
+        {
+          detailText: 'Show details',
+          onDetail: () => {
+            NoticeManager.error(moveErrors.join('; '));
+          },
+        }
       );
     }
   }
