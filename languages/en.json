@@ -351,6 +351,13 @@
     "any": "At least one condition must match.",
     "none": "No condition may match."
   },
+  "ruleEditorExampleTemplates": {
+    "tag": "Projects/{{tag.project}}",
+    "property": "Tasks/{{property.status}}",
+    "dateComponent": "Archive/{{property.created.year}}",
+    "formattedDate": "Journal/{{property.created.YYYY-MM-DD}}",
+    "fileCreated": "Inbox/{{file.created.DD-MM-YYYY}}"
+  },
   "ruleEditorExamples": {
     "tag": "Value of a tag",
     "property": "Value of a property",
