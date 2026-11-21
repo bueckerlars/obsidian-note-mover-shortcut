@@ -45,14 +45,7 @@ export class UpdateManager {
    */
   async showUpdateModal(forceShow = false): Promise<void> {
     const currentVersion = this.plugin.manifest.version;
-    let lastSeenVersion = this.getLastSeenVersion();
-
-    // For manual invocation (forceShow), use an older version as base,
-    // to ensure relevant information is displayed
-    if (forceShow && lastSeenVersion === currentVersion) {
-      // Use an older version as base for display
-      lastSeenVersion = '0.4.7';
-    }
+    const lastSeenVersion = this.getLastSeenVersion();
 
     const changelogEntries = await this.getRelevantChangelogEntries(
       lastSeenVersion,
