@@ -362,7 +362,7 @@ export class RuleEditorMobileView {
     });
     const actions = header.createDiv({ cls: `${CLS}-condition-actions` });
 
-    new ExtraButtonComponent(actions)
+    iconButton(new ExtraButtonComponent(actions))
       .setIcon('arrow-up')
       .setTooltip(strings().modals.ruleEditorMoveUp)
       .setDisabled(index === 0)
@@ -375,7 +375,7 @@ export class RuleEditorMobileView {
         this.renderConditions();
         this.noteDraft();
       });
-    new ExtraButtonComponent(actions)
+    iconButton(new ExtraButtonComponent(actions))
       .setIcon('arrow-down')
       .setTooltip(strings().modals.ruleEditorMoveDown)
       .setDisabled(index === triggers.length - 1)
@@ -388,7 +388,7 @@ export class RuleEditorMobileView {
         this.renderConditions();
         this.noteDraft();
       });
-    new ExtraButtonComponent(actions)
+    iconButton(new ExtraButtonComponent(actions))
       .setIcon('trash-2')
       .setTooltip(strings().modals.ruleEditorDeleteCondition)
       .onClick(() => {
@@ -565,4 +565,9 @@ export class RuleEditorMobileView {
     input.setAttr('autocorrect', 'off');
     input.spellcheck = false;
   }
+}
+
+function iconButton(button: ExtraButtonComponent): ExtraButtonComponent {
+  button.extraSettingsEl.setAttribute('role', 'button');
+  return button;
 }
