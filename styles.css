@@ -40,9 +40,20 @@
   line-height: 1;
 }
 
+/* One size per state. Mobile and short portrait override the variables. */
+body {
+  --anm-modal-title-size: 1.6em;
+  --anm-modal-subtitle-size: 1.1em;
+}
+
+body.is-mobile {
+  --anm-modal-title-size: 1.3em;
+  --anm-modal-subtitle-size: 0.95em;
+}
+
 .advancedNoteMover-modal-title {
   margin: 0;
-  font-size: 1.6em;
+  font-size: var(--anm-modal-title-size);
   font-weight: bold;
   color: var(--text-normal);
 }
@@ -50,7 +61,7 @@
 .advancedNoteMover-modal-subtitle {
   margin: 0 0 24px 0;
   color: var(--text-muted);
-  font-size: 1.1em;
+  font-size: var(--anm-modal-subtitle-size);
 }
 
 /* Common Button Container Styles */
@@ -1248,17 +1259,8 @@ body.is-mobile .advancedNoteMover-modal-title-container {
   margin-bottom: 12px;
 }
 
-body.is-mobile .advancedNoteMover-modal-title {
-  font-size: 1.4em;
-}
-
 body.is-mobile .advancedNoteMover-modal-title-icon {
   font-size: 1.6em;
-}
-
-body.is-mobile .advancedNoteMover-modal-subtitle {
-  font-size: 1em;
-  margin-bottom: 16px;
 }
 
 /* Button Container - Stack vertically on mobile */
@@ -1590,17 +1592,8 @@ body.is-mobile .advancedNoteMover-confirm-modal
 
 
 /* Phone layout. Follows body.is-phone, not a 480px window. */
-/* Modal Title - Smaller font for very small screens */
-body.is-phone .advancedNoteMover-modal-title {
-  font-size: 1.2em;
-}
-
 body.is-phone .advancedNoteMover-modal-title-icon {
   font-size: 1.4em;
-}
-
-body.is-phone .advancedNoteMover-modal-subtitle {
-  font-size: 0.9em;
 }
 
 /* History entries - More compact padding */
@@ -1656,19 +1649,6 @@ body.is-phone .advancedNoteMover-modal-section-header h3 {
 
 body.is-phone .advancedNoteMover-rule-conditions-title {
   font-size: 1em;
-}
-
-/* Changelog - Smaller font */
-body.is-phone .advancedNoteMover-changelog-version-title {
-  font-size: 1.1em;
-}
-
-body.is-phone .advancedNoteMover-changelog-section-title {
-  font-size: 0.95em;
-}
-
-body.is-phone .advancedNoteMover-changelog-list {
-  font-size: 0.9em;
 }
 
 /* Confirm modal message - Smaller font */
@@ -1944,22 +1924,15 @@ body.is-mobile .advancedNoteMover-changelog-version-mobile {
 
 body.is-mobile .advancedNoteMover-changelog-version-title {
   font-size: 1.1em;
-  margin-bottom: 12px;
 }
 
 body.is-mobile .advancedNoteMover-changelog-section {
   margin-bottom: 12px;
 }
 
-body.is-mobile .advancedNoteMover-changelog-section-title {
-  font-size: 1em;
-  margin-bottom: 8px;
-}
-
 body.is-mobile .advancedNoteMover-changelog-list {
   font-size: 0.95em;
   line-height: 1.6;
-  padding-left: 20px;
 }
 
 body.is-mobile .advancedNoteMover-update-modal-links-mobile {
@@ -2030,12 +2003,11 @@ body.is-mobile .advancedNoteMover-confirm-modal .setting-item button {
 
 /* Mobile Modal General Improvements */
 body.is-mobile .advancedNoteMover-modal-title {
-  font-size: 1.3em;
+  font-size: var(--anm-modal-title-size);
   margin-bottom: 12px;
 }
 
 body.is-mobile .advancedNoteMover-modal-subtitle {
-  font-size: 0.95em;
   margin-bottom: 16px;
   line-height: 1.5;
 }
@@ -2047,6 +2019,11 @@ body.is-mobile .advancedNoteMover-modal-section-header h3 {
 
 /* Viewport height in portrait. Not a device class. */
 @media (max-height: 800px) and (orientation: portrait) {
+  body.is-mobile {
+    --anm-modal-title-size: 1.2em;
+    --anm-modal-subtitle-size: 0.9em;
+  }
+
   body.is-mobile
     .modal-container.advancedNoteMover-modal-size-mobile
     > .modal-content {
@@ -2054,12 +2031,10 @@ body.is-mobile .advancedNoteMover-modal-section-header h3 {
   }
 
   body.is-mobile .advancedNoteMover-modal-title {
-    font-size: 1.2em;
     margin-bottom: 8px;
   }
 
   body.is-mobile .advancedNoteMover-modal-subtitle {
-    font-size: 0.9em;
     margin-bottom: 12px;
   }
 
