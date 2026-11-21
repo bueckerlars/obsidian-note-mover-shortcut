@@ -36,6 +36,7 @@ export class HistoryModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
+      title: strings().modals.historyTitle,
       cssClass: 'advancedNoteMover-history-modal',
       size: 'large',
       ...options,

@@ -1,5 +1,5 @@
 import { Setting, App, MarkdownRenderer, Component, setIcon } from 'obsidian';
-import { strings } from '../i18n/locale';
+import { fill, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import type { ChangelogEntry } from '../generated/changelog';
@@ -17,7 +17,7 @@ export class UpdateModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
-      title: `Advanced Note Mover updated to version ${currentVersion}!`,
+      title: fill(strings().modals.updateTitle, { version: currentVersion }),
       titleIcon: 'party-popper',
       cssClass: 'advancedNoteMover-update-modal',
       size: 'medium',

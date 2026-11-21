@@ -11,6 +11,7 @@
 - **Languages**: Settings, modal, command, and notice copy is read from `languages/en.json`. The active Obsidian language selects `languages/<code>.json` and falls back to English when that file is missing.
 - **Sentence case**: Settings, modals, commands, and notices use sentence case. Headings and buttons no longer start with a plus sign or end with a colon.
 - **Icons**: History, preview, and update use Lucide icons instead of emoji.
+- **Modal titles**: Dialog titles use Obsidian's title bar. History is titled "Move history".
 - **Unnamed rule**: A rule without a name is labeled "Unnamed rule".
 
 ### Fixes
