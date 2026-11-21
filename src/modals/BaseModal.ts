@@ -1,5 +1,6 @@
 import { Modal, App, setIcon, setTooltip } from 'obsidian';
 import { MobileUtils } from '../utils/MobileUtils';
+import { viewFrame, viewTimeout } from '../utils/viewTimers';
 
 export type ModalSize = 'small' | 'medium' | 'large';
 
@@ -63,10 +64,10 @@ export abstract class BaseModal extends Modal {
     resetScroll();
 
     // Reset after animation frame
-    window.requestAnimationFrame(() => {
+    viewFrame(() => {
       resetScroll();
       // Also reset after a short delay to catch any late rendering
-      window.setTimeout(() => {
+      viewTimeout(() => {
         resetScroll();
       }, 50);
     });
@@ -182,7 +183,7 @@ export abstract class BaseModal extends Modal {
   protected setupAutoFocus(): void {
     if (!this.options.autoFocus || !this.options.focusSelector) return;
 
-    window.setTimeout(() => {
+    viewTimeout(() => {
       const focusElement = this.contentEl.querySelector(
         this.options.focusSelector!
       ) as HTMLElement;

@@ -3,6 +3,7 @@ import { Setting } from 'obsidian';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { MobileUtils } from '../../utils/MobileUtils';
 import { applyPeriodicInterval } from '../intervalInput';
+import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
 
 export class TriggerSettingsSection {
   private intervalCommit: number | null = null;
@@ -15,7 +16,7 @@ export class TriggerSettingsSection {
 
   cleanup(): void {
     if (this.intervalCommit !== null) {
-      window.clearTimeout(this.intervalCommit);
+      viewClearTimeout(this.intervalCommit);
       this.intervalCommit = null;
     }
   }
@@ -109,9 +110,9 @@ export class TriggerSettingsSection {
             )
             .onChange(value => {
               if (this.intervalCommit !== null) {
-                window.clearTimeout(this.intervalCommit);
+                viewClearTimeout(this.intervalCommit);
               }
-              this.intervalCommit = window.setTimeout(() => {
+              this.intervalCommit = viewTimeout(() => {
                 this.intervalCommit = null;
                 const current =
                   this.plugin.pluginData.settings.triggers

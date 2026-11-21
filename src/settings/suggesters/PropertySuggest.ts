@@ -3,6 +3,7 @@ import { MetadataExtractor } from '../../core/MetadataExtractor';
 import { inferPropertyTypeFromSamples } from '../../utils/OperatorMapping';
 import { stringifyUnknown } from '../../utils/stringify-unknown';
 import { SuggestLifecycle } from './suggestLifecycle';
+import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
 
 export type PropertyType = 'text' | 'number' | 'checkbox' | 'date' | 'list';
 
@@ -33,9 +34,9 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
     // Create debounced handler for cleanup
     this.refreshDataHandler = () => {
       if (this.refreshTimerId !== null) {
-        window.clearTimeout(this.refreshTimerId);
+        viewClearTimeout(this.refreshTimerId);
       }
-      this.refreshTimerId = window.setTimeout(() => {
+      this.refreshTimerId = viewTimeout(() => {
         this.refreshTimerId = null;
         this.refreshData();
       }, REFRESH_DEBOUNCE_MS);
@@ -192,7 +193,7 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
    */
   public destroy(): void {
     if (this.refreshTimerId !== null) {
-      window.clearTimeout(this.refreshTimerId);
+      viewClearTimeout(this.refreshTimerId);
       this.refreshTimerId = null;
     }
     this.lifecycle.destroy();
