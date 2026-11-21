@@ -18,6 +18,7 @@ import type { ImportExportSettingsSection } from './sections/ImportExportSetting
 import type { RulesSettingsSection } from './sections/RulesSettingsSection';
 import { parsePeriodicIntervalMinutes } from './intervalInput';
 import { setDebugEnabled } from '../utils/debug';
+import { cloneRule } from './cloneRule';
 
 export interface SettingDefinitionsHost {
   plugin: AdvancedNoteMoverPlugin;
@@ -581,9 +582,7 @@ function bindRuleRow(
         if (currentIndex < 0) {
           return;
         }
-        const clonedRule = structuredClone(rule);
-        const baseName = rule.name?.trim() || 'Unnamed Rule';
-        clonedRule.name = `${baseName} (copy)`;
+        const clonedRule = cloneRule(rule, plugin.pluginData.settings.rulesV2);
         plugin.pluginData.settings.rulesV2.splice(
           currentIndex + 1,
           0,

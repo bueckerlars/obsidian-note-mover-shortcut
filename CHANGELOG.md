@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- **Clone rule**: A duplicated rule is named with " copy" and gets its own id when the original already has one.
 - **Release notes**: The current version comes from the manifest, and Show release notes opens them again.
 - **Performance trace**: Export downloads a JSON file instead of writing it into the vault.
 - **Notices**: Titles no longer repeat the plugin name, and the ribbon tooltip names the move action.

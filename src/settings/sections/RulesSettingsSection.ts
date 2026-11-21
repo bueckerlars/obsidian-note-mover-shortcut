@@ -9,6 +9,7 @@ import { ConfirmModal } from '../../modals/ConfirmModal';
 import { toMarkdownInlineCode } from '../../utils/markdown-confirm';
 import { handleError } from '../../utils/Error';
 import { NoticeManager } from '../../utils/NoticeManager';
+import { cloneRule } from '../cloneRule';
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -226,9 +227,10 @@ export class RulesSettingsSection {
             if (currentIndex < 0) {
               return;
             }
-            const clonedRule = JSON.parse(JSON.stringify(rule)) as RuleV2;
-            const baseName = rule.name?.trim() || 'Unnamed Rule';
-            clonedRule.name = `${baseName} (copy)`;
+            const clonedRule = cloneRule(
+              rule,
+              this.plugin.pluginData.settings.rulesV2
+            );
             this.plugin.pluginData.settings.rulesV2.splice(
               currentIndex + 1,
               0,
