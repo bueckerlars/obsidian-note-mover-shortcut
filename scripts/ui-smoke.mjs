@@ -131,17 +131,17 @@ function prepareVault(tmp) {
     `${JSON.stringify(data, null, 2)}\n`
   );
   fs.mkdirSync(userData, { recursive: true });
+  const appConfig = {
+    vaults: {
+      smoke: { path: vault, ts: Date.now(), open: true },
+    },
+  };
+  if (process.env.SMOKE_LOCALE) {
+    appConfig.language = process.env.SMOKE_LOCALE;
+  }
   fs.writeFileSync(
     path.join(userData, 'obsidian.json'),
-    `${JSON.stringify(
-      {
-        vaults: {
-          smoke: { path: vault, ts: Date.now(), open: true },
-        },
-      },
-      null,
-      2
-    )}\n`
+    `${JSON.stringify(appConfig, null, 2)}\n`
   );
   return { tmp, vault, userData };
 }
@@ -467,6 +467,12 @@ async function connect(webSocketUrl) {
 
 async function anmSmoke(action, arg) {
   const sleepMs = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const labels = globalThis.__anmSmokeLabels || {
+    rules: 'Rules',
+    addRule: 'Add rule',
+    history: 'History',
+    clearHistory: 'Clear history',
+  };
   const app = () => globalThis.app;
   const labelOf = el => (el.textContent || '').replace(/\s+/g, ' ').trim();
 
@@ -607,13 +613,14 @@ async function anmSmoke(action, arg) {
     await closeModals();
     await openPluginSettings();
     await waitFor(
-      () => findSettingName('Rules'),
+      () => findSettingName(labels.rules),
       8000,
       'Rules section not found'
     );
-    const button = [...document.querySelectorAll('button')].find(el =>
-      /add rule/i.test(el.getAttribute('aria-label') || labelOf(el))
-    );
+    const button = [...document.querySelectorAll('button')].find(el => {
+      const label = el.getAttribute('aria-label') || labelOf(el);
+      return label === labels.addRule || /add rule/i.test(label);
+    });
     if (!button) {
       throw new Error('Add rule button not found');
     }
@@ -690,7 +697,7 @@ async function anmSmoke(action, arg) {
     await closeModals();
     await openPluginSettings();
     const heading = await waitFor(
-      () => findSettingName('History'),
+      () => findSettingName(labels.history),
       8000,
       'History section not found'
     );
@@ -698,7 +705,7 @@ async function anmSmoke(action, arg) {
     const button = await waitFor(
       () =>
         [...document.querySelectorAll('button')].find(
-          el => labelOf(el) === 'Clear history'
+          el => labelOf(el) === labels.clearHistory
         ),
       8000,
       'Clear history button not found'
@@ -733,6 +740,38 @@ async function anmSmoke(action, arg) {
       app().setting.close();
     }
     return 'closed';
+  }
+
+  if (action === 'visible-text') {
+    const modals = [...document.querySelectorAll('.modal')].reverse();
+    const pluginModal = modals.find(el =>
+      el.querySelector('[class*="advancedNoteMover"]')
+    );
+    const settings = document.querySelector('.advancedNoteMover-settings-root');
+    const roots = pluginModal ? [pluginModal] : settings ? [settings] : [];
+    const texts = [];
+    const seen = new Set();
+    const add = value => {
+      const text = (value || '').replace(/\s+/g, ' ').trim();
+      if (!text || seen.has(text)) {
+        return;
+      }
+      seen.add(text);
+      texts.push(text);
+    };
+    for (const root of roots) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+      while (node) {
+        add(node.textContent);
+        node = walker.nextNode();
+      }
+      for (const el of root.querySelectorAll('[aria-label], [placeholder]')) {
+        add(el.getAttribute('aria-label'));
+        add(el.getAttribute('placeholder'));
+      }
+    }
+    return texts;
   }
 
   throw new Error(`Unknown smoke action: ${action}`);
@@ -1244,6 +1283,112 @@ async function reloadMobile(cdp, port) {
   throw new Error(lastError);
 }
 
+function smokeLocale() {
+  const code = (process.env.SMOKE_LOCALE || 'en').trim().toLowerCase();
+  return code.split(/[-_]/)[0] || 'en';
+}
+
+function loadCatalog(code) {
+  const file = path.join(ROOT, 'languages', `${code}.json`);
+  if (!fs.existsSync(file)) {
+    return null;
+  }
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function smokeLabels() {
+  const catalog = loadCatalog(smokeLocale()) ?? loadCatalog('en');
+  return {
+    rules: catalog.settings.headingsRules,
+    addRule: catalog.settings.rulesAddButton,
+    history: catalog.settings.headingsHistory,
+    clearHistory: catalog.settings.historyClearButton,
+  };
+}
+
+function screensForLocale() {
+  const catalog = loadCatalog(smokeLocale());
+  const settings = catalog?.settings ?? {};
+  const headings = {
+    'settings-triggers': settings.headingsTriggers,
+    'settings-filter': settings.headingsFilter,
+    'settings-rules': settings.headingsRules,
+    'settings-attachments': settings.headingsAttachments,
+    'settings-conflict-resolution': settings.headingsConflict,
+    'settings-history': settings.headingsHistory,
+    'settings-import-export': settings.headingsImportExport,
+    'settings-performance': settings.headingsPerformance,
+    'settings-updates': settings.headingsUpdates,
+  };
+  return SCREENS.map(screen => ({
+    ...screen,
+    heading: headings[screen.id] || screen.heading,
+  }));
+}
+
+function catalogLeaves(catalog) {
+  const leaves = new Map();
+  const walk = (value, prefix) => {
+    if (typeof value === 'string') {
+      leaves.set(prefix, value.replace(/\s+/g, ' ').trim());
+      return;
+    }
+    if (value && typeof value === 'object') {
+      for (const [key, child] of Object.entries(value)) {
+        walk(child, prefix ? `${prefix}.${key}` : key);
+      }
+    }
+  };
+  walk(catalog, '');
+  return leaves;
+}
+
+export function catalogLeftovers(visibleTexts, englishCatalog, germanCatalog) {
+  const english = catalogLeaves(englishCatalog);
+  const german = catalogLeaves(germanCatalog);
+  const byEnglish = new Map();
+  for (const [key, value] of english) {
+    const keys = byEnglish.get(value) ?? [];
+    keys.push(key);
+    byEnglish.set(value, keys);
+  }
+  const misses = [];
+  const shared = [];
+  const seen = new Set();
+  for (const raw of visibleTexts) {
+    const text = String(raw).replace(/\s+/g, ' ').trim();
+    if (!text || seen.has(text)) {
+      continue;
+    }
+    seen.add(text);
+    const keys = byEnglish.get(text);
+    if (!keys) {
+      continue;
+    }
+    const untranslated = keys.filter(key => german.get(key) !== text);
+    if (untranslated.length > 0) {
+      misses.push({ text, keys: untranslated });
+    } else {
+      shared.push({ text, keys });
+    }
+  }
+  return { misses, shared };
+}
+
+function recordLeftover(store, screen, compared) {
+  for (const kind of ['misses', 'shared']) {
+    for (const hit of compared[kind]) {
+      const existing = store[kind].get(hit.text) ?? {
+        text: hit.text,
+        keys: hit.keys,
+        screens: [],
+      };
+      existing.screens.push(screen);
+      store[kind].set(hit.text, existing);
+    }
+  }
+}
+
 async function main() {
   const outDir = resolveSmokeOutputDir(process.argv.slice(2), process.env);
   if (!outDir) {
@@ -1275,6 +1420,7 @@ async function main() {
 
   const failures = [];
   const rows = [];
+  const leftovers = { misses: new Map(), shared: new Map() };
   let saved = 0;
   let booted = false;
   let crashed;
@@ -1293,14 +1439,19 @@ async function main() {
         const version = await evaluate(cdp, 'boot', null, 120000);
         booted = true;
         console.log(`Plugin ${version} loaded from ${run.vault}`);
+        const screens = screensForLocale();
         for (const viewport of VIEWPORTS) {
           if (viewport.mobile) {
             cdp = await reloadMobile(cdp, port);
             await evaluate(cdp, 'boot', null, 120000);
           }
+          await evaluateExpression(
+            cdp,
+            `globalThis.__anmSmokeLabels = ${JSON.stringify(smokeLabels())}`
+          );
           await setViewport(cdp, viewport);
           await sleep(500);
-          for (const screen of SCREENS) {
+          for (const screen of screens) {
             const name = `${viewport.id}/${screen.id}`;
             try {
               cdp.takeConsoleErrors();
@@ -1319,6 +1470,15 @@ async function main() {
                 })})`
               );
               const axe = await runAxe(cdp);
+              if (smokeLocale() !== 'en') {
+                const visible = await evaluate(cdp, 'visible-text');
+                const compared = catalogLeftovers(
+                  Array.isArray(visible) ? visible : [],
+                  loadCatalog('en'),
+                  loadCatalog(smokeLocale())
+                );
+                recordLeftover(leftovers, name, compared);
+              }
               await saveShot(cdp, viewport, screen, outDir);
               if (
                 !tabWalkResult &&
@@ -1388,6 +1548,20 @@ async function main() {
   }
   console.log(`Saved ${saved} PNG files to ${outDir}/`);
   console.log(`Assertion failures: ${assertionFailureCount}`);
+  if (smokeLocale() !== 'en') {
+    const report = {
+      locale: smokeLocale(),
+      untranslated: [...leftovers.misses.values()],
+      sharedWithGerman: [...leftovers.shared.values()],
+    };
+    fs.writeFileSync(
+      path.join(outDir, 'english-leftovers.json'),
+      `${JSON.stringify(report, null, 2)}\n`
+    );
+    console.log(
+      `English catalog hits: ${report.untranslated.length} untranslated, ${report.sharedWithGerman.length} identical in German`
+    );
+  }
   for (const row of rows) {
     const axe = row.axe;
     const count =
