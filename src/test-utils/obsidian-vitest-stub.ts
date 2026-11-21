@@ -371,6 +371,51 @@ export class Notice {
   hide(): void {}
 }
 
+export class Menu {
+  private items: HTMLElement[] = [];
+
+  addItem(cb: (item: MenuItemStub) => void): this {
+    const el = document.createElement('div');
+    el.className = 'menu-item';
+    const api: MenuItemStub = {
+      setTitle(text: string) {
+        el.dataset.title = text;
+        el.append(document.createTextNode(text));
+        return api;
+      },
+      setIcon(icon: string) {
+        el.dataset.icon = icon;
+        return api;
+      },
+      onClick(fn: () => void) {
+        el.addEventListener('click', () => {
+          fn();
+        });
+        return api;
+      },
+    };
+    cb(api);
+    this.items.push(el);
+    return this;
+  }
+
+  showAtPosition(): this {
+    const menu = document.createElement('div');
+    menu.className = 'menu';
+    for (const item of this.items) {
+      menu.append(item);
+    }
+    document.body.append(menu);
+    return this;
+  }
+}
+
+interface MenuItemStub {
+  setTitle: (text: string) => MenuItemStub;
+  setIcon: (icon: string) => MenuItemStub;
+  onClick: (fn: () => void) => MenuItemStub;
+}
+
 export const Platform = {
   isMobile: false,
   isDesktop: true,
