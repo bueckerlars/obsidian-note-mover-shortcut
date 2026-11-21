@@ -210,6 +210,7 @@ export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
     id: 'performance.cache',
     sectionId: 'performance',
     nameKey: 'settings.performanceCacheName',
+    descriptionKey: 'settings.performanceCacheDesc',
     control: 'toggle',
   },
   {
