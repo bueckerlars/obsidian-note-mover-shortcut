@@ -17,6 +17,7 @@ import type { FilterSettingsSection } from './sections/FilterSettingsSection';
 import type { ImportExportSettingsSection } from './sections/ImportExportSettingsSection';
 import type { RulesSettingsSection } from './sections/RulesSettingsSection';
 import { parsePeriodicIntervalMinutes } from './intervalInput';
+import { setDebugEnabled } from '../utils/debug';
 
 export interface SettingDefinitionsHost {
   plugin: AdvancedNoteMoverPlugin;
@@ -678,6 +679,9 @@ async function applySettingSideEffects(
       break;
     case 'createMissingDestinationFolders':
       plugin.advancedNoteMover.updateRuleManager();
+      break;
+    case 'enablePerformanceDebug':
+      setDebugEnabled(value === true);
       break;
     case 'enableRuleEvaluationCache':
       if (value === false) {

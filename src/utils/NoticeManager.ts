@@ -1,6 +1,7 @@
 import { Notice } from 'obsidian';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
 import { type NotificationType } from '../types/Common';
+import { debugError } from './debug';
 
 export interface NoticeOptions {
   duration?: number;
@@ -42,7 +43,7 @@ export class NoticeManager {
           options.onUndo!();
           notice.hide();
         } catch (error) {
-          console.error('Error in undo button click handler:', error);
+          debugError('Error in undo button click handler:', error);
           this.show(
             'error',
             `Error undoing action: ${error instanceof Error ? error.message : String(error)}`

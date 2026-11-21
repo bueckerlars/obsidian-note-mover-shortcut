@@ -5,6 +5,7 @@ import {
   Operator,
   TextOperator,
 } from '../types/RuleV2';
+import { debugWarn, debugError, debugDebug } from '../utils/debug';
 
 /** Persisted Rule V1 row (migration input only; never part of the public settings model after load). */
 export interface LegacyRuleV1 {
@@ -51,7 +52,7 @@ export class RuleMigrationService {
     index: number
   ): RuleV2 | null {
     if (!ruleV1 || !ruleV1.criteria || !ruleV1.path) {
-      console.warn(
+      debugWarn(
         `[RuleMigration] Rule ${index + 1}: Skipping invalid rule (missing criteria or path)`
       );
       return null;
@@ -60,7 +61,7 @@ export class RuleMigrationService {
     // Parse V1 criteria string: "type: value"
     const match = ruleV1.criteria.match(/^([a-zA-Z_]+):\s*(.*)$/);
     if (!match) {
-      console.warn(
+      debugWarn(
         `[RuleMigration] Rule ${index + 1}: Invalid criteria format: "${ruleV1.criteria}"`
       );
       // Invalid format - create disabled rule with original criteria as name
@@ -86,7 +87,7 @@ export class RuleMigrationService {
     const triggerMapping = this.mapV1ToV2Trigger(type, value);
 
     if (!triggerMapping) {
-      console.warn(
+      debugWarn(
         `[RuleMigration] Rule ${index + 1}: Unsupported criteria type: "${type}"`
       );
       // Unsupported type - create disabled rule with hint
@@ -118,7 +119,7 @@ export class RuleMigrationService {
         triggerMapping.propertyType
       );
       if (!isValidOperator) {
-        console.error(
+        debugError(
           `[RuleMigration] Rule ${index + 1}: Invalid operator "${triggerMapping.operator}" for propertyType "${triggerMapping.propertyType}"`
         );
       }
@@ -129,7 +130,7 @@ export class RuleMigrationService {
         triggerMapping.criteriaType
       );
       if (!isValidOperator) {
-        console.error(
+        debugError(
           `[RuleMigration] Rule ${index + 1}: Invalid operator "${triggerMapping.operator}" for criteriaType "${triggerMapping.criteriaType}"`
         );
       }
@@ -151,7 +152,7 @@ export class RuleMigrationService {
       operatorRequiresValue(triggerMapping.operator) &&
       (!triggerMapping.value || triggerMapping.value.trim() === '')
     ) {
-      console.warn(
+      debugWarn(
         `[RuleMigration] Rule ${index + 1}: Operator "${triggerMapping.operator}" requires a value but value is empty. Rule will be disabled.`
       );
       // Create disabled rule with empty value warning
@@ -173,7 +174,7 @@ export class RuleMigrationService {
       active: true,
     };
 
-    console.debug(
+    debugDebug(
       `[RuleMigration] Rule ${index + 1}: Successfully migrated "${ruleV1.criteria}" -> "${migratedRule.name}"`
     );
 
@@ -427,7 +428,7 @@ export class RuleMigrationService {
 
         // Check if this is a properties trigger without propertyName
         if (trigger.criteriaType === 'properties' && !trigger.propertyName) {
-          console.warn(
+          debugWarn(
             `[RuleMigration] Repairing RuleV2[${ruleIndex}].triggers[${triggerIndex}]: Missing propertyName for properties criteria`
           );
 
@@ -467,7 +468,7 @@ export class RuleMigrationService {
             repaired = true;
           } else {
             // No value to extract from, disable the rule
-            console.error(
+            debugError(
               `[RuleMigration] RuleV2[${ruleIndex}].triggers[${triggerIndex}]: Cannot repair properties trigger without value. Disabling rule.`
             );
             rule.active = false;
@@ -480,7 +481,7 @@ export class RuleMigrationService {
           trigger.criteriaType === 'properties' &&
           trigger.propertyName === ''
         ) {
-          console.warn(
+          debugWarn(
             `[RuleMigration] Repairing RuleV2[${ruleIndex}].triggers[${triggerIndex}]: Empty propertyName for properties criteria`
           );
 
@@ -516,7 +517,7 @@ export class RuleMigrationService {
             trigger.propertyType = trigger.propertyType || 'text';
             repaired = true;
           } else {
-            console.error(
+            debugError(
               `[RuleMigration] RuleV2[${ruleIndex}].triggers[${triggerIndex}]: Cannot repair properties trigger with empty propertyName and value. Disabling rule.`
             );
             rule.active = false;

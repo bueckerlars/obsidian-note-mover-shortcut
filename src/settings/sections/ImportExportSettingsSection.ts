@@ -11,6 +11,7 @@ import { SettingsValidator } from 'src/utils/SettingsValidator';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
 import { RuleMigrationService } from 'src/core/RuleMigrationService';
 import { MobileUtils } from '../../utils/MobileUtils';
+import { debugDebug } from '../../utils/debug';
 import {
   loadSettingsImport,
   pickSettingsFile,
@@ -292,12 +293,12 @@ export class ImportExportSettingsSection {
                 current.settings.rulesV2 ?? []
               )
             ) {
-              console.debug('Migrating imported Rule V1 to Rule V2...');
+              debugDebug('Migrating imported Rule V1 to Rule V2...');
               current.settings.rulesV2 =
                 RuleMigrationService.migrateRules(legacyRules);
               (current.settings as SettingsData & LegacySettingsFields).rules =
                 [];
-              console.debug(
+              debugDebug(
                 `Migrated ${(current.settings.rulesV2 ?? []).length} imported rules to V2 format`
               );
             }

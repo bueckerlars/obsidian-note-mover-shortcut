@@ -12,6 +12,7 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { HISTORY_CONSTANTS } from '../config/constants';
 import { type OperationType } from '../types/Common';
 import { getParentPath, ensureFolderExists } from '../utils/PathUtils';
+import { debugWarn } from '../utils/debug';
 
 export class HistoryManager {
   private history: HistoryEntry[] = [];
@@ -317,7 +318,7 @@ export class HistoryManager {
         move.destinationPath
       );
       if (!(file instanceof TFile)) {
-        console.warn(
+        debugWarn(
           `[Advanced Note Mover] Attachment undo skipped; not found: ${move.destinationPath}`
         );
         allOk = false;

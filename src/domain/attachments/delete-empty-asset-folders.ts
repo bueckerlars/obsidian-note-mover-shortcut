@@ -1,4 +1,5 @@
 import type { App } from 'obsidian';
+import { debugWarn } from '../../utils/debug';
 
 export interface AttachmentSourceMove {
   sourcePath: string;
@@ -70,7 +71,7 @@ export async function deleteEmptyAssetFoldersAfterMove(
       await app.vault.adapter.rmdir(folderPath, false);
       deleted.push(folderPath);
     } catch (error) {
-      console.warn(
+      debugWarn(
         `[Advanced Note Mover] Could not delete empty folder ${folderPath}:`,
         error
       );
