@@ -17,7 +17,13 @@ Recorded on 2026-11-21 at commit `4a64acc` on branch `feat/roadmap-findings`. No
 
 ## Lint debt
 
-No lint findings at this commit.
+`eslint-plugin-obsidianmd` is `^0.6.0`. The obsidian-sample-plugin template declares `^0.4.0`. `npm run lint` exits 0. One warning is new and stays enabled:
+
+- `src/application/co-move-attachments-on-note-move.ts:44` `obsidianmd/no-tfile-tfolder-cast`. Avoid casting to `TFile`. Use an `instanceof TFile` check.
+
+## Dead code check
+
+`npm run check:dead` runs knip for TypeScript and currently exits 1 on existing unused files, dependencies, and exports. CSS dead-code check is phase 2.
 
 ## Smoke
 

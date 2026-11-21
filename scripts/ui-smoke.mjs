@@ -10,12 +10,12 @@ const FIXTURE = path.join(ROOT, 'scripts/fixtures/vault');
 const OUT_DIR = path.join(ROOT, 'docs/analysis/screenshots/phase-0');
 const PLUGIN_ID = 'note-mover-shortcut';
 
-export const VIEWPORTS = [
+const VIEWPORTS = [
   { id: 'desktop', width: 1400, height: 1100, mobile: false },
   { id: 'mobile', width: 390, height: 844, mobile: true },
 ];
 
-export const SCREENS = [
+const SCREENS = [
   { id: 'settings-triggers', kind: 'settings', heading: 'Triggers' },
   { id: 'settings-filter', kind: 'settings', heading: 'Filter' },
   { id: 'settings-rules', kind: 'settings', heading: 'Rules' },
@@ -37,7 +37,7 @@ export const SCREENS = [
   { id: 'update-changelog', kind: 'modal' },
 ];
 
-export function findObsidianBinary() {
+function findObsidianBinary() {
   const candidates = [
     process.env.OBSIDIAN_BIN,
     '/Applications/Obsidian.app/Contents/MacOS/Obsidian',
