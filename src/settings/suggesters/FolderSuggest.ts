@@ -468,4 +468,6 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
     this.cachedPropertyInfo = propertyInfo;
     return propertyInfo;
   }
+
+  destroy(): void {}
 }

@@ -12,6 +12,11 @@ export class TFile extends TAbstractFile {
 export class TFolder extends TAbstractFile {}
 export class AbstractInputSuggest<T> {
   protected suggestions: T[] = [];
+  app: unknown;
+
+  constructor(app?: unknown) {
+    this.app = app;
+  }
 }
 
 export function getAllTags(cache: Record<string, unknown>): string[] {
