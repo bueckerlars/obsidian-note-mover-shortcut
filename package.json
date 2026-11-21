@@ -7,7 +7,7 @@
     "dev": "npm run generate-changelog && node esbuild.config.mjs",
     "build": "npm run generate-changelog && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "generate-changelog": "tsx scripts/generate-changelog.ts",
-    "version": "node version-bump.mjs && git add manifest.json versions.json",
+    "version": "node version-bump.mjs && git add manifest.json versions.json CHANGELOG.md",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
