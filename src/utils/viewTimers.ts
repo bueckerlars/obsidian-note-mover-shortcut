@@ -1,4 +1,7 @@
 function activeView(): Window {
+  if (typeof activeWindow === 'undefined') {
+    return window;
+  }
   return activeWindow;
 }
 
