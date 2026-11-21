@@ -9,6 +9,8 @@ export interface DragDropItem {
 
 export interface DragDropOptions {
   onReorder: (fromIndex: number, toIndex: number) => void;
+  /** Move one slot. `direction` is -1 for up and 1 for down. */
+  onMove?: (index: number, direction: -1 | 1) => void;
   onSave?: () => Promise<void>;
   itemSelector?: string;
   handleSelector?: string;
@@ -27,6 +29,7 @@ export class DragDropManager {
   private readonly onDragEndBound: (event: DragEvent) => void;
   private readonly onDragEnterBound: (event: DragEvent) => void;
   private readonly onDragLeaveBound: (event: DragEvent) => void;
+  private readonly onKeyDownBound: (event: KeyboardEvent) => void;
 
   constructor(container: HTMLElement, options: DragDropOptions) {
     this.container = container;
@@ -37,6 +40,7 @@ export class DragDropManager {
     this.onDragEndBound = (e: DragEvent) => this.handleDragEnd(e);
     this.onDragEnterBound = (e: DragEvent) => this.handleDragEnter(e);
     this.onDragLeaveBound = (e: DragEvent) => this.handleDragLeave(e);
+    this.onKeyDownBound = (e: KeyboardEvent) => this.handleKeyDown(e);
     this.setupEventListeners();
   }
 
@@ -48,6 +52,40 @@ export class DragDropManager {
     this.container.addEventListener('dragend', this.onDragEndBound);
     this.container.addEventListener('dragenter', this.onDragEnterBound);
     this.container.addEventListener('dragleave', this.onDragLeaveBound);
+    this.container.addEventListener('keydown', this.onKeyDownBound);
+  }
+
+  private itemSelector(): string {
+    return this.options.itemSelector || '.setting-item';
+  }
+
+  private handleSelector(): string {
+    return this.options.handleSelector || '.advancedNoteMover-drag-handle';
+  }
+
+  /** Alt+Arrow moves the focused handle one slot. Drag still uses onReorder. */
+  private handleKeyDown(event: KeyboardEvent): void {
+    if (!this.options.onMove) return;
+    if (!event.altKey || event.shiftKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const handle = target.closest(this.handleSelector());
+    if (!handle || !this.container.contains(handle)) return;
+    const item = handle.closest(this.itemSelector());
+    if (!item) return;
+    const items = Array.from(
+      this.container.querySelectorAll(this.itemSelector())
+    );
+    const index = items.indexOf(item);
+    if (index < 0) return;
+    const direction: -1 | 1 = event.key === 'ArrowUp' ? -1 : 1;
+    const next = index + direction;
+    if (next < 0 || next >= items.length) return;
+    event.preventDefault();
+    this.options.onMove(index, direction);
   }
 
   private handleDragStart(event: DragEvent): void {
@@ -268,5 +306,6 @@ export class DragDropManager {
     this.container.removeEventListener('dragend', this.onDragEndBound);
     this.container.removeEventListener('dragenter', this.onDragEnterBound);
     this.container.removeEventListener('dragleave', this.onDragLeaveBound);
+    this.container.removeEventListener('keydown', this.onKeyDownBound);
   }
 }

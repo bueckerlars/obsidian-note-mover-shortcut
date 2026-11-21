@@ -202,10 +202,13 @@ export class RulesSettingsSection {
           void this.duplicateRule(rule);
         })
     );
+    const index = this.findRuleIndex(rule);
+    const last = (this.plugin.pluginData.settings.rulesV2?.length ?? 0) - 1;
     menu.addItem(item =>
       item
         .setTitle(labels.rulesMenuUp)
         .setIcon('chevron-up')
+        .setDisabled(index <= 0)
         .onClick(() => {
           void this.moveRule(rule, -1);
         })
@@ -214,6 +217,7 @@ export class RulesSettingsSection {
       item
         .setTitle(labels.rulesMenuDown)
         .setIcon('chevron-down')
+        .setDisabled(index < 0 || index >= last)
         .onClick(() => {
           void this.moveRule(rule, 1);
         })
@@ -300,6 +304,11 @@ export class RulesSettingsSection {
     this.dragDropManager = new DragDropManager(container, {
       onReorder: (fromIndex: number, toIndex: number) => {
         this.reorderRulesV2(fromIndex, toIndex);
+      },
+      onMove: (index, direction) => {
+        const rule = this.plugin.pluginData.settings.rulesV2?.[index];
+        if (!rule) return;
+        void this.moveRule(rule, direction);
       },
       onSave: async () => {
         await this.persistRulesAndSyncManager();
