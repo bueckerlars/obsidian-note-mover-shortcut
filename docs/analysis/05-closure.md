@@ -107,3 +107,5 @@ These did not run:
 - Undo after moving 50 notes on a device
 - Real iOS: settings, rule editor, history, preview, move, undo
 - Real Android: settings, rule editor, history, preview, move, undo
+
+The phase 10 `main.js` size gate passes at 258252 bytes against the 263069 cap. The measured split is in the bundle size section of `docs/analysis/baseline.md`.

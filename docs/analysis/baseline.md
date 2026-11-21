@@ -50,8 +50,34 @@ The smoke Tab walk moved focus once and did not close the dialog. Settings itsel
 
 ## Bundle size
 
-`main.js` is gitignored, so commit `4a64acc` (parent of the first roadmap commit `419a9b8`) has no `main.js` blob. The baseline number is a production build of that commit (`npm ci && npm run build` in a detached worktree): 250542 bytes. `styles.css` in that commit is 64862 bytes, and rebuilding it produced the same count.
+`main.js` is gitignored. Commit `4a64acc` has no `main.js` blob. The baseline is a production build of that commit.
 
-Current production build, measured 2026-11-21 after the German catalog landed: `main.js` 296729 bytes, `styles.css` 59165 bytes.
+Rebuild on 2026-11-21 with esbuild 0.25.12. The command is `npm run build`, which runs `node esbuild.config.mjs production`. In that mode `minify` is true and `sourcemap` is false. The rebuilt baseline `main.js` is 250542 bytes. `styles.css` at that commit is 64862 bytes, and the rebuild wrote the same count. The file has no `sourceMappingURL`.
 
-`styles.css` is smaller than the baseline by 5697 bytes. `main.js` is 46187 bytes over the baseline, 18.4 percent. The gate allows 5 percent (263069 bytes). The extra weight is the English and German catalogs plus the phase 1–9 behavior in the minified bundle. Live code was not deleted to chase the cap.
+The same command on the tree before the catalog read writes `main.js` at 296729 bytes and `styles.css` at 59165 bytes. A second production esbuild with `metafile: true` wrote 296729 bytes again. The cap is 263069 bytes, baseline plus 5 percent. `main.js` is 33660 bytes over the cap and 46187 bytes over the baseline. `styles.css` is 5697 bytes under the baseline. The phase 10 size gate was open at that build.
+
+esbuild `bytesInOutput` on the two metafiles sums to the 46187 byte gap. Each bundle has the same 573 bytes outside any input, so that wrapper is not the growth.
+
+| Input                        | Baseline | Current |  Delta |
+| ---------------------------- | -------: | ------: | -----: |
+| `virtual:languages`          |        0 |   39646 | +39646 |
+| `src/generated/changelog.ts` |    27956 |   34390 |  +6434 |
+| Every other input            |   222013 |  222120 |   +107 |
+| esbuild wrapper              |      573 |     573 |     +0 |
+| `main.js`                    |   250542 |  296729 | +46187 |
+
+The language module is one copy of compact JSON. A production bundle that contains only `languages/en.json` puts 18538 bytes in that module. Only `languages/de.json` puts 21117 bytes in it. Those two sizes sum to 39655. The shipping module is 39646 bytes because the wrapper is counted once. Pretty `languages/en.json` plus `languages/de.json` is 45625 bytes, larger than the module.
+
+`src/generated/changelog.ts` grew by the 1.4.0 notes. The sentence "Settings, modal, command, and notice copy is read from" appears once in `main.js`.
+
+28 new source files add 21837 bytes. The net change in existing modules, apart from the changelog, is a 21730 byte decrease. Together that is +107 bytes. The largest new file is `src/settings/AdvancedNoteMoverSettingsTab.ts` at 2699 bytes. It replaces `src/settings/Settings.ts`, which was 3734 bytes in the baseline bundle.
+
+A production bundle with only the English catalog is 275621 bytes, still 12552 bytes over the cap. The German catalog is live copy on top of that.
+
+The production bundle has no second language module, no source map, and no test or dev input. `charset: 'utf8'` would save 514 bytes. The baseline build uses the default `ascii` charset. 514 bytes still leaves `main.js` over the cap, so the esbuild config is unchanged. At this measurement, catalogs, changelog entries, and feature source stay in the bundle.
+
+## Bundle size after the catalog read
+
+`npm run build` on 2026-11-21 writes `main.js` at 258252 bytes. The same command a second time writes 258252 bytes. Both files have no `sourceMappingURL`. The baseline is 250542 bytes. The cap is 263069 bytes. The size before this build is 296729 bytes. 258252 is 4817 bytes under the cap and 17710 bytes over the baseline. The phase 10 size gate passes.
+
+The drop from 296729 to 258252 is 38477 bytes. The inlined `virtual:languages` module in the table above is 39646 bytes. `main.js` contains no `Unbenannte Regel` and no `languages/de.json`, so that module is gone. `configDir` is present in the loader. The changelog sentence "Settings, modal, command, and notice copy is read from" still appears once. The language module cannot be removed a second time. The remaining bytes are the changelog and the other inputs in the table above, plus the loader that replaced the language module.
