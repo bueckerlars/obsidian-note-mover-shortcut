@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- **Modal size**: Dialog widths come from the existing size classes instead of inline styles.
 - **Conflict cache title**: The skipped-conflicts modal keeps its title after Dismiss, Remove stale, and Clear all.
 - **Import settings cancel**: Cancelling the file dialog leaves the Import button clickable. Invalid JSON is rejected with an error and does not change settings.
 - **Edit rule after reordering** ([#114](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/114)): After drag-reordering rules in settings, Edit / Toggle / Clone now target the rule shown in that row instead of the rule that previously occupied the slot. The settings UI rebuilds after reorder, and row actions resolve the rule by object identity.

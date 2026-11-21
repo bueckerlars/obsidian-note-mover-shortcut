@@ -3,43 +3,6 @@ import { MobileUtils } from '../utils/MobileUtils';
 
 export type ModalSize = 'small' | 'medium' | 'large';
 
-/** Shell dimensions applied via inline style (values must be variables for lint). */
-const MODAL_SIZE_DIMENSIONS: Record<
-  ModalSize,
-  { width: string; minWidth: string; maxWidth?: string }
-> = {
-  small: { width: '400px', minWidth: '350px' },
-  medium: { width: '860px', minWidth: '640px', maxWidth: '95vw' },
-  large: { width: '980px', minWidth: '760px', maxWidth: '95vw' },
-};
-
-/** Mobile shell overrides (Obsidian core modal rules use !important). */
-const MOBILE_MODAL_SHELL_STYLES: ReadonlyArray<readonly [string, string]> = [
-  ['width', '100%'],
-  ['max-width', '100%'],
-  ['margin', '0'],
-  ['border-radius', '0'],
-  ['max-height', '100vh'],
-  ['height', '100vh'],
-];
-
-/**
- * Full-screen flex shell for modals that manage their own scroll area and pinned footer.
- * `dvh` follows the visible viewport when the on-screen keyboard opens.
- */
-const MOBILE_FLEX_SHELL_STYLES: ReadonlyArray<readonly [string, string]> = [
-  ['width', '100%'],
-  ['max-width', '100%'],
-  ['margin', '0'],
-  ['border-radius', '0'],
-  ['max-height', '100dvh'],
-  ['height', '100dvh'],
-  ['display', 'flex'],
-  ['flex-direction', 'column'],
-];
-
-const MODAL_SHELL_STYLE_PRIORITY = 'important';
-
 export interface BaseModalOptions {
   title?: string;
   titleIcon?: string;
@@ -142,9 +105,6 @@ export abstract class BaseModal extends Modal {
     }
   }
 
-  /**
-   * Set modal size: CSS classes for layout scoping; inline dimensions override Obsidian core.
-   */
   protected setModalSize(): void {
     const modalContainer = this.modalEl;
     if (!modalContainer || !this.options.size) {
@@ -155,50 +115,17 @@ export abstract class BaseModal extends Modal {
 
     if (MobileUtils.isMobile()) {
       modalContainer.classList.add('advancedNoteMover-modal-size-mobile');
-      const { mobileShellClass } = this.options;
-      if (mobileShellClass) {
-        modalContainer.classList.add(mobileShellClass);
-      }
-      const shellStyles = mobileShellClass
-        ? MOBILE_FLEX_SHELL_STYLES
-        : MOBILE_MODAL_SHELL_STYLES;
-      for (const [property, value] of shellStyles) {
-        modalContainer.style.setProperty(
-          property,
-          value,
-          MODAL_SHELL_STYLE_PRIORITY
-        );
+      if (this.options.mobileShellClass) {
+        modalContainer.classList.add(this.options.mobileShellClass);
       }
       return;
     }
 
-    const size = this.options.size;
-    modalContainer.classList.add(`advancedNoteMover-modal-size-${size}`);
-
-    const dimensions = MODAL_SIZE_DIMENSIONS[size];
-    const { width, minWidth, maxWidth } = dimensions;
-    modalContainer.style.setProperty(
-      'width',
-      width,
-      MODAL_SHELL_STYLE_PRIORITY
+    modalContainer.classList.add(
+      `advancedNoteMover-modal-size-${this.options.size}`
     );
-    modalContainer.style.setProperty(
-      'min-width',
-      minWidth,
-      MODAL_SHELL_STYLE_PRIORITY
-    );
-    if (maxWidth) {
-      modalContainer.style.setProperty(
-        'max-width',
-        maxWidth,
-        MODAL_SHELL_STYLE_PRIORITY
-      );
-    }
   }
 
-  /**
-   * Remove size classes and inline shell overrides from the modal element
-   */
   protected clearModalSizeStyles(): void {
     const modalContainer = this.modalEl;
     if (!modalContainer) {
@@ -214,15 +141,6 @@ export abstract class BaseModal extends Modal {
     if (this.options.mobileShellClass) {
       modalContainer.classList.remove(this.options.mobileShellClass);
     }
-    modalContainer.style.removeProperty('display');
-    modalContainer.style.removeProperty('flex-direction');
-    modalContainer.style.removeProperty('width');
-    modalContainer.style.removeProperty('min-width');
-    modalContainer.style.removeProperty('max-width');
-    modalContainer.style.removeProperty('margin');
-    modalContainer.style.removeProperty('border-radius');
-    modalContainer.style.removeProperty('max-height');
-    modalContainer.style.removeProperty('height');
   }
 
   /**
