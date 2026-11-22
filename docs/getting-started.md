@@ -74,7 +74,7 @@ The `{{property.client}}` placeholder is filled in with the note's actual `clien
 **Always preview before running a bulk move.** From the command palette:
 
 - **Preview active note movement** — shows where the currently open note would go
-- **Preview bulk movement for all files** — shows where every note in your vault would go
+- **Preview moves** — shows where every note in your vault would go
 
 Preview never moves anything. It just tells you what _would_ happen.
 
@@ -82,10 +82,10 @@ Preview never moves anything. It just tells you what _would_ happen.
 
 Once you're satisfied with the preview:
 
-- **Move active note to note folder** — moves the currently open note
-- **Move all files in vault** — moves all matching notes across the vault
+- **Move current note** — moves the currently open note
+- **Move all notes** — moves all matching notes across the vault
 
-Both commands are in the command palette. **Move active note** also has a ribbon icon (book with a plus).
+Both commands are in the command palette. **Move current note** also has a ribbon icon (book with a plus).
 
 ---
 
@@ -103,9 +103,9 @@ Both commands are in the command palette. **Move active note** also has a ribbon
 
 - **Back up your vault** (or use version control) before your first bulk move.
 - The **Undo** link in move notifications reverses a single-file move instantly.
-- **Show history** (command palette) lets you review and undo past bulk operations.
-- The **Preview bulk movement** modal supports **Stop** mid-execution if you change your mind.
-- The `Add current file to blacklist` command instantly protects any open note by appending its filename to your filter list.
+- **Show move history** (command palette) lets you review and undo past bulk operations.
+- The **Preview moves** modal supports **Stop** mid-execution if you change your mind.
+- The `Exclude current note` command instantly protects any open note by appending its filename to your filter list.
 
 ---
 
