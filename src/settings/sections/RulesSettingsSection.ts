@@ -191,7 +191,7 @@ export class RulesSettingsSection {
     ).filter(entry => entry.ruleName === rule.name).length;
     if (skipped > 0) {
       const pill = setting.nameEl.createSpan({
-        cls: 'advancedNoteMover-pill mod-warning',
+        cls: 'advancedNoteMover-pill is-warning',
       });
       setIcon(
         pill.createSpan({ cls: 'advancedNoteMover-pill-icon' }),

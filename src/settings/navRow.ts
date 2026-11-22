@@ -28,10 +28,14 @@ function decorateNavRow(setting: Setting, options: NavRowOptions): void {
   settingEl.setAttr('role', 'button');
   settingEl.setAttr('tabindex', '0');
   if (options.pill) {
-    controlEl.createSpan({
-      cls: 'advancedNoteMover-pill mod-warning',
-      text: options.pill,
+    const pill = controlEl.createSpan({
+      cls: 'advancedNoteMover-pill is-warning',
     });
+    setIcon(
+      pill.createSpan({ cls: 'advancedNoteMover-pill-icon' }),
+      'alert-triangle'
+    );
+    pill.createSpan({ text: options.pill });
   }
   if (options.value) {
     controlEl.createSpan({
