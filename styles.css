@@ -958,6 +958,153 @@ body.is-mobile .advancedNoteMover-modal-title {
   color: var(--text-faint);
 }
 
+/* ===== PHONE: settings tab ===== */
+
+.advancedNoteMover-phone-only {
+  display: none;
+}
+
+.advancedNoteMover-summary-break {
+  display: none;
+}
+
+body.is-phone .advancedNoteMover-settings-root .advancedNoteMover-phone-only {
+  display: flex;
+}
+
+/* Rules and exclusions add through a row at the end of the card. */
+body.is-phone
+  .advancedNoteMover-settings-root
+  .setting-item-heading
+  .setting-item-control {
+  display: none;
+}
+
+body.is-phone
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-drag-handle-container {
+  display: none;
+}
+
+body.is-phone
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-summary-break {
+  display: block;
+  flex-basis: 100%;
+  height: 0;
+}
+
+body.is-phone
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-inline-interval {
+  display: none;
+}
+
+/* Icon rows stay in one line: icon, text, control. */
+body.is-phone
+  .modal
+  .advancedNoteMover-settings-root
+  .setting-item.advancedNoteMover-add-row,
+body.is-phone
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-filters-container
+  .setting-item {
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+body.is-phone
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-add-row
+  .setting-item-info,
+body.is-phone
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-filters-container
+  .setting-item-info {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+/* Beats Obsidian's full-width control for rows without a toggle. */
+body.is-phone
+  .modal
+  .advancedNoteMover-settings-root
+  :is(.advancedNoteMover-filters-container, .advancedNoteMover-nav-row)
+  .setting-item-control {
+  width: auto;
+  flex: none;
+  justify-content: flex-end;
+}
+
+body.is-phone
+  .modal
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-nav-row {
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+body.is-phone
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-nav-row
+  .setting-item-info {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+/* The inline add form wraps: type, value, then Add and cancel. */
+body.is-phone
+  .modal
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-filters-container
+  .advancedNoteMover-exclusion-add
+  .setting-item-control {
+  flex: 1;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+body.is-phone
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-exclusion-add
+  :is(select.dropdown, input[type='text']) {
+  flex: 1 1 100%;
+}
+
+body.is-phone
+  .advancedNoteMover-settings-root
+  .advancedNoteMover-exclusion-add
+  button {
+  flex: 1;
+}
+
+/* Label above, control full width. */
+body.is-phone
+  .advancedNoteMover-settings-root
+  .setting-item.advancedNoteMover-stack-row {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+body.is-phone
+  .advancedNoteMover-settings-root
+  .setting-item.advancedNoteMover-stack-row
+  .setting-item-control {
+  width: 100%;
+  margin-top: var(--size-4-2);
+}
+
+body.is-phone
+  .advancedNoteMover-settings-root
+  .setting-item.advancedNoteMover-stack-row
+  .setting-item-control
+  > * {
+  flex: 1;
+  min-width: 0;
+}
+
 /* ===== RULE EDITOR ===== */
 
 .modal.advancedNoteMover-rule-editor {

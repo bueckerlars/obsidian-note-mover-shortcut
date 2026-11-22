@@ -114,3 +114,24 @@ export function addPlusIcon(button: ButtonComponent): ButtonComponent {
   button.buttonEl.prepend(icon);
   return button;
 }
+
+/** Phone only: an accent "+ label" row at the end of the list, instead of the heading button. */
+export function addPhoneAddRow(
+  listEl: HTMLElement,
+  label: string,
+  onOpen: () => void
+): void {
+  const setting = new Setting(listEl).setName(label);
+  const el = setting.settingEl;
+  el.addClass('advancedNoteMover-phone-only', 'advancedNoteMover-add-row');
+  el.setAttrs({ role: 'button', tabindex: '0' });
+  setIcon(el.createSpan({ cls: 'advancedNoteMover-add-row-icon' }), 'plus');
+  el.prepend(el.querySelector('.advancedNoteMover-add-row-icon') as Node);
+  el.addEventListener('click', onOpen);
+  el.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onOpen();
+    }
+  });
+}

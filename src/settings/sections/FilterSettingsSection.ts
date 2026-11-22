@@ -7,7 +7,11 @@ import {
   type ExclusionKind,
 } from '../../domain/filters/exclusionFilter';
 import { fill, strings } from '../../i18n/locale';
-import { addPlusIcon, createSettingGroup } from '../settingGroup';
+import {
+  addPhoneAddRow,
+  addPlusIcon,
+  createSettingGroup,
+} from '../settingGroup';
 import { ExclusionValueSuggest } from '../suggesters/ExclusionValueSuggest';
 
 const ICONS: Record<ExclusionKind, string> = {
@@ -93,7 +97,11 @@ export class FilterSettingsSection {
         });
       });
     });
-    if (adding) this.renderAddRow(list);
+    if (adding) {
+      this.renderAddRow(list);
+    } else {
+      addPhoneAddRow(list, labels.exclusionsAdd, () => this.renderList(true));
+    }
   }
 
   private kindLabel(kind: ExclusionKind): string {
