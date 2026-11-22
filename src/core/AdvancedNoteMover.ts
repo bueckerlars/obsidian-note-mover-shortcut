@@ -689,15 +689,6 @@ export class AdvancedNoteMover {
     }).open();
   }
 
-  async openVaultReEvaluationPreview(): Promise<void> {
-    this.updateRuleManager();
-    this.plugin.ruleCache.invalidateAll();
-    new PreviewModal(this.plugin.app, this.plugin, null, {
-      load: (signal, onProgress) =>
-        this.generateVaultMovePreview(signal, onProgress),
-    }).open();
-  }
-
   /** Opens the rule editor with a new rule that matches the given note. */
   openNewRuleFromNote(file: TFile): void {
     const { app } = this.plugin;

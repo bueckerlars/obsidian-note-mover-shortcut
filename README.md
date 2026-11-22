@@ -44,11 +44,11 @@ Open a matching note and run **Preview active note movement** from the command p
 
 **4. Move a single note**
 
-Run **Move active note to note folder** from the command palette (or click the ribbon icon). A notification appears with an **Undo** link if you want to reverse it.
+Run **Move current note** from the command palette (or click the ribbon icon). A notification appears with an **Undo** link if you want to reverse it.
 
 **5. Move everything**
 
-Run **Preview bulk movement for all files** first to review what would happen across your whole vault, then **Move all files in vault** to execute.
+Run **Preview moves** first to review what would happen across your whole vault, then **Move all notes** to execute.
 
 ---
 
@@ -118,7 +118,7 @@ Every move command has a **Preview** counterpart. Preview shows you a list of fi
 
 ### Move history and undo
 
-Every move is recorded in history. For single-file moves, an **Undo** link appears in the notification. For bulk moves, open **Show history** from the command palette to review and undo past batches.
+Every move is recorded in history. For single-file moves, an **Undo** link appears in the notification. For bulk moves, open **Show move history** from the command palette to review and undo past batches.
 
 ### Automation
 

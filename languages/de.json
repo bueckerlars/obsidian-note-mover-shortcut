@@ -11,15 +11,15 @@
     "showDetails": "Details anzeigen"
   },
   "commands": {
-    "moveActiveNote": "Aktive Notiz in den Notizordner verschieben",
-    "moveAllFiles": "Alle Dateien im Tresor verschieben",
+    "moveActiveNote": "Aktuelle Notiz verschieben",
+    "moveAllFiles": "Alle Notizen verschieben",
     "showReleaseNotes": "Versionshinweise anzeigen",
-    "showHistory": "Verlauf anzeigen",
-    "reviewSkippedConflicts": "Übersprungene Verschiebekonflikte prüfen",
-    "previewBulk": "Massenverschiebung aller Dateien voranzeigen",
-    "reEvaluateVault": "Gesamten Tresor mit den aktuellen Regeln neu auswerten",
-    "previewActiveNote": "Verschiebung der aktiven Notiz voranzeigen",
-    "addCurrentFileToBlacklist": "Aktuelle Datei zur Ausschlussliste hinzufügen",
+    "showHistory": "Verschiebeverlauf anzeigen",
+    "reviewSkippedConflicts": "Übersprungene Notizen prüfen",
+    "previewBulk": "Verschiebungen voranzeigen",
+    "reEvaluateVault": "Verschiebungen für den Tresor voranzeigen",
+    "previewActiveNote": "Verschiebungen der aktuellen Notiz voranzeigen",
+    "addCurrentFileToBlacklist": "Aktuelle Notiz ausschließen",
     "whyNotMoved": "Warum nicht verschoben?"
   },
   "notices": {

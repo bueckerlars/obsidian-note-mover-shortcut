@@ -169,7 +169,7 @@ content: <!-- do not move -->
 
 ## Quick command: add current file to blacklist
 
-From the command palette, run **Add current file to blacklist**. This instantly appends `fileName: <current filename>` to your filter list — useful for protecting a specific note without opening settings.
+From the command palette, run **Exclude current note**. This instantly appends `fileName: <current filename>` to your filter list — useful for protecting a specific note without opening settings.
 
 ---
 

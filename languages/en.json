@@ -11,15 +11,15 @@
     "showDetails": "Show details"
   },
   "commands": {
-    "moveActiveNote": "Move active note to note folder",
-    "moveAllFiles": "Move all files in vault",
+    "moveActiveNote": "Move current note",
+    "moveAllFiles": "Move all notes",
     "showReleaseNotes": "Show release notes",
-    "showHistory": "Show history",
-    "reviewSkippedConflicts": "Review skipped move conflicts",
-    "previewBulk": "Preview bulk movement for all files",
-    "reEvaluateVault": "Re-evaluate entire vault with current rules",
-    "previewActiveNote": "Preview active note movement",
-    "addCurrentFileToBlacklist": "Add current file to blacklist",
+    "showHistory": "Show move history",
+    "reviewSkippedConflicts": "Review skipped notes",
+    "previewBulk": "Preview moves",
+    "reEvaluateVault": "Preview moves for the vault",
+    "previewActiveNote": "Preview moves for current note",
+    "addCurrentFileToBlacklist": "Exclude current note",
     "whyNotMoved": "Why not moved?"
   },
   "notices": {
