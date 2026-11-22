@@ -44,7 +44,6 @@ function row(index: number): HTMLElement {
   item.dataset.index = String(index);
   const handle = document.createElement('div');
   handle.className = 'advancedNoteMover-drag-handle';
-  handle.textContent = '⋮⋮';
   item.append(handle);
   return item;
 }
