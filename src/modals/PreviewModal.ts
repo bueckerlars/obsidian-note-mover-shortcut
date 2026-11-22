@@ -1,4 +1,4 @@
-import { App, TFile, setIcon } from 'obsidian';
+import { App, TFile } from 'obsidian';
 import AdvancedNoteMoverPlugin from 'main';
 import { fill, plural, strings } from '../i18n/locale';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
@@ -34,6 +34,7 @@ import {
   type StayCategory,
 } from '../domain/preview/previewGroups';
 import { BaseModal, BaseModalOptions } from './BaseModal';
+import { iconSpan, setAttrs } from './modalDom';
 import { renderModalFooter, type ModalFooter } from './modalFooter';
 import { pickNoteForWhyNot, openWhyNotMovedForFile } from './WhyNotMovedModal';
 import { countNoteMoveConflicts } from '../application/resolve-note-move-conflict';
@@ -64,17 +65,6 @@ function countOf(count: number, noun: string): string {
 
 function setPlain(el: HTMLElement | null | undefined, text: string): void {
   if (el) el.textContent = text;
-}
-
-function setAttrs(el: HTMLElement, attrs: Record<string, string>): void {
-  for (const [name, value] of Object.entries(attrs))
-    el.setAttribute(name, value);
-}
-
-function iconSpan(parent: HTMLElement, icon: string, cls?: string): void {
-  const el = parent.createSpan({ cls });
-  el.ariaHidden = 'true';
-  setIcon(el, icon);
 }
 
 /** The one move preview: loading, nothing to move, and the checked list. */

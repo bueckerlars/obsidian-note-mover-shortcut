@@ -372,6 +372,7 @@ export class HistoryManager {
     if (entryIndex === -1) return false;
 
     const entry = this.history[entryIndex];
+    if (entry.undone) return false;
     const file = this.plugin.app.vault.getAbstractFileByPath(
       entry.destinationPath
     );
@@ -404,29 +405,7 @@ export class HistoryManager {
       await this.plugin.app.fileManager.renameFile(file, entry.sourcePath);
       await this.undoAttachmentMoves(entry.attachmentMoves);
 
-      // Remove from individual history
-      this.history.splice(entryIndex, 1);
-
-      // If this entry belongs to a bulk operation, remove it from there too
-      if (entry.bulkOperationId) {
-        const bulkOp = this.bulkOperations.find(
-          op => op.id === entry.bulkOperationId
-        );
-        if (bulkOp) {
-          bulkOp.entries = bulkOp.entries.filter(e => e.id !== entryId);
-          bulkOp.totalFiles = bulkOp.entries.length;
-
-          // If bulk operation is now empty, remove it entirely
-          if (bulkOp.entries.length === 0) {
-            const bulkOpIndex = this.bulkOperations.findIndex(
-              op => op.id === entry.bulkOperationId
-            );
-            if (bulkOpIndex !== -1) {
-              this.bulkOperations.splice(bulkOpIndex, 1);
-            }
-          }
-        }
-      }
+      this.markUndone([entry.id]);
 
       await this.saveHistory();
       return true;
@@ -439,7 +418,20 @@ export class HistoryManager {
   }
 
   public getLastEntryForFile(fileName: string): HistoryEntry | undefined {
-    return this.history.find(entry => entry.fileName === fileName);
+    return this.history.find(
+      entry => entry.fileName === fileName && !entry.undone
+    );
+  }
+
+  /** Keeps undone moves in the history, flagged, so the list can still show them. */
+  private markUndone(ids: Iterable<string>): void {
+    const undone = new Set(ids);
+    for (const entry of [
+      ...this.history,
+      ...this.bulkOperations.flatMap(op => op.entries),
+    ]) {
+      if (undone.has(entry.id)) entry.undone = true;
+    }
   }
 
   public async undoLastMove(fileName: string): Promise<boolean> {
@@ -494,12 +486,8 @@ export class HistoryManager {
       await this.plugin.app.fileManager.renameFile(file, entry.sourcePath);
       await this.undoAttachmentMoves(entry.attachmentMoves);
 
-      // Remove the entry from history
-      const entryIndex = this.history.findIndex(e => e.id === entry.id);
-      if (entryIndex !== -1) {
-        this.history.splice(entryIndex, 1);
-        await this.saveHistory();
-      }
+      this.markUndone([entry.id]);
+      await this.saveHistory();
 
       NoticeManager.success(strings().notices.moveSuccessful);
       return true;
@@ -588,9 +576,9 @@ export class HistoryManager {
     const results: boolean[] = [];
 
     // Undo entries in reverse order (last moved files first)
-    const sortedEntries = [...bulkOp.entries].sort(
-      (a, b) => b.timestamp - a.timestamp
-    );
+    const sortedEntries = bulkOp.entries
+      .filter(e => !e.undone)
+      .sort((a, b) => b.timestamp - a.timestamp);
 
     for (const entry of sortedEntries) {
       const file = this.plugin.app.vault.getAbstractFileByPath(
@@ -624,12 +612,6 @@ export class HistoryManager {
         if (!attachmentsOk) {
           errors.push(`Could not move attachments for ${entry.fileName} back`);
         }
-        // Remove from individual history
-        const historyIndex = this.history.findIndex(h => h.id === entry.id);
-        if (historyIndex !== -1) {
-          this.history.splice(historyIndex, 1);
-        }
-
         results.push(attachmentsOk);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -640,37 +622,9 @@ export class HistoryManager {
       }
     }
 
-    // Only remove the bulk operation if at least some operations were successful
-    const successCount = results.filter(r => r).length;
-
-    if (successCount > 0) {
-      // Create a map of successfully undone entries by ID
-      const successfulUndoIds = new Set<string>();
-      sortedEntries.forEach((entry, index) => {
-        if (results[index]) {
-          successfulUndoIds.add(entry.id);
-        }
-      });
-
-      // Remove successfully undone entries from the bulk operation
-      const remainingEntries = bulkOp.entries.filter(
-        entry => !successfulUndoIds.has(entry.id)
-      );
-
-      if (remainingEntries.length === 0) {
-        // All entries were undone, remove the entire bulk operation
-        const bulkOpIndex = this.bulkOperations.findIndex(
-          op => op.id === bulkOperationId
-        );
-        if (bulkOpIndex !== -1) {
-          this.bulkOperations.splice(bulkOpIndex, 1);
-        }
-      } else {
-        // Update bulk operation with remaining entries
-        bulkOp.entries = remainingEntries;
-        bulkOp.totalFiles = remainingEntries.length;
-      }
-    }
+    this.markUndone(
+      sortedEntries.filter((_, index) => results[index]).map(e => e.id)
+    );
 
     await this.saveHistory();
 
