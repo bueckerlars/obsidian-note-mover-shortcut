@@ -7,11 +7,6 @@
   line-height: 1.4;
 }
 
-.advancedNoteMover-update-modal {
-  padding: var(--size-4-5) 0 var(--size-4-5) 0;
-  box-sizing: border-box;
-}
-
 /* Desktop modal dimensions: applied inline on modalEl in BaseModal.ts (classes scope layout only). */
 
 /* Icon beside the native modal title. */
@@ -23,27 +18,18 @@
   vertical-align: text-bottom;
 }
 
-.advancedNoteMover-modal-title-icon svg,
-.advancedNoteMover-icon svg {
+.advancedNoteMover-modal-title-icon svg {
   width: 1em;
   height: 1em;
-}
-
-.advancedNoteMover-icon {
-  display: inline-flex;
-  margin-right: var(--size-4-1);
-  vertical-align: text-bottom;
 }
 
 /* One size per state. Mobile and short portrait override the variables. */
 body {
   --anm-modal-title-size: 1.6em;
-  --anm-modal-subtitle-size: 1.1em;
 }
 
 body.is-mobile {
   --anm-modal-title-size: 1.3em;
-  --anm-modal-subtitle-size: 0.95em;
 }
 
 .advancedNoteMover-modal-title {
@@ -51,12 +37,6 @@ body.is-mobile {
   font-size: var(--anm-modal-title-size);
   font-weight: bold;
   color: var(--text-normal);
-}
-
-.advancedNoteMover-modal-subtitle {
-  margin: 0 0 var(--size-4-6) 0;
-  color: var(--text-muted);
-  font-size: var(--anm-modal-subtitle-size);
 }
 
 /* Common Button Container Styles */
@@ -76,8 +56,7 @@ body.is-mobile {
 }
 
 /* Legacy: mobile footers still using Setting wrappers */
-.advancedNoteMover-modal-button-container .setting-item,
-.advancedNoteMover-modal-footer-mobile .setting-item {
+.advancedNoteMover-modal-button-container .setting-item {
   border: none;
   margin: 0;
   padding: 0;
@@ -100,111 +79,6 @@ body.is-mobile {
 
 .advancedNoteMover-modal-section:last-child {
   margin-bottom: var(--size-4-4);
-}
-
-/* Common Footer Styles */
-.advancedNoteMover-modal-footer {
-  display: flex;
-  justify-content: center;
-  border-top: 1px solid var(--background-modifier-border);
-  padding-top: var(--size-4-4);
-  margin-top: var(--size-4-6);
-}
-
-/* Update Modal Footer - Centered links, right-aligned button */
-.advancedNoteMover-update-modal .advancedNoteMover-modal-footer {
-  justify-content: space-between;
-  align-items: center;
-}
-
-.advancedNoteMover-update-modal .advancedNoteMover-update-modal-links {
-  flex: 1;
-  text-align: center;
-}
-
-.advancedNoteMover-update-modal .advancedNoteMover-modal-button-container {
-  flex-shrink: 0;
-}
-
-.advancedNoteMover-changelog-container {
-  max-height: 400px;
-  overflow-y: auto;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-m);
-  padding: var(--size-4-4);
-  margin-bottom: var(--size-4-6);
-  background: var(--background-secondary);
-}
-
-.advancedNoteMover-changelog-version {
-  margin-bottom: var(--size-4-6);
-}
-
-.advancedNoteMover-changelog-version:last-child {
-  margin-bottom: 0;
-}
-
-.advancedNoteMover-changelog-version-title {
-  margin: 0 0 var(--size-4-3) 0;
-  font-size: 1.3em;
-  font-weight: bold;
-  color: var(--text-accent);
-  border-bottom: 1px solid var(--background-modifier-border);
-  padding-bottom: var(--size-2-3);
-}
-
-.advancedNoteMover-changelog-section {
-  margin-bottom: var(--size-4-4);
-}
-
-.advancedNoteMover-changelog-section:last-child {
-  margin-bottom: 0;
-}
-
-.advancedNoteMover-changelog-section-title {
-  margin: 0 0 var(--size-4-2) 0;
-  font-size: 1em;
-  font-weight: 600;
-  color: var(--text-normal);
-}
-
-.advancedNoteMover-changelog-list {
-  margin: 0;
-  padding-left: var(--size-4-5);
-  color: var(--text-normal);
-}
-
-.advancedNoteMover-changelog-list li {
-  margin-bottom: var(--size-4-1);
-}
-
-.advancedNoteMover-changelog-list li:last-child {
-  margin-bottom: 0;
-}
-
-.advancedNoteMover-update-modal-links {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.advancedNoteMover-update-modal-github-link {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: var(--font-ui-small);
-  transition: color 0.2s ease;
-}
-
-.advancedNoteMover-update-modal-github-link:hover {
-  color: var(--text-accent);
-  text-decoration: underline;
-}
-
-.advancedNoteMover-no-changelog-text {
-  color: var(--text-muted);
-  font-style: italic;
-  text-align: center;
-  margin: var(--size-4-6) 0;
 }
 
 /* Confirm modal */
@@ -523,6 +397,59 @@ body.is-mobile .advancedNoteMover-history-actions {
   opacity: 1;
 }
 
+/* ===== RELEASE NOTES ===== */
+
+.modal.advancedNoteMover-release-shell {
+  width: 600px;
+  max-width: 95vw;
+}
+
+.advancedNoteMover-release-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-3);
+}
+
+.advancedNoteMover-release-body hr {
+  margin: var(--size-2-1) 0;
+}
+
+.advancedNoteMover-release-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-4-3);
+}
+
+.advancedNoteMover-release-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-m);
+  background: rgba(var(--color-accent-rgb), 0.15);
+  color: var(--text-accent);
+}
+
+.advancedNoteMover-release-text,
+.advancedNoteMover-release-fixes {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.advancedNoteMover-release-fixes-title {
+  margin-bottom: calc(-1 * var(--size-2-1));
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+}
+
+.advancedNoteMover-release-fixes {
+  margin: 0;
+  padding-left: var(--size-4-4);
+  line-height: 1.7;
+}
+
 /* ===== RULE V2 STYLES ===== */
 
 .advancedNoteMover-rules-v2-container .setting-item {
@@ -648,8 +575,7 @@ body.is-mobile .advancedNoteMover-modal-section {
   margin-bottom: var(--size-4-5);
 }
 
-body.is-mobile .advancedNoteMover-settings-root .setting-item-control,
-body.is-mobile .advancedNoteMover-update-modal .setting-item-control {
+body.is-mobile .advancedNoteMover-settings-root .setting-item-control {
   margin-left: 0;
   width: 100%;
   justify-content: space-between;
@@ -665,18 +591,13 @@ body.is-mobile
   justify-content: flex-end;
 }
 
-body.is-mobile .advancedNoteMover-settings-root .setting-item-control button,
-body.is-mobile .advancedNoteMover-update-modal .setting-item-control button {
+body.is-mobile .advancedNoteMover-settings-root .setting-item-control button {
   min-width: 44px;
   min-height: 44px;
   padding: var(--size-4-2);
 }
 
-body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control,
-body.is-mobile
-  .advancedNoteMover-update-modal
-  .advancedNoteMover-modal-button-container
-  .setting-item-control {
+body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control {
   margin-left: 0;
   width: auto;
   justify-content: center;
@@ -685,53 +606,10 @@ body.is-mobile
 body.is-mobile
   .advancedNoteMover-modal-button-container
   .setting-item-control
-  button,
-body.is-mobile
-  .advancedNoteMover-update-modal
-  .advancedNoteMover-modal-button-container
-  .setting-item-control
   button {
   min-width: 44px;
   min-height: 44px;
   padding: var(--size-4-2);
-}
-
-/* Update Modal - Keep footer horizontal on mobile */
-body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-footer {
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 var(--size-4-4);
-}
-
-body.is-mobile
-  .advancedNoteMover-update-modal
-  .advancedNoteMover-update-modal-links {
-  flex: 1;
-}
-
-body.is-mobile
-  .advancedNoteMover-update-modal
-  .advancedNoteMover-modal-button-container {
-  flex-direction: row;
-  width: auto;
-  flex-shrink: 0;
-}
-
-body.is-mobile
-  .advancedNoteMover-update-modal
-  .advancedNoteMover-modal-button-container
-  .setting-item-control {
-  margin: 0;
-}
-
-body.is-mobile
-  .advancedNoteMover-update-modal
-  .advancedNoteMover-modal-button-container
-  button {
-  width: auto;
-  min-width: 100px;
-  padding: var(--size-4-2) var(--size-4-4);
 }
 
 /* Setting items with drag handles - Adjust for mobile */
@@ -761,8 +639,7 @@ body.is-mobile .advancedNoteMover-drag-handle {
   border-radius: var(--radius-m);
 }
 
-body.is-phone .advancedNoteMover-settings-root button,
-body.is-phone .advancedNoteMover-update-modal button {
+body.is-phone .advancedNoteMover-settings-root button {
   font-size: var(--font-ui-small);
 }
 
@@ -796,92 +673,14 @@ body.is-mobile
   touch-action: pan-y;
 }
 
-body.is-mobile .advancedNoteMover-modal-footer-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: var(--size-4-3);
-  margin-top: var(--size-4-4);
-}
-
-body.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item {
-  width: 100%;
-  margin-bottom: 0;
-}
-
-body.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item button {
-  width: 100%;
-  min-height: 48px;
-  font-size: 16px; /* iOS: prevents zoom on focus */
-}
-
-/* Update Modal Mobile Styles */
-body.is-mobile .modal-content.advancedNoteMover-update-modal {
-  padding: var(--size-4-4) 0;
-}
-
-body.is-mobile .advancedNoteMover-changelog-container-mobile {
-  margin-bottom: var(--size-4-4);
-}
-
-body.is-mobile .advancedNoteMover-changelog-version-mobile {
-  margin-bottom: var(--size-4-4);
-  padding: var(--size-4-3);
-  background: var(--background-secondary);
-  border-radius: var(--radius-m);
-  border: 1px solid var(--background-modifier-border);
-}
-
-body.is-mobile .advancedNoteMover-changelog-version-title {
-  font-size: 1.1em;
-}
-
-body.is-mobile .advancedNoteMover-changelog-section {
-  margin-bottom: var(--size-4-3);
-}
-
-body.is-mobile .advancedNoteMover-changelog-list {
-  font-size: var(--font-ui-small);
-  line-height: 1.6;
-}
-
-body.is-mobile .advancedNoteMover-update-modal-links-mobile {
-  margin-bottom: var(--size-4-4);
-  width: 100%;
-}
-
 .advancedNoteMover-hidden-file-input {
   display: none;
-}
-
-body.is-mobile .advancedNoteMover-update-modal-github-link-mobile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: var(--size-4-3);
-  border-radius: var(--radius-m);
-  background: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  color: var(--text-normal);
-  text-decoration: none;
-  font-size: 16px; /* iOS: prevents zoom on focus */
-  font-weight: 500;
-  transition: opacity 0.2s ease;
-}
-
-body.is-mobile .advancedNoteMover-update-modal-github-link-mobile:active {
-  opacity: 0.8;
 }
 
 /* Mobile Modal General Improvements */
 body.is-mobile .advancedNoteMover-modal-title {
   font-size: var(--anm-modal-title-size);
   margin-bottom: var(--size-4-3);
-}
-
-body.is-mobile .advancedNoteMover-modal-subtitle {
-  margin-bottom: var(--size-4-4);
-  line-height: 1.5;
 }
 
 .advancedNoteMover-focus-scope :focus-visible {
