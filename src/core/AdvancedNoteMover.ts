@@ -30,6 +30,9 @@ import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import { PreviewModal } from '../modals/PreviewModal';
+import { RuleEditorModal } from '../modals/RuleEditorModal';
+import { fileMetadataFromCache } from '../modals/rule-editor/ruleLivePreview';
+import { ruleFromNote } from '../domain/rules/rulePresets';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
 import { fill, plural, strings } from '../i18n/locale';
@@ -695,9 +698,30 @@ export class AdvancedNoteMover {
     this.updateRuleManager();
     this.plugin.ruleCache.invalidateAll();
     new PreviewModal(this.plugin.app, this.plugin, null, {
-      title: strings().modals.previewReEvaluateTitle,
       load: (signal, onProgress) =>
         this.generateVaultMovePreview(signal, onProgress),
+    }).open();
+  }
+
+  /** Opens the rule editor with a new rule that matches the given note. */
+  openNewRuleFromNote(file: TFile): void {
+    const { app } = this.plugin;
+    const metadata = fileMetadataFromCache(
+      file,
+      app.metadataCache.getFileCache(file)
+    );
+    new RuleEditorModal(app, {
+      rule: ruleFromNote(metadata),
+      isEditMode: false,
+      onSave: async rule => {
+        const settings = this.plugin.pluginData.settings;
+        settings.rulesV2 = [...(settings.rulesV2 ?? []), rule];
+        await this.plugin.save_settings();
+        this.updateRuleManager();
+      },
+      vaultIndexCache: this.plugin.vaultIndexCache,
+      createFoldersByDefault:
+        this.plugin.pluginData.settings.createMissingDestinationFolders ?? true,
     }).open();
   }
 
@@ -706,7 +730,7 @@ export class AdvancedNoteMover {
    */
   async generateVaultMovePreview(
     signal?: AbortSignal,
-    onProgress?: (completed: number, total: number) => void
+    onProgress?: (completed: number, total: number, found: number) => void
   ): Promise<MovePreview> {
     return this.plugin.performanceTrace.recordAsync(
       'AdvancedNoteMover.generateVaultMovePreview',

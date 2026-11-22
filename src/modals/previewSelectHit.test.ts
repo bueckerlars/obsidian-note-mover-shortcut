@@ -77,15 +77,15 @@ function pixels(value: string): number {
 
 describe('preview checkbox hit target', () => {
   afterEach(() => {
-    document.body.classList.remove('is-mobile');
+    document.body.classList.remove('is-phone');
     document.body.replaceChildren();
     document.head.querySelectorAll('style').forEach(style => style.remove());
   });
 
-  it('sizes the mobile preview checkbox to at least 44px', () => {
+  it('sizes the phone preview checkbox to at least 44px', () => {
     installPreviewDom();
     loadPluginStyles();
-    document.body.classList.add('is-mobile');
+    document.body.classList.add('is-phone');
     const modal = new PreviewModal({} as never, {} as never, {
       successfulMoves: [
         {
@@ -112,12 +112,46 @@ describe('preview checkbox hit target', () => {
     });
     modal.open();
 
-    const checkbox = document.querySelector(
-      '.advancedNoteMover-preview-select input[type="checkbox"]'
-    );
-    expect(checkbox).toBeInstanceOf(HTMLInputElement);
-    const style = getComputedStyle(checkbox as HTMLInputElement);
+    const hit = document.querySelector('.advancedNoteMover-cb-hit');
+    expect(hit).toBeInstanceOf(HTMLElement);
+    const style = getComputedStyle(hit as HTMLElement);
     expect(pixels(style.width)).toBeGreaterThanOrEqual(44);
     expect(pixels(style.height)).toBeGreaterThanOrEqual(44);
+  });
+
+  it('summarises the selection in the footer and sets mixed group state', () => {
+    installPreviewDom();
+    const entry = (name: string) => ({
+      fileName: `${name}.md`,
+      currentPath: `${name}.md`,
+      targetPath: 'Archive',
+      willBeMoved: true,
+      matchedRule: 'Inbox',
+      tags: [],
+    });
+    const moves = [entry('A'), entry('B')];
+    const modal = new PreviewModal({} as never, {} as never, {
+      successfulMoves: moves,
+      analyzed: moves,
+      totalFiles: 2,
+      settings: { isFilterWhitelist: false },
+    });
+    modal.open();
+
+    const status = document.querySelector('.advancedNoteMover-footer-status');
+    expect(status?.textContent).toBe('2 of 2 selected');
+    const boxes = document.querySelectorAll<HTMLInputElement>(
+      '.advancedNoteMover-cb-hit input'
+    );
+    boxes[1].checked = false;
+    boxes[1].dispatchEvent(new Event('change'));
+    expect(
+      document.querySelector('.advancedNoteMover-footer-status')?.textContent
+    ).toBe('1 of 2 selected');
+    expect(
+      document.querySelector<HTMLInputElement>(
+        '.advancedNoteMover-cb-hit input'
+      )?.indeterminate
+    ).toBe(true);
   });
 });

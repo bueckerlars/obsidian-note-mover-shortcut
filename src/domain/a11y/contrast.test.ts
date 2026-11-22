@@ -40,9 +40,8 @@ const BACKGROUNDS = [
 
 const TEXT_SELECTORS = [
   '.advancedNoteMover-drag-handle',
-  '.advancedNoteMover-current-path',
-  'body.is-mobile .advancedNoteMover-preview-path-mobile',
-  'body.is-mobile .advancedNoteMover-preview-path-current',
+  '.advancedNoteMover-modal .advancedNoteMover-path',
+  '.advancedNoteMover-row-meta',
 ];
 
 const ICON_SELECTORS = ['.advancedNoteMover-condition-remove'];
