@@ -137,7 +137,8 @@ export function upsertConflictSkipEntry(
   entries: ConflictSkipCacheEntry[],
   sourcePath: string,
   targetPath: string,
-  skippedAt: number
+  skippedAt: number,
+  ruleName?: string
 ): ConflictSkipCacheEntry[] {
   const normalizedSource = normalizeConflictCachePath(sourcePath);
   const normalizedTarget = normalizeConflictCachePath(targetPath);
@@ -151,6 +152,7 @@ export function upsertConflictSkipEntry(
       sourcePath: normalizedSource,
       targetPath: normalizedTarget,
       skippedAt,
+      ...(ruleName ? { ruleName } : {}),
     },
   ];
 }

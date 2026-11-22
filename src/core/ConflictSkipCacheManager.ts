@@ -74,13 +74,18 @@ export class ConflictSkipCacheManager {
   }
 
   /** Updates in-memory cache immediately (persistence is separate). */
-  recordSkipInMemory(sourcePath: string, targetPath: string): void {
+  recordSkipInMemory(
+    sourcePath: string,
+    targetPath: string,
+    ruleName?: string
+  ): void {
     this.clearPending(sourcePath, targetPath);
     this.entries = upsertConflictSkipEntry(
       this.entries,
       sourcePath,
       targetPath,
-      Date.now()
+      Date.now(),
+      ruleName
     );
   }
 
@@ -88,8 +93,12 @@ export class ConflictSkipCacheManager {
     return [...this.entries];
   }
 
-  async addSkip(sourcePath: string, targetPath: string): Promise<void> {
-    this.recordSkipInMemory(sourcePath, targetPath);
+  async addSkip(
+    sourcePath: string,
+    targetPath: string,
+    ruleName?: string
+  ): Promise<void> {
+    this.recordSkipInMemory(sourcePath, targetPath, ruleName);
     await this.plugin.save_settings();
   }
 

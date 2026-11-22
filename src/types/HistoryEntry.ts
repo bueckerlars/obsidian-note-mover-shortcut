@@ -30,6 +30,7 @@ export type TimeFilter = 'all' | 'today' | 'week' | 'month';
 
 // Retention policy settings
 export interface RetentionPolicy {
+  /** Zero keeps history forever. */
   value: number;
   unit: 'days' | 'weeks' | 'months';
 }

@@ -87,6 +87,7 @@ export class HistoryManager {
       this.history.pop();
     }
 
+    this.pruneExpired();
     void this.saveHistory();
   }
 
@@ -246,35 +247,46 @@ export class HistoryManager {
   /**
    * Clean up old history entries based on retention policy
    */
-  public async cleanupOldEntries(): Promise<void> {
+  public async cleanupOldEntries(silent = false): Promise<void> {
     const retentionPolicy =
       this.plugin.pluginData.settings?.retentionPolicy ||
       HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY;
-    const cutoffTime = this.calculateRetentionCutoffTime(retentionPolicy);
+    const { history, bulk } = this.pruneExpired();
 
-    // Filter out old entries
+    if (history > 0 || bulk > 0) {
+      await this.saveHistory();
+      if (!silent) {
+        NoticeManager.info(
+          fill(strings().notices.cleanedUp, {
+            history,
+            bulk,
+            value: retentionPolicy.value,
+            unit: retentionPolicy.unit,
+          })
+        );
+      }
+    }
+  }
+
+  /** Drops entries older than the retention policy (value 0 keeps everything). */
+  private pruneExpired(): { history: number; bulk: number } {
+    const retentionPolicy =
+      this.plugin.pluginData.settings?.retentionPolicy ||
+      HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY;
+    if (retentionPolicy.value <= 0) {
+      return { history: 0, bulk: 0 };
+    }
+    const cutoffTime = this.calculateRetentionCutoffTime(retentionPolicy);
     const oldHistoryCount = this.history.length;
     this.history = this.history.filter(entry => entry.timestamp >= cutoffTime);
-    const removedHistoryCount = oldHistoryCount - this.history.length;
-
-    // Filter out old bulk operations
     const oldBulkCount = this.bulkOperations.length;
     this.bulkOperations = this.bulkOperations.filter(
       op => op.timestamp >= cutoffTime
     );
-    const removedBulkCount = oldBulkCount - this.bulkOperations.length;
-
-    if (removedHistoryCount > 0 || removedBulkCount > 0) {
-      await this.saveHistory();
-      NoticeManager.info(
-        fill(strings().notices.cleanedUp, {
-          history: removedHistoryCount,
-          bulk: removedBulkCount,
-          value: retentionPolicy.value,
-          unit: retentionPolicy.unit,
-        })
-      );
-    }
+    return {
+      history: oldHistoryCount - this.history.length,
+      bulk: oldBulkCount - this.bulkOperations.length,
+    };
   }
 
   /**
