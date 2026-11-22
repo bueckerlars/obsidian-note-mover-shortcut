@@ -10,9 +10,14 @@ export class StatusSettingsSection {
   render(): void {
     const { plugin, containerEl } = this.ctx;
     const labels = strings().settings;
-    const activeRules = (plugin.pluginData.settings.rulesV2 ?? []).filter(
-      rule => rule.active
-    ).length;
+    const rules = plugin.pluginData.settings.rulesV2 ?? [];
+    if (rules.length === 0) {
+      createSettingGroup(containerEl).addSetting(setting =>
+        setting.setName(labels.statusEmptyName).setDesc(labels.statusEmptyDesc)
+      );
+      return;
+    }
+    const activeRules = rules.filter(rule => rule.active).length;
     const desc =
       activeRules === 0
         ? labels.statusDescNone

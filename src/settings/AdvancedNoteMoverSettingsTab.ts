@@ -13,6 +13,7 @@ import {
   StatusSettingsSection,
   WhenMovingSettingsSection,
 } from './sections';
+import type { RulesUiState } from './sections/RulesSettingsSection';
 import type { SectionContext, SettingsPage } from './pages';
 import { associateSettingLabels } from '../domain/a11y/associateSettingLabels';
 import { strings } from '../i18n/locale';
@@ -23,7 +24,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   private filterSettings?: FilterSettingsSection;
   private rulesSettings?: RulesSettingsSection;
   private page: SettingsPage = 'main';
-  private readonly ruleFilter = { query: '' };
+  private readonly rulesUi: RulesUiState = { query: '', moved: null };
   private debounceManager: DebounceManager;
   private readonly refreshSettings: () => void;
 
@@ -58,7 +59,8 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   hide(): void {
     this.cleanupExistingSections();
     this.page = 'main';
-    this.ruleFilter.query = '';
+    this.rulesUi.query = '';
+    this.rulesUi.moved = null;
     super.hide();
   }
 
@@ -110,7 +112,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
       this.plugin,
       this.containerEl,
       ctx.refresh,
-      this.ruleFilter
+      this.rulesUi
     );
     this.rulesSettings.render();
     this.filterSettings = new FilterSettingsSection(

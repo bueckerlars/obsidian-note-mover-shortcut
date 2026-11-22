@@ -6,6 +6,7 @@
 #   A TypeScript class is allowed to have no CSS rule.
 
 prefix advancedNoteMover-rule-mobile
+prefix advancedNoteMover-summary
 
 keep advancedNoteMover-mobile-rule-actions
 keep advancedNoteMover-mobile-toggle-control
