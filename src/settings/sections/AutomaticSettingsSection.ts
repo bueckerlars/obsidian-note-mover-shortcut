@@ -1,4 +1,4 @@
-import type { Setting } from 'obsidian';
+import type { DropdownComponent, Setting } from 'obsidian';
 import { fill, strings } from '../../i18n/locale';
 import { createSettingGroup } from '../settingGroup';
 import type { SectionContext } from '../pages';
@@ -50,27 +50,11 @@ export class AutomaticSettingsSection {
     group.addSetting(setting => {
       setting.setName(labels.scheduleName).setDesc(labels.scheduleDesc);
       dimWithoutRules(setting);
-      if (hasRules && triggers.enablePeriodicMovement) {
+      const showInterval = hasRules && triggers.enablePeriodicMovement;
+      if (showInterval) {
         setting.addDropdown(dropdown => {
-          // Older settings can hold any whole number of minutes; keep it selectable.
-          const options = INTERVAL_MINUTES.includes(
-            triggers.periodicMovementInterval
-          )
-            ? INTERVAL_MINUTES
-            : [...INTERVAL_MINUTES, triggers.periodicMovementInterval].sort(
-                (a, b) => a - b
-              );
-          for (const minutes of options) {
-            dropdown.addOption(String(minutes), intervalLabel(minutes));
-          }
-          dropdown.selectEl.setAttr('aria-label', labels.scheduleIntervalLabel);
-          dropdown
-            .setValue(String(triggers.periodicMovementInterval))
-            .onChange(async value => {
-              triggers.periodicMovementInterval = Number(value);
-              await plugin.save_settings();
-              plugin.triggerHandler.togglePeriodic();
-            });
+          this.fillInterval(dropdown);
+          dropdown.selectEl.addClass('advancedNoteMover-inline-interval');
         });
       }
       setting.addToggle(toggle =>
@@ -85,5 +69,44 @@ export class AutomaticSettingsSection {
           })
       );
     });
+
+    // Phone: the interval sits on its own indented row under the toggle.
+    if (hasRules && triggers.enablePeriodicMovement) {
+      group.addSetting(setting => {
+        setting
+          .setName(labels.scheduleIntervalLabel)
+          .addDropdown(dropdown => this.fillInterval(dropdown));
+        setting.settingEl.addClass(
+          'advancedNoteMover-phone-only',
+          'advancedNoteMover-stack-row',
+          'advancedNoteMover-sub-row'
+        );
+      });
+    }
+  }
+
+  private fillInterval(dropdown: DropdownComponent): void {
+    const { plugin } = this.ctx;
+    const triggers = plugin.pluginData.settings.triggers;
+    // Older settings can hold any whole number of minutes; keep it selectable.
+    const options = INTERVAL_MINUTES.includes(triggers.periodicMovementInterval)
+      ? INTERVAL_MINUTES
+      : [...INTERVAL_MINUTES, triggers.periodicMovementInterval].sort(
+          (a, b) => a - b
+        );
+    for (const minutes of options) {
+      dropdown.addOption(String(minutes), intervalLabel(minutes));
+    }
+    dropdown.selectEl.setAttr(
+      'aria-label',
+      strings().settings.scheduleIntervalLabel
+    );
+    dropdown
+      .setValue(String(triggers.periodicMovementInterval))
+      .onChange(async value => {
+        triggers.periodicMovementInterval = Number(value);
+        await plugin.save_settings();
+        plugin.triggerHandler.togglePeriodic();
+      });
   }
 }
