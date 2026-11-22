@@ -2338,9 +2338,14 @@ body.is-mobile
 }
 
 .advancedNoteMover-settings-root .advancedNoteMover-group-desc {
+  padding-inline: var(--size-4-4);
   margin-bottom: var(--size-4-2);
   color: var(--text-muted);
-  font-size: var(--font-ui-small);
+  font-size: var(--font-ui-smaller);
+}
+
+.advancedNoteMover-settings-root .setting-item-heading .search-input-container {
+  width: 220px;
 }
 
 .advancedNoteMover-settings-root .advancedNoteMover-group-plain {
@@ -2410,7 +2415,12 @@ body.is-mobile
 }
 
 .advancedNoteMover-settings-root .advancedNoteMover-sub-row {
-  padding-left: var(--size-4-8);
+  padding-left: var(--size-4-5);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-sub-row .setting-item-info {
+  border-left: 2px solid var(--background-modifier-border);
+  padding-left: var(--size-4-3);
 }
 
 .advancedNoteMover-settings-root .advancedNoteMover-dim {
