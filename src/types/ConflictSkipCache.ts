@@ -5,6 +5,8 @@ export interface ConflictSkipCacheEntry {
   targetPath: string;
   /** Unix timestamp when the skip was recorded. */
   skippedAt: number;
+  /** Name of the rule that chose the destination, when known. */
+  ruleName?: string;
 }
 
 export interface ConflictSkipCacheData {

@@ -126,7 +126,7 @@ export async function executeNoteMoveWithConflictHandling(
 
     if (conflictOutcome.status === 'skip') {
       if (!conflictSkipCache.hasPersistedSkip(originalPath, newPath)) {
-        await conflictSkipCache.addSkip(originalPath, newPath);
+        await conflictSkipCache.addSkip(originalPath, newPath, ruleName);
       }
       if (getConflictResolutionSettings(settings).strategy === 'skip') {
         NoticeManager.warning(

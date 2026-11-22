@@ -86,6 +86,14 @@ export class PerformanceTraceRecorder {
     return JSON.stringify(payload, null, 2);
   }
 
+  /** Entry count and the wall time of the first entry, for the settings page. */
+  summary(): { count: number; since: string | null } {
+    return {
+      count: this.entries.length,
+      since: this.entries[0]?.wallTime ?? null,
+    };
+  }
+
   clear(): void {
     this.entries.length = 0;
     this.seq = 0;
