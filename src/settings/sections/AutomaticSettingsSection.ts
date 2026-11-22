@@ -1,3 +1,4 @@
+import type { Setting } from 'obsidian';
 import { fill, strings } from '../../i18n/locale';
 import { createSettingGroup } from '../settingGroup';
 import type { SectionContext } from '../pages';
@@ -18,29 +19,38 @@ export class AutomaticSettingsSection {
     const { plugin, containerEl, refresh } = this.ctx;
     const labels = strings().settings;
     const triggers = plugin.pluginData.settings.triggers;
+    const hasRules = (plugin.pluginData.settings.rulesV2 ?? []).length > 0;
+    const dimWithoutRules = (setting: Setting) => {
+      if (hasRules) return;
+      setting.setDesc(labels.automaticNeedsRule);
+      setting.settingEl.addClass('advancedNoteMover-dim');
+    };
 
     const group = createSettingGroup(containerEl, {
       heading: labels.headingsAutomatic,
     });
 
-    group.addSetting(setting =>
+    group.addSetting(setting => {
       setting
         .setName(labels.onChangeName)
         .setDesc(labels.onChangeDesc)
         .addToggle(toggle =>
           toggle
-            .setValue(triggers.enableOnEditTrigger === true)
+            .setDisabled(!hasRules)
+            .setValue(hasRules && triggers.enableOnEditTrigger === true)
             .onChange(async value => {
               triggers.enableOnEditTrigger = value;
               await plugin.save_settings();
               plugin.triggerHandler.toggleOnEditListener();
             })
-        )
-    );
+        );
+      dimWithoutRules(setting);
+    });
 
     group.addSetting(setting => {
       setting.setName(labels.scheduleName).setDesc(labels.scheduleDesc);
-      if (triggers.enablePeriodicMovement) {
+      dimWithoutRules(setting);
+      if (hasRules && triggers.enablePeriodicMovement) {
         setting.addDropdown(dropdown => {
           // Older settings can hold any whole number of minutes; keep it selectable.
           const options = INTERVAL_MINUTES.includes(
@@ -65,7 +75,8 @@ export class AutomaticSettingsSection {
       }
       setting.addToggle(toggle =>
         toggle
-          .setValue(triggers.enablePeriodicMovement)
+          .setDisabled(!hasRules)
+          .setValue(hasRules && triggers.enablePeriodicMovement)
           .onChange(async value => {
             triggers.enablePeriodicMovement = value;
             await plugin.save_settings();

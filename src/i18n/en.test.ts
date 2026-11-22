@@ -11,6 +11,9 @@ const ALLOWED = new Set([
   'MMM',
   'YYYY-MM-DD',
   'DD-MM-YYYY',
+  'Apollo',
+  'README',
+  'status',
 ]);
 
 function stringsIn(value: unknown): string[] {
@@ -71,7 +74,9 @@ function assertSentenceCase(value: string): void {
 
 describe('languages/en.json', () => {
   it('uses sentence case for every string', () => {
-    for (const value of stringsIn(catalog)) {
+    // ruleSummary holds sentence fragments joined at runtime.
+    const { ruleSummary: _fragments, ...prose } = catalog;
+    for (const value of stringsIn(prose)) {
       assertSentenceCase(value);
     }
   });

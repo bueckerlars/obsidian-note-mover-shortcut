@@ -7,11 +7,6 @@
   line-height: 1.4;
 }
 
-/* Search Input Styles */
-.advancedNoteMover-search {
-  width: calc(100% - 20px);
-}
-
 /* ===== COMMON MODAL STYLES ===== */
 
 /* Consistent vertical rhythm for plugin modals */
@@ -752,15 +747,6 @@ body.is-mobile .advancedNoteMover-preview-select input[type='checkbox'] {
   align-items: center;
 }
 
-.advancedNoteMover-filters-container .setting-item-control {
-  flex: 1;
-  min-width: 0;
-}
-
-.advancedNoteMover-filters-container .setting-item-info {
-  display: none;
-}
-
 /* ===== RULE EDITOR MODAL STYLES ===== */
 
 .modal.advancedNoteMover-modal-size-small,
@@ -1103,19 +1089,6 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
   overflow-y: auto;
   overflow-x: hidden;
   height: 100%;
-}
-
-/* Wide settings fields stack on phones. */
-body.is-mobile .setting-item.advancedNoteMover-setting-stack {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-body.is-mobile
-  .setting-item.advancedNoteMover-setting-stack
-  .setting-item-control {
-  width: 100%;
-  margin-left: 0;
 }
 
 /* Wide settings fields stack on phones. Rule rows stay in one line. */
@@ -2431,4 +2404,167 @@ body.is-mobile
   background: transparent;
   box-shadow: none;
   color: var(--text-muted);
+}
+
+/* ===== SETTINGS TAB: rule list and exclusions ===== */
+
+.advancedNoteMover-settings-root .advancedNoteMover-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--size-2-1) var(--size-4-1);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  padding-top: var(--size-2-1);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-summary-value {
+  color: var(--text-normal);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-summary-joiner {
+  color: var(--text-faint);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-summary-token {
+  font-family: var(--font-monospace);
+  font-size: 0.92em;
+  color: var(--text-accent);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-summary-icon,
+.advancedNoteMover-settings-root .advancedNoteMover-pill-icon {
+  display: inline-flex;
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-summary-icon .svg-icon,
+.advancedNoteMover-settings-root .advancedNoteMover-pill-icon .svg-icon {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-pill-icon {
+  margin-right: var(--size-2-1);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-rule-row {
+  cursor: pointer;
+}
+
+.advancedNoteMover-settings-root
+  .advancedNoteMover-rule-row
+  .setting-item-name {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.advancedNoteMover-settings-root
+  .advancedNoteMover-rule-row
+  .setting-item-control {
+  cursor: default;
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-moved-hint {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.menu .advancedNoteMover-menu-hint {
+  margin-left: auto;
+  padding-left: var(--size-4-4);
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-4-5) 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  text-align: center;
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-empty-text {
+  padding: var(--size-4-4) 0;
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-empty-icon {
+  display: inline-flex;
+  color: var(--text-faint);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-empty-icon .svg-icon {
+  width: var(--icon-l);
+  height: var(--icon-l);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-add-row {
+  cursor: pointer;
+  justify-content: flex-start;
+  gap: var(--size-4-3);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-add-row .setting-item-info {
+  flex: 1;
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-add-row .setting-item-name {
+  color: var(--text-accent);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-add-row:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-add-row-icon,
+.advancedNoteMover-settings-root .advancedNoteMover-row-icon {
+  display: inline-flex;
+  flex: none;
+  color: var(--text-muted);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-add-row-icon {
+  color: var(--text-accent);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-row-icon {
+  margin-right: var(--size-4-3);
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-faint {
+  margin-left: var(--size-4-2);
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+}
+
+.advancedNoteMover-settings-root
+  .advancedNoteMover-exclusion-add
+  .setting-item-control {
+  flex: 1;
+  min-width: 0;
+}
+
+.advancedNoteMover-settings-root
+  .advancedNoteMover-exclusion-add
+  input[type='text'] {
+  flex: 1;
+  min-width: 0;
+}
+
+.advancedNoteMover-suggest-count {
+  margin-left: var(--size-4-2);
+  color: var(--text-faint);
 }

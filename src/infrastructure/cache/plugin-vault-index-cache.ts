@@ -314,7 +314,7 @@ export class PluginVaultIndexCache {
   }
 
   /**
-   * Collect property keys and per-key value sets (AdvancedSuggest blacklist UI).
+   * Collect property keys and per-key value sets.
    */
   getPropertyKeysAndValuesCached(app: App): {
     keys: Set<string>;

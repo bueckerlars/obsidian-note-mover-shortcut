@@ -390,6 +390,11 @@ export class Menu {
     const el = document.createElement('div');
     el.className = 'menu-item';
     const api: MenuItemStub = {
+      dom: el,
+      setWarning() {
+        el.classList.add('is-warning');
+        return api;
+      },
       setTitle(text: string) {
         el.dataset.title = text;
         el.append(document.createTextNode(text));
@@ -420,6 +425,10 @@ export class Menu {
     return this;
   }
 
+  addSeparator(): this {
+    return this;
+  }
+
   showAtPosition(): this {
     const menu = document.createElement('div');
     menu.className = 'menu';
@@ -432,6 +441,8 @@ export class Menu {
 }
 
 interface MenuItemStub {
+  dom: HTMLElement;
+  setWarning: (warning: boolean) => MenuItemStub;
   setTitle: (text: string) => MenuItemStub;
   setIcon: (icon: string) => MenuItemStub;
   setDisabled: (disabled: boolean) => MenuItemStub;
@@ -447,7 +458,9 @@ export const Platform = {
   isTablet: false,
 };
 
-export function setIcon(): void {}
+export function setIcon(el?: HTMLElement, icon?: string): void {
+  if (el && icon) el.dataset.icon = icon;
+}
 export function setTooltip(): void {}
 
 export class Component {

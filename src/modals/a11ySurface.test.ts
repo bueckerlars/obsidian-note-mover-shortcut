@@ -50,6 +50,21 @@ function installDom(): void {
   proto.createSpan = function createSpan(this: HTMLElement, options?) {
     return create.call(this, 'span', options);
   };
+
+  Object.assign(HTMLElement.prototype, {
+    createSpan(this: HTMLElement, options?: { cls?: string; text?: string }) {
+      return create.call(this, 'span', options);
+    },
+    setAttr(this: HTMLElement, name: string, value: string) {
+      this.setAttribute(name, value);
+    },
+    setAttrs(this: HTMLElement, attrs: Record<string, string>) {
+      for (const [key, value] of Object.entries(attrs)) {
+        this.setAttribute(key, value);
+      }
+    },
+  });
+
   const globals = globalThis as unknown as {
     createDiv: (options?: {
       cls?: string;
