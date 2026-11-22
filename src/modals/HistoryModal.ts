@@ -1,7 +1,8 @@
-import { App, DropdownComponent, TFile, setTooltip } from 'obsidian';
+import { App, DropdownComponent, Menu, TFile, setTooltip } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
 import { HistoryEntry, TimeFilter } from '../types/HistoryEntry';
 import { formatDayHeading } from '../utils/formatDate';
+import { MobileUtils } from '../utils/MobileUtils';
 import { NoticeManager } from '../utils/NoticeManager';
 import { HISTORY_CONSTANTS, NOTIFICATION_CONSTANTS } from '../config/constants';
 import { fill, plural, strings } from '../i18n/locale';
@@ -38,6 +39,7 @@ export class HistoryModal extends BaseModal {
   ) {
     super(app, {
       title: strings().modals.historyTitle,
+      cssClass: 'advancedNoteMover-history-modal',
       focusSelector: 'input',
       ...options,
     });
@@ -47,6 +49,12 @@ export class HistoryModal extends BaseModal {
     const { contentEl } = this;
     this.modalEl.addClass('advancedNoteMover-history-shell');
     this.loadEntries();
+    if (MobileUtils.isPhone()) {
+      // Phone: bulk operations start closed, like navigation rows.
+      for (const bulk of this.historyManager.getBulkOperations()) {
+        this.collapsed.add(bulk.id);
+      }
+    }
     this.subEl = contentEl.createEl('p', {
       cls: 'advancedNoteMover-modal-sub',
       text: this.subtitle(),
@@ -132,6 +140,60 @@ export class HistoryModal extends BaseModal {
         this.renderList();
       })
       .selectEl.setAttribute('aria-label', text.historyRangeLabel);
+
+    this.renderFilterButton(row, names);
+  }
+
+  /** Phone: one round button opens a menu with the rule and time filters. */
+  private renderFilterButton(row: HTMLElement, names: string[]): void {
+    const text = strings().modals;
+    const button = row.createEl('button', {
+      cls: 'clickable-icon advancedNoteMover-filter-button',
+      attr: {
+        type: 'button',
+        'aria-label': text.historyFilterLabel,
+        'aria-haspopup': 'menu',
+      },
+    });
+    iconSpan(button, 'filter');
+    button.addEventListener('click', () => {
+      const rect = button.getBoundingClientRect();
+      const menu = new Menu();
+      const rules: [string | null, string][] = [
+        [null, text.historyAllRules],
+        ...names.map((name): [string, string] => [name, name]),
+      ];
+      for (const [value, label] of rules) {
+        menu.addItem(item =>
+          item
+            .setTitle(label)
+            .setChecked(this.rule === value)
+            .onClick(() => {
+              this.rule = value;
+              this.renderList();
+            })
+        );
+      }
+      menu.addSeparator();
+      const ranges: [TimeFilter, string][] = [
+        ['today', text.historyToday],
+        ['week', text.historyRangeWeek],
+        ['month', text.historyRangeMonth],
+        ['all', text.historyRangeAll],
+      ];
+      for (const [value, label] of ranges) {
+        menu.addItem(item =>
+          item
+            .setTitle(label)
+            .setChecked(this.range === value)
+            .onClick(() => {
+              this.range = value;
+              this.renderList();
+            })
+        );
+      }
+      menu.showAtPosition({ x: rect.right, y: rect.bottom });
+    });
   }
 
   private renderList(): void {
@@ -159,16 +221,20 @@ export class HistoryModal extends BaseModal {
       return;
     }
     for (const day of days) {
-      list.createDiv({
+      const dayEl = list.createDiv({ cls: 'advancedNoteMover-history-day' });
+      dayEl.createDiv({
         cls: 'advancedNoteMover-list-head',
         text: formatDayHeading(day.timestamp, {
           today: text.historyToday,
           yesterday: text.historyYesterday,
         }),
       });
+      const items = dayEl.createDiv({
+        cls: 'advancedNoteMover-history-day-items',
+      });
       for (const item of day.items) {
-        if (item.kind === 'row') this.renderRow(list, item.row, true);
-        else this.renderGroup(list, item);
+        if (item.kind === 'row') this.renderRow(items, item.row, true);
+        else this.renderGroup(items, item);
       }
     }
   }
@@ -194,6 +260,13 @@ export class HistoryModal extends BaseModal {
     path.createSpan({ text: row.from });
     iconSpan(path, 'arrow-right', 'advancedNoteMover-path-icon');
     path.createEl('b', { text: row.to });
+    if (topLevel) {
+      // Phone: the time follows the path instead of sitting at the right.
+      info.createSpan({
+        cls: 'advancedNoteMover-history-when',
+        text: ` · ${row.time}`,
+      });
+    }
     el.createSpan({
       cls: 'advancedNoteMover-pill is-neutral',
       text: row.rule ?? text.historyMovedByCommand,
@@ -272,12 +345,14 @@ export class HistoryModal extends BaseModal {
         notes: plural(group.rows.length, 'note'),
       }),
     });
+    const kind =
+      group.operation === 'periodic'
+        ? text.historySchedule
+        : text.historyMoveAll;
+    head.createSpan({ cls: 'advancedNoteMover-pill is-neutral', text: kind });
     head.createSpan({
-      cls: 'advancedNoteMover-pill is-neutral',
-      text:
-        group.operation === 'periodic'
-          ? text.historySchedule
-          : text.historyMoveAll,
+      cls: 'advancedNoteMover-history-group-desc',
+      text: `${kind} · ${group.time}`,
     });
     head.createSpan({ cls: 'advancedNoteMover-grow' });
     head.createSpan({
@@ -291,7 +366,7 @@ export class HistoryModal extends BaseModal {
       });
     } else {
       const undoAll = head.createEl('button', {
-        cls: 'advancedNoteMover-quiet-button',
+        cls: 'advancedNoteMover-undo-all-button advancedNoteMover-phone-hidden',
         attr: { type: 'button' },
       });
       iconSpan(undoAll, 'undo-2');
@@ -303,6 +378,17 @@ export class HistoryModal extends BaseModal {
     if (!open) return;
     const body = box.createDiv({ cls: 'advancedNoteMover-preview-group-body' });
     for (const row of group.rows) this.renderRow(body, row, false);
+    if (!group.allUndone) {
+      // Phone: the head is a plain row, so Undo all moves to the end of the group.
+      const undoRow = body.createEl('button', {
+        cls: 'advancedNoteMover-history-undo-all',
+        text: text.historyUndoAll,
+        attr: { type: 'button' },
+      });
+      undoRow.addEventListener('click', () => {
+        void this.undoGroup(group);
+      });
+    }
   }
 
   private renderFooter(): void {
@@ -373,6 +459,12 @@ export class HistoryModal extends BaseModal {
   /** Re-reads the history after an undo, keeping the toolbar and filters. */
   private refresh(): void {
     this.loadEntries();
+    if (MobileUtils.isPhone()) {
+      // Phone: bulk operations start closed, like navigation rows.
+      for (const bulk of this.historyManager.getBulkOperations()) {
+        this.collapsed.add(bulk.id);
+      }
+    }
     this.subEl?.setText(this.subtitle());
     this.renderList();
   }

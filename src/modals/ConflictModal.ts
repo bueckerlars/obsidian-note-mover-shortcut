@@ -1,5 +1,6 @@
 import { App, setIcon } from 'obsidian';
 import { fill, strings } from '../i18n/locale';
+import { MobileUtils } from '../utils/MobileUtils';
 import { BaseModal } from './BaseModal';
 import { renderModalFooter } from './modalFooter';
 import type {
@@ -38,9 +39,12 @@ export class ConflictModal extends BaseModal {
     private conflictOptions: ConflictModalOptions
   ) {
     super(app, {
-      title: fill(strings().modals.conflictTitle, {
-        name: conflictOptions.noteName,
-      }),
+      // Phone: the sheet header names the dialog, the first line names the note.
+      title: MobileUtils.isPhone()
+        ? strings().modals.conflictSheetTitle
+        : fill(strings().modals.conflictTitle, {
+            name: conflictOptions.noteName,
+          }),
       cssClass: 'advancedNoteMover-conflict-modal',
       size: 'small',
     });
@@ -50,6 +54,10 @@ export class ConflictModal extends BaseModal {
     const { contentEl, conflictOptions: options } = this;
     const copy = strings().modals;
 
+    contentEl.createEl('p', {
+      cls: 'advancedNoteMover-conflict-lead advancedNoteMover-phone-only',
+      text: fill(copy.conflictTitle, { name: options.noteName }),
+    });
     contentEl.createEl('p', {
       cls: 'advancedNoteMover-modal-sub',
       text: fill(copy.conflictIntro, { folder: options.targetFolder }),
@@ -68,14 +76,15 @@ export class ConflictModal extends BaseModal {
       cls: 'advancedNoteMover-strong',
       text: copy.conflictLegend,
     });
+    const list = choices.createDiv({ cls: 'advancedNoteMover-conflict-list' });
     this.renderChoice(
-      choices,
+      list,
       'rename',
       copy.conflictKeepBoth,
       fill(copy.conflictKeepBothDesc, { name: options.renamedName })
     );
     this.renderChoice(
-      choices,
+      list,
       'skip',
       copy.conflictSkip,
       fill(copy.conflictSkipDesc, {
@@ -83,7 +92,7 @@ export class ConflictModal extends BaseModal {
       })
     );
     this.renderChoice(
-      choices,
+      list,
       'overwrite',
       copy.conflictReplace,
       copy.conflictReplaceDesc,
