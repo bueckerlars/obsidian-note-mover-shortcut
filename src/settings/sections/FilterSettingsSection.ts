@@ -3,7 +3,7 @@ import { App, Setting } from 'obsidian';
 import { strings } from '../../i18n/locale';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { AdvancedSuggest } from '../suggesters/AdvancedSuggest';
-import { renderSetting } from '../settingDefinitions';
+import { addPlusIcon, createSettingGroup } from '../settingGroup';
 
 export class FilterSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -15,41 +15,37 @@ export class FilterSettingsSection {
     private refreshDisplay: () => void
   ) {}
 
-  addFilterSettings(): void {
-    renderSetting(this.containerEl, 'filters.heading').setTooltip(
-      strings().settings.filterSectionDesc
-    );
-
-    this.addPeriodicMovementFilterArray();
-
-    renderSetting(this.containerEl, 'filters.add').addButton(btn =>
-      btn
-        .setIcon('plus')
-        .setTooltip(strings().settings.filterAdd)
-        .setCta()
-        .onClick(async () => {
-          this.plugin.pluginData.settings.filters.filter.push({ value: '' });
-          await this.plugin.save_settings();
-          // Update RuleManager
-          this.plugin.advancedNoteMover.updateRuleManager();
-          this.refreshDisplay();
-        })
-    );
+  /** Exclusion group: heading-row add button, then the current filter list. */
+  render(): void {
+    const labels = strings().settings;
+    const group = createSettingGroup(this.containerEl, {
+      heading: labels.exclusionsHeading,
+      description: labels.exclusionsDesc,
+    });
+    group.addButton(button => {
+      button.setButtonText(labels.exclusionsAdd).onClick(async () => {
+        this.plugin.pluginData.settings.filters.filter.push({ value: '' });
+        await this.plugin.save_settings();
+        this.plugin.advancedNoteMover.updateRuleManager();
+        this.refreshDisplay();
+      });
+      addPlusIcon(button);
+    });
+    this.addPeriodicMovementFilterArray(group.listEl);
   }
 
-  addPeriodicMovementFilterArray(): void {
+  addPeriodicMovementFilterArray(filtersContainer: HTMLElement): void {
     // Clean up existing AdvancedSuggest instances before creating new ones
     this.cleanupAdvancedSuggestInstances();
-
-    const filtersContainer = this.containerEl.createDiv({
-      cls: 'advancedNoteMover-filters-container',
-    });
+    filtersContainer.addClass('advancedNoteMover-filters-container');
 
     // Setup drag & drop manager
     this.setupDragDropManager(filtersContainer);
 
     if (this.plugin.pluginData.settings.filters.filter.length === 0) {
-      renderSetting(this.containerEl, 'filters.empty');
+      new Setting(filtersContainer)
+        .setName(strings().settings.filterEmpty)
+        .setDesc(strings().settings.filterEmptyDesc);
     }
 
     this.plugin.pluginData.settings.filters.filter.forEach((filter, index) => {

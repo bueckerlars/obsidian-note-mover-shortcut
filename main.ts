@@ -7,6 +7,7 @@ import { ConflictSkipCacheManager } from 'src/core/ConflictSkipCacheManager';
 import { TriggerEventHandler } from 'src/core/TriggerEventHandler';
 import { UpdateManager } from 'src/core/UpdateManager';
 import { RuleEvaluationCache } from 'src/core/RuleEvaluationCache';
+import type { SettingsPage } from 'src/settings/pages';
 import type { PluginData } from 'src/types/PluginData';
 import {
   loadPersistedSettings,
@@ -36,7 +37,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
   public ruleCache!: RuleEvaluationCache;
   public vaultIndexCache!: PluginVaultIndexCache;
   public performanceTrace!: PerformanceTraceRecorder;
-  private settingTab!: AdvancedNoteMoverSettingsTab;
+  public settingTab!: AdvancedNoteMoverSettingsTab;
   private pendingSkipCacheInvalidation = false;
   /** Application-layer facades (use-cases); core logic remains on `advancedNoteMover`. */
   public appServices!: PluginApplicationServices;
@@ -57,6 +58,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
     this.vaultIndexCache.setPerformanceRecorder(this.performanceTrace);
     this.historyManager = new HistoryManager(this);
     this.historyManager.loadHistoryFromSettings();
+    await this.historyManager.cleanupOldEntries(true);
     this.conflictSkipCacheManager = new ConflictSkipCacheManager(this);
     await this.conflictSkipCacheManager.prune(this.app);
     this.updateManager = new UpdateManager(this);
@@ -93,6 +95,19 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
   onunload() {
     this.settingTab?.cleanup();
     this.triggerHandler?.cleanup();
+  }
+
+  /** Opens this plugin's settings tab on the given page. */
+  public openSettingsPage(page: SettingsPage): void {
+    this.settingTab.showPage(page);
+    // shortcut: app.setting is not in the public typings; no other way to open a tab by id.
+    const setting = (
+      this.app as unknown as {
+        setting?: { open(): void; openTabById(id: string): void };
+      }
+    ).setting;
+    setting?.open();
+    setting?.openTabById(this.manifest.id);
   }
 
   public syncRuleCacheHash(): void {

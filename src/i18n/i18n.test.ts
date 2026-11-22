@@ -68,8 +68,8 @@ describe('languages/de.json', () => {
   });
 
   it('keeps a German noun capitalized inside a sentence', () => {
-    expect(de.settings.rulesIntroTail).toContain('Kriterien');
-    expect(de.settings.rulesIntroTail).toContain('Regeln');
+    expect(de.settings.rulesGroupDesc).toContain('Regeln');
+    expect(de.settings.rulesGroupDesc).toContain('Ordner');
   });
 });
 

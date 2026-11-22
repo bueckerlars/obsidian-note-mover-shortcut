@@ -1,30 +1,29 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { PluginSettingTab, type SettingDefinitionItem } from 'obsidian';
+import { ExtraButtonComponent, PluginSettingTab } from 'obsidian';
+import type { SettingDefinitionItem } from 'obsidian';
 import {
-  TriggerSettingsSection,
-  AttachmentsSettingsSection,
+  AdvancedSettingsSection,
+  AutomaticSettingsSection,
   FilterSettingsSection,
-  RulesSettingsSection,
   HistorySettingsSection,
   ImportExportSettingsSection,
   PerformanceDebugSettingsSection,
-  UpdateSettingsSection,
-  ConflictResolutionSettingsSection,
+  RulesSettingsSection,
+  SkippedNotesSettingsSection,
+  StatusSettingsSection,
+  WhenMovingSettingsSection,
 } from './sections';
+import type { SectionContext, SettingsPage } from './pages';
 import { associateSettingLabels } from '../domain/a11y/associateSettingLabels';
+import { strings } from '../i18n/locale';
 import { DebounceManager } from '../utils/DebounceManager';
 import { MobileUtils } from '../utils/MobileUtils';
 
 export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
-  private triggerSettings?: TriggerSettingsSection;
-  private attachmentsSettings?: AttachmentsSettingsSection;
   private filterSettings?: FilterSettingsSection;
   private rulesSettings?: RulesSettingsSection;
-  private historySettings?: HistorySettingsSection;
-  private importExportSettings?: ImportExportSettingsSection;
-  private performanceDebugSettings?: PerformanceDebugSettingsSection;
-  private updateSettings?: UpdateSettingsSection;
-  private conflictResolutionSettings?: ConflictResolutionSettingsSection;
+  private page: SettingsPage = 'main';
+  private readonly ruleFilter = { query: '' };
   private debounceManager: DebounceManager;
   private readonly refreshSettings: () => void;
 
@@ -34,13 +33,18 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.debounceManager = new DebounceManager();
     this.refreshSettings = this.debounceManager.debounce(
       'display',
-      () => this.refreshSettingsUi(),
+      () => this.renderSettingsTab(),
       150
     );
   }
 
   display(): void {
     this.renderSettingsTab();
+  }
+
+  /** Sets the page the next render shows. Call before opening the tab. */
+  showPage(page: SettingsPage): void {
+    this.page = page;
   }
 
   /**
@@ -53,14 +57,20 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
 
   hide(): void {
     this.cleanupExistingSections();
+    this.page = 'main';
+    this.ruleFilter.query = '';
     super.hide();
   }
 
-  private refreshSettingsUi(): void {
+  private navigate(page: SettingsPage): void {
+    this.page = page;
     this.renderSettingsTab();
+    this.containerEl.closest('.vertical-tab-content')?.scrollTo({ top: 0 });
   }
 
   private renderSettingsTab(): void {
+    const scroller = this.containerEl.closest('.vertical-tab-content');
+    const scrollTop = scroller?.scrollTop ?? 0;
     this.containerEl.empty();
 
     // Add mobile-specific classes to container
@@ -68,9 +78,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.containerEl.addClass('advancedNoteMover-focus-scope');
     MobileUtils.addMobileClass(this.containerEl);
     if (MobileUtils.isMobile()) {
-      this.containerEl
-        .closest('.vertical-tab-content')
-        ?.addClass('advancedNoteMover-settings-vertical-tab');
+      scroller?.addClass('advancedNoteMover-settings-vertical-tab');
     }
 
     // Clean up existing section instances before creating new ones
@@ -79,71 +87,73 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     // Ensure arrays exist but don't remove empty rules during display
     this.ensureArraysExist();
 
-    this.triggerSettings = new TriggerSettingsSection(
-      this.plugin,
-      this.containerEl,
-      this.refreshSettings
-    );
-    this.attachmentsSettings = new AttachmentsSettingsSection(
-      this.plugin,
-      this.containerEl,
-      this.refreshSettings
-    );
-    this.filterSettings = new FilterSettingsSection(
-      this.plugin,
-      this.containerEl,
-      this.refreshSettings
-    );
+    const ctx: SectionContext = {
+      plugin: this.plugin,
+      containerEl: this.containerEl,
+      refresh: this.refreshSettings,
+      navigate: page => this.navigate(page),
+    };
+
+    if (this.page === 'main') {
+      this.renderMain(ctx);
+    } else {
+      this.renderSubPage(ctx);
+    }
+    associateSettingLabels(this.containerEl);
+    scroller?.scrollTo({ top: scrollTop });
+  }
+
+  private renderMain(ctx: SectionContext): void {
+    new StatusSettingsSection(ctx).render();
+    new AutomaticSettingsSection(ctx).render();
     this.rulesSettings = new RulesSettingsSection(
       this.plugin,
       this.containerEl,
-      this.refreshSettings
+      ctx.refresh,
+      this.ruleFilter
     );
-    this.historySettings = new HistorySettingsSection(
-      this.plugin,
-      this.containerEl
-    );
-    this.importExportSettings = new ImportExportSettingsSection(
+    this.rulesSettings.render();
+    this.filterSettings = new FilterSettingsSection(
       this.plugin,
       this.containerEl,
-      this.refreshSettings
+      ctx.refresh
     );
-    this.performanceDebugSettings = new PerformanceDebugSettingsSection(
-      this.plugin,
-      this.containerEl,
-      this.refreshSettings
-    );
-    this.updateSettings = new UpdateSettingsSection(
-      this.plugin,
-      this.containerEl
-    );
-    this.conflictResolutionSettings = new ConflictResolutionSettingsSection(
-      this.plugin,
-      this.containerEl
-    );
+    this.filterSettings.render();
+    new WhenMovingSettingsSection(ctx).render();
+    new HistorySettingsSection(ctx).render();
+    new AdvancedSettingsSection(ctx).render();
+  }
 
-    this.triggerSettings.addTriggerSettings();
+  private renderSubPage(ctx: SectionContext): void {
+    const labels = strings().settings;
+    const titles: Record<Exclude<SettingsPage, 'main'>, string> = {
+      importExport: labels.importExportNavName,
+      performance: labels.performanceNavName,
+      skipped: labels.skippedTitle,
+    };
+    const head = this.containerEl.createDiv({
+      cls: 'advancedNoteMover-subpage-head',
+    });
+    new ExtraButtonComponent(head)
+      .setIcon('arrow-left')
+      .setTooltip(labels.backLabel)
+      .onClick(() => this.navigate('main'))
+      .extraSettingsEl.setAttrs({
+        'aria-label': labels.backLabel,
+        role: 'button',
+      });
+    head.createDiv({
+      cls: 'advancedNoteMover-subpage-title',
+      text: titles[this.page as Exclude<SettingsPage, 'main'>],
+    });
 
-    this.filterSettings.addFilterSettings();
-
-    this.rulesSettings.addRulesSetting();
-    this.rulesSettings.addCreateMissingFoldersSetting();
-    this.rulesSettings.addRulesArray();
-    this.rulesSettings.addVaultReEvaluationSetting();
-    this.rulesSettings.addAddRuleButtonSetting();
-
-    this.attachmentsSettings.addAttachmentSettings();
-
-    this.conflictResolutionSettings.addConflictResolutionSettings();
-
-    this.historySettings.addHistorySettings();
-
-    this.importExportSettings.addImportExportSettings();
-
-    this.performanceDebugSettings.addPerformanceDebugSettings();
-
-    this.updateSettings.addUpdateSettings();
-    associateSettingLabels(this.containerEl);
+    if (this.page === 'importExport') {
+      new ImportExportSettingsSection(ctx).render();
+    } else if (this.page === 'performance') {
+      new PerformanceDebugSettingsSection(ctx).render();
+    } else {
+      new SkippedNotesSettingsSection(ctx).render();
+    }
   }
 
   /**
@@ -164,7 +174,6 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   private cleanupExistingSections(): void {
     this.filterSettings?.cleanup();
     this.rulesSettings?.cleanup();
-    this.triggerSettings?.cleanup();
   }
 
   /**
