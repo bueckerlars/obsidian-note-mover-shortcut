@@ -27,3 +27,4 @@ coverage
 
 # Exclude generated files
 src/generated/
+.design/

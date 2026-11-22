@@ -1,4 +1,4 @@
-import 'obsidian';
+import { setIcon } from 'obsidian';
 import { strings } from '../i18n/locale';
 
 export interface DragDropItem {
@@ -287,9 +287,8 @@ export class DragDropManager {
 
   // Public method to create a drag handle
   public static createDragHandle(): HTMLElement {
-    return createDiv({
+    const handle = createDiv({
       cls: 'advancedNoteMover-drag-handle',
-      text: '⋮⋮',
       attr: {
         draggable: 'true',
         'aria-label': strings().settings.rulesDragToReorder,
@@ -298,6 +297,8 @@ export class DragDropManager {
         title: strings().settings.rulesDragToReorder,
       },
     });
+    setIcon(handle, 'grip-vertical');
+    return handle;
   }
 
   // Public method to wrap a setting item with drag handle

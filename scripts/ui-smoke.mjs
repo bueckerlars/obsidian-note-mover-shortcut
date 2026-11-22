@@ -136,9 +136,7 @@ function prepareVault(tmp) {
       smoke: { path: vault, ts: Date.now(), open: true },
     },
   };
-  if (process.env.SMOKE_LOCALE) {
-    appConfig.language = process.env.SMOKE_LOCALE;
-  }
+  appConfig.language = process.env.SMOKE_LOCALE || 'en';
   fs.writeFileSync(
     path.join(userData, 'obsidian.json'),
     `${JSON.stringify(appConfig, null, 2)}\n`
