@@ -787,10 +787,12 @@ body.is-mobile .advancedNoteMover-modal-title {
   vertical-align: middle;
 }
 
-.advancedNoteMover-settings-root .advancedNoteMover-pill.mod-warning {
+.advancedNoteMover-settings-root .advancedNoteMover-pill.is-warning {
+  display: inline-flex;
+  align-items: center;
   margin-left: 0;
-  background-color: var(--background-modifier-error-hover);
-  color: var(--text-warning);
+  background-color: rgba(var(--color-orange-rgb), 0.15);
+  color: var(--color-orange);
 }
 
 .advancedNoteMover-settings-root .advancedNoteMover-sub-row {
@@ -1137,7 +1139,7 @@ body.is-phone
   .advancedNoteMover-name-setting
   .setting-item-control
   input[type='text'] {
-  flex: 0 0 320px;
+  flex: none;
   width: 320px;
   max-width: 100%;
 }
@@ -1511,6 +1513,17 @@ body.is-phone
   font-size: var(--font-ui-smaller);
 }
 
+/* Desktop: the footer follows the content; only the phone sticks it. */
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-footer-row {
+  position: static;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-footer-row {
+  position: sticky;
+}
+
 /* ===== PHONE: rule editor ===== */
 
 .advancedNoteMover-condition-more,
@@ -1840,7 +1853,7 @@ body.is-phone
 body.is-phone
   .advancedNoteMover-rule-editor-modal
   .advancedNoteMover-footer-row {
-  flex-wrap: wrap;
+  flex-flow: row wrap;
   gap: var(--size-4-3);
   padding-block: var(--size-4-3) var(--size-4-2);
 }
@@ -1862,7 +1875,8 @@ body.is-phone
 
 body.is-phone
   .advancedNoteMover-rule-editor-modal
-  .advancedNoteMover-footer-left {
+  .advancedNoteMover-footer-row
+  > .advancedNoteMover-footer-left {
   flex-basis: 100%;
   justify-content: center;
   order: -1;
