@@ -352,7 +352,7 @@ body.is-mobile {
 }
 
 .advancedNoteMover-modal .advancedNoteMover-pill.is-accent {
-  background: rgba(var(--color-accent-rgb), 0.15);
+  background: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
   color: var(--text-accent);
 }
 
@@ -397,6 +397,11 @@ body.is-mobile .advancedNoteMover-history-actions {
   opacity: 1;
 }
 
+.modal.advancedNoteMover-why-shell {
+  width: 620px;
+  max-width: 95vw;
+}
+
 /* ===== RELEASE NOTES ===== */
 
 .modal.advancedNoteMover-release-shell {
@@ -428,7 +433,7 @@ body.is-mobile .advancedNoteMover-history-actions {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-m);
-  background: rgba(var(--color-accent-rgb), 0.15);
+  background: color-mix(in srgb, var(--interactive-accent) 15%, transparent);
   color: var(--text-accent);
 }
 
@@ -970,8 +975,9 @@ body.is-mobile .advancedNoteMover-modal-title {
 
 .advancedNoteMover-rule-editor-modal
   .advancedNoteMover-name-setting
+  .setting-item-control
   input[type='text'] {
-  flex: none;
+  flex: 0 0 320px;
   width: 320px;
   max-width: 100%;
 }
