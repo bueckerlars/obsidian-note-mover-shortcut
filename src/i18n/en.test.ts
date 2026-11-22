@@ -15,6 +15,8 @@ const ALLOWED = new Set([
   'README',
   'status',
   'Work',
+  'Move',
+  'and',
 ]);
 
 function stringsIn(value: unknown): string[] {

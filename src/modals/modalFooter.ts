@@ -2,6 +2,7 @@ import { ButtonComponent } from 'obsidian';
 
 export interface ModalFooterOptions {
   primaryText: string;
+  primaryDisabled?: boolean;
   onPrimary: () => void;
   /** Destructive primary action, drawn with the warning style. */
   warning?: boolean;
@@ -13,6 +14,7 @@ export interface ModalFooter {
   /** Left side: a secondary action or a status text. */
   leftEl: HTMLElement;
   primary: ButtonComponent;
+  cancel: ButtonComponent;
 }
 
 /** Footer row: optional left content, then the primary button before Cancel. */
@@ -25,13 +27,14 @@ export function renderModalFooter(
   const primary = new ButtonComponent(footer)
     .setButtonText(options.primaryText)
     .onClick(options.onPrimary);
+  primary.setDisabled(options.primaryDisabled ?? false);
   if (options.warning) {
     primary.buttonEl.addClass('mod-warning');
   } else {
     primary.setCta();
   }
-  new ButtonComponent(footer)
+  const cancel = new ButtonComponent(footer)
     .setButtonText(options.cancelText)
     .onClick(options.onCancel);
-  return { leftEl, primary };
+  return { leftEl, primary, cancel };
 }

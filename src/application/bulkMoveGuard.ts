@@ -1,23 +1,30 @@
 export interface BulkMoveFile {
   path: string;
+  /** Note name shown in the confirmation, without extension. */
+  name: string;
+  destination: string;
+  rule?: string;
 }
 
 export interface BulkMovePrompt {
   count: number;
-  paths: string[];
-  undoHint: string;
+  ruleCount: number;
+  rows: { name: string; destination: string }[];
+  /** Notes beyond the listed rows. */
+  more: number;
 }
 
-const PREVIEW_PATH_LIMIT = 10;
+export const BULK_PROMPT_ROW_LIMIT = 5;
 
-export function bulkMovePrompt(
-  files: readonly BulkMoveFile[],
-  undoHint: string
-): BulkMovePrompt {
+export function bulkMovePrompt(files: readonly BulkMoveFile[]): BulkMovePrompt {
+  const rules = new Set(files.map(file => file.rule ?? ''));
   return {
     count: files.length,
-    paths: files.slice(0, PREVIEW_PATH_LIMIT).map(file => file.path),
-    undoHint,
+    ruleCount: rules.size,
+    rows: files
+      .slice(0, BULK_PROMPT_ROW_LIMIT)
+      .map(file => ({ name: file.name, destination: file.destination })),
+    more: Math.max(0, files.length - BULK_PROMPT_ROW_LIMIT),
   };
 }
 
@@ -27,16 +34,13 @@ export function bulkMovePrompt(
  */
 export async function runConfirmedBulkMove(options: {
   previewed: readonly BulkMoveFile[];
-  undoHint: string;
   confirm: (prompt: BulkMovePrompt) => Promise<boolean> | boolean;
   renameFile: (file: BulkMoveFile) => Promise<void>;
 }): Promise<void> {
   if (options.previewed.length === 0) {
     return;
   }
-  const accepted = await options.confirm(
-    bulkMovePrompt(options.previewed, options.undoHint)
-  );
+  const accepted = await options.confirm(bulkMovePrompt(options.previewed));
   if (!accepted) {
     return;
   }

@@ -123,6 +123,7 @@ export abstract class BaseModal extends Modal {
    */
   protected addCssClass(): void {
     const { contentEl } = this;
+    contentEl.addClass('advancedNoteMover-modal');
     if (this.options.cssClass) {
       contentEl.addClass(this.options.cssClass);
     }

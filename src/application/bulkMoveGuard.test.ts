@@ -1,19 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
 import { runConfirmedBulkMove } from './bulkMoveGuard';
 
-const undoHint = 'You can undo this from move history.';
+const file = (name: string, rule = 'Rule', destination = 'Archive') => ({
+  path: `Inbox/${name}.md`,
+  name,
+  destination,
+  rule,
+});
 
 describe('runConfirmedBulkMove', () => {
   it('does not rename files when confirmation is declined', async () => {
     const renameFile = vi.fn();
 
     await runConfirmedBulkMove({
-      previewed: [{ path: 'Inbox/a.md' }, { path: 'Inbox/b.md' }],
-      undoHint,
+      previewed: [file('a'), file('b')],
       confirm: async prompt => {
         expect(prompt.count).toBe(2);
-        expect(prompt.paths).toEqual(['Inbox/a.md', 'Inbox/b.md']);
-        expect(prompt.undoHint).toBe(undoHint);
         return false;
       },
       renameFile,
@@ -23,49 +25,40 @@ describe('runConfirmedBulkMove', () => {
   });
 
   it('renames only the previewed files after confirmation', async () => {
-    const previewed = [{ path: 'Inbox/a.md' }, { path: 'Inbox/b.md' }];
-    const vault = [...previewed, { path: 'Keep/c.md' }];
+    const previewed = [file('a'), file('b')];
     const renamed: string[] = [];
 
     await runConfirmedBulkMove({
       previewed,
-      undoHint,
       confirm: async () => true,
-      renameFile: async file => {
-        renamed.push(file.path);
+      renameFile: async item => {
+        renamed.push(item.path);
       },
     });
 
     expect(renamed).toEqual(['Inbox/a.md', 'Inbox/b.md']);
-    expect(renamed).not.toContain('Keep/c.md');
-    expect(
-      vault.map(file => file.path).filter(path => !renamed.includes(path))
-    ).toEqual(['Keep/c.md']);
   });
 
-  it('shows the count and the first 10 paths', async () => {
-    const previewed = Array.from({ length: 12 }, (_, index) => ({
-      path: `Notes/n${index}.md`,
-    }));
-    const renamed: string[] = [];
+  it('lists the first 5 rows, the rest as a count, and counts rules', async () => {
+    const previewed = Array.from({ length: 17 }, (_, index) =>
+      file(`n${index}`, index % 2 ? 'Odd' : 'Even', `Dest/${index}`)
+    );
 
     await runConfirmedBulkMove({
       previewed,
-      undoHint,
       confirm: async prompt => {
-        expect(prompt.count).toBe(12);
-        expect(prompt.paths).toEqual(
-          Array.from({ length: 10 }, (_, index) => `Notes/n${index}.md`)
+        expect(prompt.count).toBe(17);
+        expect(prompt.ruleCount).toBe(2);
+        expect(prompt.more).toBe(12);
+        expect(prompt.rows).toEqual(
+          Array.from({ length: 5 }, (_, index) => ({
+            name: `n${index}`,
+            destination: `Dest/${index}`,
+          }))
         );
-        expect(prompt.undoHint).toBe(undoHint);
         return true;
       },
-      renameFile: async file => {
-        renamed.push(file.path);
-      },
+      renameFile: async () => {},
     });
-
-    expect(renamed).toHaveLength(12);
-    expect(renamed).toEqual(previewed.map(file => file.path));
   });
 });

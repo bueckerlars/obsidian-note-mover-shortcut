@@ -82,7 +82,9 @@ export class HistorySettingsSection {
           button.onClick(async () => {
             const confirmed = await ConfirmModal.show(plugin.app, {
               title: labels.historyClearTitle,
-              message: labels.historyClearMessage,
+              message: fill(labels.historyClearMessage, {
+                count: plugin.historyManager.getHistory().length,
+              }),
               confirmText: labels.historyClearConfirm,
               cancelText: strings().common.cancel,
               danger: true,
