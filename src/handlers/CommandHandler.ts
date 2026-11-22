@@ -1,6 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { HistoryModal } from '../modals/HistoryModal';
-import { ConflictSkipCacheModal } from '../modals/ConflictSkipCacheModal';
 import { PreviewModal } from '../modals/PreviewModal';
 import { openWhyNotMoved } from '../modals/RuleTestModal';
 import { handleError } from '../utils/Error';
@@ -76,10 +75,7 @@ export class CommandHandler {
       id: 'show-conflict-skip-cache',
       name: strings().commands.reviewSkippedConflicts,
       callback: () => {
-        void (async () => {
-          await this.plugin.conflictSkipCacheManager.prune(this.plugin.app);
-          new ConflictSkipCacheModal(this.plugin.app, this.plugin).open();
-        })();
+        this.plugin.openSettingsPage('skipped');
       },
     });
 
@@ -89,13 +85,7 @@ export class CommandHandler {
       name: strings().commands.previewBulk,
       callback: async () => {
         try {
-          new PreviewModal(this.plugin.app, this.plugin, null, {
-            load: (signal, onProgress) =>
-              this.plugin.advancedNoteMover.generateVaultMovePreview(
-                signal,
-                onProgress
-              ),
-          }).open();
+          this.plugin.advancedNoteMover.openVaultMovePreview();
         } catch (error) {
           handleError(
             error,

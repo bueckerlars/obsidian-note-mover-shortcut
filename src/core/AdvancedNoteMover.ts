@@ -658,6 +658,14 @@ export class AdvancedNoteMover {
    * Re-evaluate the vault with current rules: sync rule manager, invalidate cache,
    * then open a preview modal before any files are moved.
    */
+  /** Opens the bulk preview for every movable note. */
+  openVaultMovePreview(): void {
+    new PreviewModal(this.plugin.app, this.plugin, null, {
+      load: (signal, onProgress) =>
+        this.generateVaultMovePreview(signal, onProgress),
+    }).open();
+  }
+
   async openVaultReEvaluationPreview(): Promise<void> {
     this.updateRuleManager();
     this.plugin.ruleCache.invalidateAll();

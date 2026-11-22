@@ -1,101 +1,69 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { App, ButtonComponent, Menu, Setting } from 'obsidian';
+import { App, Menu, Setting } from 'obsidian';
 import { fill, strings } from '../../i18n/locale';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { RuleEditorModal } from '../../modals/RuleEditorModal';
 import { RuleV2 } from '../../types/RuleV2';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { toMarkdownInlineCode } from '../../utils/markdown-confirm';
-import { handleError } from '../../utils/Error';
-import { NoticeManager } from '../../utils/NoticeManager';
 import { cloneRule } from '../cloneRule';
-import { renderSetting } from '../settingDefinitions';
+import { addPlusIcon, createSettingGroup } from '../settingGroup';
 import { ruleSubtitle } from '../ruleSubtitle';
+
+interface RuleFilterState {
+  query: string;
+}
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
+  private listEl: HTMLElement;
+  private readonly rows: { el: HTMLElement; text: string }[] = [];
 
   constructor(
     private plugin: AdvancedNoteMoverPlugin,
     private containerEl: HTMLElement,
-    private refreshDisplay: () => void
-  ) {}
-
-  addRulesSetting(): void {
-    renderSetting(this.containerEl, 'rules.heading').setTooltip(
-      strings().settings.rulesIntroTail
-    );
+    private refreshDisplay: () => void,
+    private filterState: RuleFilterState = { query: '' }
+  ) {
+    this.listEl = containerEl;
   }
 
-  addCreateMissingFoldersSetting(): void {
-    renderSetting(this.containerEl, 'rules.createFolders')
-      .setTooltip(strings().settings.rulesCreateFoldersDetail)
-      .addToggle(toggle =>
-        toggle
-          .setValue(
-            this.plugin.pluginData.settings.createMissingDestinationFolders !==
-              false
-          )
-          .onChange(async value => {
-            this.plugin.pluginData.settings.createMissingDestinationFolders =
-              value;
-            await this.plugin.save_settings();
-            this.plugin.advancedNoteMover.updateRuleManager();
-          })
-      );
-  }
-
-  addVaultReEvaluationSetting(): void {
-    let reEvaluateButton: ButtonComponent | undefined;
-
-    renderSetting(this.containerEl, 'rules.reEvaluate').addButton(btn => {
-      reEvaluateButton = btn
-        .setButtonText(strings().settings.rulesReEvaluateButton)
-        .onClick(() => {
-          if (reEvaluateButton) {
-            reEvaluateButton.setDisabled(true);
-            reEvaluateButton.setButtonText(
-              strings().settings.rulesGeneratingPreview
-            );
-          }
-          void (async () => {
-            try {
-              await this.plugin.advancedNoteMover.openVaultReEvaluationPreview();
-            } catch (error) {
-              handleError(
-                error,
-                strings().notices.errorGeneratingVaultPreviewContext,
-                false
-              );
-              NoticeManager.error(
-                fill(strings().notices.errorGeneratingPreview, {
-                  message:
-                    error instanceof Error ? error.message : String(error),
-                })
-              );
-            } finally {
-              if (reEvaluateButton) {
-                reEvaluateButton.setDisabled(false);
-                reEvaluateButton.setButtonText(
-                  strings().settings.rulesReEvaluateButton
-                );
-              }
-            }
-          })();
-        });
+  /** Group with heading-row search and add button, then the current rule list. */
+  render(): void {
+    const labels = strings().settings;
+    const group = createSettingGroup(this.containerEl, {
+      heading: labels.headingsRules,
+      description: labels.rulesGroupDesc,
     });
+    group.addSearch(search => {
+      search
+        .setPlaceholder(labels.rulesFilterPlaceholder)
+        .setValue(this.filterState.query)
+        .onChange(value => {
+          this.filterState.query = value;
+          this.applyFilter();
+        });
+      search.inputEl.setAttr('aria-label', labels.rulesFilterPlaceholder);
+    });
+    group.addButton(button => {
+      button
+        .setButtonText(labels.rulesAddButton)
+        .onClick(() => this.openRuleEditorModal(null));
+      addPlusIcon(button);
+    });
+    this.listEl = group.listEl;
+    this.addRulesV2Array();
+    this.applyFilter();
   }
 
-  addAddRuleButtonSetting(): void {
-    renderSetting(this.containerEl, 'rules.add').addButton(btn =>
-      btn
-        .setIcon('plus')
-        .setTooltip(strings().settings.rulesAddButton)
-        .setCta()
-        .onClick(() => {
-          this.openRuleEditorModal(null);
-        })
-    );
+  private applyFilter(): void {
+    const query = this.filterState.query.trim().toLowerCase();
+    for (const row of this.rows) {
+      row.el.toggleClass(
+        'advancedNoteMover-hidden',
+        query !== '' && !row.text.includes(query)
+      );
+    }
   }
 
   addRulesArray(): void {
@@ -131,15 +99,16 @@ export class RulesSettingsSection {
       this.plugin.pluginData.settings.rulesV2 = [];
     }
 
-    const rulesContainer = this.containerEl.createDiv({
-      cls: 'advancedNoteMover-rules-v2-container',
-    });
+    const rulesContainer = this.listEl;
+    rulesContainer.addClass('advancedNoteMover-rules-v2-container');
 
     // Setup drag & drop manager for V2 rules
     this.setupDragDropManagerV2(rulesContainer);
 
     if (this.plugin.pluginData.settings.rulesV2.length === 0) {
-      renderSetting(this.containerEl, 'rules.empty');
+      new Setting(rulesContainer)
+        .setName(strings().settings.rulesEmpty)
+        .setDesc(strings().settings.rulesEmptyDesc);
     }
 
     this.plugin.pluginData.settings.rulesV2.forEach(rule => {
@@ -178,6 +147,10 @@ export class RulesSettingsSection {
             });
         });
       this.addDragHandle(setting.settingEl);
+      this.rows.push({
+        el: setting.settingEl,
+        text: `${rule.name} ${ruleSubtitle(rule)}`.toLowerCase(),
+      });
     });
   }
 
