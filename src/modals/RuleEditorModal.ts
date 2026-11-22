@@ -337,6 +337,7 @@ export class RuleEditorModal extends BaseModal {
           ? sample.filePath.slice(0, sample.filePath.lastIndexOf('/'))
           : '/',
         to: resolveDestinationPreview(this.workingRule.destination, sample),
+        destination: this.workingRule.destination || '—',
       })),
     });
     this.refresh();

@@ -139,7 +139,11 @@ export function renderConditionRow(
       return;
     }
     const operators = getOperatorsForTrigger(trigger);
-    for (const item of operators) operator.addOption(item, operatorLabel(item));
+    for (const item of operators)
+      operator.addOption(
+        item,
+        operatorLabel(item, strings().ruleSummary.operators)
+      );
     if (!operators.includes(trigger.operator)) trigger.operator = operators[0];
     operator.setValue(trigger.operator);
   };
