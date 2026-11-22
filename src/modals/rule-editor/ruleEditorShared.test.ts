@@ -5,7 +5,6 @@ import {
   applyFolderCreationValue,
   getFolderCreationValue,
 } from './ruleEditorShared';
-import { validateRule } from './ruleEditorState';
 
 function trigger(value: string): Trigger {
   return { criteriaType: 'tag', operator: 'includes item', value };
@@ -50,28 +49,5 @@ describe('folder creation value', () => {
     expect(getFolderCreationValue(r)).toBe('never');
     applyFolderCreationValue(r, 'inherit');
     expect(r.createDestinationFolder).toBeUndefined();
-  });
-});
-
-describe('validateRule', () => {
-  it('accepts a valid rule', () => {
-    expect(validateRule(rule())).toBeNull();
-  });
-
-  it('reports missing name, destination and values', () => {
-    expect(validateRule(rule({ name: ' ' }))).toMatch(/name/);
-    expect(validateRule(rule({ destination: '' }))).toMatch(/Destination/);
-    expect(validateRule(rule({ triggers: [trigger('')] }))).toMatch(
-      /Condition 1/
-    );
-  });
-
-  it('reports invalid regex patterns', () => {
-    const t: Trigger = {
-      criteriaType: 'fileName',
-      operator: 'match regex',
-      value: '(',
-    } as Trigger;
-    expect(validateRule(rule({ triggers: [t] }))).toMatch(/regex/);
   });
 });

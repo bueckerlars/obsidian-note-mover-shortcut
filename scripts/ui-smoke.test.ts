@@ -252,8 +252,7 @@ describe('collectFailures', () => {
     const editor = document.createElement('div');
     editor.className = 'advancedNoteMover-rule-editor-modal';
     const labeled = document.createElement('button');
-    labeled.className =
-      'clickable-icon advancedNoteMover-rule-trigger-delete-btn';
+    labeled.className = 'clickable-icon advancedNoteMover-condition-remove';
     labeled.setAttribute('aria-label', 'Delete condition');
     const unlabeled = document.createElement('button');
     unlabeled.className = 'clickable-icon';
