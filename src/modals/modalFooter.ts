@@ -6,6 +6,8 @@ export interface ModalFooterOptions {
   onPrimary: () => void;
   /** Destructive primary action, drawn with the warning style. */
   warning?: boolean;
+  /** Ordinary button instead of the call-to-action style. */
+  plain?: boolean;
   /** Without it the footer has no Cancel button. */
   cancelText?: string;
   onCancel?: () => void;
@@ -31,7 +33,7 @@ export function renderModalFooter(
   primary.setDisabled(options.primaryDisabled ?? false);
   if (options.warning) {
     primary.buttonEl.addClass('mod-warning');
-  } else {
+  } else if (!options.plain) {
     primary.setCta();
   }
   const cancel =

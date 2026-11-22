@@ -49,8 +49,10 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   }
 
   /** Scrolls an already rendered section heading into view. */
-  scrollToSection(section: 'exclusions'): void {
-    const heading = strings().settings[`${section}Heading`];
+  scrollToSection(section: 'exclusions' | 'history'): void {
+    const labels = strings().settings;
+    const heading =
+      section === 'history' ? labels.headingsHistory : labels.exclusionsHeading;
     this.containerEl
       .findAll('.setting-item-heading')
       .find(el => el.textContent?.includes(heading))

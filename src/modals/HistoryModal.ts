@@ -1,27 +1,34 @@
-import { Setting, App, TFile, Menu, setIcon, setTooltip } from 'obsidian';
+import { App, DropdownComponent, TFile, setTooltip } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
 import { HistoryEntry, TimeFilter } from '../types/HistoryEntry';
+import { formatDayHeading } from '../utils/formatDate';
 import { NoticeManager } from '../utils/NoticeManager';
-import { NOTIFICATION_CONSTANTS } from '../config/constants';
-import { fill, strings } from '../i18n/locale';
+import { HISTORY_CONSTANTS, NOTIFICATION_CONSTANTS } from '../config/constants';
+import { fill, plural, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
-import { MobileUtils } from '../utils/MobileUtils';
+import { renderModalFooter } from './modalFooter';
+import { iconSpan, setAttrs } from './modalDom';
 import AdvancedNoteMoverPlugin from 'main';
-import { associateSettingLabels } from '../domain/a11y/associateSettingLabels';
 import {
-  groupHistoryByDay,
-  type HistoryAction,
+  buildHistoryView,
+  historyRuleNames,
+  type HistoryGroupItem,
   type HistoryRow,
 } from '../domain/history/historyGrouping';
-
-const ACTION_ICONS: Record<HistoryAction, string> = {
-  open: 'file-text',
-  undo: 'undo',
-  blacklist: 'ban',
-};
+import {
+  FOREVER,
+  retentionDaysLabel,
+  retentionToKey,
+} from '../settings/historyRetention';
 
 export class HistoryModal extends BaseModal {
-  private currentTimeFilter: TimeFilter = 'all';
+  private range: TimeFilter = 'month';
+  private rule: string | null = null;
+  private query = '';
+  private subEl: HTMLElement | null = null;
+  private listEl: HTMLElement | null = null;
+  private entries = new Map<string, HistoryEntry>();
+  private readonly collapsed = new Set<string>();
 
   constructor(
     app: App,
@@ -31,217 +38,301 @@ export class HistoryModal extends BaseModal {
   ) {
     super(app, {
       title: strings().modals.historyTitle,
-      cssClass: 'advancedNoteMover-history-modal',
-      size: 'large',
+      focusSelector: 'input',
       ...options,
     });
   }
 
   protected createContent(): void {
     const { contentEl } = this;
-    this.createTimeFilterDropdown(contentEl);
-
-    const entries = this.visibleEntries();
-    const byId = new Map(entries.map(entry => [entry.id, entry]));
-    const groups = groupHistoryByDay(
-      entries,
-      strings().modals.historyUnknownRule
-    );
-    if (groups.length === 0) {
-      contentEl.createDiv({
-        cls: 'advancedNoteMover-modal-empty',
-        text: strings().modals.historyEmpty,
-      });
-      return;
-    }
-
-    const historyList = contentEl.createDiv({
-      cls: 'advancedNoteMover-history-list',
+    this.modalEl.addClass('advancedNoteMover-history-shell');
+    this.loadEntries();
+    this.subEl = contentEl.createEl('p', {
+      cls: 'advancedNoteMover-modal-sub',
+      text: this.subtitle(),
     });
-    for (const group of groups) {
-      const day = historyList.createDiv({
-        cls: 'advancedNoteMover-history-day',
-      });
-      day.createDiv({
-        cls: 'advancedNoteMover-history-day-label',
-        text: group.day,
-      });
-      for (const row of group.rows) {
-        const entry = byId.get(row.id);
-        if (entry) {
-          this.renderRow(day, row, entry);
-        }
-      }
-    }
+    this.renderToolbar(contentEl);
+    this.listEl = contentEl.createDiv({
+      cls: 'advancedNoteMover-preview-scroll',
+    });
+    this.renderList();
+    this.renderFooter();
   }
 
-  private visibleEntries(): HistoryEntry[] {
-    const entries = this.historyManager.getFilteredHistory(
-      this.currentTimeFilter
+  /** History plus the notes of bulk operations that dropped out of it. */
+  private loadEntries(): void {
+    this.entries = new Map(
+      this.historyManager.getHistory().map(entry => [entry.id, entry])
     );
-    const seen = new Set(entries.map(entry => entry.id));
-    const combined = [...entries];
-    for (const bulk of this.historyManager.getFilteredBulkOperations(
-      this.currentTimeFilter
-    )) {
+    for (const bulk of this.historyManager.getBulkOperations()) {
       for (const entry of bulk.entries) {
-        if (seen.has(entry.id)) {
-          continue;
-        }
-        seen.add(entry.id);
-        combined.push(entry);
+        if (!this.entries.has(entry.id)) this.entries.set(entry.id, entry);
       }
     }
-    return combined;
   }
 
-  private createTimeFilterDropdown(container: HTMLElement): void {
-    const filterContainer = container.createDiv({
-      cls: 'advancedNoteMover-time-filter-container',
-    });
-
-    new Setting(filterContainer)
-      .setName(strings().modals.historyTimeFilter)
-      .addDropdown(dropdown => {
-        dropdown
-          .addOption('all', strings().modals.historyAll)
-          .addOption('today', strings().modals.historyToday)
-          .addOption('week', strings().modals.historyWeek)
-          .addOption('month', strings().modals.historyMonth)
-          .setValue(this.currentTimeFilter)
-          .onChange((value: string) => {
-            this.currentTimeFilter = value as TimeFilter;
-            this.refreshContent();
-          });
-      });
+  private retentionDays(): number | null {
+    const policy =
+      this.plugin.pluginData.settings.retentionPolicy ??
+      HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY;
+    const key = retentionToKey(policy);
+    return key === FOREVER ? null : Number(key);
   }
 
-  private refreshContent(): void {
-    this.contentEl.empty();
-    this.createContent();
-    associateSettingLabels(this.contentEl);
+  private subtitle(): string {
+    const text = strings().modals;
+    const moves = [...this.entries.values()].filter(e => !e.undone).length;
+    const count = plural(moves, 'move', 'moves');
+    const days = this.retentionDays();
+    return days === null
+      ? fill(text.historySubtitleAll, { moves: count })
+      : fill(text.historySubtitle, {
+          moves: count,
+          period: retentionDaysLabel(days),
+        });
   }
 
-  private renderRow(
-    container: HTMLElement,
-    row: HistoryRow,
-    entry: HistoryEntry
-  ): void {
-    const entryEl = container.createDiv({
-      cls: 'advancedNoteMover-history-entry',
+  private renderToolbar(parent: HTMLElement): void {
+    const text = strings().modals;
+    const row = parent.createDiv({ cls: 'advancedNoteMover-preview-toolbar' });
+    const field = row.createDiv({ cls: 'advancedNoteMover-search-field' });
+    iconSpan(field, 'search');
+    const input = field.createEl('input', { type: 'search' });
+    setAttrs(input, {
+      placeholder: text.historySearch,
+      'aria-label': text.historySearch,
     });
-    const contentEl = entryEl.createDiv({
-      cls: 'advancedNoteMover-history-entry-content',
-    });
-    const title = contentEl.createDiv({
-      cls: 'advancedNoteMover-history-entry-info',
-    });
-    const iconEl = title.createSpan({ cls: 'advancedNoteMover-icon' });
-    iconEl.ariaHidden = 'true';
-    setIcon(iconEl, 'file-text');
-    title.createSpan({ text: entry.fileName });
-    contentEl.createDiv({
-      cls: 'advancedNoteMover-history-entry-meta',
-      text: fill(strings().modals.historyMeta, {
-        time: row.time,
-        rule: row.ruleName,
-      }),
-    });
-    contentEl.createDiv({
-      cls: 'advancedNoteMover-history-entry-paths',
-      text: fill(strings().modals.historyPathLine, {
-        source: entry.sourcePath,
-        destination: entry.destinationPath,
-      }),
+    input.addEventListener('input', () => {
+      this.query = input.value;
+      this.renderList();
     });
 
-    const actions = entryEl.createDiv({
-      cls: 'advancedNoteMover-history-actions',
-    });
-    this.renderActions(actions, entry, row);
+    const names = historyRuleNames(
+      [...this.entries.values()],
+      (this.plugin.pluginData.settings.rulesV2 ?? []).map(rule => rule.name)
+    );
+    new DropdownComponent(row)
+      .addOption('', text.historyAllRules)
+      .addOptions(Object.fromEntries(names.map(name => [name, name])))
+      .setValue('')
+      .onChange(value => {
+        this.rule = value || null;
+        this.renderList();
+      })
+      .selectEl.setAttribute('aria-label', text.historyAllRules);
+
+    new DropdownComponent(row)
+      .addOption('month', text.historyRangeMonth)
+      .addOption('today', text.historyToday)
+      .addOption('week', text.historyRangeWeek)
+      .addOption('all', text.historyRangeAll)
+      .setValue(this.range)
+      .onChange(value => {
+        this.range = value as TimeFilter;
+        this.renderList();
+      })
+      .selectEl.setAttribute('aria-label', text.historyRangeLabel);
   }
 
-  private renderActions(
-    container: HTMLElement,
-    entry: HistoryEntry,
-    row: HistoryRow
-  ): void {
-    const labels = this.actionLabels(entry);
-    const run = this.actionHandlers(entry);
-    if (MobileUtils.isMobile()) {
-      const button = container.createEl('button', {
-        cls: 'clickable-icon advancedNoteMover-history-action',
-      });
-      button.setAttribute('aria-label', strings().modals.historyActions);
-      setTooltip(button, strings().modals.historyActions);
-      setIcon(button, 'more-horizontal');
-      button.addEventListener('click', () => {
-        const menu = new Menu();
-        for (const action of row.actions) {
-          menu.addItem(item =>
-            item
-              .setTitle(labels[action])
-              .setIcon(ACTION_ICONS[action])
-              .onClick(run[action])
-          );
-        }
-        const rect = button.getBoundingClientRect();
-        menu.showAtPosition({ x: rect.left, y: rect.bottom });
+  private renderList(): void {
+    const list = this.listEl;
+    if (!list) return;
+    list.empty();
+    const text = strings().modals;
+    const all = [...this.entries.values()];
+    const days = buildHistoryView(
+      all,
+      this.historyManager.getBulkOperations(),
+      {
+        query: this.query,
+        rule: this.rule,
+        range: this.range,
+        now: Date.now(),
+        rootLabel: text.previewVaultRoot,
+      }
+    );
+    if (days.length === 0) {
+      list.createDiv({
+        cls: 'advancedNoteMover-preview-no-results',
+        text: all.length === 0 ? text.historyEmpty : text.historyNoResults,
       });
       return;
     }
-
-    for (const action of row.actions) {
-      const button = container.createEl('button', {
-        cls: 'clickable-icon advancedNoteMover-history-action',
+    for (const day of days) {
+      list.createDiv({
+        cls: 'advancedNoteMover-list-head',
+        text: formatDayHeading(day.timestamp, {
+          today: text.historyToday,
+          yesterday: text.historyYesterday,
+        }),
       });
-      setIcon(button, ACTION_ICONS[action]);
-      button.setAttribute('aria-label', labels[action]);
-      setTooltip(button, labels[action]);
-      button.addEventListener('click', run[action]);
+      for (const item of day.items) {
+        if (item.kind === 'row') this.renderRow(list, item.row, true);
+        else this.renderGroup(list, item);
+      }
     }
   }
 
-  private actionLabels(entry: HistoryEntry): Record<HistoryAction, string> {
-    return {
-      open: fill(strings().notices.openFile, { fileName: entry.fileName }),
-      undo: fill(strings().notices.undoMoveFor, { fileName: entry.fileName }),
-      blacklist: fill(strings().notices.addNamedFileToBlacklist, {
-        fileName: entry.fileName,
-      }),
-    };
-  }
-
-  private actionHandlers(
-    entry: HistoryEntry
-  ): Record<HistoryAction, () => void> {
-    return {
-      open: () => this.openEntry(entry),
-      undo: () => {
-        void this.undoEntry(entry);
-      },
-      blacklist: () => {
-        void this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);
-      },
-    };
-  }
-
-  private fileFor(entry: HistoryEntry): TFile | null {
-    const destination = this.app.vault.getAbstractFileByPath(
-      entry.destinationPath
+  /** One move. Top-level rows carry the time and actions, group children don't. */
+  private renderRow(
+    parent: HTMLElement,
+    row: HistoryRow,
+    topLevel: boolean
+  ): void {
+    const text = strings().modals;
+    const el = parent.createDiv({
+      cls: `advancedNoteMover-preview-row advancedNoteMover-history-row${row.undone ? ' is-undone' : ''}`,
+    });
+    iconSpan(el, 'file-text', 'advancedNoteMover-faint');
+    const info = el.createDiv({
+      cls: `advancedNoteMover-history-info advancedNoteMover-grow`,
+    });
+    info.createSpan({ cls: `advancedNoteMover-history-name`, text: row.name });
+    const path = (topLevel ? info : el).createSpan({
+      cls: 'advancedNoteMover-path',
+    });
+    path.createSpan({ text: row.from });
+    iconSpan(path, 'arrow-right', 'advancedNoteMover-path-icon');
+    path.createEl('b', { text: row.to });
+    el.createSpan({
+      cls: 'advancedNoteMover-pill is-neutral',
+      text: row.rule ?? text.historyMovedByCommand,
+    });
+    if (row.undone) {
+      el.createSpan({
+        cls: 'advancedNoteMover-pill is-accent',
+        text: text.historyUndone,
+      });
+    }
+    if (!topLevel) return;
+    el.createSpan({ cls: `advancedNoteMover-history-time`, text: row.time });
+    const actions = el.createDiv({ cls: `advancedNoteMover-history-actions` });
+    if (row.undone) return;
+    this.renderAction(actions, 'undo-2', text.historyUndoMove, row.name, () => {
+      void this.undoRow(row);
+    });
+    this.renderAction(
+      actions,
+      'external-link',
+      text.historyOpenNote,
+      row.name,
+      () => {
+        this.openRow(row);
+      }
     );
-    if (destination instanceof TFile) {
-      return destination;
-    }
-    const source = this.app.vault.getAbstractFileByPath(entry.sourcePath);
-    return source instanceof TFile ? source : null;
   }
 
-  private openEntry(entry: HistoryEntry): void {
-    const file = this.fileFor(entry);
-    if (!file) {
+  private renderAction(
+    parent: HTMLElement,
+    icon: string,
+    label: string,
+    name: string,
+    onClick: () => void
+  ): void {
+    const notices = strings().notices;
+    const button = parent.createEl('button', {
+      cls: 'clickable-icon advancedNoteMover-icon-button',
+      attr: { type: 'button' },
+    });
+    iconSpan(button, icon);
+    button.setAttribute(
+      'aria-label',
+      fill(icon === 'undo-2' ? notices.undoMoveFor : notices.openFile, {
+        fileName: name,
+      })
+    );
+    setTooltip(button, label);
+    button.addEventListener('click', onClick);
+  }
+
+  private renderGroup(parent: HTMLElement, group: HistoryGroupItem): void {
+    const text = strings().modals;
+    const box = parent.createDiv({ cls: 'advancedNoteMover-preview-group' });
+    const head = box.createDiv({ cls: 'advancedNoteMover-preview-group-head' });
+    const open = !this.collapsed.has(group.id);
+    const toggle = head.createEl('button', {
+      cls: 'clickable-icon advancedNoteMover-icon-button',
+      attr: { type: 'button' },
+    });
+    iconSpan(toggle, open ? 'chevron-down' : 'chevron-right');
+    setAttrs(toggle, {
+      'aria-expanded': String(open),
+      'aria-label': fill(text.historyTogether, {
+        notes: plural(group.rows.length, 'note'),
+      }),
+    });
+    toggle.addEventListener('click', () => {
+      if (open) this.collapsed.add(group.id);
+      else this.collapsed.delete(group.id);
+      this.renderList();
+    });
+    head.createSpan({
+      cls: 'advancedNoteMover-strong',
+      text: fill(text.historyTogether, {
+        notes: plural(group.rows.length, 'note'),
+      }),
+    });
+    head.createSpan({
+      cls: 'advancedNoteMover-pill is-neutral',
+      text:
+        group.operation === 'periodic'
+          ? text.historySchedule
+          : text.historyMoveAll,
+    });
+    head.createSpan({ cls: 'advancedNoteMover-grow' });
+    head.createSpan({
+      cls: `advancedNoteMover-history-time`,
+      text: group.time,
+    });
+    if (group.allUndone) {
+      head.createSpan({
+        cls: 'advancedNoteMover-pill is-accent',
+        text: text.historyUndone,
+      });
+    } else {
+      const undoAll = head.createEl('button', {
+        cls: 'advancedNoteMover-quiet-button',
+        attr: { type: 'button' },
+      });
+      iconSpan(undoAll, 'undo-2');
+      undoAll.createSpan({ text: text.historyUndoAll });
+      undoAll.addEventListener('click', () => {
+        void this.undoGroup(group);
+      });
+    }
+    if (!open) return;
+    const body = box.createDiv({ cls: 'advancedNoteMover-preview-group-body' });
+    for (const row of group.rows) this.renderRow(body, row, false);
+  }
+
+  private renderFooter(): void {
+    const text = strings().modals;
+    const footer = renderModalFooter(this.contentEl, {
+      primaryText: text.historySettings,
+      plain: true,
+      onPrimary: () => {
+        this.close();
+        this.plugin.openSettingsPage('main', 'history');
+      },
+    });
+    const days = this.retentionDays();
+    footer.leftEl.createSpan({
+      cls: 'advancedNoteMover-footer-status',
+      text:
+        days === null
+          ? text.historyKeptForever
+          : fill(text.historyRemovedAfter, {
+              period: retentionDaysLabel(days),
+            }),
+    });
+  }
+
+  private openRow(row: HistoryRow): void {
+    const entry = this.entries.get(row.id);
+    const file = entry && this.fileFor(entry);
+    if (!entry || !file) {
       NoticeManager.error(
-        fill(strings().notices.couldNotFindFile, { fileName: entry.fileName }),
+        fill(strings().notices.couldNotFindFile, { fileName: row.name }),
         { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
       );
       return;
@@ -250,15 +341,39 @@ export class HistoryModal extends BaseModal {
     this.close();
   }
 
-  private async undoEntry(entry: HistoryEntry): Promise<void> {
-    const success = await this.historyManager.undoEntry(entry.id);
-    if (success) {
-      this.refreshContent();
+  private fileFor(entry: HistoryEntry): TFile | null {
+    for (const path of [entry.destinationPath, entry.sourcePath]) {
+      const file = this.app.vault.getAbstractFileByPath(path);
+      if (file instanceof TFile) return file;
+    }
+    return null;
+  }
+
+  private async undoRow(row: HistoryRow): Promise<void> {
+    if (await this.historyManager.undoEntry(row.id)) {
+      this.refresh();
       return;
     }
     NoticeManager.error(
-      fill(strings().notices.couldNotUndoMove, { fileName: entry.fileName }),
+      fill(strings().notices.couldNotUndoMove, { fileName: row.name }),
       { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
     );
+  }
+
+  private async undoGroup(group: HistoryGroupItem): Promise<void> {
+    const result = await this.historyManager.undoBulkOperation(group.id);
+    if (!result.success) {
+      NoticeManager.error(result.errors.join('; '), {
+        duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
+      });
+    }
+    this.refresh();
+  }
+
+  /** Re-reads the history after an undo, keeping the toolbar and filters. */
+  private refresh(): void {
+    this.loadEntries();
+    this.subEl?.setText(this.subtitle());
+    this.renderList();
   }
 }

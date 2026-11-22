@@ -15,6 +15,8 @@ export interface HistoryEntry {
   operationType?: 'single' | 'bulk' | 'periodic'; // Type of operation
   /** Attachment files co-moved with this note (for undo). */
   attachmentMoves?: AttachmentPathMove[];
+  /** The move was undone. The entry stays in the list, flagged. */
+  undone?: boolean;
 }
 
 export interface BulkOperation {

@@ -1,4 +1,5 @@
 import type { RetentionPolicy } from '../types/HistoryEntry';
+import { fill, strings } from '../i18n/locale';
 
 export const FOREVER = 'forever';
 /** Day counts offered in the dropdown. */
@@ -28,4 +29,12 @@ export function isCustomRetentionKey(key: string): boolean {
     key !== FOREVER &&
     !(RETENTION_PRESET_DAYS as readonly number[]).includes(Number(key))
   );
+}
+
+/** "30 days", "1 year". */
+export function retentionDaysLabel(days: number): string {
+  const labels = strings().settings;
+  return days === 365
+    ? fill(labels.historyKeepYear, { count: 1 })
+    : fill(labels.historyKeepDays, { count: days });
 }

@@ -7,6 +7,7 @@ import {
   RETENTION_PRESET_DAYS,
   isCustomRetentionKey,
   keyToRetention,
+  retentionDaysLabel,
   retentionToKey,
 } from '../historyRetention';
 import { addNavRow } from '../navRow';
@@ -47,12 +48,7 @@ export class HistorySettingsSection {
         .addDropdown(dropdown => {
           const current = retentionToKey(settings.retentionPolicy);
           for (const days of RETENTION_PRESET_DAYS) {
-            dropdown.addOption(
-              String(days),
-              days === 365
-                ? fill(labels.historyKeepYear, { count: 1 })
-                : fill(labels.historyKeepDays, { count: days })
-            );
+            dropdown.addOption(String(days), retentionDaysLabel(days));
           }
           if (isCustomRetentionKey(current)) {
             // A value from an older version stays selectable.
