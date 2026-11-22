@@ -3,7 +3,7 @@ import { strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { renderModalFooter } from './modalFooter';
 
-export interface ConfirmListRow {
+interface ConfirmListRow {
   name: string;
   /** Right-aligned, drawn with a folder icon. */
   destination: string;
@@ -107,7 +107,7 @@ export class ConfirmModal extends BaseModal {
         this.finish(false);
       },
     });
-    footer.cancel.buttonEl.addClass('advancedNoteMover-confirm-cancel');
+    footer.cancel?.buttonEl.addClass('advancedNoteMover-confirm-cancel');
     if (options.leftLink) {
       const { text, onClick } = options.leftLink;
       const link = footer.leftEl.createEl('button', {

@@ -6,15 +6,16 @@ export interface ModalFooterOptions {
   onPrimary: () => void;
   /** Destructive primary action, drawn with the warning style. */
   warning?: boolean;
-  cancelText: string;
-  onCancel: () => void;
+  /** Without it the footer has no Cancel button. */
+  cancelText?: string;
+  onCancel?: () => void;
 }
 
 export interface ModalFooter {
   /** Left side: a secondary action or a status text. */
   leftEl: HTMLElement;
   primary: ButtonComponent;
-  cancel: ButtonComponent;
+  cancel: ButtonComponent | null;
 }
 
 /** Footer row: optional left content, then the primary button before Cancel. */
@@ -33,8 +34,11 @@ export function renderModalFooter(
   } else {
     primary.setCta();
   }
-  const cancel = new ButtonComponent(footer)
-    .setButtonText(options.cancelText)
-    .onClick(options.onCancel);
+  const cancel =
+    options.cancelText === undefined
+      ? null
+      : new ButtonComponent(footer)
+          .setButtonText(options.cancelText)
+          .onClick(() => options.onCancel?.());
   return { leftEl, primary, cancel };
 }

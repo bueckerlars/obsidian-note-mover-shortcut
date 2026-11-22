@@ -17,6 +17,10 @@ const ALLOWED = new Set([
   'Work',
   'Move',
   'and',
+  // Fragments shown inside pills and next to a note name.
+  'new',
+  'from',
+  'vault',
 ]);
 
 function stringsIn(value: unknown): string[] {

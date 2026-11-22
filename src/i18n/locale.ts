@@ -71,6 +71,7 @@ const GERMAN_NOUNS: Record<string, readonly [string, string]> = {
   rule: ['Regel', 'Regeln'],
   filter: ['Filter', 'Filter'],
   note: ['Notiz', 'Notizen'],
+  attachment: ['Anhang', 'Anhänge'],
   error: ['Fehler', 'Fehler'],
 };
 

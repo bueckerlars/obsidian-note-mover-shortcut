@@ -14,7 +14,7 @@ export interface BulkMovePrompt {
   more: number;
 }
 
-export const BULK_PROMPT_ROW_LIMIT = 5;
+const BULK_PROMPT_ROW_LIMIT = 5;
 
 export function bulkMovePrompt(files: readonly BulkMoveFile[]): BulkMovePrompt {
   const rules = new Set(files.map(file => file.rule ?? ''));

@@ -77,12 +77,21 @@ class NotePickModal extends FuzzySuggestModal<TFile> {
   }
 }
 
+/** Shows, for each rule, why it does or does not match this note. */
+export function openWhyNotMovedForFile(
+  app: App,
+  rules: readonly RuleV2[],
+  file: TFile
+): void {
+  const metadata = fileMetadataFromCache(
+    file,
+    app.metadataCache.getFileCache(file)
+  );
+  new RuleTestModal(app, testRules(metadata, rules)).open();
+}
+
 export function openWhyNotMoved(app: App, rules: readonly RuleV2[]): void {
   new NotePickModal(app, file => {
-    const metadata = fileMetadataFromCache(
-      file,
-      app.metadataCache.getFileCache(file)
-    );
-    new RuleTestModal(app, testRules(metadata, rules)).open();
+    openWhyNotMovedForFile(app, rules, file);
   }).open();
 }
