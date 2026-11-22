@@ -1,11 +1,4 @@
-import {
-  fill,
-  loadLocale,
-  localeCatalogFile,
-  localeCode,
-  strings,
-  useLocale,
-} from './locale';
+import { fill, loadLocale, localeCode, strings, useLocale } from './locale';
 
 describe('loadLocale', () => {
   const english = loadLocale('en');
@@ -25,9 +18,14 @@ describe('loadLocale', () => {
     expect(loadLocale('fr', { en: english, de: german })).toBe(english);
   });
 
-  it('selects languages/<code>.json from the locale code', () => {
-    expect(localeCatalogFile('EN-gb')).toBe('languages/en.json');
-    expect(localeCatalogFile('de_AT')).toBe('languages/de.json');
+  it('has bundled en and de catalogs without any file read', () => {
+    expect(loadLocale('en').settings).toBeDefined();
+    expect(loadLocale('de').settings).toBeDefined();
+    expect(loadLocale('de').settings).not.toBe(loadLocale('en').settings);
+    useLocale('de');
+    expect(strings().settings).toBeDefined();
+    expect(strings().unnamedRule).toBe('Unbenannte Regel');
+    useLocale('en');
   });
 
   it('fills placeholders and leaves unknown tokens in place', () => {
