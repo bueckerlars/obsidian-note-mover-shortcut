@@ -136,6 +136,9 @@ export class ConditionList {
         );
       }
       return renderConditionRow(this.rowsEl, {
+        index,
+        count: rule.triggers.length,
+        onMove: direction => this.move(index, index + direction),
         app: this.options.app,
         trigger,
         typeChosen: !this.pending.has(trigger),

@@ -27,6 +27,8 @@ export interface DestinationState {
 
 export interface DestinationFieldHandle {
   input: HTMLInputElement;
+  /** Holds the field and its status. More rows can follow inside it. */
+  cardEl: HTMLElement;
   update: (state: DestinationState) => void;
   destroy: () => void;
 }
@@ -43,7 +45,8 @@ export function renderDestinationField(
     cls: 'advancedNoteMover-section-title',
     text: text.ruleEditorMoveHeading,
   });
-  const row = parent.createDiv({ cls: 'advancedNoteMover-destination-row' });
+  const cardEl = parent.createDiv({ cls: 'advancedNoteMover-card' });
+  const row = cardEl.createDiv({ cls: 'advancedNoteMover-destination-row' });
   const field = row.createDiv({ cls: 'advancedNoteMover-folder-field' });
   setIcon(
     field.createSpan({ cls: 'advancedNoteMover-folder-field-icon' }),
@@ -71,9 +74,16 @@ export function renderDestinationField(
     },
   });
   setIcon(button.createSpan(), 'braces');
-  button.createSpan({ text: text.ruleEditorPlaceholderButton });
+  button.createSpan({
+    cls: 'advancedNoteMover-phone-hidden',
+    text: text.ruleEditorPlaceholderButton,
+  });
+  button.createSpan({
+    cls: 'advancedNoteMover-phone-only',
+    text: text.ruleEditorPlaceholderInsert,
+  });
 
-  const status = parent.createDiv({
+  const status = cardEl.createDiv({
     cls: 'advancedNoteMover-destination-status',
   });
   const setEmptyError = createFieldError(input, status);
@@ -132,6 +142,7 @@ export function renderDestinationField(
 
   return {
     input,
+    cardEl,
     update,
     destroy: () => suggest.destroy(),
   };

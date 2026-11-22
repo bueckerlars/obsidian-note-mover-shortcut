@@ -27,5 +27,8 @@ export function renderMatchModeSentence(
   dropdown
     .setValue(options.value)
     .onChange(value => options.onChange(value as AggregationType));
-  row.createSpan({ text: words.matchTail });
+  row.createSpan({
+    cls: 'advancedNoteMover-match-tail',
+    text: words.matchTail,
+  });
 }

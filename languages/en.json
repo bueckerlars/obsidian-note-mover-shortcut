@@ -366,6 +366,8 @@
     "ruleEditorMatchesOne": "{count} note matches now",
     "ruleEditorMatchesMany": "{count} notes match now",
     "ruleEditorOpenPreview": "Open in preview",
+    "ruleEditorConditionOptions": "Condition options",
+    "ruleEditorShowAllInPreview": "Show all in preview",
     "ruleEditorAttentionOne": "{count} field needs attention",
     "ruleEditorAttentionMany": "{count} fields need attention",
     "bulkMoveMore": "and {count} more",

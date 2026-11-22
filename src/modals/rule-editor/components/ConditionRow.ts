@@ -1,4 +1,4 @@
-import { DropdownComponent, setIcon, type App } from 'obsidian';
+import { DropdownComponent, Menu, setIcon, type App } from 'obsidian';
 import { fill, strings } from '../../../i18n/locale';
 import { operatorLabel } from '../../../domain/rules/operatorLabel';
 import type { ConditionIssue } from '../../../domain/rules/ruleValidation';
@@ -32,6 +32,10 @@ export interface ConditionRowOptions {
   onDraftChange: () => void;
   onValueBlur: () => void;
   onRemove: () => void;
+  /** Position in the list, for the phone menu. */
+  index: number;
+  count: number;
+  onMove: (direction: -1 | 1) => void;
 }
 
 export interface ConditionRowHandle {
@@ -83,6 +87,7 @@ export function renderConditionRow(
   if (isProperty) {
     propertyInput = row.createEl('input', {
       type: 'text',
+      cls: 'advancedNoteMover-condition-property',
       value: trigger.propertyName ?? '',
       placeholder: strings().modals.ruleEditorPropertyName,
       attr: { 'aria-label': strings().modals.ruleEditorPropertyName },
@@ -99,6 +104,7 @@ export function renderConditionRow(
 
   const valueInput = row.createEl('input', {
     type: 'text',
+    cls: 'advancedNoteMover-condition-value',
     value: trigger.value,
     placeholder: getValuePlaceholder(trigger),
     attr: { 'aria-label': valueLabel(trigger) },
@@ -113,6 +119,44 @@ export function renderConditionRow(
   });
   setIcon(removeButton, 'trash-2');
   removeButton.addEventListener('click', options.onRemove);
+
+  // Phone: one menu for move and remove instead of the grip and the trash button.
+  const moreButton = row.createEl('button', {
+    cls: 'clickable-icon advancedNoteMover-condition-more',
+    attr: {
+      type: 'button',
+      'aria-label': strings().modals.ruleEditorConditionOptions,
+      'aria-haspopup': 'menu',
+    },
+  });
+  setIcon(moreButton, 'more-horizontal');
+  moreButton.addEventListener('click', () => {
+    const rect = moreButton.getBoundingClientRect();
+    const menu = new Menu();
+    menu.addItem(item =>
+      item
+        .setTitle(strings().settings.rulesMenuUp)
+        .setIcon('arrow-up')
+        .setDisabled(options.index === 0)
+        .onClick(() => options.onMove(-1))
+    );
+    menu.addItem(item =>
+      item
+        .setTitle(strings().settings.rulesMenuDown)
+        .setIcon('arrow-down')
+        .setDisabled(options.index >= options.count - 1)
+        .onClick(() => options.onMove(1))
+    );
+    menu.addSeparator();
+    menu.addItem(item =>
+      item
+        .setTitle(strings().modals.ruleEditorDeleteCondition)
+        .setIcon('trash-2')
+        .setWarning(true)
+        .onClick(options.onRemove)
+    );
+    menu.showAtPosition({ x: rect.right, y: rect.bottom });
+  });
 
   const setError = createFieldError(valueInput, el);
 
