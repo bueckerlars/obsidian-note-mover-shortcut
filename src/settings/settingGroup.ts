@@ -48,18 +48,29 @@ export function createSettingGroup(
     return {
       listEl: group.listEl,
       addSetting: cb => void group.addSetting(cb),
-      addSearch: cb => void group.addSearch(cb),
+      // The native addSearch puts the field in the list; it belongs in the heading row.
+      addSearch: cb => {
+        const control = headingControl(group.listEl);
+        if (control) {
+          cb(new SearchComponent(control));
+        }
+      },
       addButton: cb => {
-        const headingControl = group.listEl.parentElement?.querySelector(
-          '.setting-item-heading .setting-item-control'
-        );
-        if (headingControl?.instanceOf(HTMLElement)) {
-          cb(new ButtonComponent(headingControl));
+        const control = headingControl(group.listEl);
+        if (control) {
+          cb(new ButtonComponent(control));
         }
       },
     };
   }
   return createFallback(containerEl, options);
+}
+
+function headingControl(listEl: HTMLElement): HTMLElement | null {
+  const control = listEl.parentElement?.querySelector(
+    '.setting-item-heading .setting-item-control'
+  );
+  return control?.instanceOf(HTMLElement) ? control : null;
 }
 
 function addDescription(
