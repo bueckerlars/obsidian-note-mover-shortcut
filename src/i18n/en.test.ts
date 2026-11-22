@@ -16,6 +16,8 @@ const ALLOWED = new Set([
   'status',
   'Work',
   'Move',
+  // Name of a settings page.
+  'Skipped',
   'and',
   // Fragments shown inside pills and next to a note name.
   'new',
@@ -81,8 +83,12 @@ function assertSentenceCase(value: string): void {
 
 describe('languages/en.json', () => {
   it('uses sentence case for every string', () => {
-    // ruleSummary holds sentence fragments joined at runtime.
-    const { ruleSummary: _fragments, ...prose } = catalog;
+    // ruleSummary and whyNotFragments hold fragments shown next to other text.
+    const {
+      ruleSummary: _fragments,
+      whyNotFragments: _more,
+      ...prose
+    } = catalog;
     for (const value of stringsIn(prose)) {
       assertSentenceCase(value);
     }

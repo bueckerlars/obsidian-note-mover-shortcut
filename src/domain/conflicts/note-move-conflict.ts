@@ -19,13 +19,6 @@ export function buildRenamedFileName(
   return `${basename}${suffix}`;
 }
 
-/** Maps a per-note action to a persisted default strategy. */
-export function conflictActionToStrategy(
-  action: ConflictResolutionAction
-): ConflictResolutionStrategy {
-  return action;
-}
-
 export function isAutoAppliedStrategy(
   strategy: ConflictResolutionStrategy
 ): strategy is Exclude<ConflictResolutionStrategy, 'ask'> {

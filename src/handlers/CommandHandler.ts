@@ -1,7 +1,7 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { HistoryModal } from '../modals/HistoryModal';
 import { PreviewModal } from '../modals/PreviewModal';
-import { openWhyNotMoved } from '../modals/RuleTestModal';
+import { openWhyNotMoved } from '../modals/WhyNotMovedModal';
 import { handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
 import { isMovableVaultFile } from '../domain/vault/movable-vault-files';
@@ -42,10 +42,7 @@ export class CommandHandler {
       id: 'why-not-moved',
       name: strings().commands.whyNotMoved,
       callback: () => {
-        openWhyNotMoved(
-          this.plugin.app,
-          this.plugin.pluginData.settings.rulesV2 ?? []
-        );
+        openWhyNotMoved(this.plugin);
       },
     });
 

@@ -16,7 +16,6 @@ import {
 } from '../domain/conflicts/conflict-skip-cache';
 import { runConfirmedBulkMove } from '../application/bulkMoveGuard';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
-import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import AdvancedNoteMoverPlugin from 'main';
 import { type FileMoveResult, type OperationType } from '../types/Common';
@@ -33,7 +32,6 @@ import { PreviewModal } from '../modals/PreviewModal';
 import { RuleEditorModal } from '../modals/RuleEditorModal';
 import { fileMetadataFromCache } from '../modals/rule-editor/ruleLivePreview';
 import { ruleFromNote } from '../domain/rules/rulePresets';
-import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
 import { fill, plural, strings } from '../i18n/locale';
 
@@ -260,9 +258,6 @@ export class AdvancedNoteMover {
             interactive,
             bypassConflictSkipCache,
             ruleName: result.ruleName,
-            onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
-              await persistConflictResolutionStrategy(this.plugin, strategy);
-            },
           });
 
           if (!moveOutcome.moved) {
