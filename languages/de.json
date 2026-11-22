@@ -366,6 +366,8 @@
     "ruleEditorMatchesOne": "Aktuell passt {count} Notiz",
     "ruleEditorMatchesMany": "Aktuell passen {count} Notizen",
     "ruleEditorOpenPreview": "In der Vorschau öffnen",
+    "ruleEditorConditionOptions": "Bedingungsoptionen",
+    "ruleEditorShowAllInPreview": "Alle in der Vorschau zeigen",
     "ruleEditorAttentionOne": "{count} Feld braucht Aufmerksamkeit",
     "ruleEditorAttentionMany": "{count} Felder brauchen Aufmerksamkeit",
     "bulkMoveMore": "und {count} weitere",

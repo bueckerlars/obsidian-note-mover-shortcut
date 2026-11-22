@@ -968,10 +968,6 @@ body.is-mobile .advancedNoteMover-modal-title {
   display: none;
 }
 
-body.is-phone .advancedNoteMover-settings-root .advancedNoteMover-phone-only {
-  display: flex;
-}
-
 /* Rules and exclusions add through a row at the end of the card. */
 body.is-phone
   .advancedNoteMover-settings-root
@@ -1498,25 +1494,359 @@ body.is-phone
   font-size: var(--font-ui-smaller);
 }
 
-/* Phone: stack the condition fields until the phone layout lands */
-body.is-phone .advancedNoteMover-condition-row,
-body.is-phone .advancedNoteMover-condition-row.has-property {
-  grid-template-columns: 16px 1fr 26px;
+/* ===== PHONE: rule editor ===== */
+
+.advancedNoteMover-condition-more,
+.advancedNoteMover-match-from {
+  display: none;
+}
+
+body.is-phone .advancedNoteMover-phone-only {
+  display: flex;
+}
+
+body.is-phone .advancedNoteMover-phone-hidden,
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-editor-divider,
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-match-tail,
+body.is-phone .advancedNoteMover-rule-editor-modal .advancedNoteMover-match-to,
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition-remove,
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-drag-handle {
+  display: none;
 }
 
 body.is-phone
-  .advancedNoteMover-condition-row
-  > :not(.advancedNoteMover-drag-handle):not(
-    .advancedNoteMover-condition-remove
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition-more,
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-match-from {
+  display: flex;
+}
+
+/* The sheet docks to the bottom edge. */
+body.is-phone .modal.advancedNoteMover-focus-scope {
+  align-self: flex-end;
+}
+
+/* Fields and buttons sit one step lighter than the card. */
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-card
+  :is(
+    input[type='text'],
+    select.dropdown,
+    .advancedNoteMover-select-button,
+    .advancedNoteMover-icon-button
   ) {
-  grid-column: 2;
+  background-color: var(--background-secondary-alt);
+}
+
+/* Sections are cards with a muted heading above. */
+body.is-phone .advancedNoteMover-rule-editor-modal .advancedNoteMover-card {
+  margin-bottom: var(--size-4-5);
+  padding-inline: var(--setting-items-padding-x);
+  border-radius: var(--setting-items-radius);
+  background: var(--background-secondary);
+  overflow: hidden;
 }
 
 body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-section-title {
+  flex-wrap: wrap;
+  margin: 0 var(--size-4-4) var(--size-4-2);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-normal);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-card
+  .setting-item {
+  padding-block: var(--size-4-3);
+  padding-inline: 0;
+  border: none;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-card
+  .setting-item
+  + .setting-item {
+  border-top: var(--setting-items-divider-width) solid
+    var(--setting-items-divider-color);
+}
+
+/* Name: label above, full-width field. */
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-name-setting {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-name-setting
+  .setting-item-control {
+  align-items: stretch;
+  width: 100%;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-name-setting
+  .setting-item-control
+  input[type='text'] {
+  flex: none;
+  width: 100%;
+}
+
+/* Conditions: type and menu, optional property name, operator and value. */
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition-row,
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition-row.has-property {
+  grid-template-columns: 130px 1fr var(--input-height);
+  gap: var(--size-4-2);
+  padding: var(--size-4-3) 0;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition
+  + .advancedNoteMover-condition-joiner,
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition-joiner {
+  padding: 0;
+  text-align: center;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
   .advancedNoteMover-condition-row
-  > .advancedNoteMover-condition-remove {
+  > .advancedNoteMover-select-button {
+  grid-column: 1 / 3;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition-row
+  > .advancedNoteMover-condition-more {
   grid-column: 3;
   grid-row: 1;
+  align-items: center;
+  justify-content: center;
+  width: var(--input-height);
+  height: var(--input-height);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition-row
+  > .advancedNoteMover-condition-property {
+  grid-column: 1 / -1;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition-row
+  > .advancedNoteMover-condition-value {
+  grid-column: 2 / -1;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-condition
+  > .advancedNoteMover-field-error {
+  padding-bottom: var(--size-4-3);
+  text-align: left;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-add-condition {
+  padding: 0;
+  border-top: var(--setting-items-divider-width) solid
+    var(--setting-items-divider-color);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-add-condition
+  button {
+  justify-content: flex-start;
+  width: 100%;
+  height: var(--input-height);
+  padding: 0;
+  color: var(--text-accent);
+  font-size: var(--font-ui-medium);
+}
+
+/* Destination: field, resolved line, then the full-width placeholder button. */
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-card:has(> .advancedNoteMover-destination-row) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-3);
+  padding-block: var(--size-4-3);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-destination-row {
+  display: contents;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-folder-field {
+  order: 1;
+  flex: none;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-destination-status {
+  order: 2;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-destination-status:empty {
+  display: none;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-destination-row
+  > button {
+  order: 3;
+  justify-content: center;
+  width: 100%;
+  height: var(--input-height);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-card:has(> .advancedNoteMover-destination-row)
+  > .setting-item {
+  order: 4;
+  margin-inline: 0;
+  padding-inline: 0;
+  border-top: var(--setting-items-divider-width) solid
+    var(--setting-items-divider-color);
+}
+
+/* Matches: name over "from folder", then the preview row. */
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-match-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--size-4-3);
+  padding: var(--size-4-3) 0;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-match-icon {
+  grid-row: 1 / 3;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-match-name {
+  font-size: var(--font-ui-medium);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-match-empty {
+  padding: var(--size-4-3) 0;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  button.advancedNoteMover-nav-link,
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  button.advancedNoteMover-delete-row {
+  border-radius: 0;
+  align-items: center;
+  width: 100%;
+  height: var(--input-height);
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  border: none;
+  border-top: var(--setting-items-divider-width) solid
+    var(--setting-items-divider-color);
+  font-size: var(--font-ui-medium);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  button.advancedNoteMover-nav-link {
+  justify-content: space-between;
+  color: var(--text-accent);
+}
+
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-nav-link svg {
+  color: var(--text-faint);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  button.advancedNoteMover-delete-row {
+  border-top: none;
+  color: var(--text-error);
+  justify-content: flex-start;
+}
+
+/* Footer: Cancel and Save side by side, full width. */
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-footer-row {
+  flex-wrap: wrap;
+  gap: var(--size-4-3);
+  padding-block: var(--size-4-3) var(--size-4-2);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-footer-row
+  > button {
+  flex: 1;
+  height: var(--input-height);
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-footer-row
+  > .mod-cta {
+  order: 2;
+}
+
+body.is-phone
+  .advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-footer-left {
+  flex-basis: 100%;
+  justify-content: center;
+  order: -1;
 }
 
 /* ===== MOVE PREVIEW ===== */

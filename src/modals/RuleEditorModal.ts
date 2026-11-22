@@ -98,7 +98,9 @@ export class RuleEditorModal extends BaseModal {
     this.modalEl.addClass('advancedNoteMover-rule-editor');
     const body = contentEl.createDiv();
 
-    this.nameField = renderRuleNameField(body, {
+    // The cards only show on the phone layout.
+    const identity = body.createDiv({ cls: 'advancedNoteMover-card' });
+    this.nameField = renderRuleNameField(identity, {
       value: this.workingRule.name,
       onChange: value => {
         this.workingRule.name = value;
@@ -108,7 +110,7 @@ export class RuleEditorModal extends BaseModal {
         if (this.invalidCount() === 0) void this.handleSave();
       },
     });
-    const active = new Setting(body)
+    const active = new Setting(identity)
       .setName(text.ruleEditorActive)
       .addToggle(toggle =>
         toggle.setValue(this.workingRule.active).onChange(value => {
@@ -127,15 +129,18 @@ export class RuleEditorModal extends BaseModal {
         this.schedulePreview();
       },
     });
-    this.conditions = new ConditionList(sentence, {
-      app: this.app,
-      rule: this.workingRule,
-      vaultIndexCache: this.ruleOptions.vaultIndexCache,
-      onChange: () => {
-        this.refresh();
-        this.schedulePreview();
-      },
-    });
+    this.conditions = new ConditionList(
+      sentence.createDiv({ cls: 'advancedNoteMover-card' }),
+      {
+        app: this.app,
+        rule: this.workingRule,
+        vaultIndexCache: this.ruleOptions.vaultIndexCache,
+        onChange: () => {
+          this.refresh();
+          this.schedulePreview();
+        },
+      }
+    );
 
     body.createEl('hr', { cls: 'advancedNoteMover-editor-divider' });
     const destinationEl = body.createDiv();
@@ -153,16 +158,31 @@ export class RuleEditorModal extends BaseModal {
       this.destinationTouched = true;
       this.refresh();
     });
-    this.addFolderCreation(body);
+    this.addFolderCreation(this.destination.cardEl);
 
     body.createEl('hr', { cls: 'advancedNoteMover-editor-divider' });
     this.matchList = renderMatchList(body, {
       onOpenPreview: this.ruleOptions.onOpenPreview,
     });
+    this.addPhoneDelete(body);
 
     this.renderFooter(contentEl);
     this.refresh();
     this.schedulePreview();
+  }
+
+  /** Phone: a separate card with a red row instead of the footer link. */
+  private addPhoneDelete(parent: HTMLElement): void {
+    if (!this.ruleOptions.isEditMode || !this.ruleOptions.onDelete) return;
+    const card = parent.createDiv({
+      cls: 'advancedNoteMover-card advancedNoteMover-phone-only',
+    });
+    const row = card.createEl('button', {
+      cls: 'advancedNoteMover-delete-row',
+      text: strings().modals.ruleEditorDeleteRule,
+      attr: { type: 'button' },
+    });
+    row.addEventListener('click', () => void this.handleRemoveRule());
   }
 
   private addFolderCreation(parent: HTMLElement): void {
@@ -205,7 +225,7 @@ export class RuleEditorModal extends BaseModal {
     this.primary = footer.primary;
     if (this.ruleOptions.isEditMode && this.ruleOptions.onDelete) {
       const remove = footer.leftEl.createEl('button', {
-        cls: 'advancedNoteMover-danger-text-button',
+        cls: 'advancedNoteMover-danger-text-button advancedNoteMover-phone-hidden',
         attr: { type: 'button' },
       });
       setIcon(remove.createSpan(), 'trash-2');
