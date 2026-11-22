@@ -6,6 +6,8 @@ export interface MatchRow {
   from: string;
   /** Null when the destination does not resolve for this note. */
   to: string | null;
+  /** Destination as typed, shown when it does not resolve for this note. */
+  destination: string;
 }
 
 export interface MatchListState {
@@ -60,10 +62,8 @@ export function renderMatchList(
       item.createSpan({ cls: 'advancedNoteMover-match-name', text: row.name });
       const path = item.createSpan({ cls: 'advancedNoteMover-path' });
       path.createSpan({ text: row.from });
-      if (row.to !== null) {
-        setIcon(path.createSpan(), 'arrow-right');
-        path.createEl('b', { text: row.to });
-      }
+      setIcon(path.createSpan(), 'arrow-right');
+      path.createEl('b', { text: row.to ?? row.destination });
     }
   };
   return { update };

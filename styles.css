@@ -1853,7 +1853,10 @@ body.is-mobile .advancedNoteMover-modal-section-header h3 {
   gap: var(--size-2-2);
 }
 
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-name-setting input {
+.advancedNoteMover-rule-editor-modal
+  .advancedNoteMover-name-setting
+  input[type='text'] {
+  flex: none;
   width: 320px;
   max-width: 100%;
 }
@@ -1991,51 +1994,53 @@ body.is-mobile .advancedNoteMover-modal-section-header h3 {
 }
 
 /* Quiet, link and icon buttons */
-.advancedNoteMover-quiet-button,
-.advancedNoteMover-icon-button,
-.advancedNoteMover-danger-text-button {
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button,
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-icon-button,
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-danger-text-button {
   display: inline-flex;
   align-items: center;
   gap: var(--size-2-3);
 }
 
-.advancedNoteMover-quiet-button,
-.advancedNoteMover-danger-text-button {
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button,
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-danger-text-button {
   background: transparent;
   box-shadow: none;
+  border: none;
 }
 
-.advancedNoteMover-quiet-button {
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button {
   color: var(--text-muted);
 }
 
-.advancedNoteMover-quiet-button:hover {
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button:hover {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.advancedNoteMover-danger-text-button {
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-danger-text-button {
   color: var(--text-error);
 }
 
-.advancedNoteMover-quiet-button svg,
-.advancedNoteMover-icon-button svg,
-.advancedNoteMover-danger-text-button svg {
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button svg,
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-icon-button svg,
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-danger-text-button svg {
   width: var(--icon-s);
   height: var(--icon-s);
 }
 
-.advancedNoteMover-link-button {
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-link-button {
   height: auto;
   padding: 0;
   background: none;
   box-shadow: none;
+  border: none;
   color: var(--text-accent);
   font-size: var(--font-ui-small);
   font-weight: var(--font-normal);
 }
 
-.advancedNoteMover-link-button:hover {
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-link-button:hover {
   color: var(--text-accent-hover);
   text-decoration: underline;
 }
@@ -2082,15 +2087,16 @@ body.is-mobile .advancedNoteMover-modal-section-header h3 {
 .advancedNoteMover-callout {
   display: flex;
   align-items: flex-start;
-  gap: var(--size-4-2);
-  padding: var(--size-4-2) var(--size-4-3);
-  border-radius: var(--radius-m);
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
   background: var(--background-secondary);
   font-size: var(--font-ui-small);
 }
 
-.advancedNoteMover-callout.is-error {
-  background: var(--background-modifier-error);
+.advancedNoteMover-rule-editor-modal .advancedNoteMover-callout.is-error {
+  background: rgba(var(--color-red-rgb), 0.14);
+  color: var(--text-normal);
 }
 
 .advancedNoteMover-callout-icon {
