@@ -240,7 +240,7 @@
   "modals": {
     "confirmDeleteRule": "Regel {rule} wirklich löschen?\n\nDas lässt sich nicht rückgängig machen.",
     "historyTitle": "Verschiebeverlauf",
-    "historySubtitle": "{moves} in den letzten {period}.",
+    "historySubtitle": "{moves}, aufbewahrt für {period}.",
     "historySubtitleAll": "Bisher {moves}.",
     "historySearch": "Notiz, Ordner oder Regel suchen",
     "historyAllRules": "Alle Regeln",

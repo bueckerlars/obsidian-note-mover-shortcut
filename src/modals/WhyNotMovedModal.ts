@@ -82,7 +82,6 @@ export class WhyNotMovedModal extends BaseModal {
           })
         : fill(copy.whyNotTitleStays, { note: file.basename }),
       cssClass: 'advancedNoteMover-why-modal',
-      size: 'medium',
     });
     this.explanation = explanation;
   }
@@ -90,6 +89,7 @@ export class WhyNotMovedModal extends BaseModal {
   protected createContent(): void {
     const { contentEl, explanation } = this;
     const copy = strings().modals;
+    this.modalEl.addClass('advancedNoteMover-why-shell');
 
     const sub = contentEl.createEl('p', { cls: 'advancedNoteMover-modal-sub' });
     const path = sub.createSpan({ cls: 'advancedNoteMover-path' });
