@@ -2296,7 +2296,7 @@ body.is-phone
   button {
   flex: 1;
   justify-content: center;
-  height: calc(var(--input-height) - var(--size-2-2));
+  height: var(--input-height);
   border-radius: var(--input-radius);
 }
 
@@ -2866,5 +2866,18 @@ body.is-phone
   align-items: center;
   justify-content: center;
   min-width: var(--input-height);
+  min-height: var(--input-height);
+}
+
+body.is-phone .advancedNoteMover-preview-modal .advancedNoteMover-row-chevron {
+  align-items: center;
+  justify-content: center;
+  width: var(--input-height);
+  height: var(--input-height);
+  margin: calc(-1 * var(--size-4-3)) calc(-1 * var(--size-4-2))
+    calc(-1 * var(--size-4-3)) 0;
+}
+
+body.is-phone .advancedNoteMover-preview-modal .advancedNoteMover-stay-line {
   min-height: var(--input-height);
 }
