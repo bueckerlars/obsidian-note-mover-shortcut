@@ -13,7 +13,6 @@
 .advancedNoteMover-preview-modal,
 .advancedNoteMover-update-modal,
 .advancedNoteMover-history-modal,
-.advancedNoteMover-confirm-modal,
 .advancedNoteMover-conflict-modal {
   padding: var(--size-4-5) 0 var(--size-4-5) 0;
   box-sizing: border-box;
@@ -570,38 +569,61 @@ body.is-mobile .advancedNoteMover-preview-select input[type='checkbox'] {
   margin-right: var(--size-4-1);
 }
 
-/* Confirm Modal Styles */
-.advancedNoteMover-confirm-modal {
-  padding: var(--size-4-6) 0 var(--size-4-4) 0;
-  box-sizing: border-box;
-  text-align: center;
+/* Confirm modal */
+.advancedNoteMover-confirm-message {
+  margin: var(--size-4-2) 0 var(--size-4-3);
 }
 
-.advancedNoteMover-confirm-modal .advancedNoteMover-modal-title {
-  text-align: center;
-  font-size: 1.4em;
+.advancedNoteMover-confirm-message > :last-child {
+  margin-bottom: 0;
 }
 
-.advancedNoteMover-confirm-modal-message {
-  margin: 0 0 var(--size-4-6) 0;
-  color: var(--text-muted);
-  font-size: 1em;
-  line-height: 1.5;
-  text-align: center;
+.advancedNoteMover-confirm-list {
+  padding: var(--size-2-3) var(--size-4-3);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
 }
 
-.advancedNoteMover-confirm-modal-details {
+.advancedNoteMover-confirm-row {
   display: flex;
-  flex-direction: column;
-  gap: var(--size-4-1);
-  margin: 0 0 var(--size-4-6) 0;
-  text-align: start;
+  align-items: center;
+  gap: var(--size-4-3);
+  min-height: 32px;
+  font-size: var(--font-ui-small);
 }
 
-.advancedNoteMover-confirm-modal-detail {
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
-  overflow-wrap: anywhere;
+.advancedNoteMover-confirm-row-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.advancedNoteMover-confirm-more {
+  padding: var(--size-2-3) 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+/* Folder path: muted, with the folder icon */
+.advancedNoteMover-modal .advancedNoteMover-path {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-4-1);
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.advancedNoteMover-modal .advancedNoteMover-path-icon {
+  display: inline-flex;
+  color: var(--text-faint);
+}
+
+.advancedNoteMover-modal .advancedNoteMover-path-icon svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
 }
 
 .advancedNoteMover-rule-test-row {
@@ -615,17 +637,6 @@ body.is-mobile .advancedNoteMover-preview-select input[type='checkbox'] {
 .advancedNoteMover-rule-test-name,
 .advancedNoteMover-rule-test-reason {
   color: var(--text-normal);
-}
-
-.advancedNoteMover-confirm-modal .advancedNoteMover-modal-button-container {
-  border-top: 1px solid var(--background-modifier-border);
-  padding-top: var(--size-4-4);
-}
-
-.advancedNoteMover-confirm-modal
-  .advancedNoteMover-modal-button-container
-  button {
-  min-width: 80px;
 }
 
 /* Conflict Modal Styles */
@@ -896,7 +907,6 @@ body.is-mobile .advancedNoteMover-history-entry-paths {
 body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control,
 body.is-mobile .advancedNoteMover-settings-root .setting-item-control,
 body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control,
-body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control,
 body.is-mobile .advancedNoteMover-history-modal .setting-item-control,
 body.is-mobile .advancedNoteMover-preview-modal .setting-item-control,
 body.is-mobile .advancedNoteMover-update-modal .setting-item-control {
@@ -921,7 +931,6 @@ body.is-mobile
   button,
 body.is-mobile .advancedNoteMover-settings-root .setting-item-control button,
 body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control button,
-body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control button,
 body.is-mobile .advancedNoteMover-history-modal .setting-item-control button,
 body.is-mobile .advancedNoteMover-preview-modal .setting-item-control button,
 body.is-mobile .advancedNoteMover-update-modal .setting-item-control button {
@@ -1101,15 +1110,6 @@ body.is-mobile .advancedNoteMover-modal-empty {
   font-size: 1em;
 }
 
-/* Confirm modal button adjustments */
-body.is-mobile
-  .advancedNoteMover-confirm-modal
-  .advancedNoteMover-modal-button-container
-  button {
-  min-width: 100%;
-  min-height: 44px;
-}
-
 /* Phone layout. Follows body.is-phone, not a 480px window. */
 
 /* History entries - More compact padding */
@@ -1146,18 +1146,12 @@ body.is-phone .advancedNoteMover-modal-section-header h3 {
   font-size: 1em;
 }
 
-/* Confirm modal message - Smaller font */
-body.is-phone .advancedNoteMover-confirm-modal-message {
-  font-size: var(--font-ui-small);
-}
-
 /* Smaller button fonts inside plugin roots */
 body.is-phone .advancedNoteMover-settings-root button,
 body.is-phone .advancedNoteMover-conflict-modal button,
 body.is-phone .advancedNoteMover-history-modal button,
 body.is-phone .advancedNoteMover-preview-modal button,
-body.is-phone .advancedNoteMover-update-modal button,
-body.is-phone .advancedNoteMover-confirm-modal button {
+body.is-phone .advancedNoteMover-update-modal button {
   font-size: var(--font-ui-small);
 }
 
@@ -1459,33 +1453,6 @@ body.is-mobile .advancedNoteMover-update-modal-github-link-mobile {
 
 body.is-mobile .advancedNoteMover-update-modal-github-link-mobile:active {
   opacity: 0.8;
-}
-
-/* Confirm Modal Mobile Styles */
-body.is-mobile .modal-content.advancedNoteMover-confirm-modal {
-  padding: var(--size-4-4) 0;
-}
-
-body.is-mobile .advancedNoteMover-confirm-modal-message-mobile {
-  font-size: 1em;
-  line-height: 1.6;
-  margin-bottom: var(--size-4-4);
-  word-break: break-word;
-}
-
-body.is-mobile .advancedNoteMover-confirm-modal .setting-item {
-  width: 100%;
-  margin-bottom: var(--size-4-3);
-}
-
-body.is-mobile .advancedNoteMover-confirm-modal .setting-item:last-child {
-  margin-bottom: 0;
-}
-
-body.is-mobile .advancedNoteMover-confirm-modal .setting-item button {
-  width: 100%;
-  min-height: 48px;
-  font-size: 16px; /* iOS: prevents zoom on focus */
 }
 
 /* Mobile Modal General Improvements */
@@ -1993,43 +1960,43 @@ body.is-mobile .advancedNoteMover-modal-section-header h3 {
   height: var(--icon-xs);
 }
 
-/* Quiet, link and icon buttons */
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button,
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-icon-button,
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-danger-text-button {
+/* Quiet, link and icon buttons, shared by every plugin modal */
+.advancedNoteMover-modal .advancedNoteMover-quiet-button,
+.advancedNoteMover-modal .advancedNoteMover-icon-button,
+.advancedNoteMover-modal .advancedNoteMover-danger-text-button {
   display: inline-flex;
   align-items: center;
   gap: var(--size-2-3);
 }
 
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button,
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-danger-text-button {
+.advancedNoteMover-modal .advancedNoteMover-quiet-button,
+.advancedNoteMover-modal .advancedNoteMover-danger-text-button {
   background: transparent;
   box-shadow: none;
   border: none;
 }
 
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button {
+.advancedNoteMover-modal .advancedNoteMover-quiet-button {
   color: var(--text-muted);
 }
 
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button:hover {
+.advancedNoteMover-modal .advancedNoteMover-quiet-button:hover {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-danger-text-button {
+.advancedNoteMover-modal .advancedNoteMover-danger-text-button {
   color: var(--text-error);
 }
 
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-quiet-button svg,
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-icon-button svg,
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-danger-text-button svg {
+.advancedNoteMover-modal .advancedNoteMover-quiet-button svg,
+.advancedNoteMover-modal .advancedNoteMover-icon-button svg,
+.advancedNoteMover-modal .advancedNoteMover-danger-text-button svg {
   width: var(--icon-s);
   height: var(--icon-s);
 }
 
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-link-button {
+.advancedNoteMover-modal .advancedNoteMover-link-button {
   height: auto;
   padding: 0;
   background: none;
@@ -2040,7 +2007,7 @@ body.is-mobile .advancedNoteMover-modal-section-header h3 {
   font-weight: var(--font-normal);
 }
 
-.advancedNoteMover-rule-editor-modal .advancedNoteMover-link-button:hover {
+.advancedNoteMover-modal .advancedNoteMover-link-button:hover {
   color: var(--text-accent-hover);
   text-decoration: underline;
 }

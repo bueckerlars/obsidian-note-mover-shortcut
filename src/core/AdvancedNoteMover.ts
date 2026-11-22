@@ -501,7 +501,12 @@ export class AdvancedNoteMover {
 
     const previewed = preview.successfulMoves
       .filter(entry => entry.willBeMoved && entry.targetPath)
-      .map(entry => ({ path: entry.currentPath }));
+      .map(entry => ({
+        path: entry.currentPath,
+        name: entry.fileName.replace(/\.md$/i, ''),
+        destination: entry.targetPath ?? '',
+        rule: entry.matchedRule,
+      }));
 
     if (previewed.length === 0) {
       NoticeManager.info(
@@ -518,15 +523,30 @@ export class AdvancedNoteMover {
     try {
       await runConfirmedBulkMove({
         previewed,
-        undoHint: strings().modals.bulkMoveUndo,
         confirm: prompt =>
           ConfirmModal.show(this.plugin.app, {
-            title: strings().modals.bulkMoveTitle,
-            message: fill(strings().modals.bulkMoveMessage, {
-              count: plural(prompt.count, 'file'),
+            title: fill(strings().modals.bulkMoveTitle, {
+              count: plural(prompt.count, 'note'),
             }),
-            details: [...prompt.paths, prompt.undoHint],
-            confirmText: strings().modals.bulkMoveConfirm,
+            message: fill(strings().modals.bulkMoveMessage, {
+              rules: plural(prompt.ruleCount, 'rule'),
+            }),
+            list: {
+              rows: prompt.rows,
+              more:
+                prompt.more > 0
+                  ? fill(strings().modals.bulkMoveMore, { count: prompt.more })
+                  : undefined,
+            },
+            leftLink: {
+              text: strings().modals.bulkMoveReview,
+              onClick: () => {
+                this.openVaultMovePreview();
+              },
+            },
+            confirmText: fill(strings().modals.bulkMoveConfirm, {
+              count: plural(prompt.count, 'note'),
+            }),
             cancelText: strings().common.cancel,
           }),
         renameFile: async file => {

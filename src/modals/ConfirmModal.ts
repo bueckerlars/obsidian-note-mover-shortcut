@@ -1,17 +1,28 @@
-import { App, Component, MarkdownRenderer } from 'obsidian';
+import { App, Component, MarkdownRenderer, setIcon } from 'obsidian';
 import { strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
-import { MobileUtils } from '../utils/MobileUtils';
+import { renderModalFooter } from './modalFooter';
+
+export interface ConfirmListRow {
+  name: string;
+  /** Right-aligned, drawn with a folder icon. */
+  destination: string;
+}
 
 export interface ConfirmModalOptions extends BaseModalOptions {
   title: string;
   /** Markdown body (rendered via MarkdownRenderer). */
   message: string;
-  /** Plain lines. File paths belong here, not in `message`. */
-  details?: readonly string[];
+  /** Neutral box under the message, e.g. the first notes of a bulk move. */
+  list?: { rows: readonly ConfirmListRow[]; more?: string };
+  /** Link button on the left of the footer. */
+  leftLink?: { text: string; onClick: () => void };
   confirmText?: string;
   cancelText?: string;
+  /** Destructive: red primary button and initial focus on Cancel. */
   danger?: boolean;
+  /** Overrides the default focus (Cancel when `danger`, otherwise the primary). */
+  initialFocus?: 'confirm' | 'cancel';
 }
 
 export class ConfirmModal extends BaseModal {
@@ -21,9 +32,15 @@ export class ConfirmModal extends BaseModal {
   private readonly messageRenderComponent = new Component();
 
   constructor(app: App, options: ConfirmModalOptions) {
+    const focusCancel =
+      (options.initialFocus ?? (options.danger ? 'cancel' : 'confirm')) ===
+      'cancel';
     super(app, {
       cssClass: 'advancedNoteMover-confirm-modal',
       size: 'small',
+      focusSelector: focusCancel
+        ? '.advancedNoteMover-confirm-cancel'
+        : '.mod-cta, .mod-warning',
       ...options,
     });
     this.confirmOptions = {
@@ -35,54 +52,73 @@ export class ConfirmModal extends BaseModal {
   }
 
   protected createContent(): void {
-    const { contentEl } = this;
-    const isMobile = MobileUtils.isMobile();
-
-    const messageEl = contentEl.createDiv({
-      cls: isMobile
-        ? 'advancedNoteMover-confirm-modal-message advancedNoteMover-confirm-modal-message-mobile'
-        : 'advancedNoteMover-confirm-modal-message',
+    const { contentEl, confirmOptions: options } = this;
+    const body = contentEl.createDiv({
+      cls: 'advancedNoteMover-confirm-body',
     });
+    const id = 'advancedNoteMover-confirm-message';
+    this.titleEl.id = 'advancedNoteMover-confirm-title';
+    this.modalEl.setAttribute('role', 'alertdialog');
+    this.modalEl.setAttribute('aria-labelledby', this.titleEl.id);
+    this.modalEl.setAttribute('aria-describedby', id);
+    const messageEl = body.createDiv({
+      cls: 'advancedNoteMover-confirm-message',
+    });
+    messageEl.id = id;
     void MarkdownRenderer.render(
       this.app,
-      this.confirmOptions.message,
+      options.message,
       messageEl,
       '',
       this.messageRenderComponent
     );
 
-    const details = this.confirmOptions.details ?? [];
-    if (details.length > 0) {
-      const list = contentEl.createDiv({
-        cls: 'advancedNoteMover-confirm-modal-details',
-      });
-      for (const line of details) {
+    if (options.list) {
+      const list = body.createDiv({ cls: 'advancedNoteMover-confirm-list' });
+      for (const row of options.list.rows) {
+        const item = list.createDiv({ cls: 'advancedNoteMover-confirm-row' });
+        item.createSpan({
+          cls: 'advancedNoteMover-confirm-row-name',
+          text: row.name,
+        });
+        const path = item.createSpan({ cls: 'advancedNoteMover-path' });
+        setIcon(
+          path.createSpan({ cls: 'advancedNoteMover-path-icon' }),
+          'folder'
+        );
+        path.createSpan({ text: row.destination });
+      }
+      if (options.list.more) {
         list.createDiv({
-          cls: 'advancedNoteMover-confirm-modal-detail',
-          text: line,
+          cls: 'advancedNoteMover-confirm-more',
+          text: options.list.more,
         });
       }
     }
 
-    const buttonContainer = this.createButtonContainer(contentEl);
-    this.createButton(
-      buttonContainer,
-      this.confirmOptions.cancelText ?? strings().common.cancel,
-      () => {
-        this.finish(false);
-      }
-    );
-    this.createButton(
-      buttonContainer,
-      this.confirmOptions.confirmText ?? strings().common.ok,
-      () => {
+    const footer = renderModalFooter(contentEl, {
+      primaryText: options.confirmText ?? strings().common.ok,
+      onPrimary: () => {
         this.finish(true);
       },
-      {
-        isPrimary: true,
-        isWarning: this.confirmOptions.danger,
-      }
-    );
+      warning: options.danger,
+      cancelText: options.cancelText ?? strings().common.cancel,
+      onCancel: () => {
+        this.finish(false);
+      },
+    });
+    footer.cancel.buttonEl.addClass('advancedNoteMover-confirm-cancel');
+    if (options.leftLink) {
+      const { text, onClick } = options.leftLink;
+      const link = footer.leftEl.createEl('button', {
+        text,
+        cls: 'advancedNoteMover-link-button',
+      });
+      link.addEventListener('click', () => {
+        this.finish(false);
+        onClick();
+      });
+    }
   }
 
   private finish(confirmed: boolean): void {
