@@ -18,18 +18,45 @@ import {
 import { strings } from '../../i18n/locale';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 
-export const CRITERIA_TYPES: readonly CriteriaType[] = [
-  'tag',
-  'fileName',
-  'folder',
-  'created_at',
-  'modified_at',
-  'extension',
-  'links',
-  'embeds',
-  'properties',
-  'headings',
+/** Condition types as the type menu groups them, with their icons. */
+export const CRITERIA_GROUPS: ReadonlyArray<{
+  group: 'content' | 'file' | 'dates';
+  types: ReadonlyArray<readonly [CriteriaType, string]>;
+}> = [
+  {
+    group: 'content',
+    types: [
+      ['tag', 'tag'],
+      ['properties', 'text'],
+      ['links', 'link'],
+      ['embeds', 'copy'],
+      ['headings', 'hash'],
+    ],
+  },
+  {
+    group: 'file',
+    types: [
+      ['fileName', 'file'],
+      ['folder', 'folder'],
+      ['extension', 'file'],
+    ],
+  },
+  {
+    group: 'dates',
+    types: [
+      ['created_at', 'calendar'],
+      ['modified_at', 'clock'],
+    ],
+  },
 ];
+
+export function criteriaIcon(criteriaType: CriteriaType): string {
+  for (const { types } of CRITERIA_GROUPS) {
+    const found = types.find(([type]) => type === criteriaType);
+    if (found) return found[1];
+  }
+  return 'text';
+}
 
 export const AGGREGATION_TYPES: readonly AggregationType[] = [
   'all',
@@ -40,7 +67,7 @@ export const AGGREGATION_TYPES: readonly AggregationType[] = [
 export type FolderCreationValue = 'inherit' | 'always' | 'never';
 
 export function criteriaLabel(criteriaType: CriteriaType): string {
-  return strings().ruleCriteria[criteriaType];
+  return strings().ruleEditorTypes[criteriaType];
 }
 
 export function createDefaultTrigger(): Trigger {

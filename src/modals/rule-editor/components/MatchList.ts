@@ -1,0 +1,70 @@
+import { setIcon } from 'obsidian';
+import { fill, strings } from '../../../i18n/locale';
+
+export interface MatchRow {
+  name: string;
+  from: string;
+  /** Null when the destination does not resolve for this note. */
+  to: string | null;
+}
+
+export interface MatchListState {
+  count: number;
+  rows: MatchRow[];
+  /** Set while a condition is missing a type or value: the sentence saying what to add. */
+  incomplete: string | null;
+}
+
+/** "N notes match now" with the first matches and a link to the preview. */
+export function renderMatchList(
+  parent: HTMLElement,
+  options: { onOpenPreview?: () => void }
+): { update: (state: MatchListState) => void } {
+  const root = parent.createDiv();
+  const update = (state: MatchListState) => {
+    const text = strings().modals;
+    root.empty();
+    const head = root.createDiv({ cls: 'advancedNoteMover-match-head' });
+    if (state.incomplete !== null) {
+      head.createSpan({
+        cls: 'advancedNoteMover-section-title',
+        text: text.ruleEditorMatchesHeading,
+      });
+      root.createDiv({
+        cls: 'advancedNoteMover-match-empty',
+        text: state.incomplete,
+      });
+      return;
+    }
+    head.createSpan({
+      cls: 'advancedNoteMover-section-title',
+      text:
+        state.count === 0
+          ? text.ruleEditorMatchesNone
+          : state.count === 1
+            ? fill(text.ruleEditorMatchesOne, { count: 1 })
+            : fill(text.ruleEditorMatchesMany, { count: state.count }),
+    });
+    if (state.count > 0 && options.onOpenPreview) {
+      head
+        .createEl('button', {
+          cls: 'advancedNoteMover-link-button',
+          text: text.ruleEditorOpenPreview,
+          attr: { type: 'button' },
+        })
+        .addEventListener('click', options.onOpenPreview);
+    }
+    for (const row of state.rows) {
+      const item = root.createDiv({ cls: 'advancedNoteMover-match-row' });
+      setIcon(item.createSpan({ cls: 'advancedNoteMover-match-icon' }), 'file');
+      item.createSpan({ cls: 'advancedNoteMover-match-name', text: row.name });
+      const path = item.createSpan({ cls: 'advancedNoteMover-path' });
+      path.createSpan({ text: row.from });
+      if (row.to !== null) {
+        setIcon(path.createSpan(), 'arrow-right');
+        path.createEl('b', { text: row.to });
+      }
+    }
+  };
+  return { update };
+}

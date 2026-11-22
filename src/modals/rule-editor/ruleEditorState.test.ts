@@ -7,7 +7,6 @@ import {
   openEditor,
   removeCondition,
   reorderConditions,
-  validateRule,
 } from './ruleEditorState';
 
 function trigger(value: string): Trigger {
@@ -56,12 +55,6 @@ describe('rule editor state', () => {
       reorderConditions(next, 2, 0).triggers.map(item => item.value)
     ).toEqual(['a', 'b', 'c']);
     expect(reorderConditions(current, 0, -1)).toBe(current);
-  });
-
-  it('reports an empty condition value', () => {
-    const invalid = addCondition(rule());
-    expect(validateRule(invalid)).toMatch(/Condition 4/);
-    expect(validateRule(rule())).toBeNull();
   });
 
   it('restores the saved rule on cancel', () => {

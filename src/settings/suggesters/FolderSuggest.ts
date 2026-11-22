@@ -63,7 +63,9 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
 
   constructor(
     app: App,
-    private inputEl: HTMLInputElement
+    private inputEl: HTMLInputElement,
+    /** `templates: false` suggests folders only; the caller offers placeholders itself. */
+    private readonly options: { templates?: boolean } = {}
   ) {
     super(app, inputEl);
     this.metadataExtractor = new MetadataExtractor(app);
@@ -90,7 +92,8 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
     query: string
   ): FolderOrTemplateSuggestion[] | Promise<FolderOrTemplateSuggestion[]> {
     const trimmed = query.trim();
-    const startIndex = trimmed.lastIndexOf('{{');
+    const templates = this.options.templates !== false;
+    const startIndex = templates ? trimmed.lastIndexOf('{{') : -1;
 
     // If the user just started a template with '{{', suggest the available
     // template types (tag / property / file) directly.
@@ -105,7 +108,9 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
       }
     }
 
-    const templateContext = this.extractTemplateContext(query);
+    const templateContext = templates
+      ? this.extractTemplateContext(query)
+      : null;
 
     if (templateContext) {
       if (templateContext.type === 'tag') {
@@ -203,7 +208,8 @@ export class FolderSuggest extends AbstractInputSuggest<FolderOrTemplateSuggesti
 
   private extractTemplateContext(query: string): TemplateContext | null {
     const trimmed = query.trim();
-    const startIndex = trimmed.lastIndexOf('{{');
+    const templates = this.options.templates !== false;
+    const startIndex = templates ? trimmed.lastIndexOf('{{') : -1;
 
     if (startIndex === -1) {
       return null;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FileMetadata } from '../../types/Common';
 import type { RuleV2 } from '../../types/RuleV2';
-import { countMatchingNotes, createRuleLivePreview } from './ruleLivePreview';
+import { createRuleLivePreview, findMatchingNotes } from './ruleLivePreview';
 
 function file(name: string): FileMetadata {
   return {
@@ -28,13 +28,14 @@ function rule(value: string): RuleV2 {
 const files = [file('alpha.md'), file('beta.md'), file('other.md')];
 
 describe('rule live preview', () => {
-  it('counts notes the rule matches', async () => {
-    const count = await countMatchingNotes(
+  it('counts notes the rule matches and keeps the first ones', async () => {
+    const { count, samples } = await findMatchingNotes(
       rule('a'),
       files,
       new AbortController().signal
     );
     expect(count).toBe(2);
+    expect(samples.map(item => item.fileName)).toEqual(['alpha.md', 'beta.md']);
   });
 
   it('aborts the previous run when the rule changes again', async () => {
@@ -42,7 +43,7 @@ describe('rule live preview', () => {
     const first = preview.update(rule('a'), files);
     const second = preview.update(rule('alpha'), files);
     await expect(first).rejects.toMatchObject({ name: 'AbortError' });
-    await expect(second).resolves.toBe(1);
+    await expect(second).resolves.toMatchObject({ count: 1 });
     preview.dispose();
   });
 });
