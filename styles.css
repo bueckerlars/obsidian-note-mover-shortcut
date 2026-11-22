@@ -8,8 +8,7 @@
 }
 
 .advancedNoteMover-update-modal,
-.advancedNoteMover-history-modal,
-.advancedNoteMover-conflict-modal {
+.advancedNoteMover-history-modal {
   padding: var(--size-4-5) 0 var(--size-4-5) 0;
   box-sizing: border-box;
 }
@@ -453,53 +452,133 @@ body.is-mobile {
   height: var(--icon-xs);
 }
 
-.advancedNoteMover-rule-test-row {
+/* Name conflict dialog */
+.advancedNoteMover-conflict-sides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-4);
+}
+
+.advancedNoteMover-conflict-side {
+  padding: var(--size-4-2) var(--size-4-3);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+}
+
+.advancedNoteMover-conflict-side > .advancedNoteMover-faint {
+  font-size: var(--font-ui-smaller);
+}
+
+.advancedNoteMover-conflict-details {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.advancedNoteMover-conflict-choices {
   display: flex;
   flex-direction: column;
-  gap: var(--size-4-1);
-  padding: var(--size-4-2) 0;
-  border-bottom: 1px solid var(--background-modifier-border);
+  gap: var(--size-2-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-.advancedNoteMover-rule-test-name,
-.advancedNoteMover-rule-test-reason {
-  color: var(--text-normal);
+.advancedNoteMover-conflict-choices legend {
+  margin-bottom: var(--size-4-2);
+  padding: 0;
+  font-size: var(--font-ui-small);
 }
 
-/* Conflict Modal Styles */
-.advancedNoteMover-conflict-modal {
-  padding: var(--size-4-6) 0 var(--size-4-4) 0;
+.advancedNoteMover-conflict-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-4-3);
+  padding: var(--size-4-2);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
 }
 
-.advancedNoteMover-conflict-modal-message {
-  margin: 0 0 var(--size-4-4) 0;
+.advancedNoteMover-conflict-choice:hover {
+  background: var(--background-modifier-hover);
+}
+
+.advancedNoteMover-conflict-choice input {
+  margin-top: var(--size-2-2);
+}
+
+.advancedNoteMover-conflict-danger {
+  color: var(--text-error);
+}
+
+.advancedNoteMover-conflict-rest {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  font-size: var(--font-ui-small);
+}
+
+/* Why a note stays */
+.advancedNoteMover-why-modal .advancedNoteMover-callout.is-warning {
+  background: rgba(var(--color-orange-rgb), 0.14);
+}
+
+.advancedNoteMover-callout.is-warning .advancedNoteMover-callout-icon {
+  color: var(--text-warning);
+}
+
+.advancedNoteMover-callout-button {
+  flex: none;
+  height: var(--size-4-6);
+}
+
+.advancedNoteMover-list-head {
+  padding: var(--size-4-4) 0 var(--size-2-3);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+}
+
+.advancedNoteMover-why-icon {
+  display: inline-flex;
+  flex: none;
+}
+
+.advancedNoteMover-why-icon svg {
+  width: var(--icon-s);
+  height: var(--icon-s);
+}
+
+.advancedNoteMover-why-icon.is-small svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}
+
+.advancedNoteMover-why-icon.is-ok {
+  color: var(--text-success);
+}
+
+.advancedNoteMover-why-icon.is-fail {
+  color: var(--text-error);
+}
+
+.advancedNoteMover-why-off {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  min-height: 32px;
   color: var(--text-muted);
   font-size: var(--font-ui-small);
-  line-height: 1.5;
 }
 
-.advancedNoteMover-conflict-modal-warning {
-  margin-bottom: var(--size-4-2);
-}
-
-.advancedNoteMover-conflict-modal-warning-text {
-  margin: 0 0 var(--size-4-3) 0;
-  font-size: var(--font-ui-small);
-  line-height: 1.4;
-}
-
-.advancedNoteMover-conflict-modal .advancedNoteMover-modal-button-container {
-  border-top: 1px solid var(--background-modifier-border);
-  padding-top: var(--size-4-4);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--size-4-2);
-  justify-content: flex-end;
-}
-
-.advancedNoteMover-conflict-settings-warning .mod-warning,
-.advancedNoteMover-conflict-modal-warning-text.mod-warning {
-  color: var(--text-error);
+.advancedNoteMover-kbd {
+  padding: 0 var(--size-2-3);
+  border-radius: var(--radius-s);
+  background: var(--code-background);
+  color: var(--text-normal);
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
 }
 
 /* ===== DRAG & DROP STYLES ===== */
@@ -728,7 +807,6 @@ body.is-mobile .advancedNoteMover-history-entry-paths {
 
 body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control,
 body.is-mobile .advancedNoteMover-settings-root .setting-item-control,
-body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control,
 body.is-mobile .advancedNoteMover-history-modal .setting-item-control,
 body.is-mobile .advancedNoteMover-update-modal .setting-item-control {
   margin-left: 0;
@@ -751,7 +829,6 @@ body.is-mobile
   .setting-item-control
   button,
 body.is-mobile .advancedNoteMover-settings-root .setting-item-control button,
-body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control button,
 body.is-mobile .advancedNoteMover-history-modal .setting-item-control button,
 body.is-mobile .advancedNoteMover-update-modal .setting-item-control button {
   min-width: 44px;
@@ -907,7 +984,6 @@ body.is-phone
 }
 
 body.is-phone .advancedNoteMover-settings-root button,
-body.is-phone .advancedNoteMover-conflict-modal button,
 body.is-phone .advancedNoteMover-history-modal button,
 body.is-phone .advancedNoteMover-update-modal button {
   font-size: var(--font-ui-small);

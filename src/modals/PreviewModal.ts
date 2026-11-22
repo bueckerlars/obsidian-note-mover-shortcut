@@ -16,13 +16,12 @@ import {
   isNoteMoveConflictSkipOutcome,
 } from '../application/note-move-skip-outcome';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
-import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import {
   previewEntryDetails,
   type PreviewEntryDetails,
 } from '../application/preview-entry-details';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
-import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
+import type { ConflictRun } from '../types/ConflictResolution';
 import { deriveConflictInteractive } from '../utils/conflict-resolution-settings';
 import {
   checkState,
@@ -36,7 +35,8 @@ import {
 } from '../domain/preview/previewGroups';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { renderModalFooter, type ModalFooter } from './modalFooter';
-import { openWhyNotMoved, openWhyNotMovedForFile } from './RuleTestModal';
+import { pickNoteForWhyNot, openWhyNotMovedForFile } from './WhyNotMovedModal';
+import { countNoteMoveConflicts } from '../application/resolve-note-move-conflict';
 
 type PreviewLoader = (
   signal: AbortSignal,
@@ -694,7 +694,6 @@ export class PreviewModal extends BaseModal {
     iconSpan(box, 'minus-circle', 'advancedNoteMover-preview-empty-icon');
     const body = box.createDiv();
     const entry = this.movePreview.analyzed[0];
-    const rules = this.plugin.pluginData?.settings?.rulesV2 ?? [];
     let showWhy: (() => void) | null = null;
 
     if (single && entry) {
@@ -713,7 +712,7 @@ export class PreviewModal extends BaseModal {
       const file = this.app.vault.getAbstractFileByPath(entry.currentPath);
       if (file instanceof TFile) {
         showWhy = () => {
-          openWhyNotMovedForFile(this.app, rules, file);
+          openWhyNotMovedForFile(this.plugin, file);
         };
       }
     } else {
@@ -732,7 +731,7 @@ export class PreviewModal extends BaseModal {
               }),
       });
       showWhy = () => {
-        openWhyNotMoved(this.app, rules);
+        pickNoteForWhyNot(this.plugin);
       };
     }
     if (showWhy) {
@@ -850,6 +849,21 @@ export class PreviewModal extends BaseModal {
       });
     }
 
+    const conflictRun: ConflictRun = {
+      remaining: await countNoteMoveConflicts(
+        this.app,
+        successfulEntries
+          .filter(
+            entry =>
+              entry.targetPath && !this.renamePaths.has(entry.currentPath)
+          )
+          .map(entry => ({
+            sourcePath: entry.currentPath,
+            newPath: combinePath(entry.targetPath ?? '', entry.fileName),
+          }))
+      ),
+      sticky: null,
+    };
     this.plugin.historyManager.startBulkOperation('bulk');
 
     try {
@@ -907,9 +921,7 @@ export class PreviewModal extends BaseModal {
             ),
             bypassConflictSkipCache: true,
             ruleName: entry.matchedRule,
-            onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
-              await persistConflictResolutionStrategy(this.plugin, strategy);
-            },
+            conflictRun,
           });
 
           if (moveOutcome.moved) {

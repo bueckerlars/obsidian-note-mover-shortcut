@@ -1,196 +1,175 @@
-import { App, Component, MarkdownRenderer, Setting } from 'obsidian';
+import { App, setIcon } from 'obsidian';
 import { fill, strings } from '../i18n/locale';
-import { BaseModal, BaseModalOptions } from './BaseModal';
-import { MobileUtils } from '../utils/MobileUtils';
-import { toMarkdownInlineCode } from '../utils/markdown-confirm';
+import { BaseModal } from './BaseModal';
+import { renderModalFooter } from './modalFooter';
 import type {
   ConflictModalResult,
   ConflictResolutionAction,
 } from '../types/ConflictResolution';
 
-export interface ConflictModalOptions extends BaseModalOptions {
-  title: string;
-  fileName: string;
-  sourcePath: string;
-  targetPath: string;
+/** One of the two notes, with texts the caller has already worked out. */
+interface ConflictSide {
+  folder: string;
+  /** "Edited today, 23:20 · 214 words" */
+  details: string;
 }
 
-function conflictTooltip(action: ConflictResolutionAction): string {
-  const copy = strings().modals;
-  if (action === 'skip') return copy.conflictSkipTooltip;
-  if (action === 'rename') return copy.conflictRenameTooltip;
-  return copy.conflictOverwriteTooltip;
+export interface ConflictModalOptions {
+  sourcePath: string;
+  targetPath: string;
+  noteName: string;
+  targetFolder: string;
+  /** Name "Keep both" would give the moved note, without extension. */
+  renamedName: string;
+  moving: ConflictSide;
+  existing: ConflictSide;
+  /** Conflicts still to come in the same run. */
+  otherConflicts: number;
 }
 
 export class ConflictModal extends BaseModal {
-  private conflictOptions: ConflictModalOptions;
   private resolvePromise: (value: ConflictModalResult) => void = () => {};
   private hasResolved = false;
-  private applyAlways = false;
-  private warningEl: HTMLElement | null = null;
-  private readonly messageRenderComponent = new Component();
+  private action: ConflictResolutionAction = 'rename';
+  private applyToRest = false;
 
-  constructor(app: App, options: ConflictModalOptions) {
+  constructor(
+    app: App,
+    private conflictOptions: ConflictModalOptions
+  ) {
     super(app, {
+      title: fill(strings().modals.conflictTitle, {
+        name: conflictOptions.noteName,
+      }),
       cssClass: 'advancedNoteMover-conflict-modal',
       size: 'small',
-      focusSelector: '.advancedNoteMover-conflict-action-skip',
-      ...options,
     });
-    this.conflictOptions = options;
   }
 
   protected createContent(): void {
-    const { contentEl } = this;
-    const isMobile = MobileUtils.isMobile();
-
+    const { contentEl, conflictOptions: options } = this;
     const copy = strings().modals;
-    const message = [
-      fill(copy.conflictExists, {
-        fileName: toMarkdownInlineCode(this.conflictOptions.fileName),
-      }),
-      '',
-      fill(copy.conflictCurrent, {
-        path: toMarkdownInlineCode(this.conflictOptions.sourcePath),
-      }),
-      fill(copy.conflictTarget, {
-        path: toMarkdownInlineCode(this.conflictOptions.targetPath),
-      }),
-      '',
-      copy.conflictChoose,
-    ].join('\n');
 
-    const messageEl = contentEl.createDiv({
-      cls: isMobile
-        ? 'advancedNoteMover-conflict-modal-message advancedNoteMover-conflict-modal-message-mobile'
-        : 'advancedNoteMover-conflict-modal-message',
+    contentEl.createEl('p', {
+      cls: 'advancedNoteMover-modal-sub',
+      text: fill(copy.conflictIntro, { folder: options.targetFolder }),
     });
-    void MarkdownRenderer.render(
-      this.app,
-      message,
-      messageEl,
-      '',
-      this.messageRenderComponent
+
+    const sides = contentEl.createDiv({
+      cls: 'advancedNoteMover-conflict-sides',
+    });
+    this.renderSide(sides, copy.conflictMoving, options.moving);
+    this.renderSide(sides, copy.conflictAlreadyThere, options.existing);
+
+    const choices = contentEl.createEl('fieldset', {
+      cls: 'advancedNoteMover-conflict-choices',
+    });
+    choices.createEl('legend', {
+      cls: 'advancedNoteMover-strong',
+      text: copy.conflictLegend,
+    });
+    this.renderChoice(
+      choices,
+      'rename',
+      copy.conflictKeepBoth,
+      fill(copy.conflictKeepBothDesc, { name: options.renamedName })
+    );
+    this.renderChoice(
+      choices,
+      'skip',
+      copy.conflictSkip,
+      fill(copy.conflictSkipDesc, {
+        folder: options.moving.folder || strings().modals.previewVaultRoot,
+      })
+    );
+    this.renderChoice(
+      choices,
+      'overwrite',
+      copy.conflictReplace,
+      copy.conflictReplaceDesc,
+      true
     );
 
-    this.warningEl = contentEl.createDiv({
-      cls: 'advancedNoteMover-conflict-modal-warning',
+    const footer = renderModalFooter(contentEl, {
+      primaryText: copy.conflictContinue,
+      onPrimary: () => this.finish(this.action, this.applyToRest),
+      cancelText: strings().common.cancel,
+      onCancel: () => this.finish('skip', false),
     });
-    this.warningEl.setAttribute('aria-live', 'polite');
-    this.updateWarning();
-
-    new Setting(contentEl)
-      .setName(strings().modals.conflictAlwaysName)
-      .setDesc(strings().modals.conflictAlwaysDesc)
-      .addToggle(toggle =>
-        toggle.setValue(false).onChange(value => {
-          this.applyAlways = value;
-          this.updateWarning();
-        })
-      );
-
-    if (isMobile) {
-      this.createMobileActions(contentEl);
-    } else {
-      this.createDesktopActions(contentEl);
-    }
-  }
-
-  private updateWarning(): void {
-    if (!this.warningEl) {
-      return;
-    }
-    this.warningEl.empty();
-    if (this.applyAlways) {
-      this.warningEl.createEl('p', {
-        cls: 'advancedNoteMover-conflict-modal-warning-text mod-warning',
-        text: strings().modals.conflictAlwaysWarning,
+    if (options.otherConflicts > 0) {
+      const label = footer.leftEl.createEl('label', {
+        cls: 'advancedNoteMover-conflict-rest',
+      });
+      label
+        .createEl('input', { type: 'checkbox' })
+        .addEventListener('change', event => {
+          this.applyToRest = (event.target as HTMLInputElement).checked;
+        });
+      label.createSpan({
+        text:
+          options.otherConflicts === 1
+            ? copy.conflictApplyToRestOne
+            : fill(copy.conflictApplyToRestMany, {
+                count: options.otherConflicts,
+              }),
       });
     }
   }
 
-  private createDesktopActions(container: HTMLElement): void {
-    const buttonContainer = this.createButtonContainer(container);
-
-    this.createButton(
-      buttonContainer,
-      strings().modals.conflictKeepInPlace,
-      () => this.finish('skip'),
-      {
-        icon: 'ban',
-        tooltip: conflictTooltip('skip'),
-      }
-    ).addClass('advancedNoteMover-conflict-action-skip');
-
-    this.createButton(
-      buttonContainer,
-      strings().modals.conflictRename,
-      () => this.finish('rename'),
-      {
-        icon: 'pencil',
-        tooltip: conflictTooltip('rename'),
-      }
-    );
-
-    this.createButton(
-      buttonContainer,
-      strings().modals.conflictOverwrite,
-      () => this.finish('overwrite'),
-      {
-        isWarning: true,
-        icon: 'alert-triangle',
-        tooltip: conflictTooltip('overwrite'),
-      }
-    );
+  private renderSide(
+    parent: HTMLElement,
+    label: string,
+    side: ConflictSide
+  ): void {
+    const box = parent.createDiv({ cls: 'advancedNoteMover-conflict-side' });
+    box.createDiv({ cls: 'advancedNoteMover-faint', text: label });
+    const path = box.createDiv({ cls: 'advancedNoteMover-path' });
+    setIcon(path.createSpan({ cls: 'advancedNoteMover-path-icon' }), 'folder');
+    path.createEl('b', {
+      text: side.folder || strings().modals.previewVaultRoot,
+    });
+    box.createDiv({
+      cls: 'advancedNoteMover-conflict-details',
+      text: side.details,
+    });
   }
 
-  private createMobileActions(container: HTMLElement): void {
-    const actions: Array<{
-      text: string;
-      action: ConflictResolutionAction;
-      primary?: boolean;
-      warning?: boolean;
-    }> = [
-      {
-        text: strings().modals.conflictKeepInPlace,
-        action: 'skip',
-        primary: true,
-      },
-      { text: strings().modals.conflictRename, action: 'rename' },
-      {
-        text: strings().modals.conflictOverwrite,
-        action: 'overwrite',
-        warning: true,
-      },
-    ];
-
-    for (const { text, action, primary, warning } of actions) {
-      new Setting(container).addButton(btn => {
-        btn
-          .setButtonText(text)
-          .setTooltip(conflictTooltip(action))
-          .onClick(() => this.finish(action));
-        if (primary) {
-          btn.setCta();
-          btn.buttonEl.addClass('advancedNoteMover-conflict-action-skip');
-        }
-        if (warning) {
-          btn.buttonEl.addClass('mod-warning');
-        }
-      });
-    }
+  private renderChoice(
+    parent: HTMLElement,
+    action: ConflictResolutionAction,
+    name: string,
+    description: string,
+    danger = false
+  ): void {
+    const row = parent.createEl('label', {
+      cls: 'advancedNoteMover-conflict-choice',
+    });
+    const radio = row.createEl('input', { type: 'radio' });
+    radio.name = 'advancedNoteMover-conflict-action';
+    radio.checked = action === this.action;
+    radio.addEventListener('change', () => {
+      this.action = action;
+    });
+    const text = row.createDiv();
+    text.createDiv({
+      cls: danger ? 'advancedNoteMover-conflict-danger' : undefined,
+      text: name,
+    });
+    text.createDiv({
+      cls: 'advancedNoteMover-conflict-details',
+      text: description,
+    });
   }
 
-  private finish(action: ConflictResolutionAction): void {
+  private finish(action: ConflictResolutionAction, applyToRest: boolean): void {
     this.hasResolved = true;
-    this.resolvePromise({ action, applyAlways: this.applyAlways });
+    this.resolvePromise({ action, applyToRest });
     this.close();
   }
 
   onClose() {
-    this.messageRenderComponent.unload();
     if (!this.hasResolved) {
-      this.resolvePromise({ action: 'skip', applyAlways: false });
+      this.resolvePromise({ action: 'skip', applyToRest: false });
     }
     this.hasResolved = true;
     super.onClose();
@@ -201,13 +180,5 @@ export class ConflictModal extends BaseModal {
       this.resolvePromise = resolve;
       this.open();
     });
-  }
-
-  static async show(
-    app: App,
-    options: ConflictModalOptions
-  ): Promise<ConflictModalResult> {
-    const modal = new ConflictModal(app, options);
-    return modal.resolve();
   }
 }

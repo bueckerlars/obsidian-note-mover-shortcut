@@ -12,11 +12,19 @@ export interface ConflictResolutionSettings {
 
 export interface ConflictModalResult {
   action: ConflictResolutionAction;
-  /** When true, persist the chosen action as the default strategy. */
-  applyAlways: boolean;
+  /** Use the same action for the other conflicts of this run. */
+  applyToRest: boolean;
 }
 
 export interface ResolvedNoteMovePath {
   newPath: string;
   action: Exclude<ConflictResolutionAction, 'skip'>;
+}
+
+/** Conflicts of one bulk move. Lets one choice cover the ones still to come. */
+export interface ConflictRun {
+  /** Conflicts not decided yet, including the one being shown. */
+  remaining: number;
+  /** Set once the user chose "do this for the other conflicts". */
+  sticky: ConflictResolutionAction | null;
 }

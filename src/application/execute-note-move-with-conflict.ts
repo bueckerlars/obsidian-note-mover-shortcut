@@ -4,7 +4,7 @@ import type { HistoryManager } from '../core/HistoryManager';
 import type { ConflictSkipCacheManager } from '../core/ConflictSkipCacheManager';
 import type { AttachmentMoveSettings } from '../types/PluginData';
 import type { SettingsData } from '../types/PluginData';
-import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
+import type { ConflictRun } from '../types/ConflictResolution';
 import { performNoteMove } from './perform-note-move';
 import {
   hasNoteMoveConflict,
@@ -51,7 +51,7 @@ export interface ExecuteNoteMoveWithConflictOptions {
   attachmentSettings: AttachmentMoveSettings;
   interactive: boolean;
   bypassConflictSkipCache?: boolean;
-  onPersistStrategy?: (strategy: ConflictResolutionStrategy) => Promise<void>;
+  conflictRun?: ConflictRun;
   ruleName?: string;
 }
 
@@ -79,7 +79,7 @@ export async function executeNoteMoveWithConflictHandling(
     interactive,
     conflictSkipCache,
     bypassConflictSkipCache = false,
-    onPersistStrategy,
+    conflictRun,
     ruleName,
   } = options;
 
@@ -117,7 +117,7 @@ export async function executeNoteMoveWithConflictHandling(
       interactive,
       bypassConflictSkipCache,
       conflictSkipCache,
-      onPersistStrategy,
+      conflictRun,
     });
 
     if (conflictOutcome.status === 'deduplicated') {

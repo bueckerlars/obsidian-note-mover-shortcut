@@ -13,8 +13,6 @@ keep advancedNoteMover-mobile-move-button
 
 # Set in TypeScript. styles.css has no selector for these names.
 ts advancedNoteMover-changelog-section-breaking
-ts advancedNoteMover-conflict-action-skip
-ts advancedNoteMover-conflict-modal-message-mobile
 ts advancedNoteMover-conflict-skip-cache-item-mobile
 ts advancedNoteMover-filters-container
 ts advancedNoteMover-preview-path-target

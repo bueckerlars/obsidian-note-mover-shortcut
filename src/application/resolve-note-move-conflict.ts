@@ -1,18 +1,22 @@
 import type { App } from 'obsidian';
 import { TFile } from 'obsidian';
 import { buildRenamedFileName } from '../domain/conflicts/note-move-conflict';
-import { combinePath } from '../utils/PathUtils';
+import { combinePath, getParentPath } from '../utils/PathUtils';
 import { createError } from '../utils/Error';
 import type {
   ConflictResolutionAction,
-  ConflictResolutionStrategy,
+  ConflictRun,
   ResolvedNoteMovePath,
 } from '../types/ConflictResolution';
 import { showConflictModalForNote } from './conflict-modal-coordinator';
 import { getConflictResolutionSettings } from '../utils/conflict-resolution-settings';
 import type { SettingsData } from '../types/PluginData';
-import { conflictActionToStrategy } from '../domain/conflicts/note-move-conflict';
-import { strings } from '../i18n/locale';
+import {
+  countWords,
+  describeEdited,
+} from '../domain/conflicts/conflict-details';
+import { fill, plural, strings } from '../i18n/locale';
+import type { ConflictModalOptions } from '../modals/ConflictModal';
 import type { ConflictSkipCacheManager } from '../core/ConflictSkipCacheManager';
 
 export interface ResolveNoteMoveConflictOptions {
@@ -27,7 +31,7 @@ export interface ResolveNoteMoveConflictOptions {
   interactive: boolean;
   bypassConflictSkipCache?: boolean;
   conflictSkipCache?: ConflictSkipCacheManager;
-  onPersistStrategy?: (strategy: ConflictResolutionStrategy) => Promise<void>;
+  conflictRun?: ConflictRun;
 }
 
 export type NoteMoveConflictOutcome =
@@ -112,6 +116,63 @@ export async function removeConflictingTargetForOverwrite(
   await removeExistingTargetFile(app, targetPath);
 }
 
+async function describeFile(app: App, path: string) {
+  const file = app.vault.getAbstractFileByPath(path);
+  if (!(file instanceof TFile)) return '';
+  const copy = strings().modals;
+  const when = describeEdited(file.stat.mtime, Date.now());
+  const edited =
+    when.kind === 'today'
+      ? fill(copy.conflictEditedToday, { time: when.time })
+      : fill(copy.conflictEditedOn, { date: when.date });
+  const words = countWords(await app.vault.cachedRead(file));
+  return `${edited} · ${plural(words, 'word')}`;
+}
+
+async function describeConflict(
+  options: ResolveNoteMoveConflictOptions,
+  otherConflicts: number
+): Promise<ConflictModalOptions> {
+  const { app } = options;
+  const renamedPath = await findUniqueRenamedPath(
+    app,
+    options.targetFolder,
+    options.basename,
+    options.extension
+  );
+  return {
+    sourcePath: options.sourcePath,
+    targetPath: options.newPath,
+    noteName: options.basename,
+    targetFolder: options.targetFolder,
+    renamedName: (renamedPath.split('/').pop() ?? '').slice(
+      0,
+      options.extension ? -(options.extension.length + 1) : undefined
+    ),
+    moving: {
+      folder: getParentPath(options.sourcePath),
+      details: await describeFile(app, options.sourcePath),
+    },
+    existing: {
+      folder: options.targetFolder,
+      details: await describeFile(app, options.newPath),
+    },
+    otherConflicts,
+  };
+}
+
+/** Number of moves that would hit an existing note, for the "other conflicts" checkbox. */
+export async function countNoteMoveConflicts(
+  app: App,
+  moves: readonly { sourcePath: string; newPath: string }[]
+): Promise<number> {
+  let count = 0;
+  for (const move of moves) {
+    if (await hasNoteMoveConflict(app, move.sourcePath, move.newPath)) count++;
+  }
+  return count;
+}
+
 /**
  * Determines how to proceed when the target path is already taken.
  * Shows ConflictModal when strategy is "ask" and the move is interactive.
@@ -148,20 +209,23 @@ export async function resolveNoteMoveConflict(
 
   try {
     if ((strategy === 'ask' || forceInteractivePrompt) && options.interactive) {
-      const modalResult = await showConflictModalForNote(options.app, {
-        title: strings().modals.conflictFileExistsTitle,
-        fileName: options.fileName,
-        sourcePath: options.sourcePath,
-        targetPath: options.newPath,
-      });
-      if (!modalResult.shouldApplyResult) {
-        return { status: 'deduplicated' };
-      }
-      action = modalResult.action;
-
-      if (modalResult.applyAlways) {
-        const persistedStrategy = conflictActionToStrategy(action);
-        await options.onPersistStrategy?.(persistedStrategy);
+      const run = options.conflictRun;
+      if (run?.sticky) {
+        action = run.sticky;
+        run.remaining--;
+      } else {
+        const modalResult = await showConflictModalForNote(
+          options.app,
+          await describeConflict(options, run ? run.remaining - 1 : 0)
+        );
+        if (!modalResult.shouldApplyResult) {
+          return { status: 'deduplicated' };
+        }
+        action = modalResult.action;
+        if (run) {
+          run.remaining--;
+          if (modalResult.applyToRest) run.sticky = action;
+        }
       }
     } else if (strategy !== 'ask') {
       action = strategy;

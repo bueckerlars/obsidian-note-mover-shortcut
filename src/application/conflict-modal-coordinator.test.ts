@@ -22,11 +22,16 @@ import {
 
 const app = {} as App;
 
+const side = { folder: 'inbox', details: '' };
 const modalOptions = (targetPath: string) => ({
-  title: 'File already exists',
-  fileName: 'note.md',
+  noteName: 'note',
   sourcePath: 'inbox/note.md',
   targetPath,
+  targetFolder: 'archive',
+  renamedName: 'note (1)',
+  moving: side,
+  existing: side,
+  otherConflicts: 0,
 });
 
 describe('showConflictModalForNote', () => {
@@ -37,7 +42,7 @@ describe('showConflictModalForNote', () => {
   });
 
   it('deduplicates concurrent requests for the same source and target', async () => {
-    resolveMock.mockResolvedValue({ action: 'skip', applyAlways: false });
+    resolveMock.mockResolvedValue({ action: 'skip', applyToRest: false });
 
     const first = showConflictModalForNote(
       app,
@@ -49,14 +54,14 @@ describe('showConflictModalForNote', () => {
     );
 
     await expect(Promise.all([first, second])).resolves.toEqual([
-      { action: 'skip', applyAlways: false, shouldApplyResult: true },
-      { action: 'skip', applyAlways: false, shouldApplyResult: false },
+      { action: 'skip', applyToRest: false, shouldApplyResult: true },
+      { action: 'skip', applyToRest: false, shouldApplyResult: false },
     ]);
     expect(modalConstructionCount.value).toBe(1);
   });
 
   it('opens separate modals for the same source with different targets', async () => {
-    resolveMock.mockResolvedValue({ action: 'rename', applyAlways: false });
+    resolveMock.mockResolvedValue({ action: 'rename', applyToRest: false });
 
     const first = showConflictModalForNote(
       app,

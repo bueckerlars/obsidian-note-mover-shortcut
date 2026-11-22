@@ -97,7 +97,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
   }
 
   /** Opens this plugin's settings tab on the given page. */
-  public openSettingsPage(page: SettingsPage): void {
+  public openSettingsPage(page: SettingsPage, section?: 'exclusions'): void {
     this.settingTab.showPage(page);
     // shortcut: app.setting is not in the public typings; no other way to open a tab by id.
     const setting = (
@@ -107,6 +107,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
     ).setting;
     setting?.open();
     setting?.openTabById(this.manifest.id);
+    if (section) this.settingTab.scrollToSection(section);
   }
 
   public syncRuleCacheHash(): void {
