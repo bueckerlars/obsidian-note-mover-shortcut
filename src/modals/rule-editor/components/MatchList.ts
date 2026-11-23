@@ -23,6 +23,8 @@ export function renderMatchList(
   options: { onOpenPreview?: () => void }
 ): { update: (state: MatchListState) => void; showLoading: () => void } {
   const root = parent.createDiv();
+  // Height of the loading placeholder: the list never gets shorter than this.
+  let reservedHeight = 0;
   // Placeholder rows at the height of the real list, so the modal does not jump.
   const showLoading = () => {
     root.empty();
@@ -39,10 +41,12 @@ export function renderMatchList(
         .createDiv({ cls: 'advancedNoteMover-match-row' })
         .createDiv({ cls: 'advancedNoteMover-match-skeleton' });
     }
+    reservedHeight = Math.max(reservedHeight, root.offsetHeight);
   };
   const update = (state: MatchListState) => {
     const text = strings().modals;
     root.empty();
+    root.setCssProps({ 'min-height': `${reservedHeight}px` });
     const head = root.createDiv({ cls: 'advancedNoteMover-match-head' });
     if (state.incomplete !== null) {
       head.createSpan({
