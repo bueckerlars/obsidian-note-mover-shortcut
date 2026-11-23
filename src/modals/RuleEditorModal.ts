@@ -164,6 +164,7 @@ export class RuleEditorModal extends BaseModal {
     this.matchList = renderMatchList(body, {
       onOpenPreview: this.ruleOptions.onOpenPreview,
     });
+    this.matchList.showLoading();
     this.addPhoneDelete(body);
 
     this.renderFooter(contentEl);

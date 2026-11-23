@@ -21,8 +21,25 @@ export interface MatchListState {
 export function renderMatchList(
   parent: HTMLElement,
   options: { onOpenPreview?: () => void }
-): { update: (state: MatchListState) => void } {
+): { update: (state: MatchListState) => void; showLoading: () => void } {
   const root = parent.createDiv();
+  // Placeholder rows at the height of the real list, so the modal does not jump.
+  const showLoading = () => {
+    root.empty();
+    root.createDiv({ cls: 'advancedNoteMover-match-head' }).createSpan({
+      cls: 'advancedNoteMover-section-title',
+      text: strings().modals.ruleEditorMatchesHeading,
+    });
+    const card = root.createDiv({
+      cls: 'advancedNoteMover-card advancedNoteMover-match-loading',
+      attr: { 'aria-busy': 'true', 'aria-hidden': 'true' },
+    });
+    for (let i = 0; i < 3; i++) {
+      card
+        .createDiv({ cls: 'advancedNoteMover-match-row' })
+        .createDiv({ cls: 'advancedNoteMover-match-skeleton' });
+    }
+  };
   const update = (state: MatchListState) => {
     const text = strings().modals;
     root.empty();
@@ -93,5 +110,5 @@ export function renderMatchList(
       link.addEventListener('click', openPreview);
     }
   };
-  return { update };
+  return { update, showLoading };
 }

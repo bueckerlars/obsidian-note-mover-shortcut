@@ -1475,6 +1475,27 @@ body.is-phone
   color: var(--text-faint);
 }
 
+.advancedNoteMover-match-skeleton {
+  width: 60%;
+  height: 14px;
+  border-radius: var(--radius-s);
+  background: var(--background-modifier-hover);
+}
+
+.advancedNoteMover-match-loading
+  .advancedNoteMover-match-row:nth-child(2)
+  .advancedNoteMover-match-skeleton {
+  width: 80%;
+  opacity: 0.7;
+}
+
+.advancedNoteMover-match-loading
+  .advancedNoteMover-match-row:nth-child(3)
+  .advancedNoteMover-match-skeleton {
+  width: 45%;
+  opacity: 0.45;
+}
+
 .advancedNoteMover-match-icon svg {
   width: var(--icon-s);
   height: var(--icon-s);
