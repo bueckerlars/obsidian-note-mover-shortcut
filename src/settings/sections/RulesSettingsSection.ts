@@ -240,7 +240,7 @@ export class RulesSettingsSection {
       if (
         target instanceof Element &&
         target.closest(
-          '.setting-item-control, .advancedNoteMover-drag-handle-container'
+          '.checkbox-container, .clickable-icon, .advancedNoteMover-drag-handle-container'
         )
       ) {
         return;
