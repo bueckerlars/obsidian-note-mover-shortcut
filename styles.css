@@ -870,7 +870,7 @@ body.is-mobile .advancedNoteMover-modal-title {
 .advancedNoteMover-settings-root
   .advancedNoteMover-rule-row
   .setting-item-control {
-  cursor: default;
+  cursor: pointer;
 }
 
 .advancedNoteMover-settings-root .advancedNoteMover-moved-hint {
