@@ -61,19 +61,6 @@ export function groupStays(entries: readonly PreviewEntry[]): StayGroup[] {
   })).filter(group => group.entries.length > 0);
 }
 
-export function stayCounts(
-  entries: readonly PreviewEntry[]
-): Record<StayCategory, number> {
-  const counts: Record<StayCategory, number> = {
-    no_rule: 0,
-    already_there: 0,
-    excluded: 0,
-    other: 0,
-  };
-  for (const entry of entries) counts[stayCategory(entry)] += 1;
-  return counts;
-}
-
 /** Case-insensitive match on the note name, its folder and its destination. */
 export function matchesQuery(entry: PreviewEntry, query: string): boolean {
   const needle = query.trim().toLowerCase();

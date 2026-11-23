@@ -30,7 +30,6 @@ import {
   matchesQuery,
   noteName,
   stayCategory,
-  stayCounts,
   type StayCategory,
 } from '../domain/preview/previewGroups';
 import { BaseModal, BaseModalOptions } from './BaseModal';
@@ -421,7 +420,6 @@ export class PreviewModal extends BaseModal {
         text: text.previewNoResults,
       });
     }
-    this.renderStayLine(list);
   }
 
   private groupState(entries: readonly PreviewEntry[]) {
@@ -571,41 +569,6 @@ export class PreviewModal extends BaseModal {
     return folder
       ? fill(strings().modals.previewFrom, { folder })
       : strings().modals.previewFromRoot;
-  }
-
-  private renderStayLine(list: HTMLElement): void {
-    const stays = this.stayEntries();
-    if (stays.length === 0) return;
-    const text = strings().modals;
-    const counts = stayCounts(stays);
-    const line = list.createEl('button', {
-      cls: 'advancedNoteMover-stay-line',
-      attr: { type: 'button' },
-    });
-    iconSpan(line, 'chevron-right');
-    line.createSpan({
-      text: fill(
-        stays.length === 1 ? text.previewStayOne : text.previewStayMany,
-        { count: stays.length }
-      ),
-    });
-    line.createSpan({ cls: 'advancedNoteMover-grow' });
-    const pills: [StayCategory, string][] = [
-      ['no_rule', text.previewStayNoRule],
-      ['already_there', text.previewStayAlready],
-      ['excluded', text.previewStayExcluded],
-      ['other', text.previewStayOther],
-    ];
-    for (const [category, template] of pills) {
-      if (counts[category] === 0) continue;
-      line.createSpan({
-        cls: 'advancedNoteMover-pill is-neutral',
-        text: fill(template, { count: counts[category] }),
-      });
-    }
-    line.addEventListener('click', () => {
-      this.showTab('stay');
-    });
   }
 
   private renderStayGroups(list: HTMLElement): void {
