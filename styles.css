@@ -2141,31 +2141,6 @@ body.is-phone .advancedNoteMover-cb-hit {
   transform: translate(-50%, -50%);
 }
 
-.advancedNoteMover-stay-line {
-  display: flex;
-  align-items: center;
-  gap: var(--size-4-2);
-  width: 100%;
-  height: auto;
-  padding: var(--size-4-3) 0 var(--size-2-3);
-  border: none;
-  background: none;
-  box-shadow: none;
-  color: var(--text-muted);
-  font-size: var(--font-ui-smaller);
-  font-weight: var(--font-semibold);
-  text-align: left;
-}
-
-.advancedNoteMover-stay-line:hover {
-  color: var(--text-normal);
-}
-
-.advancedNoteMover-stay-line svg {
-  width: var(--icon-xs);
-  height: var(--icon-xs);
-}
-
 .advancedNoteMover-preview-no-results {
   padding: var(--size-4-4) 0;
   color: var(--text-muted);
@@ -2911,8 +2886,4 @@ body.is-phone .advancedNoteMover-preview-modal .advancedNoteMover-row-chevron {
   height: var(--input-height);
   margin: calc(-1 * var(--size-4-3)) calc(-1 * var(--size-4-2))
     calc(-1 * var(--size-4-3)) 0;
-}
-
-body.is-phone .advancedNoteMover-preview-modal .advancedNoteMover-stay-line {
-  min-height: var(--input-height);
 }
