@@ -34,11 +34,12 @@ jobs:
       - name: Type check
         run: npm run type-check
 
-      - name: Test
-        run: npm test
-
+      # The UI smoke unit tests copy main.js, so build first.
       - name: Build
         run: npm run build
+
+      - name: Test
+        run: npm test
 
   ui-smoke:
     if: github.event_name == 'workflow_dispatch'
