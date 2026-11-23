@@ -297,7 +297,7 @@ export class RulesSettingsSection {
       attr: { 'aria-live': 'polite', role: 'status' },
     });
     this.hintTimer = viewTimeout(() => {
-      live.setText(message);
+      live.textContent = message;
       this.hintTimer = viewTimeout(() => {
         hint?.remove();
         live.remove();
