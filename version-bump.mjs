@@ -12,3 +12,14 @@ writeFileSync('manifest.json', JSON.stringify(manifest, null, '\t'));
 let versions = JSON.parse(readFileSync('versions.json', 'utf8'));
 versions[targetVersion] = minAppVersion;
 writeFileSync('versions.json', JSON.stringify(versions, null, '\t'));
+
+// Keep the in-app changelog header on the version npm just set.
+const changelogPath = 'CHANGELOG.md';
+const changelog = readFileSync(changelogPath, 'utf8').replace(
+  /^## \[[^\]]+\]\(([^)]+)\)/m,
+  (_match, url) => {
+    const nextUrl = String(url).replace(/\.\.\.[^)]+$/, `...${targetVersion}`);
+    return `## [${targetVersion}](${nextUrl})`;
+  }
+);
+writeFileSync(changelogPath, changelog);

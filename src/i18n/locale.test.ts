@@ -11,7 +11,7 @@ describe('loadLocale', () => {
 
     expect(localeCode('EN-gb')).toBe('en');
     expect(loadLocale('en').unnamedRule).toBe('Unnamed rule');
-    expect(loadLocale('de').unnamedRule).toBe('Unnamed rule');
+    expect(loadLocale('de').unnamedRule).toBe('Unbenannte Regel');
     expect(loadLocale('de', { en: english, de: german }).unnamedRule).toBe(
       'Unbenannte Regel'
     );

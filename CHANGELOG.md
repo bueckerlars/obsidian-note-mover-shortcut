@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.3.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.3.1)
+## [1.4.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.4.0)
 
 ### Breaking
 
@@ -9,6 +9,7 @@
 ### Improvements
 
 - **Languages**: Settings, modal, command, and notice copy is read from `languages/en.json`. The active Obsidian language selects `languages/<code>.json` and falls back to English when that file is missing.
+- **German**: Settings, modals, commands, and notices use German when Obsidian's language is German. A missing German phrase stays in English. Counts use German plurals. Match buttons, condition types, and the update dialog use the same catalog.
 - **Settings tab**: The settings tab is drawn from one list for every supported Obsidian version. It no longer appears in Obsidian 1.13 settings search, which used a second copy of the same settings. The minimum app version stays 1.8.7.
 - **Mobile settings**: Toggles and dropdowns stay beside their names. Only a wide field, such as the interval or the retention row, stacks.
 - **Mobile toggles**: Toggle descriptions stay on one or two lines, so the switch sits beside the name inside the settings card.
@@ -30,6 +31,9 @@
 - **Match buttons**: The selected match option uses the normal text color.
 - **Active switch**: On a phone, the rule active switch uses the Active label.
 - **Icon buttons**: Move, delete, and rule actions are buttons, so their names are allowed.
+- **Move all files**: Moving every matching note asks for confirmation first. The dialog shows the count, the first file paths, and that the move can be undone from history.
+- **Import backup**: Import shows how many rules and filters it replaces. Confirming saves the current settings to data.backup.json before writing the new ones. Restore backup puts those settings back.
+- **Why not moved**: Pick a note and see, for each rule, whether it matched and which condition failed.
 - **Muted text**: Drag handles and file paths use the muted text color.
 - **Bulk preview**: Closing the preview stops further file reads and shows how far the read has got.
 - **Confirm dialog**: Confirm and cancel use one button row on desktop and mobile.

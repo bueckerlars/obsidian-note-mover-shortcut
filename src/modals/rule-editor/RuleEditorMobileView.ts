@@ -29,6 +29,7 @@ import {
 import { renderRuleNameField } from './components/RuleNameField';
 import {
   CRITERIA_TYPES,
+  criteriaLabel,
   FolderCreationValue,
   applyCriteriaType,
   applyFolderCreationValue,
@@ -416,7 +417,7 @@ export class RuleEditorMobileView {
     );
     const typeDropdown = new DropdownComponent(typeField.controlEl);
     CRITERIA_TYPES.forEach(ct => {
-      typeDropdown.addOption(ct, ct);
+      typeDropdown.addOption(ct, criteriaLabel(ct));
     });
     typeDropdown.setValue(trigger.criteriaType).onChange(value => {
       applyCriteriaType(trigger, value as CriteriaType);

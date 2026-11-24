@@ -1,6 +1,5 @@
 import { TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
-import { pluralize } from '../utils/pluralize';
 import { viewIdle } from '../utils/viewTimers';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
@@ -14,6 +13,7 @@ import {
   filterConflictSkipEntriesByExpectedTarget,
   normalizeConflictCachePath,
 } from '../domain/conflicts/conflict-skip-cache';
+import { runConfirmedBulkMove } from '../application/bulkMoveGuard';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
 import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
@@ -27,10 +27,11 @@ import {
 } from '../application/note-move-skip-outcome';
 import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
+import { ConfirmModal } from '../modals/ConfirmModal';
 import { PreviewModal } from '../modals/PreviewModal';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
-import { fill, strings } from '../i18n/locale';
+import { fill, plural, strings } from '../i18n/locale';
 
 const BULK_CHUNK_SIZE = 50;
 
@@ -373,12 +374,12 @@ export class AdvancedNoteMover {
                 const successMessage =
                   errorCount > 0
                     ? fill(strings().notices.movedOf, {
-                        moved: pluralize(successCount, 'file'),
+                        moved: plural(successCount, 'file'),
                         attempted: totalAttempted,
-                        errors: pluralize(errorCount, 'file'),
+                        errors: plural(errorCount, 'file'),
                       })
                     : fill(strings().notices.successfullyMoved, {
-                        moved: pluralize(successCount, 'file'),
+                        moved: plural(successCount, 'file'),
                       });
 
                 NoticeManager.showWithUndo(
@@ -395,7 +396,7 @@ export class AdvancedNoteMover {
                       if (undone.success) {
                         NoticeManager.success(
                           fill(strings().notices.bulkUndone, {
-                            moved: pluralize(successCount, 'file'),
+                            moved: plural(successCount, 'file'),
                           }),
                           { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
                         );
@@ -404,10 +405,7 @@ export class AdvancedNoteMover {
                           undone.errors.length === 1
                             ? undone.errors[0]
                             : fill(strings().notices.errorsWhileUndoing, {
-                                errors: pluralize(
-                                  undone.errors.length,
-                                  'error'
-                                ),
+                                errors: plural(undone.errors.length, 'error'),
                               }),
                           {
                             duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
@@ -454,7 +452,7 @@ export class AdvancedNoteMover {
               const periodicMessage =
                 successCount > 0
                   ? fill(strings().notices.periodicMoved, {
-                      moved: pluralize(successCount, 'file'),
+                      moved: plural(successCount, 'file'),
                       skipped: skippedDetail,
                     })
                   : fill(strings().notices.periodicNone, {
@@ -464,7 +462,7 @@ export class AdvancedNoteMover {
                 errorCount > 0
                   ? fill(strings().notices.withErrorCount, {
                       message: periodicMessage,
-                      errors: pluralize(errorCount, 'error'),
+                      errors: plural(errorCount, 'error'),
                     })
                   : periodicMessage,
                 moveErrors.length > 0
@@ -488,12 +486,85 @@ export class AdvancedNoteMover {
   }
 
   async moveAllFilesInVault(opts?: { signal?: AbortSignal }) {
-    await this.moveAllFiles({
-      createFolders: true,
-      showNotifications: true,
-      operationType: 'bulk',
-      signal: opts?.signal,
-    });
+    let preview;
+    try {
+      preview = await this.generateVaultMovePreview(opts?.signal);
+    } catch (error) {
+      handleError(
+        error,
+        strings().notices.errorGeneratingVaultPreviewContext,
+        false
+      );
+      return;
+    }
+
+    const previewed = preview.successfulMoves
+      .filter(entry => entry.willBeMoved && entry.targetPath)
+      .map(entry => ({ path: entry.currentPath }));
+
+    if (previewed.length === 0) {
+      NoticeManager.info(
+        preview.totalFiles === 0
+          ? strings().notices.noMovableFiles
+          : strings().notices.bulkMoveNone
+      );
+      return;
+    }
+
+    let started = false;
+    let moved = 0;
+    let index = 0;
+    try {
+      await runConfirmedBulkMove({
+        previewed,
+        undoHint: strings().modals.bulkMoveUndo,
+        confirm: prompt =>
+          ConfirmModal.show(this.plugin.app, {
+            title: strings().modals.bulkMoveTitle,
+            message: fill(strings().modals.bulkMoveMessage, {
+              count: plural(prompt.count, 'file'),
+            }),
+            details: [...prompt.paths, prompt.undoHint],
+            confirmText: strings().modals.bulkMoveConfirm,
+            cancelText: strings().common.cancel,
+          }),
+        renameFile: async file => {
+          if (!started) {
+            this.plugin.historyManager.startBulkOperation('bulk');
+            started = true;
+          }
+          const vaultFile = this.plugin.app.vault.getAbstractFileByPath(
+            file.path
+          );
+          if (!(vaultFile instanceof TFile)) {
+            return;
+          }
+          const result = await this.moveFileBasedOnTags(vaultFile, '/', false, {
+            bypassConflictSkipCache: false,
+          });
+          if (result.moved) {
+            moved += 1;
+          }
+          index += 1;
+          if (index % BULK_CHUNK_SIZE === 0 && index < previewed.length) {
+            await new Promise<void>(resolve => {
+              viewIdle(resolve, 250);
+            });
+          }
+        },
+      });
+    } finally {
+      if (started) {
+        this.plugin.historyManager.endBulkOperation();
+        NoticeManager.info(
+          moved > 0
+            ? fill(strings().notices.successfullyMoved, {
+                moved: plural(moved, 'file'),
+              })
+            : fill(strings().notices.bulkNoneMoved, { skipped: '' })
+        );
+      }
+    }
   }
 
   /**

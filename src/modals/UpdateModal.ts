@@ -39,7 +39,9 @@ export class UpdateModal extends BaseModal {
     // Subtitle
     if (this.lastSeenVersion) {
       contentEl.createEl('p', {
-        text: `What's new since version ${this.lastSeenVersion}?`,
+        text: fill(strings().modals.updateWhatsNew, {
+          version: this.lastSeenVersion,
+        }),
         cls: 'advancedNoteMover-modal-subtitle',
       });
     } else {
@@ -103,7 +105,7 @@ export class UpdateModal extends BaseModal {
       const buttonContainer = this.createButtonContainer(footerContainer);
       this.createButton(
         buttonContainer,
-        'Close',
+        strings().common.close,
         () => {
           this.close();
         },

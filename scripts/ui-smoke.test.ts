@@ -4,6 +4,7 @@ import net from 'node:net';
 import path from 'node:path';
 import {
   CdpWebSocket,
+  catalogLeftovers,
   collectFailures,
   freePort,
   resolveSmokeOutputDir,
@@ -328,6 +329,29 @@ describe('collectFailures', () => {
     const failures = collectFailures(document).map(item => item.check);
     expect(failures).toContain('cta');
     expect(failures).toContain('warning');
+  });
+});
+
+describe('catalogLeftovers', () => {
+  const english = {
+    settings: { headingsFilter: 'Filter', headingsRules: 'Rules' },
+  };
+  const german = {
+    settings: { headingsFilter: 'Filter', headingsRules: 'Regeln' },
+  };
+
+  it('separates an untranslated label from a word that is German too', () => {
+    const result = catalogLeftovers(
+      ['Rules', 'Filter', 'Regeln'],
+      english,
+      german
+    );
+    expect(result.misses).toEqual([
+      { text: 'Rules', keys: ['settings.headingsRules'] },
+    ]);
+    expect(result.shared).toEqual([
+      { text: 'Filter', keys: ['settings.headingsFilter'] },
+    ]);
   });
 });
 
