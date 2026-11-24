@@ -2,6 +2,14 @@
  * Minimal stub so Vitest can load modules that import `obsidian`.
  * Not used at runtime in Obsidian.
  */
+// The stub runs without Obsidian's createEl helpers.
+function createTestEl<K extends keyof HTMLElementTagNameMap>(
+  tag: K
+): HTMLElementTagNameMap[K] {
+  // eslint-disable-next-line obsidianmd/prefer-create-el
+  return document.createElement(tag);
+}
+
 export class TAbstractFile {}
 export class TFile extends TAbstractFile {
   extension = 'md';
@@ -84,10 +92,10 @@ export function parseYaml(yaml: string): Record<string, unknown> {
 }
 
 export class Modal {
-  modalEl: HTMLElement = document.createElement('div');
-  contentEl: HTMLElement = document.createElement('div');
-  titleEl: HTMLElement = document.createElement('div');
-  containerEl: HTMLElement = document.createElement('div');
+  modalEl: HTMLElement = createTestEl('div');
+  contentEl: HTMLElement = createTestEl('div');
+  titleEl: HTMLElement = createTestEl('div');
+  containerEl: HTMLElement = createTestEl('div');
 
   constructor(public app: unknown) {
     this.modalEl.className = 'modal';
@@ -115,7 +123,7 @@ export class Modal {
 }
 
 export class PluginSettingTab {
-  containerEl: HTMLElement = document.createElement('div');
+  containerEl: HTMLElement = createTestEl('div');
 
   constructor(
     public app: unknown,
@@ -128,7 +136,7 @@ export class PluginSettingTab {
 }
 
 export class ButtonComponent {
-  buttonEl = document.createElement('button');
+  buttonEl = createTestEl('button');
 
   constructor(parent: HTMLElement) {
     parent.append(this.buttonEl);
@@ -158,11 +166,11 @@ export class ButtonComponent {
 export class FuzzySuggestModal extends Modal {}
 
 export class Setting {
-  settingEl: HTMLElement = document.createElement('div');
-  infoEl: HTMLElement = document.createElement('div');
-  nameEl: HTMLElement = document.createElement('div');
-  descEl: HTMLElement = document.createElement('div');
-  controlEl: HTMLElement = document.createElement('div');
+  settingEl: HTMLElement = createTestEl('div');
+  infoEl: HTMLElement = createTestEl('div');
+  nameEl: HTMLElement = createTestEl('div');
+  descEl: HTMLElement = createTestEl('div');
+  controlEl: HTMLElement = createTestEl('div');
 
   constructor(containerEl: HTMLElement) {
     this.settingEl.className = 'setting-item';
@@ -213,7 +221,7 @@ export class Setting {
     }) => void
   ): this {
     this.settingEl.classList.add('mod-toggle');
-    const box = document.createElement('div');
+    const box = createTestEl('div');
     box.className = 'checkbox-container';
     const api = {
       setValue() {
@@ -240,7 +248,7 @@ export class Setting {
       inputEl: HTMLInputElement;
     }) => void
   ): this {
-    const input = document.createElement('input');
+    const input = createTestEl('input');
     input.type = 'text';
     const api = {
       setPlaceholder(value: string) {
@@ -269,7 +277,7 @@ export class Setting {
       inputEl: HTMLInputElement;
     }) => void
   ): this {
-    const input = document.createElement('input');
+    const input = createTestEl('input');
     input.type = 'search';
     const api = {
       setPlaceholder(value: string) {
@@ -297,10 +305,10 @@ export class Setting {
       onChange: (fn: (value: string) => void) => unknown;
     }) => void
   ): this {
-    const select = document.createElement('select');
+    const select = createTestEl('select');
     const api = {
       addOption(value: string, label: string) {
-        const option = document.createElement('option');
+        const option = createTestEl('option');
         option.value = value;
         option.textContent = label;
         select.append(option);
@@ -331,7 +339,7 @@ export class Setting {
       buttonEl: HTMLButtonElement;
     }) => void
   ): this {
-    const button = document.createElement('button');
+    const button = createTestEl('button');
     const api = {
       setButtonText(text: string) {
         button.textContent = text;
@@ -383,7 +391,7 @@ export class Setting {
       extraSettingsEl: HTMLElement;
     }) => void
   ): this {
-    const button = document.createElement('div');
+    const button = createTestEl('div');
     button.className = 'clickable-icon';
     const api = {
       setIcon(icon: string) {
@@ -409,7 +417,7 @@ export class Setting {
 }
 
 export class Notice {
-  messageEl: HTMLElement = document.createElement('div');
+  messageEl: HTMLElement = createTestEl('div');
   hide(): void {}
 }
 
@@ -417,7 +425,7 @@ export class Menu {
   private items: HTMLElement[] = [];
 
   addItem(cb: (item: MenuItemStub) => void): this {
-    const el = document.createElement('div');
+    const el = createTestEl('div');
     el.className = 'menu-item';
     const api: MenuItemStub = {
       dom: el,
@@ -460,7 +468,7 @@ export class Menu {
   }
 
   showAtPosition(): this {
-    const menu = document.createElement('div');
+    const menu = createTestEl('div');
     menu.className = 'menu';
     for (const item of this.items) {
       menu.append(item);

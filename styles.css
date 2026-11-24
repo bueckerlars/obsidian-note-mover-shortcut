@@ -1446,6 +1446,10 @@ body.is-phone
 }
 
 /* Live matches */
+.advancedNoteMover-match-list {
+  min-height: var(--advancedNoteMover-match-height, 0);
+}
+
 .advancedNoteMover-match-head {
   display: flex;
   align-items: center;
