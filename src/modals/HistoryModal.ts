@@ -40,6 +40,7 @@ export class HistoryModal extends BaseModal {
     super(app, {
       title: strings().modals.historyTitle,
       cssClass: 'advancedNoteMover-history-modal',
+      phoneFullscreen: true,
       focusSelector: 'input',
       ...options,
     });

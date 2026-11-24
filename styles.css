@@ -674,9 +674,7 @@ body.is-mobile .modal-container.advancedNoteMover-modal-size-mobile {
   max-width: 100%;
   margin: 0;
   border-radius: 0;
-  max-height: 100vh;
   max-height: 100dvh;
-  height: 100vh;
   height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -890,7 +888,7 @@ body.is-mobile .advancedNoteMover-modal-title {
   width: 1px;
   height: 1px;
   overflow: hidden;
-  clip-path: inset(50%);
+  clip: rect(0 0 0 0);
   white-space: nowrap;
 }
 
@@ -1331,6 +1329,7 @@ body.is-phone
 /* Destination */
 .advancedNoteMover-destination-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--size-4-2);
 }
@@ -1364,7 +1363,12 @@ body.is-phone
 }
 
 .advancedNoteMover-destination-status {
-  margin: var(--size-4-2) 0 var(--size-4-1);
+  flex: 1 0 100%;
+  margin: 0 0 var(--size-4-1);
+}
+
+.advancedNoteMover-destination-status:empty {
+  display: none;
 }
 
 .advancedNoteMover-callout {
@@ -1751,7 +1755,7 @@ body.is-phone
 /* Destination: field, resolved line, then the full-width placeholder button. */
 body.is-phone
   .advancedNoteMover-rule-editor-modal
-  .advancedNoteMover-card:has(> .advancedNoteMover-destination-row) {
+  .advancedNoteMover-destination-card {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-3);
@@ -1761,7 +1765,9 @@ body.is-phone
 body.is-phone
   .advancedNoteMover-rule-editor-modal
   .advancedNoteMover-destination-row {
-  display: contents;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--size-4-3);
 }
 
 body.is-phone
@@ -1779,12 +1785,6 @@ body.is-phone
 
 body.is-phone
   .advancedNoteMover-rule-editor-modal
-  .advancedNoteMover-destination-status:empty {
-  display: none;
-}
-
-body.is-phone
-  .advancedNoteMover-rule-editor-modal
   .advancedNoteMover-destination-row
   > button {
   order: 3;
@@ -1795,9 +1795,8 @@ body.is-phone
 
 body.is-phone
   .advancedNoteMover-rule-editor-modal
-  .advancedNoteMover-card:has(> .advancedNoteMover-destination-row)
+  .advancedNoteMover-destination-card
   > .setting-item {
-  order: 4;
   margin-inline: 0;
   padding-inline: 0;
   border-top: var(--setting-items-divider-width) solid
@@ -2245,14 +2244,7 @@ body.is-phone .advancedNoteMover-preview-toolbar {
 }
 
 /* Preview, history and conflict fill the screen below the title. */
-body.is-phone
-  .modal.advancedNoteMover-focus-scope:has(
-    :is(
-      .advancedNoteMover-preview-modal,
-      .advancedNoteMover-history-modal,
-      .advancedNoteMover-conflict-modal
-    )
-  ) {
+body.is-phone .modal.advancedNoteMover-modal-fullscreen {
   width: 100%;
   max-width: 100%;
   height: var(--modal-max-height);
@@ -2502,7 +2494,7 @@ body.is-phone
   .advancedNoteMover-conflict-side {
   display: flex;
   flex-wrap: wrap;
-  column-gap: var(--size-2-3);
+  gap: 0 var(--size-2-3);
 }
 
 body.is-phone
