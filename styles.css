@@ -1,9 +1,9 @@
 /* ===== SETTINGS STYLES ===== */
 
 .advancedNoteMover-settings-hint {
-  font-size: 0.9em;
+  font-size: var(--font-ui-small);
   color: var(--text-muted);
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--size-4-2) 0;
   line-height: 1.4;
 }
 
@@ -15,13 +15,13 @@
 /* ===== COMMON MODAL STYLES ===== */
 
 /* Consistent vertical rhythm for plugin modals */
-.note-mover-preview-modal,
-.note-mover-update-modal,
-.note-mover-history-modal,
+.advancedNoteMover-preview-modal,
+.advancedNoteMover-update-modal,
+.advancedNoteMover-history-modal,
 .advancedNoteMover-confirm-modal,
 .advancedNoteMover-conflict-modal,
 .advancedNoteMover-conflict-skip-cache-modal {
-  padding: 20px 0 20px 0;
+  padding: var(--size-4-5) 0 var(--size-4-5) 0;
   box-sizing: border-box;
 }
 
@@ -31,8 +31,8 @@
 .advancedNoteMover-modal-title-container {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--size-4-3);
+  margin-bottom: var(--size-4-4);
 }
 
 .advancedNoteMover-modal-title-icon {
@@ -40,17 +40,28 @@
   line-height: 1;
 }
 
+/* One size per state. Mobile and short portrait override the variables. */
+body {
+  --anm-modal-title-size: 1.6em;
+  --anm-modal-subtitle-size: 1.1em;
+}
+
+body.is-mobile {
+  --anm-modal-title-size: 1.3em;
+  --anm-modal-subtitle-size: 0.95em;
+}
+
 .advancedNoteMover-modal-title {
   margin: 0;
-  font-size: 1.6em;
+  font-size: var(--anm-modal-title-size);
   font-weight: bold;
   color: var(--text-normal);
 }
 
 .advancedNoteMover-modal-subtitle {
-  margin: 0 0 24px 0;
+  margin: 0 0 var(--size-4-6) 0;
   color: var(--text-muted);
-  font-size: 1.1em;
+  font-size: var(--anm-modal-subtitle-size);
 }
 
 /* Common Button Container Styles */
@@ -60,7 +71,7 @@
   flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: var(--size-4-3);
   width: auto;
 }
 
@@ -87,33 +98,33 @@
   width: auto;
 }
 
-.note-mover-preview-modal .advancedNoteMover-modal-footer,
-.note-mover-history-modal .advancedNoteMover-modal-footer {
+.advancedNoteMover-preview-modal .advancedNoteMover-modal-footer,
+.advancedNoteMover-history-modal .advancedNoteMover-modal-footer {
   align-items: center;
 }
 
 /* Common Section Styles */
 .advancedNoteMover-modal-section {
-  margin-bottom: 24px;
+  margin-bottom: var(--size-4-6);
 }
 
 .advancedNoteMover-modal-section:last-child {
-  margin-bottom: 16px;
+  margin-bottom: var(--size-4-4);
 }
 
 .advancedNoteMover-modal-section-header {
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: var(--size-4-3);
+  padding-bottom: var(--size-4-2);
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .advancedNoteMover-modal-section-header h3 {
   margin: 0;
-  font-size: 1.2em;
+  font-size: var(--font-ui-large);
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--size-4-2);
 }
 
 /* Common Footer Styles */
@@ -121,22 +132,22 @@
   display: flex;
   justify-content: center;
   border-top: 1px solid var(--background-modifier-border);
-  padding-top: 16px;
-  margin-top: 24px;
+  padding-top: var(--size-4-4);
+  margin-top: var(--size-4-6);
 }
 
 /* Update Modal Footer - Centered links, right-aligned button */
-.note-mover-update-modal .advancedNoteMover-modal-footer {
+.advancedNoteMover-update-modal .advancedNoteMover-modal-footer {
   justify-content: space-between;
   align-items: center;
 }
 
-.note-mover-update-modal .advancedNoteMover-update-modal-links {
+.advancedNoteMover-update-modal .advancedNoteMover-update-modal-links {
   flex: 1;
   text-align: center;
 }
 
-.note-mover-update-modal .advancedNoteMover-modal-button-container {
+.advancedNoteMover-update-modal .advancedNoteMover-modal-button-container {
   flex-shrink: 0;
 }
 
@@ -144,12 +155,12 @@
 .advancedNoteMover-modal-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--size-4-2);
 }
 
 .advancedNoteMover-modal-list-item {
-  padding: 16px;
-  border-radius: 6px;
+  padding: var(--size-4-4);
+  border-radius: var(--radius-m);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-primary);
 }
@@ -157,48 +168,17 @@
 /* Common Empty State Styles */
 .advancedNoteMover-modal-empty {
   text-align: center;
-  padding: 48px 24px;
+  padding: var(--size-4-12) var(--size-4-6);
   color: var(--text-muted);
   font-size: 1.1em;
   background: var(--background-secondary);
-  border-radius: 8px;
-  margin: 24px 0;
-}
-
-/* Common Info Box Styles */
-.advancedNoteMover-modal-info-box {
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  background: var(--background-secondary);
-  border-radius: 6px;
-  border: 1px solid var(--background-modifier-border);
-}
-
-.advancedNoteMover-modal-info-row {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-  font-size: 0.9em;
-  color: var(--text-normal);
-  opacity: 0.8;
-}
-
-.advancedNoteMover-modal-info-row span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.advancedNoteMover-modal-info-row code {
-  background: var(--background-primary);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 0.85em;
+  border-radius: var(--radius-m);
+  margin: var(--size-4-6) 0;
 }
 
 /* Time Filter Container */
 .advancedNoteMover-time-filter-container {
-  margin-bottom: 20px;
+  margin-bottom: var(--size-4-5);
   padding: 0;
   background: none;
   border: none;
@@ -223,23 +203,7 @@
   display: flex;
   align-items: center;
   height: 100%;
-  margin-right: 16px;
-}
-
-/* Retention Policy Settings - Inline layout */
-.advancedNoteMover-settings-root
-  .setting-item
-  .setting-item-control
-  input.advancedNoteMover-retention-value-input {
-  width: 80px;
-  margin-right: 8px;
-}
-
-.advancedNoteMover-settings-root
-  .setting-item
-  .setting-item-control
-  select.advancedNoteMover-retention-unit-dropdown {
-  width: 100px;
+  margin-right: var(--size-4-4);
 }
 
 .advancedNoteMover-history-list {
@@ -261,11 +225,11 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 12px 24px;
+  padding: var(--size-4-3) var(--size-4-6);
   border-bottom: 1px solid var(--background-modifier-border);
   background: none;
   box-sizing: border-box;
-  gap: 16px;
+  gap: var(--size-4-4);
 }
 
 .advancedNoteMover-history-entry:last-child {
@@ -284,39 +248,30 @@
   font-weight: 600;
   font-size: 1em;
   color: var(--text-normal);
-  margin-bottom: 2px;
+  margin-bottom: var(--size-2-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .advancedNoteMover-history-entry-paths {
-  color: var(--text-normal);
-  opacity: 0.78;
-  font-size: 0.92em;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.note-mover-history-title {
-  margin: 0 0 16px 0;
-  font-size: 1.4em;
-  font-weight: bold;
-  text-align: left;
-  color: var(--text-normal);
 }
 
 /* Bulk Operation Styles */
 .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  margin-bottom: 8px;
-  padding: 16px 24px;
+  border-radius: var(--radius-m);
+  margin-bottom: var(--size-4-2);
+  padding: var(--size-4-4) var(--size-4-6);
   flex-direction: column;
   align-items: stretch;
-  gap: 12px;
+  gap: var(--size-4-3);
 }
 
 .advancedNoteMover-history-entry.advancedNoteMover-single-operation {
@@ -337,14 +292,14 @@
 }
 
 .advancedNoteMover-bulk-details {
-  margin-top: 8px;
+  margin-top: var(--size-4-2);
 }
 
 .advancedNoteMover-bulk-details summary {
   cursor: pointer;
   color: var(--text-muted);
-  font-size: 0.9em;
-  margin-bottom: 8px;
+  font-size: var(--font-ui-small);
+  margin-bottom: var(--size-4-2);
   user-select: none;
 }
 
@@ -372,14 +327,14 @@
   max-height: 400px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 24px;
+  border-radius: var(--radius-m);
+  padding: var(--size-4-4);
+  margin-bottom: var(--size-4-6);
   background: var(--background-secondary);
 }
 
 .advancedNoteMover-changelog-version {
-  margin-bottom: 24px;
+  margin-bottom: var(--size-4-6);
 }
 
 .advancedNoteMover-changelog-version:last-child {
@@ -387,16 +342,16 @@
 }
 
 .advancedNoteMover-changelog-version-title {
-  margin: 0 0 12px 0;
+  margin: 0 0 var(--size-4-3) 0;
   font-size: 1.3em;
   font-weight: bold;
   color: var(--text-accent);
   border-bottom: 1px solid var(--background-modifier-border);
-  padding-bottom: 6px;
+  padding-bottom: var(--size-2-3);
 }
 
 .advancedNoteMover-changelog-section {
-  margin-bottom: 16px;
+  margin-bottom: var(--size-4-4);
 }
 
 .advancedNoteMover-changelog-section:last-child {
@@ -404,7 +359,7 @@
 }
 
 .advancedNoteMover-changelog-section-title {
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--size-4-2) 0;
   font-size: 1em;
   font-weight: 600;
   color: var(--text-normal);
@@ -412,12 +367,12 @@
 
 .advancedNoteMover-changelog-list {
   margin: 0;
-  padding-left: 20px;
+  padding-left: var(--size-4-5);
   color: var(--text-normal);
 }
 
 .advancedNoteMover-changelog-list li {
-  margin-bottom: 4px;
+  margin-bottom: var(--size-4-1);
 }
 
 .advancedNoteMover-changelog-list li:last-child {
@@ -433,7 +388,7 @@
 .advancedNoteMover-update-modal-github-link {
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.9em;
+  font-size: var(--font-ui-small);
   transition: color 0.2s ease;
 }
 
@@ -446,15 +401,15 @@
   color: var(--text-muted);
   font-style: italic;
   text-align: center;
-  margin: 24px 0;
+  margin: var(--size-4-6) 0;
 }
 
 .advancedNoteMover-preview-section {
-  margin-bottom: 24px;
+  margin-bottom: var(--size-4-6);
 }
 
 .advancedNoteMover-preview-section:last-child {
-  margin-bottom: 16px;
+  margin-bottom: var(--size-4-4);
 }
 
 .advancedNoteMover-preview-section-success
@@ -463,44 +418,32 @@
   color: var(--text-success);
 }
 
-.advancedNoteMover-preview-section-blocked
-  .advancedNoteMover-modal-section-header
-  h3 {
-  color: var(--text-error);
-}
-
 .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success {
   border-left: 3px solid var(--text-success);
   background: var(--background-primary-alt);
 }
 
-.advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-blocked {
-  border-left: 3px solid var(--text-error);
-  background: var(--background-primary-alt);
-}
-
 .advancedNoteMover-preview-item-main {
-  margin-bottom: 8px;
+  margin-bottom: var(--size-4-2);
 }
 
 .advancedNoteMover-preview-item-filename {
   font-weight: 600;
   font-size: 1em;
   color: var(--text-normal);
-  margin-bottom: 4px;
+  margin-bottom: var(--size-4-1);
 }
 
 .advancedNoteMover-preview-item-paths {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--size-4-3);
   font-family: var(--font-monospace);
-  font-size: 0.85em;
+  font-size: var(--font-ui-small);
 }
 
 .advancedNoteMover-current-path {
-  color: var(--text-normal);
-  opacity: 0.78;
+  color: var(--text-muted);
 }
 
 .advancedNoteMover-arrow {
@@ -516,54 +459,45 @@
 .advancedNoteMover-preview-item-details {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.9em;
+  gap: var(--size-4-1);
+  font-size: var(--font-ui-small);
 }
 
 .advancedNoteMover-preview-item-rule,
-.advancedNoteMover-preview-item-block-reason,
-.advancedNoteMover-preview-item-blocking-filter,
 .advancedNoteMover-preview-item-tags {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--size-4-2);
 }
 
 .advancedNoteMover-rule-label,
-.advancedNoteMover-block-reason-label,
-.advancedNoteMover-filter-label,
 .advancedNoteMover-tags-label {
   font-weight: 500;
   color: var(--text-muted);
   min-width: 60px;
 }
 
-.advancedNoteMover-preview-item-rule code,
-.advancedNoteMover-preview-item-blocking-filter code {
+.advancedNoteMover-preview-item-rule code {
   background: var(--background-secondary);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 0.8em;
+  padding: var(--size-2-1) var(--size-2-3);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
   color: var(--text-normal);
-}
-
-.advancedNoteMover-preview-item-block-reason {
-  color: var(--text-error);
 }
 
 .advancedNoteMover-tag {
   display: inline-block;
   background: var(--background-modifier-border);
   color: var(--text-muted);
-  padding: 2px 6px;
-  border-radius: 12px;
-  font-size: 0.8em;
-  margin-right: 4px;
+  padding: var(--size-2-1) var(--size-2-3);
+  border-radius: var(--radius-l);
+  font-size: var(--font-ui-smaller);
+  margin-right: var(--size-4-1);
 }
 
 /* Confirm Modal Styles */
 .advancedNoteMover-confirm-modal {
-  padding: 24px 0 16px 0;
+  padding: var(--size-4-6) 0 var(--size-4-4) 0;
   box-sizing: border-box;
   text-align: center;
 }
@@ -574,7 +508,7 @@
 }
 
 .advancedNoteMover-confirm-modal-message {
-  margin: 0 0 24px 0;
+  margin: 0 0 var(--size-4-6) 0;
   color: var(--text-muted);
   font-size: 1em;
   line-height: 1.5;
@@ -583,7 +517,7 @@
 
 .advancedNoteMover-confirm-modal .advancedNoteMover-modal-button-container {
   border-top: 1px solid var(--background-modifier-border);
-  padding-top: 16px;
+  padding-top: var(--size-4-4);
 }
 
 .advancedNoteMover-confirm-modal
@@ -594,32 +528,32 @@
 
 /* Conflict Modal Styles */
 .advancedNoteMover-conflict-modal {
-  padding: 24px 0 16px 0;
+  padding: var(--size-4-6) 0 var(--size-4-4) 0;
 }
 
 .advancedNoteMover-conflict-modal-message {
-  margin: 0 0 16px 0;
+  margin: 0 0 var(--size-4-4) 0;
   color: var(--text-muted);
-  font-size: 0.95em;
+  font-size: var(--font-ui-small);
   line-height: 1.5;
 }
 
 .advancedNoteMover-conflict-modal-warning {
-  margin-bottom: 8px;
+  margin-bottom: var(--size-4-2);
 }
 
 .advancedNoteMover-conflict-modal-warning-text {
-  margin: 0 0 12px 0;
-  font-size: 0.9em;
+  margin: 0 0 var(--size-4-3) 0;
+  font-size: var(--font-ui-small);
   line-height: 1.4;
 }
 
 .advancedNoteMover-conflict-modal .advancedNoteMover-modal-button-container {
   border-top: 1px solid var(--background-modifier-border);
-  padding-top: 16px;
+  padding-top: var(--size-4-4);
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--size-4-2);
   justify-content: flex-end;
 }
 
@@ -631,25 +565,25 @@
 .advancedNoteMover-conflict-skip-cache-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--size-4-3);
+  margin-bottom: var(--size-4-4);
 }
 
 .advancedNoteMover-conflict-skip-cache-item {
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  padding: 12px 16px;
+  border-radius: var(--radius-m);
+  padding: var(--size-4-3) var(--size-4-4);
 }
 
 .advancedNoteMover-conflict-skip-cache-skipped-at {
-  margin-top: 8px;
-  font-size: 0.85em;
+  margin-top: var(--size-4-2);
+  font-size: var(--font-ui-small);
   color: var(--text-muted);
 }
 
 .advancedNoteMover-conflict-skip-cache-item .setting-item {
   border-top: none;
-  padding: 8px 0 0 0;
+  padding: var(--size-4-2) 0 0 0;
 }
 
 /* ===== DRAG & DROP STYLES ===== */
@@ -657,18 +591,16 @@
 /* Drag Handle Styles */
 .advancedNoteMover-drag-handle {
   cursor: grab;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
+  transition: color 0.2s ease;
   color: var(--text-muted);
-  padding: 2px 4px;
-  border-radius: 3px;
+  padding: var(--size-2-1) var(--size-4-1);
+  border-radius: var(--radius-s);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .advancedNoteMover-drag-handle:hover {
-  opacity: 1;
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
@@ -686,7 +618,7 @@
 .setting-item.advancedNoteMover-dragging {
   opacity: 0.5;
   transform: rotate(1deg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-l);
   z-index: 1000;
   position: relative;
 }
@@ -713,7 +645,7 @@
 .advancedNoteMover-drag-handle-container {
   display: flex;
   align-items: center;
-  margin-right: 4px;
+  margin-right: var(--size-4-1);
   flex-shrink: 0;
 }
 
@@ -742,8 +674,8 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 16px;
-  padding: 8px 12px;
+  gap: var(--size-4-4);
+  padding: var(--size-4-2) var(--size-4-3);
   box-sizing: border-box;
 }
 
@@ -761,18 +693,18 @@
 .advancedNoteMover-rule-v2-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--size-4-1);
   flex-shrink: 0;
 }
 
 .advancedNoteMover-rule-v2-actions .setting-item-control {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--size-4-1);
 }
 
 .advancedNoteMover-rule-v2-actions .advancedNoteMover-drag-handle-container {
-  margin-left: 4px;
+  margin-left: var(--size-4-1);
 }
 
 /* ===== RULE EDITOR MODAL STYLES ===== */
@@ -821,7 +753,7 @@
   margin-left: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--size-4-2);
 }
 
 .advancedNoteMover-rule-editor-modal .setting-item-control input[type='text'],
@@ -836,31 +768,34 @@
 .advancedNoteMover-rule-destination-description {
   flex: 0 0 100%;
   width: 100%;
-  margin: 4px 0 0 0;
+  margin: var(--size-4-1) 0 0 0;
   font-size: var(--font-ui-small);
   color: var(--text-muted);
   line-height: 1.4;
 }
 
 .advancedNoteMover-rule-editor-separator {
-  margin: 20px 0;
+  margin: var(--size-4-5) 0;
   border: none;
   border-top: 1px solid var(--background-modifier-border);
 }
 
 .advancedNoteMover-rule-aggregation-buttons {
   display: flex;
-  gap: 8px;
+  gap: var(--size-4-2);
 }
 
 .advancedNoteMover-rule-aggregation-button {
-  padding: 6px 16px;
+  padding: var(--size-2-3) var(--size-4-4);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-primary);
   color: var(--text-normal);
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .advancedNoteMover-rule-aggregation-button:hover {
@@ -879,13 +814,13 @@
 }
 
 .advancedNoteMover-rule-conditions-section {
-  margin: 16px 0;
+  margin: var(--size-4-4) 0;
   width: 100%;
   box-sizing: border-box;
 }
 
 .advancedNoteMover-rule-conditions-title {
-  margin: 0 0 12px 0;
+  margin: 0 0 var(--size-4-3) 0;
   font-size: 1.1em;
   font-weight: 600;
 }
@@ -893,8 +828,8 @@
 .advancedNoteMover-rule-triggers-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
   width: 100%;
   box-sizing: border-box;
 }
@@ -902,10 +837,10 @@
 .advancedNoteMover-rule-trigger-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: var(--size-4-2);
+  padding: var(--size-4-2);
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   border: 1px solid var(--background-modifier-border);
   transition:
     opacity 0.2s ease,
@@ -930,13 +865,15 @@
 
 .advancedNoteMover-rule-trigger-delete-btn {
   flex-shrink: 0;
-  padding: 4px;
+  padding: var(--size-4-1);
   cursor: pointer;
   color: var(--text-muted);
   background: transparent;
   border: none;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-s);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -956,21 +893,18 @@
   flex-shrink: 0;
 }
 
-.advancedNoteMover-rule-criteria-type,
-.advancedNoteMover-rule-rule-type {
-  padding: 6px 8px;
+.advancedNoteMover-rule-criteria-type {
+  padding: var(--size-2-3) var(--size-4-2);
   min-width: 150px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   cursor: pointer;
 }
 
-.advancedNoteMover-rule-criteria-type:focus,
-.advancedNoteMover-rule-rule-type:focus {
+.advancedNoteMover-rule-criteria-type:focus {
   outline: none;
 }
 
-.advancedNoteMover-rule-criteria-type:focus-visible,
-.advancedNoteMover-rule-rule-type:focus-visible {
+.advancedNoteMover-rule-criteria-type:focus-visible {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
   border-color: var(--interactive-accent);
@@ -978,10 +912,10 @@
 
 .advancedNoteMover-rule-trigger-value {
   flex: 1;
-  padding: 6px 8px;
+  padding: var(--size-2-3) var(--size-4-2);
   background: transparent;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   color: var(--text-normal);
 }
 
@@ -1004,9 +938,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
-  padding-top: 16px;
-  padding-bottom: 4px;
+  margin-top: var(--size-4-5);
+  padding-top: var(--size-4-4);
+  padding-bottom: var(--size-4-1);
   border-top: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
   position: sticky;
@@ -1018,7 +952,7 @@
 .advancedNoteMover-rule-editor-footer-left,
 .advancedNoteMover-rule-editor-footer-right {
   display: flex;
-  gap: 8px;
+  gap: var(--size-4-2);
   align-items: center;
 }
 
@@ -1036,7 +970,7 @@
 .advancedNoteMover-property-suggestion {
   display: flex;
   flex-direction: column;
-  padding: 4px 8px;
+  padding: var(--size-4-1) var(--size-4-2);
 }
 
 .advancedNoteMover-property-name {
@@ -1045,16 +979,16 @@
 }
 
 .advancedNoteMover-property-meta {
-  font-size: 0.85em;
+  font-size: var(--font-ui-small);
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: var(--size-2-1);
 }
 
 /* Property Value Suggestions */
 .advancedNoteMover-property-value-suggestion {
   display: flex;
   flex-direction: column;
-  padding: 4px 8px;
+  padding: var(--size-4-1) var(--size-4-2);
 }
 
 .advancedNoteMover-property-value-text {
@@ -1063,9 +997,9 @@
 }
 
 .advancedNoteMover-property-value-type {
-  font-size: 0.85em;
+  font-size: var(--font-ui-small);
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: var(--size-2-1);
 }
 
 /* Property Name Field - Expand when no value field */
@@ -1095,216 +1029,11 @@
 
 /* ===== MOBILE RESPONSIVE STYLES ===== */
 
-/* Mobile-First Settings Container */
-.advancedNoteMover-mobile-settings-container {
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
 /* Ensure parent container allows scrolling - scoped to plugin only */
 body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   height: 100%;
-}
-
-/* Ensure settings container doesn't interfere with scrolling */
-.is-mobile .vertical-tab-content .advancedNoteMover-mobile-settings-container {
-  min-height: min-content;
-}
-
-.advancedNoteMover-mobile-section-heading {
-  font-size: 1.2em;
-  font-weight: 600;
-  margin-bottom: 12px;
-  margin-top: 16px;
-  color: var(--text-normal);
-}
-
-/* Mobile Section Description */
-.advancedNoteMover-mobile-section-description {
-  font-size: 0.9em;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-
-/* Mobile Section Container */
-.advancedNoteMover-mobile-section-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-/* Mobile Setting Cards */
-.advancedNoteMover-mobile-setting-card {
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  background: var(--background-secondary);
-  border: 1px solid var(--background-modifier-border);
-  width: 100%;
-  box-sizing: border-box;
-  position: relative;
-}
-
-.advancedNoteMover-mobile-setting-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-setting-title {
-  font-weight: 600;
-  font-size: 1em;
-  flex: 1;
-  color: var(--text-normal);
-  margin-right: 12px;
-}
-
-.advancedNoteMover-mobile-setting-description {
-  font-size: 0.85em;
-  color: var(--text-muted);
-  margin-top: 4px;
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-.advancedNoteMover-mobile-setting-control {
-  width: 100%;
-  margin-top: 8px;
-}
-
-/* Mobile Toggle Settings */
-.advancedNoteMover-mobile-toggle-setting
-  .advancedNoteMover-mobile-setting-header {
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.advancedNoteMover-mobile-toggle-setting
-  .advancedNoteMover-mobile-setting-description {
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-
-.advancedNoteMover-mobile-toggle-setting
-  .advancedNoteMover-mobile-setting-control {
-  display: none;
-}
-
-.advancedNoteMover-mobile-toggle-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 48px;
-}
-
-.advancedNoteMover-mobile-toggle-switch {
-  position: relative;
-  width: 52px;
-  height: 32px;
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-left: auto;
-  z-index: 1;
-}
-
-.advancedNoteMover-mobile-toggle-input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  position: absolute;
-}
-
-.advancedNoteMover-mobile-toggle-slider {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--background-modifier-border);
-  border-radius: 34px;
-  transition: 0.3s;
-}
-
-.advancedNoteMover-mobile-toggle-slider:before {
-  position: absolute;
-  content: '';
-  height: 24px;
-  width: 24px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  border-radius: 50%;
-  transition: 0.3s;
-}
-
-.advancedNoteMover-mobile-toggle-switch.is-active
-  .advancedNoteMover-mobile-toggle-slider {
-  background-color: var(--interactive-accent);
-}
-
-.advancedNoteMover-mobile-toggle-switch.is-active
-  .advancedNoteMover-mobile-toggle-slider:before {
-  transform: translateX(20px);
-}
-
-/* Mobile Input Settings */
-.advancedNoteMover-mobile-input-setting .advancedNoteMover-mobile-text-input {
-  width: 100%;
-  min-height: 48px;
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  background: var(--background-primary);
-  color: var(--text-normal);
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-input-label {
-  font-weight: 500;
-  font-size: 0.9em;
-  color: var(--text-normal);
-  margin-bottom: 8px;
-}
-
-/* Mobile Filter Cards */
-.advancedNoteMover-mobile-filter-card {
-  padding: 12px;
-  margin-bottom: 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  background: var(--background-secondary);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-filters-list-container {
-  margin-bottom: 12px;
-}
-
-/* Mobile Button Settings */
-.advancedNoteMover-mobile-button-setting .advancedNoteMover-mobile-action-btn {
-  width: 100%;
-  min-height: 48px;
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: opacity 0.2s ease;
 }
 
 .advancedNoteMover-mobile-action-btn:hover {
@@ -1320,94 +1049,19 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
   outline-offset: 2px;
 }
 
-/* Mobile Rule Cards */
-.advancedNoteMover-mobile-rule-card {
-  padding: 12px;
-  margin-bottom: 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  background: var(--background-secondary);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-rule-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-rule-name {
-  font-weight: 600;
-  flex: 1;
-  margin-right: 12px;
-  color: var(--text-normal);
-  word-break: break-word;
-}
-
-.advancedNoteMover-mobile-rule-toggle {
-  flex-shrink: 0;
-  position: relative;
-  width: 52px;
-  height: 32px;
-  cursor: pointer;
-}
-
-.advancedNoteMover-mobile-rule-toggle .advancedNoteMover-mobile-toggle-slider {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--background-modifier-border);
-  border-radius: 34px;
-  transition: 0.3s;
-}
-
-.advancedNoteMover-mobile-rule-toggle
-  .advancedNoteMover-mobile-toggle-slider:before {
-  position: absolute;
-  content: '';
-  height: 24px;
-  width: 24px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  border-radius: 50%;
-  transition: 0.3s;
-}
-
-.advancedNoteMover-mobile-rule-toggle.is-active
-  .advancedNoteMover-mobile-toggle-slider {
-  background-color: var(--interactive-accent);
-}
-
-.advancedNoteMover-mobile-rule-toggle.is-active
-  .advancedNoteMover-mobile-toggle-slider:before {
-  transform: translateX(20px);
-}
-
 .advancedNoteMover-mobile-rule-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-button.advancedNoteMover-mobile-edit-btn.mod-cta {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-2);
 }
 
 .advancedNoteMover-mobile-delete-btn {
   width: 100%;
   min-height: 48px;
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 6px;
+  padding: var(--size-4-3);
+  font-size: 16px; /* iOS: prevents zoom on focus */
+  border-radius: var(--radius-m);
   border: 1px solid var(--background-modifier-error);
   cursor: pointer;
   font-weight: 500;
@@ -1424,74 +1078,39 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   opacity: 0.8;
 }
 
-/* Mobile Rules List Container */
-.advancedNoteMover-mobile-rules-list-container {
-  margin-top: 12px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Mobile Retention Controls */
 .advancedNoteMover-mobile-retention-controls {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--size-4-2);
   width: 100%;
 }
 
 .advancedNoteMover-mobile-retention-controls input[type='text'],
-.advancedNoteMover-mobile-retention-controls .advancedNoteMover-mobile-dropdown,
 .advancedNoteMover-mobile-retention-controls select,
 .advancedNoteMover-mobile-retention-controls .dropdown {
   width: 100%;
   min-height: 48px;
-  padding: 12px;
-  font-size: 16px;
+  padding: var(--size-4-3);
+  font-size: 16px; /* iOS: prevents zoom on focus */
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--radius-m);
   background: var(--background-primary);
   color: var(--text-normal);
   box-sizing: border-box;
-}
-
-.advancedNoteMover-mobile-dropdown {
-  width: 100%;
-  min-height: 48px;
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
-  background: var(--background-primary);
-  color: var(--text-normal);
-  box-sizing: border-box;
-}
-
-/* Mobile utility classes */
-.advancedNoteMover-mobile-stack {
-  flex-direction: column;
-}
-
-.advancedNoteMover-mobile-full-width {
-  width: 100%;
-}
-
-.advancedNoteMover-mobile-center {
-  justify-content: center;
-  align-items: center;
 }
 
 /* Mobile-optimized settings */
 .setting-item.advancedNoteMover-mobile-optimized {
   flex-direction: column;
   align-items: stretch;
-  gap: 12px;
+  gap: var(--size-4-3);
 }
 
 .setting-item.advancedNoteMover-mobile-optimized .setting-item-name,
 .setting-item.advancedNoteMover-mobile-optimized .setting-item-description {
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: var(--size-4-2);
 }
 
 .setting-item.advancedNoteMover-mobile-optimized .setting-item-control {
@@ -1514,7 +1133,7 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
 /* Mobile input controls */
 .advancedNoteMover-mobile-input-control {
   flex-direction: column;
-  gap: 8px;
+  gap: var(--size-4-2);
   width: 100%;
 }
 
@@ -1533,16 +1152,8 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
 .advancedNoteMover-mobile-button-control button {
   min-width: 100%;
   min-height: 44px;
-  padding: 12px;
+  padding: var(--size-4-3);
   font-size: 16px; /* Prevents zoom on iOS */
-}
-
-/* Mobile move buttons */
-.advancedNoteMover-mobile-move-buttons-container {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  margin-bottom: 8px;
 }
 
 .advancedNoteMover-mobile-move-button {
@@ -1553,11 +1164,14 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--radius-m);
   background: var(--background-primary);
   color: var(--text-normal);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
   padding: 0;
 }
 
@@ -1567,7 +1181,7 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
 }
 
 .advancedNoteMover-mobile-move-button:active {
-  background: var(--background-modifier-active);
+  background: var(--background-modifier-active-hover);
   transform: scale(0.98);
 }
 
@@ -1588,16 +1202,12 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   outline-offset: 2px;
 }
 
-.advancedNoteMover-mobile-move-button.advancedNoteMover-mobile-move-button-hidden {
-  display: none;
-}
-
 /* Mobile rules container */
 .advancedNoteMover-mobile-rules-container
   .advancedNoteMover-rule-v2-custom-container.advancedNoteMover-mobile-rule-container {
   flex-direction: column;
   align-items: stretch;
-  gap: 12px;
+  gap: var(--size-4-3);
 }
 
 .advancedNoteMover-mobile-rules-container .advancedNoteMover-rule-v2-name {
@@ -1610,7 +1220,7 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   .advancedNoteMover-rule-v2-actions.advancedNoteMover-mobile-rule-actions {
   width: 100%;
   justify-content: center;
-  gap: 12px;
+  gap: var(--size-4-3);
   flex-wrap: wrap;
 }
 
@@ -1624,508 +1234,444 @@ button.advancedNoteMover-mobile-edit-btn.mod-cta {
   min-height: 44px;
 }
 
-/* Mobile rule items (V1) */
-.advancedNoteMover-mobile-rule-item {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 12px;
-}
-
-.advancedNoteMover-mobile-rule-controls {
-  width: 100%;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.advancedNoteMover-mobile-rule-controls .search-input-container {
-  width: 100%;
-}
-
-.advancedNoteMover-mobile-rule-controls input[type='search'] {
-  min-height: 44px;
-  width: 100%;
-  font-size: 16px;
-}
-
 /* Mobile filters container */
 .advancedNoteMover-mobile-filters-container
   .advancedNoteMover-mobile-filter-item {
   flex-direction: column;
   align-items: stretch;
-  gap: 12px;
+  gap: var(--size-4-3);
 }
 
 .advancedNoteMover-mobile-filters-container
   .advancedNoteMover-mobile-filter-controls {
   width: 100%;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--size-4-2);
 }
 
 .advancedNoteMover-mobile-filter-input {
   min-height: 44px;
   width: 100%;
-  font-size: 16px;
+  font-size: 16px; /* iOS: prevents zoom on focus */
 }
 
-/* Mobile breakpoint: tablets and phones in portrait */
-@media (max-width: 768px) {
-  /* Modal Size Adjustments */
-  .modal.advancedNoteMover-modal-size-small,
-  .modal.advancedNoteMover-modal-size-medium,
-  .modal.advancedNoteMover-modal-size-large,
-  .modal-container.advancedNoteMover-modal-size-small,
-  .modal-container.advancedNoteMover-modal-size-medium,
-  .modal-container.advancedNoteMover-modal-size-large {
-    width: 100vw;
-    max-width: 95vw;
-    min-width: unset;
-  }
-
-  /* Modal Title Adjustments */
-  .advancedNoteMover-modal-title-container {
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .advancedNoteMover-modal-title {
-    font-size: 1.4em;
-  }
-
-  .advancedNoteMover-modal-title-icon {
-    font-size: 1.6em;
-  }
-
-  .advancedNoteMover-modal-subtitle {
-    font-size: 1em;
-    margin-bottom: 16px;
-  }
-
-  /* Button Container - Stack vertically on mobile */
-  .advancedNoteMover-modal-button-container {
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-  }
-
-  .advancedNoteMover-modal-button-container > .mod-button,
-  .advancedNoteMover-modal-button-container .setting-item-control button {
-    width: 100%;
-    min-height: 44px;
-    font-size: 1em;
-  }
-
-  /* Modal Section Adjustments */
-  .advancedNoteMover-modal-section {
-    margin-bottom: 20px;
-  }
-
-  .advancedNoteMover-modal-section-header h3 {
-    font-size: 1.1em;
-  }
-
-  /* Info Row Adjustments */
-  .advancedNoteMover-modal-info-row {
-    gap: 12px;
-    font-size: 0.85em;
-  }
-
-  /* History Modal Adjustments */
-  .advancedNoteMover-history-entry {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 12px 16px;
-    gap: 12px;
-  }
-
-  .advancedNoteMover-history-entry-content {
-    width: 100%;
-  }
-
-  .advancedNoteMover-history-entry-info {
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  .advancedNoteMover-history-entry-paths {
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  /* Scoped to plugin elements only (exclude modal footer buttons) */
-  .advancedNoteMover-time-filter-container .setting-item-control,
-  [class*='noteMover'] .setting-item-control {
-    margin-left: 0;
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .advancedNoteMover-time-filter-container .setting-item-control button,
-  [class*='noteMover'] .setting-item-control button {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
-  }
-
-  .advancedNoteMover-modal-button-container .setting-item-control,
-  .note-mover-history-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control,
-  .note-mover-preview-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control,
-  .note-mover-update-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control {
-    margin-left: 0;
-    width: auto;
-    justify-content: center;
-  }
-
-  .advancedNoteMover-modal-button-container .setting-item-control button,
-  .note-mover-history-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control
-    button,
-  .note-mover-preview-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control
-    button,
-  .note-mover-update-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control
-    button {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
-  }
-
-  /* Bulk Operations Mobile Adjustments */
-  .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
-    padding: 12px 16px;
-  }
-
-  .advancedNoteMover-bulk-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .advancedNoteMover-bulk-operation-info {
-    width: 100%;
-    white-space: normal;
-    word-break: break-word;
-    overflow: visible;
-  }
-
-  /* Rule Editor Modal - Stack footer buttons */
-  .advancedNoteMover-rule-editor-footer {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .advancedNoteMover-rule-editor-footer-left,
-  .advancedNoteMover-rule-editor-footer-right {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .advancedNoteMover-rule-editor-footer-left button,
-  .advancedNoteMover-rule-editor-footer-right button {
-    min-height: 44px;
-    width: 100%;
-  }
-
-  /* Rule Aggregation Buttons - Stack on mobile */
-  .advancedNoteMover-rule-aggregation-buttons {
-    flex-wrap: wrap;
-  }
-
-  .advancedNoteMover-rule-aggregation-button {
-    flex: 1 1 30%;
-    min-width: 80px;
-    min-height: 44px;
-    padding: 10px 12px;
-    font-size: 0.95em;
-  }
-
-  /* Trigger Row - Stack elements vertically */
-  .advancedNoteMover-rule-trigger-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 12px;
-  }
-
-  .advancedNoteMover-rule-trigger-row .advancedNoteMover-drag-handle-container {
-    order: -1;
-    align-self: flex-end;
-    margin-bottom: 4px;
-  }
-
-  .advancedNoteMover-rule-trigger-delete-btn {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
-  }
-
-  .advancedNoteMover-rule-criteria-type,
-  .advancedNoteMover-rule-rule-type,
-  .advancedNoteMover-rule-trigger-value {
-    width: 100%;
-    min-width: unset;
-    min-height: 44px;
-    padding: 10px;
-  }
-
-  .advancedNoteMover-rule-property-name {
-    width: 100%;
-    min-height: 44px;
-    padding: 10px;
-  }
-
-  /* Preview Modal Paths - Allow wrapping */
-  .advancedNoteMover-preview-item-paths {
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 0.8em;
-  }
-
-  .advancedNoteMover-preview-item-main {
-    margin-bottom: 12px;
-  }
-
-  .advancedNoteMover-preview-item-details {
-    gap: 6px;
-    font-size: 0.85em;
-  }
-
-  .advancedNoteMover-rule-label,
-  .advancedNoteMover-block-reason-label,
-  .advancedNoteMover-filter-label,
-  .advancedNoteMover-tags-label {
-    min-width: unset;
-    width: auto;
-  }
-
-  /* Preview Item - Adjust layout */
-  .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success,
-  .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-blocked {
-    padding: 12px;
-  }
-
-  /* Update Modal - Keep footer horizontal on mobile */
-  .note-mover-update-modal .advancedNoteMover-modal-footer {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-  }
-
-  .note-mover-update-modal .advancedNoteMover-update-modal-links {
-    flex: 1;
-  }
-
-  .note-mover-update-modal .advancedNoteMover-modal-button-container {
-    flex-direction: row;
-    width: auto;
-    flex-shrink: 0;
-  }
-
-  .note-mover-update-modal
-    .advancedNoteMover-modal-button-container
-    .setting-item-control {
-    margin: 0;
-  }
-
-  .note-mover-update-modal .advancedNoteMover-modal-button-container button {
-    width: auto;
-    min-width: 100px;
-    padding: 8px 16px;
-  }
-
-  /* Time Filter Container Mobile */
-  .advancedNoteMover-time-filter-container .setting-item-control {
-    width: 100%;
-    margin-right: 0;
-    margin-top: 8px;
-  }
-
-  .advancedNoteMover-time-filter-container .setting-item-name {
-    width: 100%;
-  }
-
-  /* Setting items with drag handles - Adjust for mobile */
-  .setting-item.advancedNoteMover-with-drag-handle {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .setting-item.advancedNoteMover-with-drag-handle .setting-item-info {
-    width: 100%;
-  }
-
-  .setting-item.advancedNoteMover-with-drag-handle .setting-item-control {
-    width: 100%;
-    justify-content: flex-end;
-    margin-top: 8px;
-  }
-
-  .advancedNoteMover-drag-handle {
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
-    border-radius: 6px;
-  }
-
-  /* Rule V2 Mobile Layout */
-  .advancedNoteMover-rule-v2-custom-container {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 12px 12px;
-  }
-
-  .advancedNoteMover-rule-v2-name {
-    width: 100%;
-    white-space: normal;
-    word-break: break-word;
-    font-size: 1em;
-  }
-
-  .advancedNoteMover-rule-v2-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .advancedNoteMover-rule-v2-actions .setting-item-control {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .advancedNoteMover-rule-v2-actions button {
-    min-width: 44px;
-    min-height: 44px;
-  }
-
-  /* Empty state adjustments */
-  .advancedNoteMover-modal-empty {
-    padding: 32px 16px;
-    font-size: 1em;
-  }
-
-  /* Info box mobile adjustments */
-  .advancedNoteMover-modal-info-box {
-    padding: 10px 12px;
-  }
-
-  /* Confirm modal button adjustments */
-  .advancedNoteMover-confirm-modal
-    .advancedNoteMover-modal-button-container
-    button {
-    min-width: 100%;
-    min-height: 44px;
-  }
+/* Phone and tablet layout. Follows body.is-mobile, not the window width. */
+/* Modal Title Adjustments */
+body.is-mobile .advancedNoteMover-modal-title-container {
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
 }
 
-/* Small mobile breakpoint: phones */
-@media (max-width: 480px) {
-  /* Modal Title - Smaller font for very small screens */
-  .advancedNoteMover-modal-title {
-    font-size: 1.2em;
-  }
-
-  .advancedNoteMover-modal-title-icon {
-    font-size: 1.4em;
-  }
-
-  .advancedNoteMover-modal-subtitle {
-    font-size: 0.9em;
-  }
-
-  /* History entries - More compact padding */
-  .advancedNoteMover-history-entry {
-    padding: 10px 12px;
-    gap: 10px;
-  }
-
-  .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
-    padding: 10px 12px;
-  }
-
-  /* Rule trigger rows - Even more compact */
-  .advancedNoteMover-rule-trigger-row {
-    padding: 10px;
-    gap: 10px;
-  }
-
-  /* Smaller inputs but still touch-friendly */
-  .advancedNoteMover-rule-criteria-type,
-  .advancedNoteMover-rule-rule-type,
-  .advancedNoteMover-rule-trigger-value,
-  .advancedNoteMover-rule-property-name {
-    font-size: 0.95em;
-    padding: 8px;
-  }
-
-  /* Aggregation buttons - Full width on very small screens */
-  .advancedNoteMover-rule-aggregation-button {
-    flex: 1 1 100%;
-    min-width: unset;
-  }
-
-  /* Footer buttons - Full width */
-  .advancedNoteMover-rule-editor-footer-left button,
-  .advancedNoteMover-rule-editor-footer-right button {
-    font-size: 0.95em;
-  }
-
-  /* Preview paths - Smaller font to fit more */
-  .advancedNoteMover-preview-item-paths {
-    font-size: 0.75em;
-  }
-
-  /* Modal list items - More compact */
-  .advancedNoteMover-modal-list-item {
-    padding: 12px;
-  }
-
-  /* Section headers - Smaller */
-  .advancedNoteMover-modal-section-header h3 {
-    font-size: 1em;
-  }
-
-  .advancedNoteMover-rule-conditions-title {
-    font-size: 1em;
-  }
-
-  /* Changelog - Smaller font */
-  .advancedNoteMover-changelog-version-title {
-    font-size: 1.1em;
-  }
-
-  .advancedNoteMover-changelog-section-title {
-    font-size: 0.95em;
-  }
-
-  .advancedNoteMover-changelog-list {
-    font-size: 0.9em;
-  }
-
-  /* Confirm modal message - Smaller font */
-  .advancedNoteMover-confirm-modal-message {
-    font-size: 0.95em;
-  }
-
-  /* Smaller button fonts to fit better - scoped to plugin elements only */
-  [class*='noteMover'] button,
-  .note-mover-history-modal button,
-  .note-mover-preview-modal button,
-  .note-mover-update-modal button,
-  .advancedNoteMover-confirm-modal button {
-    font-size: 0.95em;
-  }
+body.is-mobile .advancedNoteMover-modal-title-icon {
+  font-size: 1.6em;
 }
+
+/* Button Container - Stack vertically on mobile */
+body.is-mobile .advancedNoteMover-modal-button-container {
+  flex-direction: column;
+  gap: var(--size-4-3);
+  width: 100%;
+}
+
+body.is-mobile .advancedNoteMover-modal-button-container > .mod-button,
+body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control button {
+  width: 100%;
+  min-height: 44px;
+  font-size: 1em;
+}
+
+/* Modal Section Adjustments */
+body.is-mobile .advancedNoteMover-modal-section {
+  margin-bottom: var(--size-4-5);
+}
+
+body.is-mobile .advancedNoteMover-modal-section-header h3 {
+  font-size: 1.1em;
+}
+
+/* History Modal Adjustments */
+body.is-mobile .advancedNoteMover-history-entry {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--size-4-3) var(--size-4-4);
+  gap: var(--size-4-3);
+}
+
+body.is-mobile .advancedNoteMover-history-entry-content {
+  width: 100%;
+}
+
+body.is-mobile .advancedNoteMover-history-entry-info {
+  white-space: normal;
+  word-break: break-word;
+}
+
+body.is-mobile .advancedNoteMover-history-entry-paths {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Plugin setting controls. Footer buttons keep their own rule below. */
+body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control,
+body.is-mobile .advancedNoteMover-settings-root .setting-item-control,
+body.is-mobile .advancedNoteMover-rule-editor-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-rule-editor-mobile-content .setting-item-control,
+body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-conflict-skip-cache-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-history-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-preview-modal .setting-item-control,
+body.is-mobile .advancedNoteMover-update-modal .setting-item-control {
+  margin-left: 0;
+  width: 100%;
+  justify-content: space-between;
+}
+
+body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control button,
+body.is-mobile .advancedNoteMover-settings-root .setting-item-control button,
+body.is-mobile .advancedNoteMover-rule-editor-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-rule-editor-mobile-content .setting-item-control button,
+body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-conflict-skip-cache-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-history-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-preview-modal .setting-item-control button,
+body.is-mobile .advancedNoteMover-update-modal .setting-item-control button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--size-4-2);
+}
+
+body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control,
+body.is-mobile .advancedNoteMover-history-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control,
+body.is-mobile .advancedNoteMover-preview-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control,
+body.is-mobile .advancedNoteMover-update-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control {
+  margin-left: 0;
+  width: auto;
+  justify-content: center;
+}
+
+body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control button,
+body.is-mobile .advancedNoteMover-history-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control
+  button,
+body.is-mobile .advancedNoteMover-preview-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control
+  button,
+body.is-mobile .advancedNoteMover-update-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control
+  button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--size-4-2);
+}
+
+/* Bulk Operations Mobile Adjustments */
+body.is-mobile .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
+  padding: var(--size-4-3) var(--size-4-4);
+}
+
+body.is-mobile .advancedNoteMover-bulk-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--size-4-2);
+}
+
+body.is-mobile .advancedNoteMover-bulk-operation-info {
+  width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+}
+
+/* Rule Editor Modal - Stack footer buttons */
+body.is-mobile .advancedNoteMover-rule-editor-footer {
+  flex-direction: column;
+  gap: var(--size-4-3);
+}
+
+body.is-mobile .advancedNoteMover-rule-editor-footer-left,
+body.is-mobile .advancedNoteMover-rule-editor-footer-right {
+  width: 100%;
+  justify-content: center;
+}
+
+body.is-mobile .advancedNoteMover-rule-editor-footer-left button,
+body.is-mobile .advancedNoteMover-rule-editor-footer-right button {
+  min-height: 44px;
+  width: 100%;
+}
+
+/* Rule Aggregation Buttons - Stack on mobile */
+body.is-mobile .advancedNoteMover-rule-aggregation-buttons {
+  flex-wrap: wrap;
+}
+
+body.is-mobile .advancedNoteMover-rule-aggregation-button {
+  flex: 1 1 30%;
+  min-width: 80px;
+  min-height: 44px;
+  padding: 10px var(--size-4-3);
+  font-size: var(--font-ui-small);
+}
+
+/* Trigger Row - Stack elements vertically */
+body.is-mobile .advancedNoteMover-rule-trigger-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--size-4-3);
+  padding: var(--size-4-3);
+}
+
+body.is-mobile .advancedNoteMover-rule-trigger-row .advancedNoteMover-drag-handle-container {
+  order: -1;
+  align-self: flex-end;
+  margin-bottom: var(--size-4-1);
+}
+
+body.is-mobile .advancedNoteMover-rule-trigger-delete-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--size-4-2);
+}
+
+body.is-mobile .advancedNoteMover-rule-criteria-type,
+body.is-mobile .advancedNoteMover-rule-trigger-value {
+  width: 100%;
+  min-width: unset;
+  min-height: 44px;
+  padding: 10px;
+}
+
+body.is-mobile .advancedNoteMover-rule-property-name {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+}
+
+/* Preview Modal Paths - Allow wrapping */
+body.is-mobile .advancedNoteMover-preview-item-paths {
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
+  font-size: var(--font-ui-smaller);
+}
+
+body.is-mobile .advancedNoteMover-preview-item-main {
+  margin-bottom: var(--size-4-3);
+}
+
+body.is-mobile .advancedNoteMover-preview-item-details {
+  gap: var(--size-2-3);
+  font-size: var(--font-ui-small);
+}
+
+body.is-mobile .advancedNoteMover-rule-label,
+body.is-mobile .advancedNoteMover-tags-label {
+  min-width: unset;
+  width: auto;
+}
+
+/* Preview Item - Adjust layout */
+body.is-mobile .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success {
+  padding: var(--size-4-3);
+}
+
+/* Update Modal - Keep footer horizontal on mobile */
+body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-footer {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--size-4-4);
+}
+
+body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-update-modal-links {
+  flex: 1;
+}
+
+body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-button-container {
+  flex-direction: row;
+  width: auto;
+  flex-shrink: 0;
+}
+
+body.is-mobile .advancedNoteMover-update-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control {
+  margin: 0;
+}
+
+body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-button-container button {
+  width: auto;
+  min-width: 100px;
+  padding: var(--size-4-2) var(--size-4-4);
+}
+
+/* Time Filter Container Mobile */
+body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control {
+  width: 100%;
+  margin-right: 0;
+  margin-top: var(--size-4-2);
+}
+
+body.is-mobile .advancedNoteMover-time-filter-container .setting-item-name {
+  width: 100%;
+}
+
+/* Setting items with drag handles - Adjust for mobile */
+body.is-mobile .setting-item.advancedNoteMover-with-drag-handle {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+body.is-mobile .setting-item.advancedNoteMover-with-drag-handle .setting-item-info {
+  width: 100%;
+}
+
+body.is-mobile .setting-item.advancedNoteMover-with-drag-handle .setting-item-control {
+  width: 100%;
+  justify-content: flex-end;
+  margin-top: var(--size-4-2);
+}
+
+body.is-mobile .advancedNoteMover-drag-handle {
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--size-4-2);
+  border-radius: var(--radius-m);
+}
+
+/* Rule V2 Mobile Layout */
+body.is-mobile .advancedNoteMover-rule-v2-custom-container {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--size-4-3);
+  padding: var(--size-4-3) var(--size-4-3);
+}
+
+body.is-mobile .advancedNoteMover-rule-v2-name {
+  width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  font-size: 1em;
+}
+
+body.is-mobile .advancedNoteMover-rule-v2-actions {
+  width: 100%;
+  justify-content: space-between;
+}
+
+body.is-mobile .advancedNoteMover-rule-v2-actions .setting-item-control {
+  width: 100%;
+  justify-content: space-between;
+}
+
+body.is-mobile .advancedNoteMover-rule-v2-actions button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Empty state adjustments */
+body.is-mobile .advancedNoteMover-modal-empty {
+  padding: var(--size-4-8) var(--size-4-4);
+  font-size: 1em;
+}
+
+/* Confirm modal button adjustments */
+body.is-mobile .advancedNoteMover-confirm-modal
+  .advancedNoteMover-modal-button-container
+  button {
+  min-width: 100%;
+  min-height: 44px;
+}
+
+
+/* Phone layout. Follows body.is-phone, not a 480px window. */
+body.is-phone .advancedNoteMover-modal-title-icon {
+  font-size: 1.4em;
+}
+
+/* History entries - More compact padding */
+body.is-phone .advancedNoteMover-history-entry {
+  padding: 10px var(--size-4-3);
+  gap: 10px;
+}
+
+body.is-phone .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
+  padding: 10px var(--size-4-3);
+}
+
+/* Rule trigger rows - Even more compact */
+body.is-phone .advancedNoteMover-rule-trigger-row {
+  padding: 10px;
+  gap: 10px;
+}
+
+/* Smaller inputs but still touch-friendly */
+body.is-phone .advancedNoteMover-rule-criteria-type,
+body.is-phone .advancedNoteMover-rule-trigger-value,
+body.is-phone .advancedNoteMover-rule-property-name {
+  font-size: var(--font-ui-small);
+  padding: var(--size-4-2);
+}
+
+/* Aggregation buttons - Full width on very small screens */
+body.is-phone .advancedNoteMover-rule-aggregation-button {
+  flex: 1 1 100%;
+  min-width: unset;
+}
+
+/* Footer buttons - Full width */
+body.is-phone .advancedNoteMover-rule-editor-footer-left button,
+body.is-phone .advancedNoteMover-rule-editor-footer-right button {
+  font-size: var(--font-ui-small);
+}
+
+/* Preview paths - Smaller font to fit more */
+body.is-phone .advancedNoteMover-preview-item-paths {
+  font-size: var(--font-ui-smaller);
+}
+
+/* Modal list items - More compact */
+body.is-phone .advancedNoteMover-modal-list-item {
+  padding: var(--size-4-3);
+}
+
+/* Section headers - Smaller */
+body.is-phone .advancedNoteMover-modal-section-header h3 {
+  font-size: 1em;
+}
+
+body.is-phone .advancedNoteMover-rule-conditions-title {
+  font-size: 1em;
+}
+
+/* Confirm modal message - Smaller font */
+body.is-phone .advancedNoteMover-confirm-modal-message {
+  font-size: var(--font-ui-small);
+}
+
+/* Smaller button fonts inside plugin roots */
+body.is-phone .advancedNoteMover-settings-root button,
+body.is-phone .advancedNoteMover-rule-editor-modal button,
+body.is-phone .advancedNoteMover-rule-editor-mobile-content button,
+body.is-phone .advancedNoteMover-conflict-modal button,
+body.is-phone .advancedNoteMover-conflict-skip-cache-modal button,
+body.is-phone .advancedNoteMover-history-modal button,
+body.is-phone .advancedNoteMover-preview-modal button,
+body.is-phone .advancedNoteMover-update-modal button,
+body.is-phone .advancedNoteMover-confirm-modal button {
+  font-size: var(--font-ui-small);
+}
+
 
 /* ===== MOBILE MODAL STYLES ===== */
 
@@ -2137,7 +1683,9 @@ body.is-mobile .modal-container.advancedNoteMover-modal-size-mobile {
   margin: 0;
   border-radius: 0;
   max-height: 100vh;
+  max-height: 100dvh;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -2146,60 +1694,59 @@ body.is-mobile .modal.advancedNoteMover-modal-size-mobile > .modal-content,
 body.is-mobile
   .modal-container.advancedNoteMover-modal-size-mobile
   > .modal-content {
-  padding: 20px 16px;
+  padding: var(--size-4-5) var(--size-4-4);
   max-height: 100%;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
 }
 
 /* History Modal Mobile Styles */
-body.is-mobile .modal-content.note-mover-history-modal {
-  padding: 16px 0;
+body.is-mobile .modal-content.advancedNoteMover-history-modal {
+  padding: var(--size-4-4) 0;
 }
 
-.is-mobile .advancedNoteMover-time-filter-container-mobile {
-  margin-bottom: 16px;
+body.is-mobile .advancedNoteMover-time-filter-container-mobile {
+  margin-bottom: var(--size-4-4);
 }
 
-.is-mobile
+body.is-mobile
   .advancedNoteMover-time-filter-container-mobile
   .setting-item-control
   select {
   min-height: 48px;
-  font-size: 16px;
+  font-size: 16px; /* iOS: prevents zoom on focus */
   width: 100%;
 }
 
-.is-mobile .advancedNoteMover-history-entry-mobile {
+body.is-mobile .advancedNoteMover-history-entry-mobile {
   display: flex;
   flex-direction: column;
-  padding: 12px;
-  margin-bottom: 12px;
+  padding: var(--size-4-3);
+  margin-bottom: var(--size-4-3);
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-m);
   border: 1px solid var(--background-modifier-border);
-  gap: 12px;
+  gap: var(--size-4-3);
 }
 
-.is-mobile .advancedNoteMover-history-entry-content {
+body.is-mobile .advancedNoteMover-history-entry-content {
   width: 100%;
   overflow: visible;
 }
 
-.is-mobile .advancedNoteMover-history-entry-info {
+body.is-mobile .advancedNoteMover-history-entry-info {
   font-size: 1em;
-  margin-bottom: 8px;
+  margin-bottom: var(--size-4-2);
   word-break: break-word;
   overflow: visible;
   white-space: normal;
 }
 
-.is-mobile .advancedNoteMover-history-entry-paths {
-  font-size: 0.9em;
+body.is-mobile .advancedNoteMover-history-entry-paths {
+  font-size: var(--font-ui-small);
   color: var(--text-muted);
   word-break: break-word;
   line-height: 1.4;
@@ -2207,20 +1754,20 @@ body.is-mobile .modal-content.note-mover-history-modal {
   white-space: normal;
 }
 
-.is-mobile .advancedNoteMover-history-entry-buttons-mobile {
+body.is-mobile .advancedNoteMover-history-entry-buttons-mobile {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--size-4-2);
   width: 100%;
-  margin-top: 8px;
+  margin-top: var(--size-4-2);
 }
 
-.is-mobile .advancedNoteMover-history-entry-button-mobile {
+body.is-mobile .advancedNoteMover-history-entry-button-mobile {
   width: 100%;
   min-height: 48px;
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 6px;
+  padding: var(--size-4-3);
+  font-size: 16px; /* iOS: prevents zoom on focus */
+  border-radius: var(--radius-m);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-primary);
   color: var(--text-normal);
@@ -2228,179 +1775,172 @@ body.is-mobile .modal-content.note-mover-history-modal {
   font-weight: 500;
 }
 
-.is-mobile .advancedNoteMover-history-entry-button-mobile:active {
+body.is-mobile .advancedNoteMover-history-entry-button-mobile:active {
   opacity: 0.8;
 }
 
-.is-mobile .advancedNoteMover-history-entry-button-warning {
+body.is-mobile .advancedNoteMover-history-entry-button-warning {
   background: var(--background-modifier-error);
   color: var(--text-on-accent);
   border-color: var(--background-modifier-error);
 }
 
-.is-mobile .advancedNoteMover-bulk-operation {
-  margin-bottom: 16px;
+body.is-mobile .advancedNoteMover-bulk-operation {
+  margin-bottom: var(--size-4-4);
 }
 
-.is-mobile .advancedNoteMover-bulk-header {
-  margin-bottom: 12px;
+body.is-mobile .advancedNoteMover-bulk-header {
+  margin-bottom: var(--size-4-3);
 }
 
-.is-mobile .advancedNoteMover-bulk-operation-info {
+body.is-mobile .advancedNoteMover-bulk-operation-info {
   font-size: 1em;
-  margin-bottom: 8px;
+  margin-bottom: var(--size-4-2);
   overflow: visible;
   white-space: normal;
   word-break: break-word;
 }
 
-.is-mobile .advancedNoteMover-bulk-details {
-  margin-top: 12px;
+body.is-mobile .advancedNoteMover-bulk-details {
+  margin-top: var(--size-4-3);
 }
 
-.is-mobile .advancedNoteMover-bulk-details summary {
+body.is-mobile .advancedNoteMover-bulk-details summary {
   min-height: 48px;
   display: flex;
   align-items: center;
-  padding: 12px;
+  padding: var(--size-4-3);
   cursor: pointer;
-  font-size: 16px;
-  border-radius: 6px;
+  font-size: 16px; /* iOS: prevents zoom on focus */
+  border-radius: var(--radius-m);
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
 }
 
-.is-mobile .advancedNoteMover-bulk-files-list {
-  margin-top: 12px;
+body.is-mobile .advancedNoteMover-bulk-files-list {
+  margin-top: var(--size-4-3);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--size-4-3);
 }
 
-.is-mobile .advancedNoteMover-bulk-file-entry {
-  padding: 12px;
+body.is-mobile .advancedNoteMover-bulk-file-entry {
+  padding: var(--size-4-3);
   background: var(--background-primary);
-  border-radius: 6px;
+  border-radius: var(--radius-m);
   border: 1px solid var(--background-modifier-border);
 }
 
 /* Preview Modal Mobile Styles */
-body.is-mobile .modal-content.note-mover-preview-modal {
-  padding: 16px 0;
+body.is-mobile .modal-content.advancedNoteMover-preview-modal {
+  padding: var(--size-4-4) 0;
 }
 
-.is-mobile .advancedNoteMover-preview-section-mobile {
-  margin-bottom: 16px;
+body.is-mobile .advancedNoteMover-preview-section-mobile {
+  margin-bottom: var(--size-4-4);
 }
 
-.is-mobile .advancedNoteMover-modal-list-mobile {
+body.is-mobile .advancedNoteMover-modal-list-mobile {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--size-4-3);
 }
 
-.is-mobile .advancedNoteMover-preview-item-mobile {
-  padding: 12px;
+body.is-mobile .advancedNoteMover-preview-item-mobile {
+  padding: var(--size-4-3);
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-m);
   border: 1px solid var(--background-modifier-border);
   margin-bottom: 0;
 }
 
-.is-mobile .advancedNoteMover-preview-item-filename {
+body.is-mobile .advancedNoteMover-preview-item-filename {
   font-size: 1em;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: var(--size-4-2);
   word-break: break-word;
 }
 
-.is-mobile .advancedNoteMover-preview-item-paths-mobile {
+body.is-mobile .advancedNoteMover-preview-item-paths-mobile {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
+  gap: var(--size-4-1);
+  margin-bottom: var(--size-4-3);
 }
 
-.is-mobile .advancedNoteMover-preview-path-mobile {
-  font-size: 0.9em;
+body.is-mobile .advancedNoteMover-preview-path-mobile {
+  font-size: var(--font-ui-small);
   color: var(--text-muted);
   word-break: break-word;
   line-height: 1.4;
 }
 
-.is-mobile .advancedNoteMover-preview-path-current {
+body.is-mobile .advancedNoteMover-preview-path-current {
   color: var(--text-normal);
 }
 
-.is-mobile .advancedNoteMover-preview-arrow-mobile {
+body.is-mobile .advancedNoteMover-preview-arrow-mobile {
   text-align: center;
   color: var(--text-muted);
-  font-size: 1.2em;
-  margin: 4px 0;
+  font-size: var(--font-ui-large);
+  margin: var(--size-4-1) 0;
 }
 
-.is-mobile .advancedNoteMover-preview-item-details-mobile {
-  font-size: 0.9em;
-  margin-top: 8px;
+body.is-mobile .advancedNoteMover-preview-item-details-mobile {
+  font-size: var(--font-ui-small);
+  margin-top: var(--size-4-2);
 }
 
-.is-mobile .advancedNoteMover-modal-footer-mobile {
+body.is-mobile .advancedNoteMover-modal-footer-mobile {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--size-4-3);
+  margin-top: var(--size-4-4);
 }
 
-.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item {
+body.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item {
   width: 100%;
   margin-bottom: 0;
 }
 
-.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item button {
+body.is-mobile .advancedNoteMover-modal-footer-mobile .setting-item button {
   width: 100%;
   min-height: 48px;
-  font-size: 16px;
+  font-size: 16px; /* iOS: prevents zoom on focus */
 }
 
 /* Update Modal Mobile Styles */
-body.is-mobile .modal-content.note-mover-update-modal {
-  padding: 16px 0;
+body.is-mobile .modal-content.advancedNoteMover-update-modal {
+  padding: var(--size-4-4) 0;
 }
 
-.is-mobile .advancedNoteMover-changelog-container-mobile {
-  margin-bottom: 16px;
+body.is-mobile .advancedNoteMover-changelog-container-mobile {
+  margin-bottom: var(--size-4-4);
 }
 
-.is-mobile .advancedNoteMover-changelog-version-mobile {
-  margin-bottom: 16px;
-  padding: 12px;
+body.is-mobile .advancedNoteMover-changelog-version-mobile {
+  margin-bottom: var(--size-4-4);
+  padding: var(--size-4-3);
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-m);
   border: 1px solid var(--background-modifier-border);
 }
 
-.is-mobile .advancedNoteMover-changelog-version-title {
+body.is-mobile .advancedNoteMover-changelog-version-title {
   font-size: 1.1em;
-  margin-bottom: 12px;
 }
 
-.is-mobile .advancedNoteMover-changelog-section {
-  margin-bottom: 12px;
+body.is-mobile .advancedNoteMover-changelog-section {
+  margin-bottom: var(--size-4-3);
 }
 
-.is-mobile .advancedNoteMover-changelog-section-title {
-  font-size: 1em;
-  margin-bottom: 8px;
-}
-
-.is-mobile .advancedNoteMover-changelog-list {
-  font-size: 0.95em;
+body.is-mobile .advancedNoteMover-changelog-list {
+  font-size: var(--font-ui-small);
   line-height: 1.6;
-  padding-left: 20px;
 }
 
-.is-mobile .advancedNoteMover-update-modal-links-mobile {
-  margin-bottom: 16px;
+body.is-mobile .advancedNoteMover-update-modal-links-mobile {
+  margin-bottom: var(--size-4-4);
   width: 100%;
 }
 
@@ -2413,120 +1953,105 @@ body.is-mobile .modal-content.note-mover-update-modal {
   color: var(--text-on-accent);
 }
 
-.is-mobile .advancedNoteMover-bulk-undo-setting-mobile button {
+body.is-mobile .advancedNoteMover-bulk-undo-setting-mobile button {
   width: 100%;
   min-height: 48px;
 }
 
-.is-mobile .advancedNoteMover-update-modal-github-link-mobile {
+body.is-mobile .advancedNoteMover-update-modal-github-link-mobile {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 48px;
-  padding: 12px;
-  border-radius: 6px;
+  padding: var(--size-4-3);
+  border-radius: var(--radius-m);
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   color: var(--text-normal);
   text-decoration: none;
-  font-size: 16px;
+  font-size: 16px; /* iOS: prevents zoom on focus */
   font-weight: 500;
   transition: opacity 0.2s ease;
 }
 
-.is-mobile .advancedNoteMover-update-modal-github-link-mobile:active {
+body.is-mobile .advancedNoteMover-update-modal-github-link-mobile:active {
   opacity: 0.8;
-}
-
-.is-mobile .advancedNoteMover-update-modal-footer-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.is-mobile .advancedNoteMover-update-modal-footer-mobile .setting-item {
-  width: 100%;
-  margin-bottom: 0;
-}
-
-.is-mobile .advancedNoteMover-update-modal-footer-mobile .setting-item button {
-  width: 100%;
-  min-height: 48px;
-  font-size: 16px;
 }
 
 /* Confirm Modal Mobile Styles */
 body.is-mobile .modal-content.advancedNoteMover-confirm-modal {
-  padding: 16px 0;
+  padding: var(--size-4-4) 0;
 }
 
-.is-mobile .advancedNoteMover-confirm-modal-message-mobile {
+body.is-mobile .advancedNoteMover-confirm-modal-message-mobile {
   font-size: 1em;
   line-height: 1.6;
-  margin-bottom: 16px;
+  margin-bottom: var(--size-4-4);
   word-break: break-word;
 }
 
-.is-mobile .advancedNoteMover-confirm-modal .setting-item {
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item {
   width: 100%;
-  margin-bottom: 12px;
+  margin-bottom: var(--size-4-3);
 }
 
-.is-mobile .advancedNoteMover-confirm-modal .setting-item:last-child {
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item:last-child {
   margin-bottom: 0;
 }
 
-.is-mobile .advancedNoteMover-confirm-modal .setting-item button {
+body.is-mobile .advancedNoteMover-confirm-modal .setting-item button {
   width: 100%;
   min-height: 48px;
-  font-size: 16px;
+  font-size: 16px; /* iOS: prevents zoom on focus */
 }
 
 /* Mobile Modal General Improvements */
-.is-mobile .advancedNoteMover-modal-title {
-  font-size: 1.3em;
-  margin-bottom: 12px;
+body.is-mobile .advancedNoteMover-modal-title {
+  font-size: var(--anm-modal-title-size);
+  margin-bottom: var(--size-4-3);
 }
 
-.is-mobile .advancedNoteMover-modal-subtitle {
-  font-size: 0.95em;
-  margin-bottom: 16px;
+body.is-mobile .advancedNoteMover-modal-subtitle {
+  margin-bottom: var(--size-4-4);
   line-height: 1.5;
 }
 
-.is-mobile .advancedNoteMover-modal-section-header h3 {
+body.is-mobile .advancedNoteMover-modal-section-header h3 {
   font-size: 1.1em;
-  margin-bottom: 12px;
+  margin-bottom: var(--size-4-3);
 }
 
-/* Optimize for large vertical aspect ratios */
+/* Viewport height in portrait. Not a device class. */
 @media (max-height: 800px) and (orientation: portrait) {
+  body.is-mobile {
+    --anm-modal-title-size: 1.2em;
+    --anm-modal-subtitle-size: 0.9em;
+  }
+
   body.is-mobile
     .modal-container.advancedNoteMover-modal-size-mobile
     > .modal-content {
-    padding: 16px 12px;
+    padding: var(--size-4-4) var(--size-4-3);
   }
 
-  .is-mobile .advancedNoteMover-modal-title {
-    font-size: 1.2em;
-    margin-bottom: 8px;
+  body.is-mobile .advancedNoteMover-modal-title {
+    margin-bottom: var(--size-4-2);
   }
 
-  .is-mobile .advancedNoteMover-modal-subtitle {
-    font-size: 0.9em;
-    margin-bottom: 12px;
+  body.is-mobile .advancedNoteMover-modal-subtitle {
+    margin-bottom: var(--size-4-3);
   }
 
-  .is-mobile .advancedNoteMover-history-entry-mobile,
-  .is-mobile .advancedNoteMover-preview-item-mobile {
-    padding: 12px;
-    margin-bottom: 12px;
-    gap: 12px;
+  body.is-mobile .advancedNoteMover-history-entry-mobile,
+  body.is-mobile .advancedNoteMover-preview-item-mobile {
+    padding: var(--size-4-3);
+    margin-bottom: var(--size-4-3);
+    gap: var(--size-4-3);
   }
 
-  .is-mobile .advancedNoteMover-changelog-version-mobile {
-    padding: 12px;
-    margin-bottom: 12px;
+  body.is-mobile .advancedNoteMover-changelog-version-mobile {
+    padding: var(--size-4-3);
+    margin-bottom: var(--size-4-3);
   }
 }
 
@@ -2568,7 +2093,6 @@ body.is-mobile
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2629,7 +2153,7 @@ body.is-mobile
   min-height: var(--anm-rule-mobile-touch);
   box-sizing: border-box;
   /* 16px prevents iOS from zooming into focused inputs */
-  font-size: 16px;
+  font-size: 16px; /* iOS: prevents zoom on focus */
 }
 
 .advancedNoteMover-rule-mobile .advancedNoteMover-rule-mobile-input {
@@ -2675,7 +2199,7 @@ body.is-mobile
 }
 
 .advancedNoteMover-rule-mobile .advancedNoteMover-rule-mobile-segment {
-  min-height: calc(var(--anm-rule-mobile-touch) - 4px);
+  min-height: var(--anm-rule-mobile-touch);
   margin: 0;
   border: none;
   border-radius: var(--radius-s);
@@ -2765,7 +2289,7 @@ body.is-mobile
 
 .advancedNoteMover-rule-mobile-connector {
   align-self: center;
-  color: var(--text-faint);
+  color: var(--text-muted);
   font-size: var(--font-ui-smaller);
   font-weight: var(--font-semibold);
   letter-spacing: 0.05em;
@@ -2873,7 +2397,7 @@ body.is-mobile
   background: var(--modal-background, var(--background-primary));
 }
 
-/* Landscape phones: keep more of the short viewport for the form */
+/* Viewport height. Not a device class. */
 @media (max-height: 500px) {
   .advancedNoteMover-rule-mobile-footer {
     padding-top: var(--size-2-3);
@@ -2890,7 +2414,7 @@ body.is-mobile
 
 .advancedNoteMover-preview-bulk-status {
   margin-bottom: 0.5rem;
-  font-size: 0.9em;
+  font-size: var(--font-ui-small);
   color: var(--text-muted);
 }
 
@@ -2900,7 +2424,7 @@ body.is-mobile
 }
 
 /* Preview modal: full-width footer buttons (replaces inline styles) */
-.note-mover-preview-modal
+.advancedNoteMover-preview-modal
   .advancedNoteMover-modal-footer-mobile
   .setting-item
   button {

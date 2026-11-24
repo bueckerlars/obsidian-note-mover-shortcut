@@ -1,10 +1,12 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import net from 'node:net';
+import path from 'node:path';
 import {
   CdpWebSocket,
   collectFailures,
   freePort,
+  resolveSmokeOutputDir,
   withTempSmokeVault,
 } from './ui-smoke.mjs';
 
@@ -335,5 +337,27 @@ describe('CdpWebSocket', () => {
       socket.close();
       await new Promise<void>(resolve => server.close(() => resolve()));
     }
+  });
+});
+
+describe('resolveSmokeOutputDir', () => {
+  it('writes a requested phase directory and leaves the baseline unselected', () => {
+    const phase = resolveSmokeOutputDir(
+      ['docs/analysis/screenshots/phase-3'],
+      {}
+    );
+    const fromEnv = resolveSmokeOutputDir([], {
+      SMOKE_OUT: 'docs/analysis/screenshots/phase-3',
+    });
+    const baseline = resolveSmokeOutputDir(['--baseline'], {
+      SMOKE_OUT: 'docs/analysis/screenshots/phase-3',
+    });
+
+    expect(phase).toBe(fromEnv);
+    expect(phase?.endsWith(`${path.sep}phase-3`)).toBe(true);
+    expect(baseline?.endsWith(`${path.sep}phase-0`)).toBe(true);
+    expect(phase).not.toBe(baseline);
+    expect(resolveSmokeOutputDir([], {})).toBeNull();
+    expect(resolveSmokeOutputDir([], { SMOKE_OUT: '' })).toBeNull();
   });
 });

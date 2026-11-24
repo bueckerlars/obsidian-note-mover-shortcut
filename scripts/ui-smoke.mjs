@@ -8,8 +8,20 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE = path.join(ROOT, 'scripts/fixtures/vault');
-const OUT_DIR = path.join(ROOT, 'docs/analysis/screenshots/phase-0');
+const BASELINE_DIR = path.join(ROOT, 'docs/analysis/screenshots/phase-0');
 const PLUGIN_ID = 'note-mover-shortcut';
+
+export function resolveSmokeOutputDir(args, env) {
+  const token = args[0];
+  if (token === '--baseline') {
+    return BASELINE_DIR;
+  }
+  const requested = token || env.SMOKE_OUT;
+  if (!requested) {
+    return null;
+  }
+  return path.resolve(ROOT, requested);
+}
 
 const VIEWPORTS = [
   { id: 'desktop', width: 1400, height: 1100, mobile: false },
@@ -935,9 +947,9 @@ async function setViewport(cdp, viewport) {
   });
 }
 
-async function saveShot(cdp, viewport, screen) {
+async function saveShot(cdp, viewport, screen, outDir) {
   const shot = await cdp.send('Page.captureScreenshot', { format: 'png' });
-  const file = path.join(OUT_DIR, `${viewport.id}-${screen.id}.png`);
+  const file = path.join(outDir, `${viewport.id}-${screen.id}.png`);
   fs.writeFileSync(file, Buffer.from(shot.data, 'base64'));
   return file;
 }
@@ -972,6 +984,14 @@ async function reloadMobile(cdp, port) {
 }
 
 async function main() {
+  const outDir = resolveSmokeOutputDir(process.argv.slice(2), process.env);
+  if (!outDir) {
+    console.error(
+      'Pass a screenshot directory or set SMOKE_OUT. Pass --baseline to write docs/analysis/screenshots/phase-0.'
+    );
+    process.exitCode = 1;
+    return;
+  }
   const binary = findObsidianBinary();
   if (!binary) {
     const reason =
@@ -997,7 +1017,7 @@ async function main() {
   try {
     await withTempSmokeVault(async (run, setChild) => {
       const port = await freePort(9333);
-      fs.mkdirSync(OUT_DIR, { recursive: true });
+      fs.mkdirSync(outDir, { recursive: true });
       let cdp;
       try {
         const child = launchObsidian(binary, run.userData, port);
@@ -1033,7 +1053,7 @@ async function main() {
                   consoleErrors,
                 })})`
               );
-              await saveShot(cdp, viewport, screen);
+              await saveShot(cdp, viewport, screen, outDir);
               if (screen.kind === 'modal') {
                 await evaluate(cdp, 'close');
               }
@@ -1083,7 +1103,7 @@ async function main() {
   if (rows.length > 0) {
     printAssertionTable(rows);
   }
-  console.log(`Saved ${saved} PNG files to docs/analysis/screenshots/phase-0/`);
+  console.log(`Saved ${saved} PNG files to ${outDir}/`);
   console.log(`Assertion failures: ${assertionFailureCount}`);
   if (crashed || failures.length > 0) {
     if (failures.length > 0) {

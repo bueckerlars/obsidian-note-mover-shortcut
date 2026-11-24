@@ -2,6 +2,10 @@
 
 ## [1.3.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.3.1)
 
+### Breaking
+
+- **Modal CSS classes**: Custom snippets that target `note-mover-preview-modal`, `note-mover-update-modal`, or `note-mover-history-modal` need the new names `advancedNoteMover-preview-modal`, `advancedNoteMover-update-modal`, and `advancedNoteMover-history-modal`.
+
 ### Fixes
 
 - **Bulk errors**: One summary names the error count, and Show details lists the failed files.
