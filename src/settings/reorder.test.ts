@@ -36,6 +36,20 @@ function installDom(): void {
     return proto.createEl.call(this, 'div', options);
   };
 
+  Object.assign(HTMLElement.prototype, {
+    createSpan(this: HTMLElement, options?: { cls?: string; text?: string }) {
+      return proto.createEl.call(this, 'span', options);
+    },
+    setAttr(this: HTMLElement, name: string, value: string) {
+      this.setAttribute(name, value);
+    },
+    setAttrs(this: HTMLElement, attrs: Record<string, string>) {
+      for (const [key, value] of Object.entries(attrs)) {
+        this.setAttribute(key, value);
+      }
+    },
+  });
+
   const globals = globalThis as unknown as {
     createDiv: (options?: {
       cls?: string;
@@ -112,6 +126,7 @@ describe('reorder rules', () => {
       pluginData: {
         settings: { rulesV2: [rule('A'), rule('B'), rule('C')] },
       },
+      conflictSkipCacheManager: { getEntries: () => [] },
       save_settings: async () => {
         saves += 1;
       },
@@ -165,6 +180,7 @@ describe('reorder rules', () => {
       pluginData: {
         settings: { rulesV2: [rule('A'), rule('B'), rule('C')] },
       },
+      conflictSkipCacheManager: { getEntries: () => [] },
       save_settings: async () => {
         saves += 1;
       },

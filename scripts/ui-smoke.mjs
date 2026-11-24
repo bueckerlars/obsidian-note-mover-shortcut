@@ -29,23 +29,15 @@ const VIEWPORTS = [
 ];
 
 const SCREENS = [
-  { id: 'settings-triggers', kind: 'settings', heading: 'Triggers' },
-  { id: 'settings-filter', kind: 'settings', heading: 'Filter' },
+  { id: 'settings-automatic', kind: 'settings', heading: 'Move automatically' },
   { id: 'settings-rules', kind: 'settings', heading: 'Rules' },
-  { id: 'settings-attachments', kind: 'settings', heading: 'Attachments' },
-  {
-    id: 'settings-conflict-resolution',
-    kind: 'settings',
-    heading: 'Conflict resolution',
-  },
+  { id: 'settings-exclusions', kind: 'settings', heading: 'Excluded notes' },
+  { id: 'settings-when-moving', kind: 'settings', heading: 'When moving' },
   { id: 'settings-history', kind: 'settings', heading: 'History' },
-  { id: 'settings-import-export', kind: 'settings', heading: 'Import/export' },
-  { id: 'settings-performance', kind: 'settings', heading: 'Performance' },
-  { id: 'settings-updates', kind: 'settings', heading: 'Updates' },
+  { id: 'settings-advanced', kind: 'settings', heading: 'Advanced' },
   { id: 'rule-editor', kind: 'modal' },
   { id: 'history', kind: 'modal' },
   { id: 'preview', kind: 'modal' },
-  { id: 'conflict-cache', kind: 'modal' },
   { id: 'confirm', kind: 'modal' },
   { id: 'update-changelog', kind: 'modal' },
 ];
@@ -136,9 +128,7 @@ function prepareVault(tmp) {
       smoke: { path: vault, ts: Date.now(), open: true },
     },
   };
-  if (process.env.SMOKE_LOCALE) {
-    appConfig.language = process.env.SMOKE_LOCALE;
-  }
+  appConfig.language = process.env.SMOKE_LOCALE || 'en';
   fs.writeFileSync(
     path.join(userData, 'obsidian.json'),
     `${JSON.stringify(appConfig, null, 2)}\n`
@@ -673,22 +663,6 @@ async function anmSmoke(action, arg) {
       () => document.querySelector('.modal'),
       15000,
       'Preview modal did not open'
-    );
-    return action;
-  }
-
-  if (action === 'conflict-cache') {
-    await closeModals();
-    if (typeof app().setting?.close === 'function') {
-      app().setting.close();
-    }
-    app().commands.executeCommandById(
-      'note-mover-shortcut:show-conflict-skip-cache'
-    );
-    await waitFor(
-      () => document.querySelector('.modal'),
-      15000,
-      'Conflict cache modal did not open'
     );
     return action;
   }
@@ -1310,15 +1284,12 @@ function screensForLocale() {
   const catalog = loadCatalog(smokeLocale());
   const settings = catalog?.settings ?? {};
   const headings = {
-    'settings-triggers': settings.headingsTriggers,
-    'settings-filter': settings.headingsFilter,
+    'settings-automatic': settings.headingsAutomatic,
     'settings-rules': settings.headingsRules,
-    'settings-attachments': settings.headingsAttachments,
-    'settings-conflict-resolution': settings.headingsConflict,
+    'settings-exclusions': settings.exclusionsHeading,
+    'settings-when-moving': settings.headingsWhenMoving,
     'settings-history': settings.headingsHistory,
-    'settings-import-export': settings.headingsImportExport,
-    'settings-performance': settings.headingsPerformance,
-    'settings-updates': settings.headingsUpdates,
+    'settings-advanced': settings.headingsAdvanced,
   };
   return SCREENS.map(screen => ({
     ...screen,

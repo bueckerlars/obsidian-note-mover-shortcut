@@ -3,15 +3,8 @@ import { pluralize } from '../utils/pluralize';
 
 export type LocaleCatalog = typeof catalogs.en;
 
+/** Every languages/<code>.json, bundled into main.js at build time (no runtime file read). */
 const bundled: Record<string, LocaleCatalog> = catalogs;
-
-const GERMAN_NOUNS: Record<string, readonly [string, string]> = {
-  file: ['Datei', 'Dateien'],
-  rule: ['Regel', 'Regeln'],
-  filter: ['Filter', 'Filter'],
-  note: ['Notiz', 'Notizen'],
-  error: ['Fehler', 'Fehler'],
-};
 
 /** `en-gb` and `EN` both select languages/en.json. */
 export function localeCode(locale: string): string {
@@ -23,14 +16,10 @@ export function loadLocale(
   locale: string,
   available: Record<string, LocaleCatalog> = bundled
 ): LocaleCatalog {
-  const catalog = available[localeCode(locale)] ?? available.en;
-  if (!catalog) {
-    throw new Error('languages/en.json is missing');
-  }
-  return catalog;
+  return available[localeCode(locale)] ?? available.en;
 }
 
-let active = loadLocale('en');
+let active: LocaleCatalog = bundled.en;
 let activeCode = 'en';
 
 export function useLocale(
@@ -76,6 +65,14 @@ export function t(
   }
   return params ? fill(template, params) : template;
 }
+
+const GERMAN_NOUNS: Record<string, readonly [string, string]> = {
+  file: ['Datei', 'Dateien'],
+  rule: ['Regel', 'Regeln'],
+  filter: ['Filter', 'Filter'],
+  note: ['Notiz', 'Notizen'],
+  error: ['Fehler', 'Fehler'],
+};
 
 export function plural(
   count: number,

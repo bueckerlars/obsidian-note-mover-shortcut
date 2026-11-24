@@ -18,6 +18,16 @@ describe('loadLocale', () => {
     expect(loadLocale('fr', { en: english, de: german })).toBe(english);
   });
 
+  it('has bundled en and de catalogs without any file read', () => {
+    expect(loadLocale('en').settings).toBeDefined();
+    expect(loadLocale('de').settings).toBeDefined();
+    expect(loadLocale('de').settings).not.toBe(loadLocale('en').settings);
+    useLocale('de');
+    expect(strings().settings).toBeDefined();
+    expect(strings().unnamedRule).toBe('Unbenannte Regel');
+    useLocale('en');
+  });
+
   it('fills placeholders and leaves unknown tokens in place', () => {
     expect(fill('Could not find file {fileName}', { fileName: 'A.md' })).toBe(
       'Could not find file A.md'

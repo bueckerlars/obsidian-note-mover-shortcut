@@ -1,9 +1,10 @@
-export { TriggerSettingsSection } from './TriggerSettingsSection';
-export { AttachmentsSettingsSection } from './AttachmentsSettingsSection';
+export { StatusSettingsSection } from './StatusSettingsSection';
+export { AutomaticSettingsSection } from './AutomaticSettingsSection';
 export { FilterSettingsSection } from './FilterSettingsSection';
 export { RulesSettingsSection } from './RulesSettingsSection';
+export { WhenMovingSettingsSection } from './WhenMovingSettingsSection';
 export { HistorySettingsSection } from './HistorySettingsSection';
+export { AdvancedSettingsSection } from './AdvancedSettingsSection';
 export { ImportExportSettingsSection } from './ImportExportSettingsSection';
 export { PerformanceDebugSettingsSection } from './PerformanceDebugSettingsSection';
-export { UpdateSettingsSection } from './UpdateSettingsSection';
-export { ConflictResolutionSettingsSection } from './ConflictResolutionSettingsSection';
+export { SkippedNotesSettingsSection } from './SkippedNotesSettingsSection';

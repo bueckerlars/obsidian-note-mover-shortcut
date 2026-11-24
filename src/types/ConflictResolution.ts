@@ -1,9 +1,6 @@
 /** How to handle a move when the target path already exists. */
 export type ConflictResolutionStrategy =
-  | 'ask'
-  | 'skip'
-  | 'rename'
-  | 'overwrite';
+  'ask' | 'skip' | 'rename' | 'overwrite';
 
 /** User choice for a single conflicting move. */
 export type ConflictResolutionAction = 'skip' | 'rename' | 'overwrite';

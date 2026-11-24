@@ -1,102 +1,98 @@
-import AdvancedNoteMoverPlugin from 'main';
-import type { App } from 'obsidian';
 import { ConfirmModal } from '../../modals/ConfirmModal';
-import { HISTORY_CONSTANTS } from '../../config/constants';
+import { HistoryModal } from '../../modals/HistoryModal';
 import { fill, strings } from '../../i18n/locale';
-import { renderSetting } from '../settingDefinitions';
+import { HISTORY_CONSTANTS } from '../../config/constants';
+import {
+  FOREVER,
+  RETENTION_PRESET_DAYS,
+  isCustomRetentionKey,
+  keyToRetention,
+  retentionToKey,
+} from '../historyRetention';
+import { addNavRow } from '../navRow';
+import { createSettingGroup } from '../settingGroup';
+import type { SectionContext } from '../pages';
 
 export class HistorySettingsSection {
-  constructor(
-    private plugin: AdvancedNoteMoverPlugin,
-    private containerEl: HTMLElement
-  ) {}
+  constructor(private readonly ctx: SectionContext) {}
 
-  addHistorySettings(): void {
-    renderSetting(this.containerEl, 'history.heading');
+  render(): void {
+    const { plugin, containerEl, refresh } = this.ctx;
+    const labels = strings().settings;
+    const settings = plugin.pluginData.settings;
+    settings.retentionPolicy ??= {
+      ...HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
+    };
 
-    // Retention Policy Settings
-    this.addRetentionPolicySettings();
-
-    // Clear History Button
-    renderSetting(this.containerEl, 'history.clear').addButton(btn => {
-      btn.setButtonText(strings().settings.historyClearButton);
-      // Same class as setWarning. setDestructive needs Obsidian 1.13.
-      btn.buttonEl.addClass('mod-warning');
-      btn.onClick(async () => {
-        const confirmed = await ConfirmModal.show(this.app, {
-          title: strings().settings.historyClearTitle,
-          message: strings().settings.historyClearMessage,
-          confirmText: strings().settings.historyClearConfirm,
-          cancelText: strings().common.cancel,
-          danger: true,
-        });
-
-        if (confirmed) {
-          await this.plugin.historyManager.clearHistory();
-        }
-      });
+    const group = createSettingGroup(containerEl, {
+      heading: strings().settings.headingsHistory,
     });
-  }
 
-  private addRetentionPolicySettings(): void {
-    if (!this.plugin.pluginData.settings.retentionPolicy) {
-      this.plugin.pluginData.settings.retentionPolicy = {
-        ...HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
-      };
-    }
+    const moves = plugin.historyManager.getHistory().length;
+    addNavRow(group, {
+      name: labels.historyNavName,
+      desc: labels.historyNavDesc,
+      value: fill(
+        moves === 1 ? labels.historyCountOne : labels.historyCountMany,
+        { count: moves }
+      ),
+      onOpen: () =>
+        new HistoryModal(plugin.app, plugin.historyManager, plugin).open(),
+    });
 
-    const retentionPolicy = this.plugin.pluginData.settings.retentionPolicy;
-
-    // Retention Policy Section - Single line with value input and unit dropdown
-    const retentionSetting = renderSetting(
-      this.containerEl,
-      'history.retention'
-    )
-      .addText(text =>
-        text
-          .setPlaceholder(strings().settings.historyRetentionPlaceholder)
-          .setValue(retentionPolicy.value.toString())
-          .onChange(async (value: string) => {
-            const numValue = parseInt(value);
-            if (!isNaN(numValue) && numValue > 0) {
-              this.plugin.pluginData.settings.retentionPolicy.value = numValue;
-              await this.plugin.save_settings();
-            }
-          })
-      )
-      .addDropdown(dropdown =>
-        dropdown
-          .addOption('days', strings().settings.historyDays)
-          .addOption('weeks', strings().settings.historyWeeks)
-          .addOption('months', strings().settings.historyMonths)
-          .setValue(retentionPolicy.unit)
-          .onChange(async (value: string) => {
-            this.plugin.pluginData.settings.retentionPolicy.unit = value as
-              'days' | 'weeks' | 'months';
-            await this.plugin.save_settings();
-          })
-      );
-
-    retentionSetting.setClass('advancedNoteMover-setting-stack');
-
-    renderSetting(this.containerEl, 'history.cleanup')
-      .setDesc(
-        fill(strings().settings.historyCleanupDesc, {
-          value: retentionPolicy.value,
-          unit: retentionPolicy.unit,
+    group.addSetting(setting =>
+      setting
+        .setName(labels.historyKeepName)
+        .setDesc(labels.historyKeepDesc)
+        .addDropdown(dropdown => {
+          const current = retentionToKey(settings.retentionPolicy);
+          for (const days of RETENTION_PRESET_DAYS) {
+            dropdown.addOption(
+              String(days),
+              days === 365
+                ? fill(labels.historyKeepYear, { count: 1 })
+                : fill(labels.historyKeepDays, { count: days })
+            );
+          }
+          if (isCustomRetentionKey(current)) {
+            // A value from an older version stays selectable.
+            dropdown.addOption(
+              current,
+              fill(labels.historyKeepDays, { count: current })
+            );
+          }
+          dropdown.addOption(FOREVER, labels.historyKeepForever);
+          dropdown.setValue(current).onChange(async value => {
+            settings.retentionPolicy = keyToRetention(value);
+            await plugin.save_settings();
+            await plugin.historyManager.cleanupOldEntries(true);
+            refresh();
+          });
         })
-      )
-      .addButton(btn =>
-        btn
-          .setButtonText(strings().settings.historyCleanupButton)
-          .setCta()
-          .onClick(async () => {
-            await this.plugin.historyManager.cleanupOldEntries();
-          })
-      );
-  }
+    );
 
-  private get app(): App {
-    return this.plugin.app;
+    group.addSetting(setting =>
+      setting
+        .setName(labels.historyClearName)
+        .setDesc(labels.historyClearDesc)
+        .addButton(button => {
+          button.setButtonText(labels.historyClearButton);
+          // Same class as setWarning. setDestructive needs Obsidian 1.13.
+          button.buttonEl.addClass('mod-warning');
+          button.onClick(async () => {
+            const confirmed = await ConfirmModal.show(plugin.app, {
+              title: labels.historyClearTitle,
+              message: labels.historyClearMessage,
+              confirmText: labels.historyClearConfirm,
+              cancelText: strings().common.cancel,
+              danger: true,
+            });
+            if (confirmed) {
+              await plugin.historyManager.clearHistory();
+              refresh();
+            }
+          });
+        })
+    );
   }
 }

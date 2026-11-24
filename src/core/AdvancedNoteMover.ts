@@ -1,3 +1,4 @@
+import { filterPreviewByRule } from '../domain/preview/filterPreviewByRule';
 import { TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
 import { viewIdle } from '../utils/viewTimers';
@@ -658,6 +659,18 @@ export class AdvancedNoteMover {
    * Re-evaluate the vault with current rules: sync rule manager, invalidate cache,
    * then open a preview modal before any files are moved.
    */
+  /** Opens the bulk preview for every movable note, or only for one rule's matches. */
+  openVaultMovePreview(ruleName?: string): void {
+    new PreviewModal(this.plugin.app, this.plugin, null, {
+      load: async (signal, onProgress) => {
+        const preview = await this.generateVaultMovePreview(signal, onProgress);
+        return ruleName === undefined
+          ? preview
+          : filterPreviewByRule(preview, ruleName);
+      },
+    }).open();
+  }
+
   async openVaultReEvaluationPreview(): Promise<void> {
     this.updateRuleManager();
     this.plugin.ruleCache.invalidateAll();

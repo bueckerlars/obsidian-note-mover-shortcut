@@ -1,13 +1,29 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { App, Setting } from 'obsidian';
-import { strings } from '../../i18n/locale';
-import { DragDropManager } from '../../utils/DragDropManager';
-import { AdvancedSuggest } from '../suggesters/AdvancedSuggest';
-import { renderSetting } from '../settingDefinitions';
+import { Setting, setIcon } from 'obsidian';
+import {
+  EXCLUSION_KINDS,
+  formatExclusion,
+  parseExclusion,
+  type ExclusionKind,
+} from '../../domain/filters/exclusionFilter';
+import { fill, strings } from '../../i18n/locale';
+import { addPlusIcon, createSettingGroup } from '../settingGroup';
+import { ExclusionValueSuggest } from '../suggesters/ExclusionValueSuggest';
 
+const ICONS: Record<ExclusionKind, string> = {
+  tag: 'tag',
+  folder: 'folder',
+  fileName: 'file',
+  property: 'text',
+  other: 'text',
+};
+
+type AddableKind = (typeof EXCLUSION_KINDS)[number];
+
+/** Excluded notes: one row per stored filter string, plus an inline add row. */
 export class FilterSettingsSection {
-  private dragDropManager: DragDropManager | null = null;
-  private advancedSuggestInstances: AdvancedSuggest[] = [];
+  private listEl: HTMLElement | null = null;
+  private suggest: ExclusionValueSuggest | null = null;
 
   constructor(
     private plugin: AdvancedNoteMoverPlugin,
@@ -15,169 +31,175 @@ export class FilterSettingsSection {
     private refreshDisplay: () => void
   ) {}
 
-  addFilterSettings(): void {
-    renderSetting(this.containerEl, 'filters.heading').setTooltip(
-      strings().settings.filterSectionDesc
-    );
-
-    this.addPeriodicMovementFilterArray();
-
-    renderSetting(this.containerEl, 'filters.add').addButton(btn =>
-      btn
-        .setIcon('plus')
-        .setTooltip(strings().settings.filterAdd)
-        .setCta()
-        .onClick(async () => {
-          this.plugin.pluginData.settings.filters.filter.push({ value: '' });
-          await this.plugin.save_settings();
-          // Update RuleManager
-          this.plugin.advancedNoteMover.updateRuleManager();
-          this.refreshDisplay();
-        })
-    );
+  render(): void {
+    const labels = strings().settings;
+    const group = createSettingGroup(this.containerEl, {
+      heading: labels.exclusionsHeading,
+      description: labels.exclusionsDesc,
+    });
+    group.addButton(button => {
+      button.setButtonText(labels.exclusionsAdd).onClick(() => {
+        this.renderList(true);
+      });
+      addPlusIcon(button);
+    });
+    this.listEl = group.listEl;
+    this.renderList(false);
   }
 
-  addPeriodicMovementFilterArray(): void {
-    // Clean up existing AdvancedSuggest instances before creating new ones
-    this.cleanupAdvancedSuggestInstances();
+  private get filters(): { value: string }[] {
+    return this.plugin.pluginData.settings.filters.filter;
+  }
 
-    const filtersContainer = this.containerEl.createDiv({
-      cls: 'advancedNoteMover-filters-container',
-    });
-
-    // Setup drag & drop manager
-    this.setupDragDropManager(filtersContainer);
-
-    if (this.plugin.pluginData.settings.filters.filter.length === 0) {
-      renderSetting(this.containerEl, 'filters.empty');
+  private renderList(adding: boolean): void {
+    const list = this.listEl;
+    if (!list) return;
+    this.closeSuggest();
+    list.empty();
+    list.addClass('advancedNoteMover-filters-container');
+    const labels = strings().settings;
+    if (this.filters.length === 0 && !adding) {
+      list.createDiv({
+        cls: 'advancedNoteMover-empty advancedNoteMover-empty-text',
+        text: labels.exclusionsEmpty,
+      });
     }
-
-    this.plugin.pluginData.settings.filters.filter.forEach((filter, index) => {
-      const s = new Setting(filtersContainer);
-      this.bindFilterSearch(s, index);
-      s.addExtraButton(btn =>
-        btn.setIcon('cross').onClick(async () => {
-          this.plugin.pluginData.settings.filters.filter.splice(index, 1);
-          await this.plugin.save_settings();
-          this.plugin.advancedNoteMover.updateRuleManager();
-          this.refreshDisplay();
-        })
+    this.filters.forEach((filter, index) => {
+      const { kind, value } = parseExclusion(filter.value);
+      const shown =
+        kind === 'tag' && value && !value.startsWith('#') ? `#${value}` : value;
+      const setting = new Setting(list).setName(shown);
+      const { settingEl } = setting;
+      setIcon(
+        settingEl.createSpan({ cls: 'advancedNoteMover-row-icon' }),
+        ICONS[kind]
       );
-
-      // Add drag handle to the setting
-      this.addDragHandle(s.settingEl, index);
-      s.setClass('advancedNoteMover-setting-stack');
+      settingEl.prepend(settingEl.lastElementChild as Node);
+      setting.nameEl.createSpan({
+        cls: 'advancedNoteMover-faint',
+        text: this.kindLabel(kind),
+      });
+      setting.addExtraButton(btn => {
+        btn
+          .setIcon('x')
+          .setTooltip(fill(labels.exclusionRemove, { value: shown }));
+        btn.extraSettingsEl.setAttrs({
+          role: 'button',
+          'aria-label': fill(labels.exclusionRemove, { value: shown }),
+        });
+        btn.onClick(async () => {
+          this.filters.splice(index, 1);
+          await this.save();
+        });
+      });
     });
+    if (adding) this.renderAddRow(list);
   }
 
-  moveFilter(index: number, direction: number) {
-    const list = this.plugin.pluginData.settings.filters.filter;
-    const newIndex = Math.max(0, Math.min(list.length - 1, index + direction));
-    [list[index], list[newIndex]] = [list[newIndex], list[index]];
-    void this.plugin.save_settings();
+  private kindLabel(kind: ExclusionKind): string {
+    const labels = strings().settings;
+    return {
+      tag: labels.exclusionKindTag,
+      folder: labels.exclusionKindFolder,
+      fileName: labels.exclusionKindFileName,
+      property: labels.exclusionKindProperty,
+      other: labels.exclusionKindOther,
+    }[kind];
+  }
+
+  private renderAddRow(list: HTMLElement): void {
+    const labels = strings().settings;
+    let kind: AddableKind = 'tag';
+    const placeholders: Record<AddableKind, string> = {
+      tag: labels.exclusionPlaceholderTag,
+      folder: labels.exclusionPlaceholderFolder,
+      fileName: labels.exclusionPlaceholderFileName,
+      property: labels.exclusionPlaceholderProperty,
+    };
+    const typeLabels: Record<AddableKind, string> = {
+      tag: labels.exclusionTypeTag,
+      folder: labels.exclusionTypeFolder,
+      fileName: labels.exclusionTypeFileName,
+      property: labels.exclusionTypeProperty,
+    };
+    const setting = new Setting(list);
+    setting.settingEl.addClass('advancedNoteMover-exclusion-add');
+    setting.infoEl.hide();
+    let input = null as HTMLInputElement | null;
+
+    const cancel = () => this.renderList(false);
+    const submit = async () => {
+      const stored = formatExclusion(kind, input?.value ?? '');
+      if (stored === null) {
+        input?.focus();
+        return;
+      }
+      if (!this.filters.some(filter => filter.value === stored)) {
+        this.filters.push({ value: stored });
+      }
+      await this.save();
+    };
+
+    setting.addDropdown(dropdown => {
+      for (const option of EXCLUSION_KINDS) {
+        dropdown.addOption(option, typeLabels[option]);
+      }
+      dropdown.selectEl.setAttr('aria-label', labels.exclusionTypeLabel);
+      dropdown.setValue(kind).onChange(value => {
+        kind = value as AddableKind;
+        input?.setAttr('placeholder', placeholders[kind]);
+        this.suggest?.reset();
+        input?.focus();
+      });
+    });
+    setting.addText(text => {
+      input = text.inputEl;
+      text.setPlaceholder(placeholders[kind]);
+      input.setAttr('aria-label', labels.exclusionValueLabel);
+      this.suggest = new ExclusionValueSuggest(
+        this.plugin.app,
+        input,
+        () => kind
+      );
+    });
+    setting.addButton(button =>
+      button
+        .setButtonText(labels.exclusionAddConfirm)
+        .setCta()
+        .onClick(() => void submit())
+    );
+    setting.addExtraButton(button => {
+      button.setIcon('x').onClick(cancel);
+      button.extraSettingsEl.setAttrs({
+        role: 'button',
+        'aria-label': strings().common.cancel,
+      });
+    });
+    setting.settingEl.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        cancel();
+      } else if (event.key === 'Enter' && event.target === input) {
+        event.preventDefault();
+        void submit();
+      }
+    });
+    input?.focus();
+  }
+
+  private async save(): Promise<void> {
+    await this.plugin.save_settings();
+    this.plugin.advancedNoteMover.updateRuleManager();
     this.refreshDisplay();
   }
 
-  private setupDragDropManager(container: HTMLElement): void {
-    // Clean up existing manager
-    if (this.dragDropManager) {
-      this.dragDropManager.destroy();
-    }
-
-    this.dragDropManager = new DragDropManager(container, {
-      onReorder: (fromIndex: number, toIndex: number) => {
-        this.reorderFilters(fromIndex, toIndex);
-      },
-      onMove: (index, direction) => {
-        this.moveFilter(index, direction);
-      },
-      onSave: async () => {
-        await this.plugin.save_settings();
-        this.plugin.advancedNoteMover.updateRuleManager();
-        // Refresh display after settings are fully saved
-        this.refreshDisplay();
-      },
-      itemSelector: '.setting-item',
-      handleSelector: '.advancedNoteMover-drag-handle',
-    });
+  private closeSuggest(): void {
+    this.suggest?.close();
+    this.suggest = null;
   }
 
-  bindFilterSearch(setting: Setting, index: number): () => void {
-    let advancedSuggest: AdvancedSuggest | undefined;
-    setting.addSearch(cb => {
-      advancedSuggest = new AdvancedSuggest(
-        this.app,
-        cb.inputEl,
-        this.plugin.vaultIndexCache
-      );
-      this.advancedSuggestInstances.push(advancedSuggest);
-      const filter = this.plugin.pluginData.settings.filters.filter[index];
-      cb.setPlaceholder(strings().settings.filterPlaceholder)
-        .setValue(filter?.value || '')
-        .onChange(async value => {
-          this.plugin.pluginData.settings.filters.filter[index] = {
-            value: !value || value.trim() === '' ? '' : value,
-          };
-          await this.plugin.save_settings();
-          this.plugin.advancedNoteMover.updateRuleManager();
-        });
-      cb.inputEl.classList.add('advancedNoteMover-search');
-    });
-    return () => {
-      if (!advancedSuggest) {
-        return;
-      }
-      advancedSuggest.destroy();
-      this.advancedSuggestInstances = this.advancedSuggestInstances.filter(
-        instance => instance !== advancedSuggest
-      );
-    };
-  }
-
-  private addDragHandle(settingEl: HTMLElement, index: number): void {
-    const handle = DragDropManager.createDragHandle();
-    const handleContainer = createDiv({
-      cls: 'advancedNoteMover-drag-handle-container',
-    });
-    handleContainer.appendChild(handle);
-
-    // Insert handle at the beginning of the setting
-    settingEl.insertBefore(handleContainer, settingEl.firstChild);
-    settingEl.classList.add('advancedNoteMover-with-drag-handle');
-  }
-
-  private reorderFilters(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-
-    const filters = this.plugin.pluginData.settings.filters.filter;
-    const [movedFilter] = filters.splice(fromIndex, 1);
-    filters.splice(toIndex, 0, movedFilter);
-
-    // Note: refreshDisplay() will be called by the onSave callback after settings are saved
-  }
-
-  private get app(): App {
-    return this.plugin.app;
-  }
-
-  /**
-   * Clean up AdvancedSuggest instances to prevent memory leaks
-   */
-  private cleanupAdvancedSuggestInstances(): void {
-    this.advancedSuggestInstances.forEach(instance => {
-      instance.destroy();
-    });
-    this.advancedSuggestInstances = [];
-  }
-
-  /**
-   * Public cleanup method to be called when the section is destroyed
-   */
+  /** Called by the tab before it re-renders or hides. */
   public cleanup(): void {
-    this.cleanupAdvancedSuggestInstances();
-    if (this.dragDropManager) {
-      this.dragDropManager.destroy();
-      this.dragDropManager = null;
-    }
+    this.closeSuggest();
   }
 }

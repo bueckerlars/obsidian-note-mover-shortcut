@@ -1,101 +1,82 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { App, ButtonComponent, Menu, Setting } from 'obsidian';
+import { App, Menu, Setting, setIcon } from 'obsidian';
 import { fill, strings } from '../../i18n/locale';
+import {
+  buildRuleSummary,
+  summaryText,
+  type SummarySegment,
+} from '../../domain/rules/ruleSummary';
+import { presetRule, type RulePreset } from '../../domain/rules/rulePresets';
+import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { RuleEditorModal } from '../../modals/RuleEditorModal';
 import { RuleV2 } from '../../types/RuleV2';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { toMarkdownInlineCode } from '../../utils/markdown-confirm';
-import { handleError } from '../../utils/Error';
-import { NoticeManager } from '../../utils/NoticeManager';
 import { cloneRule } from '../cloneRule';
-import { renderSetting } from '../settingDefinitions';
-import { ruleSubtitle } from '../ruleSubtitle';
+import { addPlusIcon, createSettingGroup } from '../settingGroup';
+
+/** Survives re-renders of the tab: the filter text and the last move to announce. */
+export interface RulesUiState {
+  query: string;
+  moved: { index: number; total: number } | null;
+}
+
+const MOVED_HINT_MS = 2000;
 
 export class RulesSettingsSection {
   private dragDropManager: DragDropManager | null = null;
+  private listEl: HTMLElement;
+  private readonly rows: { el: HTMLElement; text: string }[] = [];
+  private hintTimer: number | null = null;
 
   constructor(
     private plugin: AdvancedNoteMoverPlugin,
     private containerEl: HTMLElement,
-    private refreshDisplay: () => void
-  ) {}
-
-  addRulesSetting(): void {
-    renderSetting(this.containerEl, 'rules.heading').setTooltip(
-      strings().settings.rulesIntroTail
-    );
+    private refreshDisplay: () => void,
+    private filterState: RulesUiState = { query: '', moved: null }
+  ) {
+    this.listEl = containerEl;
   }
 
-  addCreateMissingFoldersSetting(): void {
-    renderSetting(this.containerEl, 'rules.createFolders')
-      .setTooltip(strings().settings.rulesCreateFoldersDetail)
-      .addToggle(toggle =>
-        toggle
-          .setValue(
-            this.plugin.pluginData.settings.createMissingDestinationFolders !==
-              false
-          )
-          .onChange(async value => {
-            this.plugin.pluginData.settings.createMissingDestinationFolders =
-              value;
-            await this.plugin.save_settings();
-            this.plugin.advancedNoteMover.updateRuleManager();
-          })
-      );
-  }
-
-  addVaultReEvaluationSetting(): void {
-    let reEvaluateButton: ButtonComponent | undefined;
-
-    renderSetting(this.containerEl, 'rules.reEvaluate').addButton(btn => {
-      reEvaluateButton = btn
-        .setButtonText(strings().settings.rulesReEvaluateButton)
-        .onClick(() => {
-          if (reEvaluateButton) {
-            reEvaluateButton.setDisabled(true);
-            reEvaluateButton.setButtonText(
-              strings().settings.rulesGeneratingPreview
-            );
-          }
-          void (async () => {
-            try {
-              await this.plugin.advancedNoteMover.openVaultReEvaluationPreview();
-            } catch (error) {
-              handleError(
-                error,
-                strings().notices.errorGeneratingVaultPreviewContext,
-                false
-              );
-              NoticeManager.error(
-                fill(strings().notices.errorGeneratingPreview, {
-                  message:
-                    error instanceof Error ? error.message : String(error),
-                })
-              );
-            } finally {
-              if (reEvaluateButton) {
-                reEvaluateButton.setDisabled(false);
-                reEvaluateButton.setButtonText(
-                  strings().settings.rulesReEvaluateButton
-                );
-              }
-            }
-          })();
-        });
+  /** Group with heading-row search and add button, then the current rule list. */
+  render(): void {
+    const labels = strings().settings;
+    const group = createSettingGroup(this.containerEl, {
+      heading: labels.headingsRules,
+      description: labels.rulesGroupDesc,
     });
+    if ((this.plugin.pluginData.settings.rulesV2 ?? []).length > 0) {
+      group.addSearch(search => {
+        search
+          .setPlaceholder(labels.rulesFilterPlaceholder)
+          .setValue(this.filterState.query)
+          .onChange(value => {
+            this.filterState.query = value;
+            this.applyFilter();
+          });
+        search.inputEl.setAttr('aria-label', labels.rulesFilterPlaceholder);
+      });
+    }
+    group.addButton(button => {
+      button
+        .setButtonText(labels.rulesAddButton)
+        .onClick(() => this.openRuleEditorModal(null));
+      addPlusIcon(button);
+    });
+    this.listEl = group.listEl;
+    this.addRulesV2Array();
+    this.applyFilter();
   }
 
-  addAddRuleButtonSetting(): void {
-    renderSetting(this.containerEl, 'rules.add').addButton(btn =>
-      btn
-        .setIcon('plus')
-        .setTooltip(strings().settings.rulesAddButton)
-        .setCta()
-        .onClick(() => {
-          this.openRuleEditorModal(null);
-        })
-    );
+  private applyFilter(): void {
+    const query = this.filterState.query.trim().toLowerCase();
+    for (const row of this.rows) {
+      row.el.toggleClass(
+        'advancedNoteMover-hidden',
+        query !== '' && !row.text.includes(query)
+      );
+    }
   }
 
   addRulesArray(): void {
@@ -120,6 +101,10 @@ export class RulesSettingsSection {
       this.dragDropManager.destroy();
       this.dragDropManager = null;
     }
+    if (this.hintTimer !== null) {
+      viewClearTimeout(this.hintTimer);
+      this.hintTimer = null;
+    }
   }
 
   /**
@@ -131,59 +116,201 @@ export class RulesSettingsSection {
       this.plugin.pluginData.settings.rulesV2 = [];
     }
 
-    const rulesContainer = this.containerEl.createDiv({
-      cls: 'advancedNoteMover-rules-v2-container',
-    });
+    const rulesContainer = this.listEl;
+    rulesContainer.addClass('advancedNoteMover-rules-v2-container');
 
     // Setup drag & drop manager for V2 rules
     this.setupDragDropManagerV2(rulesContainer);
 
-    if (this.plugin.pluginData.settings.rulesV2.length === 0) {
-      renderSetting(this.containerEl, 'rules.empty');
+    const rules = this.plugin.pluginData.settings.rulesV2;
+    if (rules.length === 0) {
+      this.renderEmptyState(rulesContainer);
+      return;
+    }
+    rules.forEach(rule => this.renderRuleRow(rulesContainer, rule));
+    this.applyMoveFeedback(rulesContainer);
+  }
+
+  private renderEmptyState(container: HTMLElement): void {
+    const labels = strings().settings;
+    const empty = container.createDiv({ cls: 'advancedNoteMover-empty' });
+    setIcon(
+      empty.createSpan({ cls: 'advancedNoteMover-empty-icon' }),
+      'folder-input'
+    );
+    empty.createSpan({ text: labels.rulesEmptyText });
+    const presets: [RulePreset, string, string, string?][] = [
+      ['tag', 'tag', labels.rulesPresetTag, labels.rulesPresetTagDesc],
+      [
+        'property',
+        'text',
+        labels.rulesPresetProperty,
+        labels.rulesPresetPropertyDesc,
+      ],
+      ['date', 'calendar', labels.rulesPresetDate, labels.rulesPresetDateDesc],
+      ['blank', 'plus', labels.rulesPresetBlank],
+    ];
+    for (const [preset, icon, name, desc] of presets) {
+      const setting = new Setting(container).setName(name);
+      if (desc) setting.setDesc(desc);
+      const el = setting.settingEl;
+      el.addClass('advancedNoteMover-add-row');
+      el.setAttrs({ role: 'button', tabindex: '0' });
+      setIcon(el.createSpan({ cls: 'advancedNoteMover-add-row-icon' }), icon);
+      el.prepend(el.querySelector('.advancedNoteMover-add-row-icon') as Node);
+      const open = () =>
+        this.openRuleEditorModal(null, presetRule(preset, labels.rulesNewName));
+      el.addEventListener('click', open);
+      el.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          open();
+        }
+      });
+    }
+  }
+
+  private renderRuleRow(container: HTMLElement, rule: RuleV2): void {
+    const labels = strings().settings;
+    const setting = new Setting(container).setName(
+      rule.name || strings().unnamedRule
+    );
+    const { settingEl } = setting;
+    settingEl.addClass('advancedNoteMover-rule-row');
+    if (!rule.active) settingEl.addClass('advancedNoteMover-dim');
+
+    const skipped = (
+      this.plugin.conflictSkipCacheManager?.getEntries() ?? []
+    ).filter(entry => entry.ruleName === rule.name).length;
+    if (skipped > 0) {
+      const pill = setting.nameEl.createSpan({
+        cls: 'advancedNoteMover-pill mod-warning',
+      });
+      setIcon(
+        pill.createSpan({ cls: 'advancedNoteMover-pill-icon' }),
+        'alert-triangle'
+      );
+      pill.createSpan({
+        text: fill(labels.rulesSkippedPill, { count: skipped }),
+      });
     }
 
-    this.plugin.pluginData.settings.rulesV2.forEach(rule => {
-      const setting = new Setting(rulesContainer)
-        .setName(rule.name || strings().unnamedRule)
-        .setDesc(ruleSubtitle(rule))
-        .addToggle(toggle =>
-          toggle
-            .setValue(rule.active)
-            .setTooltip(
-              rule.active
-                ? strings().settings.rulesActive
-                : strings().settings.rulesInactive
-            )
-            .onChange(async value => {
-              const currentIndex = this.findRuleIndex(rule);
-              if (currentIndex < 0) {
-                return;
-              }
-              this.plugin.pluginData.settings.rulesV2![currentIndex].active =
-                value;
-              await this.persistRulesAndSyncManager();
-            })
+    const segments = buildRuleSummary(rule, strings().ruleSummary);
+    this.renderSummary(setting.descEl, segments);
+
+    setting
+      .addToggle(toggle =>
+        toggle
+          .setValue(rule.active)
+          .setTooltip(rule.active ? labels.rulesActive : labels.rulesInactive)
+          .onChange(async value => {
+            const currentIndex = this.findRuleIndex(rule);
+            if (currentIndex < 0) return;
+            this.plugin.pluginData.settings.rulesV2![currentIndex].active =
+              value;
+            await this.persistRulesAndSyncManager();
+          })
+      )
+      .addExtraButton(btn => {
+        btn.extraSettingsEl.setAttribute('role', 'button');
+        btn
+          .setIcon('more-horizontal')
+          .setTooltip(labels.rulesActions)
+          .onClick(() => {
+            const rect = btn.extraSettingsEl.getBoundingClientRect();
+            this.showRuleMenu(rule, { x: rect.left, y: rect.bottom });
+          });
+      });
+    this.addDragHandle(settingEl);
+
+    // The row opens the editor; the controls keep their own clicks.
+    const open = () => {
+      const currentIndex = this.findRuleIndex(rule);
+      if (currentIndex >= 0) this.openRuleEditorModal(currentIndex);
+    };
+    settingEl.addEventListener('click', event => {
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest(
+          '.setting-item-control, .advancedNoteMover-drag-handle-container'
         )
-        .addExtraButton(btn => {
-          btn.extraSettingsEl.setAttribute('role', 'button');
-          btn
-            .setIcon('more-horizontal')
-            .setTooltip(strings().settings.rulesActions)
-            .onClick(() => {
-              const rect = btn.extraSettingsEl.getBoundingClientRect();
-              this.showRuleMenu(rule, {
-                x: rect.left,
-                y: rect.bottom,
-              });
-            });
-        });
-      this.addDragHandle(setting.settingEl);
+      ) {
+        return;
+      }
+      open();
     });
+    setting.infoEl.setAttrs({ role: 'button', tabindex: '0' });
+    setting.infoEl.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        open();
+      }
+    });
+
+    this.rows.push({
+      el: settingEl,
+      text: `${rule.name} ${summaryText(segments)}`.toLowerCase(),
+    });
+  }
+
+  private renderSummary(el: HTMLElement, segments: SummarySegment[]): void {
+    const line = el.createDiv({ cls: 'advancedNoteMover-summary' });
+    for (const segment of segments) {
+      if (segment.kind === 'icon') {
+        setIcon(
+          line.createSpan({ cls: 'advancedNoteMover-summary-icon' }),
+          segment.icon
+        );
+      } else if (segment.kind === 'arrow') {
+        setIcon(
+          line.createSpan({ cls: 'advancedNoteMover-summary-icon' }),
+          'arrow-right'
+        );
+      } else {
+        line.createSpan({
+          cls: `advancedNoteMover-summary-${segment.kind}`,
+          text: segment.text,
+        });
+      }
+    }
+  }
+
+  /** After a move: keep focus on the moved handle, announce it and show the hint briefly. */
+  private applyMoveFeedback(container: HTMLElement): void {
+    const moved = this.filterState.moved;
+    if (!moved) return;
+    this.filterState.moved = null;
+    const message = fill(strings().settings.rulesMoved, {
+      position: moved.index + 1,
+      total: moved.total,
+    });
+    const row = container.querySelectorAll('.setting-item')[moved.index];
+    if (!row) return;
+    row.querySelector<HTMLElement>('.advancedNoteMover-drag-handle')?.focus();
+    const hint = row
+      .querySelector('.setting-item-control')
+      ?.createSpan({ cls: 'advancedNoteMover-moved-hint', text: message });
+    hint?.parentElement?.prepend(hint);
+    const live = container.createDiv({
+      cls: 'advancedNoteMover-sr-only',
+      attr: { 'aria-live': 'polite', role: 'status' },
+    });
+    this.hintTimer = viewTimeout(() => {
+      live.textContent = message;
+      this.hintTimer = viewTimeout(() => {
+        hint?.remove();
+        live.remove();
+        this.hintTimer = null;
+      }, MOVED_HINT_MS);
+    }, 50);
   }
 
   private showRuleMenu(rule: RuleV2, position: { x: number; y: number }): void {
     const menu = new Menu();
     const labels = strings().settings;
+    const index = this.findRuleIndex(rule);
+    const last = (this.plugin.pluginData.settings.rulesV2?.length ?? 0) - 1;
     menu.addItem(item =>
       item
         .setTitle(labels.rulesMenuEdit)
@@ -197,36 +324,47 @@ export class RulesSettingsSection {
     );
     menu.addItem(item =>
       item
+        .setTitle(labels.rulesMenuPreview)
+        .setIcon('eye')
+        .onClick(() => {
+          this.plugin.advancedNoteMover.openVaultMovePreview(rule.name);
+        })
+    );
+    menu.addItem(item =>
+      item
         .setTitle(labels.rulesMenuDuplicate)
         .setIcon('copy')
         .onClick(() => {
           void this.duplicateRule(rule);
         })
     );
-    const index = this.findRuleIndex(rule);
-    const last = (this.plugin.pluginData.settings.rulesV2?.length ?? 0) - 1;
-    menu.addItem(item =>
+    menu.addSeparator();
+    menu.addItem(item => {
       item
         .setTitle(labels.rulesMenuUp)
-        .setIcon('chevron-up')
+        .setIcon('arrow-up')
         .setDisabled(index <= 0)
         .onClick(() => {
           void this.moveRule(rule, -1);
-        })
-    );
-    menu.addItem(item =>
+        });
+      addMenuHint(item, 'Alt ↑');
+    });
+    menu.addItem(item => {
       item
         .setTitle(labels.rulesMenuDown)
-        .setIcon('chevron-down')
+        .setIcon('arrow-down')
         .setDisabled(index < 0 || index >= last)
         .onClick(() => {
           void this.moveRule(rule, 1);
-        })
-    );
+        });
+      addMenuHint(item, 'Alt ↓');
+    });
+    menu.addSeparator();
     menu.addItem(item =>
       item
         .setTitle(labels.rulesMenuDelete)
-        .setIcon('trash')
+        .setIcon('trash-2')
+        .setWarning(true)
         .onClick(() => {
           void this.deleteRule(rule);
         })
@@ -303,8 +441,12 @@ export class RulesSettingsSection {
     }
 
     this.dragDropManager = new DragDropManager(container, {
-      onReorder: (fromIndex: number, toIndex: number) => {
-        this.reorderRulesV2(fromIndex, toIndex);
+      onReorder: (fromIndex: number, dropSlot: number) => {
+        // A drop slot counts the dragged row; after removing it, later slots shift up.
+        this.reorderRulesV2(
+          fromIndex,
+          dropSlot > fromIndex ? dropSlot - 1 : dropSlot
+        );
       },
       onMove: (index, direction) => {
         const rule = this.plugin.pluginData.settings.rulesV2?.[index];
@@ -329,6 +471,7 @@ export class RulesSettingsSection {
     const rules = this.plugin.pluginData.settings.rulesV2;
     const [movedRule] = rules.splice(fromIndex, 1);
     rules.splice(toIndex, 0, movedRule);
+    this.filterState.moved = { index: toIndex, total: rules.length };
   }
 
   /** Resolve current index by object identity so actions stay correct after reorder. */
@@ -339,8 +482,9 @@ export class RulesSettingsSection {
   /**
    * Open RuleEditorModal for creating or editing a rule
    * @param ruleIndex - Index of rule to edit, or null to create new rule
+   * @param initial - Prefilled rule for a new one
    */
-  openRuleEditorModal(ruleIndex: number | null): void {
+  openRuleEditorModal(ruleIndex: number | null, initial?: RuleV2): void {
     const isEditMode = ruleIndex !== null;
     let rule: RuleV2;
 
@@ -350,20 +494,7 @@ export class RulesSettingsSection {
         this.plugin.pluginData.settings.rulesV2![ruleIndex]
       );
     } else {
-      // Create mode: new rule
-      rule = {
-        name: strings().settings.rulesNewName,
-        destination: '',
-        aggregation: 'all',
-        triggers: [
-          {
-            criteriaType: 'tag',
-            operator: 'includes item',
-            value: '',
-          },
-        ],
-        active: true,
-      };
+      rule = initial ?? presetRule('tag', strings().settings.rulesNewName);
     }
 
     const modal = new RuleEditorModal(this.app, {
@@ -395,4 +526,11 @@ export class RulesSettingsSection {
 
     modal.open();
   }
+}
+
+/** Shortcut hint at the end of a menu row. */
+function addMenuHint(item: unknown, text: string): void {
+  // shortcut: MenuItem.dom is not in the public typings; the hint is skipped if it is missing.
+  const dom = (item as { dom?: HTMLElement }).dom;
+  dom?.createSpan({ cls: 'advancedNoteMover-menu-hint', text });
 }

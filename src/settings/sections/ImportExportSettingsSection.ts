@@ -9,7 +9,6 @@ import { NoticeManager } from 'src/utils/NoticeManager';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SettingsValidator } from 'src/utils/SettingsValidator';
 import { fill, plural, strings } from '../../i18n/locale';
-import { looksLikePluginDataRoot } from '../../infrastructure/persistence/plugin-settings-schema';
 import {
   replaceSettings,
   restoreSettingsBackup,
@@ -18,7 +17,10 @@ import {
 } from '../importBackup';
 import { RuleMigrationService } from 'src/core/RuleMigrationService';
 import { debugDebug } from '../../utils/debug';
-import { renderSetting } from '../settingDefinitions';
+import { createSettingGroup } from '../settingGroup';
+import { formatDateTime } from '../../utils/formatDate';
+import type { SectionContext } from '../pages';
+import { applyRestoredSettings } from '../../application/restore-settings-backup';
 import {
   loadSettingsImport,
   pickSettingsFile,
@@ -26,49 +28,84 @@ import {
 } from '../importSettings';
 
 export class ImportExportSettingsSection {
-  constructor(
-    private plugin: AdvancedNoteMoverPlugin,
-    private containerEl: HTMLElement,
-    private refreshDisplay: () => void
-  ) {}
+  private readonly plugin: AdvancedNoteMoverPlugin;
+  private readonly containerEl: HTMLElement;
+  private readonly refreshDisplay: () => void;
 
-  addImportExportSettings(): void {
-    renderSetting(this.containerEl, 'importExport.heading');
+  constructor(ctx: SectionContext) {
+    this.plugin = ctx.plugin;
+    this.containerEl = ctx.containerEl;
+    this.refreshDisplay = ctx.refresh;
+  }
 
-    renderSetting(this.containerEl, 'importExport.export').addButton(btn => {
-      btn
-        .setButtonText(strings().settings.importExportExportButton)
-        .setCta()
-        .onClick(() => {
-          void (async () => {
-            btn.setDisabled(true);
-            try {
-              await this.exportSettings();
-            } finally {
-              btn.setDisabled(false);
+  /** "Import and export" sub-page. */
+  render(): void {
+    const labels = strings().settings;
+    const group = createSettingGroup(this.containerEl);
+
+    group.addSetting(setting =>
+      setting
+        .setName(labels.importExportExportName)
+        .setDesc(labels.importExportExportDesc)
+        .addButton(btn => {
+          btn.setButtonText(labels.importExportExportButton).onClick(() => {
+            void (async () => {
+              btn.setDisabled(true);
+              try {
+                await this.exportSettings();
+              } finally {
+                btn.setDisabled(false);
+              }
+            })();
+          });
+        })
+    );
+
+    group.addSetting(setting =>
+      setting
+        .setName(labels.importExportImportName)
+        .setDesc(labels.importExportImportDesc)
+        .addButton(btn => {
+          btn.setButtonText(labels.importExportImportButton).onClick(() => {
+            void runImportAction(
+              disabled => btn.setDisabled(disabled),
+              () => this.importSettings()
+            );
+          });
+        })
+    );
+
+    group.addSetting(setting => {
+      setting
+        .setName(labels.importExportRestoreName)
+        .setDesc(labels.importExportRestoreNone)
+        .addButton(btn => {
+          btn
+            .setButtonText(labels.importExportRestoreButton)
+            .setDisabled(true)
+            .onClick(() => {
+              void this.restoreBackup();
+            });
+          void this.backupDate().then(date => {
+            if (date === null || !setting.settingEl.isConnected) {
+              return;
             }
-          })();
+            setting.setDesc(
+              fill(labels.importExportRestoreDesc, {
+                date: formatDateTime(date),
+              })
+            );
+            btn.setDisabled(false);
+          });
         });
     });
+  }
 
-    renderSetting(this.containerEl, 'importExport.import').addButton(btn => {
-      btn
-        .setButtonText(strings().settings.importExportImportButton)
-        .onClick(() => {
-          void runImportAction(
-            disabled => btn.setDisabled(disabled),
-            () => this.importSettings()
-          );
-        });
-    });
-
-    renderSetting(this.containerEl, 'importExport.restore').addButton(btn => {
-      btn
-        .setButtonText(strings().settings.importExportRestoreButton)
-        .onClick(() => {
-          void this.restoreBackup();
-        });
-    });
+  private async backupDate(): Promise<number | null> {
+    const stat = await this.plugin.app.vault.adapter.stat(
+      this.settingsBackupPath()
+    );
+    return stat ? stat.mtime : null;
   }
 
   async exportSettings(): Promise<void> {
@@ -163,6 +200,8 @@ export class ImportExportSettingsSection {
             save: async () => {
               await this.plugin.save_settings();
               this.plugin.advancedNoteMover.updateRuleManager();
+              this.plugin.triggerHandler.togglePeriodic();
+              this.plugin.triggerHandler.toggleOnEditListener();
               this.refreshDisplay();
               NoticeManager.success(strings().notices.importSuccess);
             },
@@ -350,20 +389,12 @@ export class ImportExportSettingsSection {
       }
       const restored = await restoreSettingsBackup({
         readBackup: () => this.plugin.app.vault.adapter.read(path),
-        writeCurrent: async contents => {
-          const parsed: unknown = JSON.parse(contents);
-          if (!looksLikePluginDataRoot(parsed)) {
-            throw createError(strings().notices.importBackupInvalid);
-          }
-          this.plugin.pluginData = parsed as PluginData;
-          await this.plugin.save_settings();
-        },
+        writeCurrent: contents => applyRestoredSettings(this.plugin, contents),
       });
       if (restored === null) {
         NoticeManager.warning(strings().notices.importNoBackup);
         return;
       }
-      this.plugin.advancedNoteMover.updateRuleManager();
       this.refreshDisplay();
       NoticeManager.success(strings().notices.importRestored);
     } catch (error) {
