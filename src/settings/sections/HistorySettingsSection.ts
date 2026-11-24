@@ -1,9 +1,9 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { App, Setting } from 'obsidian';
+import type { App } from 'obsidian';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { HISTORY_CONSTANTS } from '../../config/constants';
 import { fill, strings } from '../../i18n/locale';
-import { MobileUtils } from '../../utils/MobileUtils';
+import { renderSetting } from '../settingDefinitions';
 
 export class HistorySettingsSection {
   constructor(
@@ -12,56 +12,33 @@ export class HistorySettingsSection {
   ) {}
 
   addHistorySettings(): void {
-    const isMobile = MobileUtils.isMobile();
-    new Setting(this.containerEl)
-      .setName(strings().settings.headingsHistory)
-      .setHeading();
+    renderSetting(this.containerEl, 'history.heading');
 
     // Retention Policy Settings
     this.addRetentionPolicySettings();
 
     // Clear History Button
-    const clearHistorySetting = new Setting(this.containerEl)
-      .setName(strings().settings.historyClearName)
-      .setDesc(strings().settings.historyClearDesc)
-      .addButton(btn => {
-        btn.setButtonText(strings().settings.historyClearButton);
-        btn.buttonEl.addClass('mod-warning');
-        btn.onClick(async () => {
-          const confirmed = await ConfirmModal.show(this.app, {
-            title: strings().settings.historyClearTitle,
-            message: strings().settings.historyClearMessage,
-            confirmText: strings().settings.historyClearConfirm,
-            cancelText: strings().common.cancel,
-            danger: true,
-          });
-
-          if (confirmed) {
-            await this.plugin.historyManager.clearHistory();
-          }
+    renderSetting(this.containerEl, 'history.clear').addButton(btn => {
+      btn.setButtonText(strings().settings.historyClearButton);
+      // Same class as setWarning. setDestructive needs Obsidian 1.13.
+      btn.buttonEl.addClass('mod-warning');
+      btn.onClick(async () => {
+        const confirmed = await ConfirmModal.show(this.app, {
+          title: strings().settings.historyClearTitle,
+          message: strings().settings.historyClearMessage,
+          confirmText: strings().settings.historyClearConfirm,
+          cancelText: strings().common.cancel,
+          danger: true,
         });
-      });
 
-    // Add mobile optimization classes
-    if (isMobile) {
-      clearHistorySetting.settingEl.addClass(
-        'advancedNoteMover-mobile-optimized'
-      );
-      const controlEl = clearHistorySetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-button-control'
-        );
-      }
-    }
+        if (confirmed) {
+          await this.plugin.historyManager.clearHistory();
+        }
+      });
+    });
   }
 
   private addRetentionPolicySettings(): void {
-    const isMobile = MobileUtils.isMobile();
-
-    // Initialize retention policy if not set
     if (!this.plugin.pluginData.settings.retentionPolicy) {
       this.plugin.pluginData.settings.retentionPolicy = {
         ...HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
@@ -71,9 +48,10 @@ export class HistorySettingsSection {
     const retentionPolicy = this.plugin.pluginData.settings.retentionPolicy;
 
     // Retention Policy Section - Single line with value input and unit dropdown
-    const retentionSetting = new Setting(this.containerEl)
-      .setName(strings().settings.historyRetentionName)
-      .setDesc(strings().settings.historyRetentionDesc)
+    const retentionSetting = renderSetting(
+      this.containerEl,
+      'history.retention'
+    )
       .addText(text =>
         text
           .setPlaceholder(strings().settings.historyRetentionPlaceholder)
@@ -99,22 +77,9 @@ export class HistorySettingsSection {
           })
       );
 
-    // Add mobile optimization classes
-    if (isMobile) {
-      retentionSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const controlEl = retentionSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-retention-controls'
-        );
-      }
-    }
+    retentionSetting.setClass('advancedNoteMover-setting-stack');
 
-    // Cleanup button
-    const cleanupSetting = new Setting(this.containerEl)
-      .setName(strings().settings.historyCleanupName)
+    renderSetting(this.containerEl, 'history.cleanup')
       .setDesc(
         fill(strings().settings.historyCleanupDesc, {
           value: retentionPolicy.value,
@@ -129,19 +94,6 @@ export class HistorySettingsSection {
             await this.plugin.historyManager.cleanupOldEntries();
           })
       );
-
-    // Add mobile optimization classes
-    if (isMobile) {
-      cleanupSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const controlEl = cleanupSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-button-control'
-        );
-      }
-    }
   }
 
   private get app(): App {

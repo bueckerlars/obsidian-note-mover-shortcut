@@ -1,45 +1,43 @@
-import { App, Setting, setIcon } from 'obsidian';
+import { App, Setting } from 'obsidian';
 import { BaseModal } from './BaseModal';
-import {
-  RuleV2,
-  Trigger,
-  AggregationType,
-  CriteriaType,
-  Operator,
-} from '../types/RuleV2';
-import { FolderSuggest } from '../settings/suggesters/FolderSuggest';
-import { PropertySuggest } from '../settings/suggesters/PropertySuggest';
+import { RuleV2 } from '../types/RuleV2';
 import {
   SuggestRegistry,
   type DestroyableSuggest,
 } from '../settings/suggesters/suggestLifecycle';
 import { DragDropManager } from '../utils/DragDropManager';
 import { MobileUtils } from '../utils/MobileUtils';
-import { operatorRequiresValue } from '../utils/OperatorMapping';
 import type { PluginVaultIndexCache } from '../infrastructure/cache/plugin-vault-index-cache';
 import { ConfirmModal } from './ConfirmModal';
 import { NoticeManager } from '../utils/NoticeManager';
 import { fill, strings } from '../i18n/locale';
+import { pluralize } from '../utils/pluralize';
+import {
+  createRuleLivePreview,
+  fileMetadataFromCache,
+  isAbortError,
+} from './rule-editor/ruleLivePreview';
 import { toMarkdownInlineCode } from '../utils/markdown-confirm';
 import { RuleEditorMobileView } from './rule-editor/RuleEditorMobileView';
+import { renderAggregationControl } from './rule-editor/components/AggregationControl';
+import { renderConditionRow } from './rule-editor/components/ConditionRow';
 import {
-  AGGREGATION_TYPES,
-  CRITERIA_TYPES,
-  DESTINATION_DESCRIPTION,
+  renderDestinationHelp,
+  renderDestinationSetting,
+} from './rule-editor/components/DestinationField';
+import { renderRuleNameField } from './rule-editor/components/RuleNameField';
+import {
   FolderCreationValue,
-  applyCriteriaType,
   applyFolderCreationValue,
-  applyPropertyName,
-  attachValueSuggester,
-  capitalize,
-  createDefaultTrigger,
   getFolderCreationValue,
-  getOperatorsForTrigger,
-  getValuePlaceholder,
-  moveTrigger,
-  removeTrigger,
-  validateRule,
 } from './rule-editor/ruleEditorShared';
+import {
+  addCondition,
+  openEditor,
+  removeCondition,
+  reorderConditions,
+  validateRule,
+} from './rule-editor/ruleEditorState';
 
 interface RuleEditorModalOptions {
   rule: RuleV2;
@@ -57,9 +55,11 @@ export class RuleEditorModal extends BaseModal {
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
   private readonly isMobileLayout: boolean;
-  private readonly triggerSuggests = new SuggestRegistry();
+  private rowSuggests: SuggestRegistry[] = [];
   private destinationSuggest: DestroyableSuggest | null = null;
   private mobileView: RuleEditorMobileView | null = null;
+  private readonly livePreview = createRuleLivePreview(300);
+  private previewEl: HTMLElement | null = null;
 
   constructor(app: App, options: RuleEditorModalOptions) {
     const isMobileLayout = MobileUtils.isMobile();
@@ -77,8 +77,9 @@ export class RuleEditorModal extends BaseModal {
     });
     this.isMobileLayout = isMobileLayout;
     this.ruleOptions = options;
-    this.workingRule = structuredClone(options.rule);
-    this.originalRule = structuredClone(options.rule);
+    const session = openEditor(options.rule);
+    this.workingRule = session.draft;
+    this.originalRule = session.saved;
   }
 
   protected createContent(): void {
@@ -94,6 +95,8 @@ export class RuleEditorModal extends BaseModal {
         onSave: () => void this.handleSave(),
         onCancel: () => void this.requestClose(),
         onDelete: () => void this.handleRemoveRule(),
+        onDraftChange: () => this.schedulePreview(),
+        renderLivePreview: parent => this.renderLivePreview(parent),
       });
       this.mobileView.render(contentEl);
       return;
@@ -132,93 +135,72 @@ export class RuleEditorModal extends BaseModal {
   }
 
   private createNameAndActiveRow(container: HTMLElement): void {
-    new Setting(container)
-      .setName(strings().modals.ruleEditorName)
-      .addText(text =>
-        text
-          .setPlaceholder(strings().modals.ruleEditorNamePlaceholder)
-          .setValue(this.workingRule.name)
-          .onChange(value => {
-            this.workingRule.name = value;
-          })
-      )
-      .addToggle(toggle =>
-        toggle
-          .setValue(this.workingRule.active)
-          .setTooltip(
-            this.workingRule.active
+    const setting = new Setting(container).setName(
+      strings().modals.ruleEditorName
+    );
+    renderRuleNameField(setting.controlEl, {
+      value: this.workingRule.name,
+      onChange: value => {
+        this.workingRule.name = value;
+      },
+    });
+    setting.addToggle(toggle =>
+      toggle
+        .setValue(this.workingRule.active)
+        .setTooltip(
+          this.workingRule.active
+            ? strings().settings.rulesActive
+            : strings().settings.rulesInactive
+        )
+        .onChange(value => {
+          this.workingRule.active = value;
+          this.schedulePreview();
+          toggle.setTooltip(
+            value
               ? strings().settings.rulesActive
               : strings().settings.rulesInactive
-          )
-          .onChange(value => {
-            this.workingRule.active = value;
-            toggle.setTooltip(
-              value
-                ? strings().settings.rulesActive
-                : strings().settings.rulesInactive
-            );
-          })
-      );
+          );
+        })
+    );
   }
 
   private createMatchConditionsSelector(container: HTMLElement): void {
     const setting = new Setting(container).setName(
       strings().modals.ruleEditorMatch
     );
-
     const buttonContainer = setting.controlEl.createDiv({
       cls: 'advancedNoteMover-rule-aggregation-buttons',
     });
-
-    AGGREGATION_TYPES.forEach((agg: AggregationType) => {
-      const button = buttonContainer.createEl('button', {
-        text: capitalize(agg),
-        cls: 'advancedNoteMover-rule-aggregation-button',
-      });
-
-      if (this.workingRule.aggregation === agg) {
-        button.addClass('is-active');
-      }
-
-      button.onclick = () => {
-        this.workingRule.aggregation = agg;
-        // Update button states
-        buttonContainer
-          .querySelectorAll('.advancedNoteMover-rule-aggregation-button')
-          .forEach(btn => {
-            btn.removeClass('is-active');
-          });
-        button.addClass('is-active');
-      };
+    const description = container.createDiv({
+      cls: 'advancedNoteMover-rule-aggregation-description',
+    });
+    renderAggregationControl(buttonContainer, {
+      value: this.workingRule.aggregation,
+      buttonClass: 'advancedNoteMover-rule-aggregation-button',
+      descriptionEl: description,
+      onChange: value => {
+        this.workingRule.aggregation = value;
+        this.schedulePreview();
+      },
     });
   }
 
   private createDestinationInput(container: HTMLElement): void {
-    const setting = new Setting(container)
-      .setName(strings().modals.ruleEditorDestination)
-      .addSearch(cb => {
-        this.destinationSuggest = new FolderSuggest(this.app, cb.inputEl);
-        cb.setPlaceholder(strings().modals.ruleEditorDestinationPlaceholder)
-          .setValue(this.workingRule.destination)
-          .onChange(value => {
-            this.workingRule.destination = value;
-          });
-      });
-
-    setting.settingEl.addClass('advancedNoteMover-rule-destination-setting');
-
-    // Move description below the input to give the input more horizontal space
-    const descriptionEl = container.createDiv({
-      cls: 'advancedNoteMover-rule-destination-description',
-      text: DESTINATION_DESCRIPTION,
+    const destination = renderDestinationSetting(container, {
+      app: this.app,
+      value: this.workingRule.destination,
+      placeholder: strings().modals.ruleEditorDestinationPlaceholder,
+      onChange: value => {
+        this.workingRule.destination = value;
+      },
     });
-
-    // Visually and accessibly associate the description with the input
-    const descriptionId = 'advancedNoteMover-rule-destination-description';
-    descriptionEl.setAttr('id', descriptionId);
-    setting.settingEl
-      .querySelector('input')
-      ?.setAttribute('aria-describedby', descriptionId);
+    this.destinationSuggest = {
+      destroy: () => destination.destroy(),
+    };
+    renderDestinationHelp(container, template => {
+      this.workingRule.destination = template;
+      destination.input.value = template;
+    });
   }
 
   private createFolderCreationSelector(container: HTMLElement): void {
@@ -249,6 +231,7 @@ export class RuleEditorModal extends BaseModal {
       text: strings().modals.ruleEditorConditions,
       cls: 'advancedNoteMover-rule-conditions-title',
     });
+    this.renderLivePreview(section);
 
     // Triggers container
     this.triggersContainer = section.createDiv({
@@ -260,8 +243,9 @@ export class RuleEditorModal extends BaseModal {
     // Add Condition Button
     new Setting(section).addButton(btn =>
       btn.setButtonText(strings().modals.ruleEditorAddCondition).onClick(() => {
-        this.workingRule.triggers.push(createDefaultTrigger());
+        this.workingRule.triggers = addCondition(this.workingRule).triggers;
         this.renderTriggers();
+        this.schedulePreview();
       })
     );
   }
@@ -270,147 +254,61 @@ export class RuleEditorModal extends BaseModal {
     if (!this.triggersContainer) return;
 
     this.triggersContainer.empty();
-    this.triggerSuggests.destroy();
+    this.destroyRowSuggests();
 
-    // Clean up existing drag drop manager
     if (this.dragDropManager) {
       this.dragDropManager.destroy();
       this.dragDropManager = null;
     }
 
-    this.workingRule.triggers.forEach((trigger, index) => {
-      this.createTriggerRow(this.triggersContainer!, trigger, index);
+    this.workingRule.triggers.forEach((_trigger, index) => {
+      this.renderTriggerAt(index);
     });
 
-    // Setup drag & drop for triggers
     this.setupTriggersDragDrop();
   }
 
-  private createTriggerRow(
-    container: HTMLElement,
-    trigger: Trigger,
-    index: number
-  ): void {
-    const row = container.createDiv({
-      cls: 'advancedNoteMover-rule-trigger-row',
-    });
-
-    // Delete button (left side)
-    const deleteBtn = row.createEl('button', {
-      cls: 'advancedNoteMover-rule-trigger-delete-btn clickable-icon',
-    });
-    setIcon(deleteBtn, 'x');
-    deleteBtn.onclick = () => {
-      removeTrigger(this.workingRule.triggers, index);
-      this.renderTriggers();
-    };
-
-    // CriteriaType Dropdown
-    const criteriaTypeSelect = row.createEl('select', {
-      cls: 'dropdown advancedNoteMover-rule-criteria-type',
-    });
-    CRITERIA_TYPES.forEach(ct => {
-      const option = criteriaTypeSelect.createEl('option', {
-        value: ct,
-        text: ct,
-      });
-      if (trigger.criteriaType === ct) {
-        option.selected = true;
-      }
-    });
-    criteriaTypeSelect.onchange = () => {
-      applyCriteriaType(trigger, criteriaTypeSelect.value as CriteriaType);
-      this.renderTriggers(); // Re-render to update operator dropdown
-    };
-
-    // Operator Dropdown (dynamically populated based on criteriaType)
-    const operatorSelect = row.createEl('select', {
-      cls: 'dropdown advancedNoteMover-rule-operator',
-    });
-    this.populateOperatorDropdown(operatorSelect, trigger);
-
-    // Property-specific fields (only shown for properties criteria)
-    if (trigger.criteriaType === 'properties') {
-      const propertyNameInput = row.createEl('input', {
-        type: 'text',
-        cls: 'advancedNoteMover-rule-property-name',
-        placeholder: strings().modals.ruleEditorPropertyName,
-        value: trigger.propertyName || '',
-      });
-
-      this.triggerSuggests.add(
-        new PropertySuggest(this.app, propertyNameInput)
-      );
-
-      propertyNameInput.oninput = () => {
-        const detected = applyPropertyName(
-          this.app,
-          trigger,
-          propertyNameInput.value,
-          this.ruleOptions.vaultIndexCache
-        );
-        if (detected) {
-          this.renderTriggers(); // Re-render to update operator dropdown
-        }
-      };
+  /** Rebuilds one condition. Typing in its value field does not come through here. */
+  private renderTriggerAt(index: number): void {
+    const container = this.triggersContainer;
+    const trigger = this.workingRule.triggers[index];
+    if (!container || !trigger) {
+      return;
     }
-
-    // Value input (only when operator requires a value)
-    if (operatorRequiresValue(trigger.operator)) {
-      const valueInput = row.createEl('input', {
-        type: 'text',
-        cls: 'advancedNoteMover-rule-trigger-value',
-        placeholder: getValuePlaceholder(trigger),
-        value: trigger.value,
-      });
-      valueInput.oninput = () => {
-        trigger.value = valueInput.value;
-      };
-
-      this.triggerSuggests.add(
-        attachValueSuggester(
-          this.app,
-          valueInput,
-          trigger,
-          this.ruleOptions.vaultIndexCache
-        )
-      );
-    } else {
-      row.addClass('advancedNoteMover-no-value-field');
-    }
-
-    // Drag handle (right side)
-    const handleContainer = row.createDiv({
-      cls: 'advancedNoteMover-drag-handle-container',
+    this.rowSuggests[index]?.destroy();
+    const suggests = new SuggestRegistry();
+    this.rowSuggests[index] = suggests;
+    renderConditionRow(container, {
+      app: this.app,
+      trigger,
+      suggests,
+      vaultIndexCache: this.ruleOptions.vaultIndexCache,
+      onStructureChange: () => {
+        this.renderTriggerAt(index);
+        this.schedulePreview();
+      },
+      onDraftChange: () => this.schedulePreview(),
+      onRemove: () => {
+        this.workingRule.triggers = removeCondition(
+          this.workingRule,
+          index
+        ).triggers;
+        this.renderTriggers();
+        this.schedulePreview();
+      },
     });
-    const handle = DragDropManager.createDragHandle();
-    handleContainer.appendChild(handle);
+    const row = container.lastElementChild;
+    const current = container.children[index];
+    if (row && current && row !== current) {
+      current.replaceWith(row);
+    }
   }
 
-  /**
-   * Populates the operator dropdown based on the trigger's criteria type and property type
-   */
-  private populateOperatorDropdown(
-    select: HTMLSelectElement,
-    trigger: Trigger
-  ): void {
-    select.empty();
-
-    getOperatorsForTrigger(trigger).forEach(op => {
-      const option = select.createEl('option', {
-        value: op,
-        text: op,
-      });
-      if (trigger.operator === op) {
-        option.selected = true;
-      }
-    });
-
-    select.onchange = () => {
-      trigger.operator = select.value as Operator;
-      // Re-render to show/hide value field based on operator
-      this.renderTriggers();
-    };
+  private destroyRowSuggests(): void {
+    for (const registry of this.rowSuggests) {
+      registry.destroy();
+    }
+    this.rowSuggests = [];
   }
 
   private setupTriggersDragDrop(): void {
@@ -420,36 +318,13 @@ export class RuleEditorModal extends BaseModal {
       onReorder: (fromIndex: number, toIndex: number) => {
         // DragDropManager reports the insertion index before removal
         const adjustedToIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
-        moveTrigger(this.workingRule.triggers, fromIndex, adjustedToIndex);
-
-        // Manually move the DOM element
-        const items = Array.from(
-          this.triggersContainer!.querySelectorAll(
-            '.advancedNoteMover-rule-trigger-row'
-          )
-        );
-        const movedElement = items[fromIndex] as HTMLElement;
-
-        if (movedElement) {
-          // Remove the element from its current position
-          movedElement.remove();
-
-          // Insert at the new position
-          const allItems = Array.from(
-            this.triggersContainer!.querySelectorAll(
-              '.advancedNoteMover-rule-trigger-row'
-            )
-          );
-
-          if (adjustedToIndex >= allItems.length) {
-            // Insert at the end
-            this.triggersContainer!.appendChild(movedElement);
-          } else {
-            // Insert before the element at adjustedToIndex
-            const referenceElement = allItems[adjustedToIndex];
-            referenceElement.before(movedElement);
-          }
-        }
+        this.workingRule.triggers = reorderConditions(
+          this.workingRule,
+          fromIndex,
+          adjustedToIndex
+        ).triggers;
+        this.renderTriggers();
+        this.schedulePreview();
       },
       onSave: async () => {
         // No additional action needed
@@ -558,8 +433,43 @@ export class RuleEditorModal extends BaseModal {
     void this.confirmDiscardAndClose();
   }
 
+  private renderLivePreview(parent: HTMLElement): void {
+    this.previewEl = parent.createDiv({
+      cls: 'advancedNoteMover-rule-live-preview',
+    });
+    this.schedulePreview();
+  }
+
+  private previewFiles() {
+    const files = this.ruleOptions.vaultIndexCache
+      ? this.ruleOptions.vaultIndexCache.getMarkdownFilesCached(this.app)
+      : this.app.vault.getMarkdownFiles();
+    return files.map(file =>
+      fileMetadataFromCache(file, this.app.metadataCache.getFileCache(file))
+    );
+  }
+
+  private schedulePreview(): void {
+    const rule = this.workingRule;
+    void this.livePreview.update(rule, this.previewFiles()).then(
+      count => {
+        this.previewEl?.setText(
+          fill(strings().modals.ruleEditorLivePreview, {
+            matches: pluralize(count, 'note'),
+          })
+        );
+      },
+      error => {
+        if (!isAbortError(error)) {
+          return;
+        }
+      }
+    );
+  }
+
   onClose(): void {
-    this.triggerSuggests.destroy();
+    this.livePreview.dispose();
+    this.destroyRowSuggests();
     this.destinationSuggest?.destroy();
     this.destinationSuggest = null;
     this.mobileView?.destroy();

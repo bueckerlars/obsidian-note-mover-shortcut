@@ -1,774 +1,291 @@
-import type { ButtonComponent, Setting, SettingDefinitionItem } from 'obsidian';
-import type AdvancedNoteMoverPlugin from 'main';
-import { ConfirmModal } from '../modals/ConfirmModal';
-import { HISTORY_CONSTANTS } from '../config/constants';
-import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
-import { strategyRequiresWarning } from '../domain/conflicts/note-move-conflict';
-import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
-import type { RuleV2 } from '../types/RuleV2';
-import { toMarkdownInlineCode } from '../utils/markdown-confirm';
-import { handleError } from '../utils/Error';
-import { NoticeManager } from '../utils/NoticeManager';
-import { fill, strings } from '../i18n/locale';
-import type { FilterSettingsSection } from './sections/FilterSettingsSection';
-import type { ImportExportSettingsSection } from './sections/ImportExportSettingsSection';
-import type { RulesSettingsSection } from './sections/RulesSettingsSection';
-import { parsePeriodicIntervalMinutes } from './intervalInput';
-import { setDebugEnabled } from '../utils/debug';
-import { cloneRule } from './cloneRule';
+import { Setting } from 'obsidian';
+import { strings } from '../i18n/locale';
 
-export interface SettingDefinitionsHost {
-  plugin: AdvancedNoteMoverPlugin;
-  filterSettings: FilterSettingsSection;
-  rulesSettings: RulesSettingsSection;
-  importExportSettings: ImportExportSettingsSection;
-  update(): void;
-  refreshDomState(): void;
+export const SETTING_SECTION_IDS = [
+  'triggers',
+  'filters',
+  'rules',
+  'attachments',
+  'conflict',
+  'history',
+  'importExport',
+  'performance',
+  'updates',
+] as const;
+
+export type SettingSectionId = (typeof SETTING_SECTION_IDS)[number];
+
+export type SettingControlKind =
+  'heading' | 'info' | 'toggle' | 'text' | 'dropdown' | 'button';
+
+export interface SettingDefinition {
+  id: string;
+  sectionId: SettingSectionId;
+  /** Dot path in languages/en.json, for example settings.triggersOnEditName. */
+  nameKey: string;
+  descriptionKey?: string;
+  control: SettingControlKind;
 }
 
-const CONTROL_DEFAULTS: Record<string, unknown> = {
-  enableRuleEvaluationCache: true,
-  enableVaultIndexCache: true,
-  enablePerformanceDebug: false,
-  showReleaseNotesOnUpdate: true,
-  createMissingDestinationFolders: true,
-  'attachments.moveWithNote': false,
-  'attachments.skipSharedAttachments': true,
-  'attachments.deleteEmptyAssetFolders': false,
-  'conflictResolution.strategy': 'skip',
-};
+export const SETTING_DEFINITIONS: readonly SettingDefinition[] = [
+  {
+    id: 'triggers.heading',
+    sectionId: 'triggers',
+    nameKey: 'settings.headingsTriggers',
+    control: 'heading',
+  },
+  {
+    id: 'triggers.onEdit',
+    sectionId: 'triggers',
+    nameKey: 'settings.triggersOnEditName',
+    descriptionKey: 'settings.triggersOnEditDesc',
+    control: 'toggle',
+  },
+  {
+    id: 'triggers.periodic',
+    sectionId: 'triggers',
+    nameKey: 'settings.triggersPeriodicName',
+    descriptionKey: 'settings.triggersPeriodicDesc',
+    control: 'toggle',
+  },
+  {
+    id: 'triggers.interval',
+    sectionId: 'triggers',
+    nameKey: 'settings.triggersIntervalName',
+    descriptionKey: 'settings.triggersIntervalDesc',
+    control: 'text',
+  },
+  {
+    id: 'filters.heading',
+    sectionId: 'filters',
+    nameKey: 'settings.headingsFilter',
+    descriptionKey: 'settings.filterSearchDesc',
+    control: 'heading',
+  },
+  {
+    id: 'filters.empty',
+    sectionId: 'filters',
+    nameKey: 'settings.filterEmpty',
+    descriptionKey: 'settings.filterEmptyDesc',
+    control: 'info',
+  },
+  {
+    id: 'filters.add',
+    sectionId: 'filters',
+    nameKey: 'settings.filterAdd',
+    control: 'button',
+  },
+  {
+    id: 'rules.heading',
+    sectionId: 'rules',
+    nameKey: 'settings.headingsRules',
+    descriptionKey: 'settings.rulesIntroLead',
+    control: 'heading',
+  },
+  {
+    id: 'rules.createFolders',
+    sectionId: 'rules',
+    nameKey: 'settings.rulesCreateFoldersName',
+    descriptionKey: 'settings.rulesCreateFoldersDesc',
+    control: 'toggle',
+  },
+  {
+    id: 'rules.empty',
+    sectionId: 'rules',
+    nameKey: 'settings.rulesEmpty',
+    descriptionKey: 'settings.rulesEmptyDesc',
+    control: 'info',
+  },
+  {
+    id: 'rules.reEvaluate',
+    sectionId: 'rules',
+    nameKey: 'settings.rulesReEvaluateName',
+    descriptionKey: 'settings.rulesReEvaluateDesc',
+    control: 'button',
+  },
+  {
+    id: 'rules.add',
+    sectionId: 'rules',
+    nameKey: 'settings.rulesAddButton',
+    control: 'button',
+  },
+  {
+    id: 'attachments.heading',
+    sectionId: 'attachments',
+    nameKey: 'settings.headingsAttachments',
+    control: 'heading',
+  },
+  {
+    id: 'attachments.move',
+    sectionId: 'attachments',
+    nameKey: 'settings.attachmentsMoveName',
+    descriptionKey: 'settings.attachmentsMoveDesc',
+    control: 'toggle',
+  },
+  {
+    id: 'attachments.skip',
+    sectionId: 'attachments',
+    nameKey: 'settings.attachmentsSkipName',
+    descriptionKey: 'settings.attachmentsSkipDesc',
+    control: 'toggle',
+  },
+  {
+    id: 'attachments.deleteEmpty',
+    sectionId: 'attachments',
+    nameKey: 'settings.attachmentsDeleteEmptyName',
+    descriptionKey: 'settings.attachmentsDeleteEmptyDesc',
+    control: 'toggle',
+  },
+  {
+    id: 'conflict.heading',
+    sectionId: 'conflict',
+    nameKey: 'settings.headingsConflict',
+    control: 'heading',
+  },
+  {
+    id: 'conflict.strategy',
+    sectionId: 'conflict',
+    nameKey: 'settings.conflictWhenExists',
+    control: 'dropdown',
+  },
+  {
+    id: 'conflict.warning',
+    sectionId: 'conflict',
+    nameKey: 'settings.conflictAutoName',
+    control: 'info',
+  },
+  {
+    id: 'history.heading',
+    sectionId: 'history',
+    nameKey: 'settings.headingsHistory',
+    control: 'heading',
+  },
+  {
+    id: 'history.retention',
+    sectionId: 'history',
+    nameKey: 'settings.historyRetentionName',
+    descriptionKey: 'settings.historyRetentionDesc',
+    control: 'text',
+  },
+  {
+    id: 'history.cleanup',
+    sectionId: 'history',
+    nameKey: 'settings.historyCleanupName',
+    control: 'button',
+  },
+  {
+    id: 'history.clear',
+    sectionId: 'history',
+    nameKey: 'settings.historyClearName',
+    descriptionKey: 'settings.historyClearDesc',
+    control: 'button',
+  },
+  {
+    id: 'importExport.heading',
+    sectionId: 'importExport',
+    nameKey: 'settings.headingsImportExport',
+    control: 'heading',
+  },
+  {
+    id: 'importExport.export',
+    sectionId: 'importExport',
+    nameKey: 'settings.importExportExportName',
+    descriptionKey: 'settings.importExportExportDesc',
+    control: 'button',
+  },
+  {
+    id: 'importExport.import',
+    sectionId: 'importExport',
+    nameKey: 'settings.importExportImportName',
+    descriptionKey: 'settings.importExportImportDesc',
+    control: 'button',
+  },
+  {
+    id: 'performance.heading',
+    sectionId: 'performance',
+    nameKey: 'settings.headingsPerformance',
+    control: 'heading',
+  },
+  {
+    id: 'performance.cache',
+    sectionId: 'performance',
+    nameKey: 'settings.performanceCacheName',
+    descriptionKey: 'settings.performanceCacheDesc',
+    control: 'toggle',
+  },
+  {
+    id: 'performance.vaultCache',
+    sectionId: 'performance',
+    nameKey: 'settings.performanceVaultCacheName',
+    descriptionKey: 'settings.performanceVaultCacheDesc',
+    control: 'toggle',
+  },
+  {
+    id: 'performance.debug',
+    sectionId: 'performance',
+    nameKey: 'settings.performanceDebugName',
+    descriptionKey: 'settings.performanceDebugDesc',
+    control: 'toggle',
+  },
+  {
+    id: 'performance.export',
+    sectionId: 'performance',
+    nameKey: 'settings.performanceExportName',
+    control: 'button',
+  },
+  {
+    id: 'updates.heading',
+    sectionId: 'updates',
+    nameKey: 'settings.headingsUpdates',
+    control: 'heading',
+  },
+  {
+    id: 'updates.releaseNotes',
+    sectionId: 'updates',
+    nameKey: 'settings.updatesReleaseNotesName',
+    descriptionKey: 'settings.updatesReleaseNotesDesc',
+    control: 'toggle',
+  },
+];
 
-const VISIBILITY_KEYS = new Set([
-  'triggers.enablePeriodicMovement',
-  'attachments.moveWithNote',
-]);
+const definitionsById = new Map(
+  SETTING_DEFINITIONS.map(definition => [definition.id, definition])
+);
 
-const RERENDER_KEYS = new Set(['enablePerformanceDebug']);
-
-export function getNestedSettingValue(
-  plugin: AdvancedNoteMoverPlugin,
-  key: string
-): unknown {
-  const value = getPath(plugin.pluginData.settings, key);
-  return value ?? CONTROL_DEFAULTS[key];
-}
-
-export async function setNestedSettingValue(
-  host: SettingDefinitionsHost,
-  key: string,
-  value: unknown
-): Promise<void> {
-  const plugin = host.plugin;
-  ensureNestedSettings(plugin, key);
-
-  if (key === 'conflictResolution.strategy') {
-    await persistConflictResolutionStrategy(
-      plugin,
-      value as ConflictResolutionStrategy
-    );
-    host.update();
-    return;
+export function settingDefinition(id: string): SettingDefinition {
+  const definition = definitionsById.get(id);
+  if (!definition) {
+    throw new Error(`Unknown setting ${id}`);
   }
-
-  setPath(
-    plugin.pluginData.settings as unknown as Record<string, unknown>,
-    key,
-    value
-  );
-  await plugin.save_settings();
-  await applySettingSideEffects(host, key, value);
+  return definition;
 }
 
-export function buildSettingDefinitions(
-  host: SettingDefinitionsHost
-): SettingDefinitionItem[] {
-  const plugin = host.plugin;
-  const settings = plugin.pluginData.settings;
-  const filters = settings.filters?.filter ?? [];
-  const rules = settings.rulesV2 ?? [];
-  const retention =
-    settings.retentionPolicy ?? HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY;
-  const strategy =
-    (settings.conflictResolution?.strategy as ConflictResolutionStrategy) ??
-    'skip';
-
-  return [
-    {
-      type: 'group',
-      heading: strings().settings.headingsTriggers,
-      items: [
-        {
-          name: strings().settings.triggersOnEditName,
-          desc: strings().settings.triggersOnEditDesc,
-          control: {
-            type: 'toggle',
-            key: 'triggers.enableOnEditTrigger',
-            defaultValue: false,
-          },
-        },
-        {
-          name: strings().settings.triggersPeriodicName,
-          desc: strings().settings.triggersPeriodicDesc,
-          control: {
-            type: 'toggle',
-            key: 'triggers.enablePeriodicMovement',
-            defaultValue: false,
-          },
-        },
-        {
-          name: strings().settings.triggersIntervalName,
-          desc: strings().settings.triggersIntervalDesc,
-          visible: () => settings.triggers.enablePeriodicMovement,
-          control: {
-            type: 'number',
-            key: 'triggers.periodicMovementInterval',
-            min: 1,
-            placeholder: strings().settings.triggersIntervalPlaceholder,
-            validate: (value: number) =>
-              parsePeriodicIntervalMinutes(String(value)) === null
-                ? strings().settings.triggersIntervalInvalid
-                : undefined,
-          },
-        },
-      ],
-    },
-    {
-      type: 'group',
-      heading: strings().settings.headingsFilter,
-      items: [
-        {
-          name: strings().settings.filterSearchName,
-          desc: strings().settings.filterSearchDesc,
-        },
-      ],
-    },
-    {
-      type: 'list',
-      emptyState: strings().settings.filterEmpty,
-      addItem: {
-        name: strings().settings.filterAdd,
-        action: () => {
-          void addFilter(host);
-        },
-      },
-      onReorder: (fromIndex, toIndex) => {
-        void reorderFilters(host, fromIndex, toIndex);
-      },
-      onDelete: index => {
-        void deleteFilter(host, index);
-      },
-      items: filters.map((filter, index) => ({
-        name: filter.value || strings().settings.filterNewFilter,
-        searchable: false,
-        render: (setting: Setting) => {
-          setting.infoEl.remove();
-          return host.filterSettings.bindFilterSearch(setting, index);
-        },
-      })),
-    },
-    {
-      type: 'group',
-      heading: strings().settings.headingsRules,
-      items: [
-        {
-          name: strings().settings.rulesSearchName,
-          desc: createFragment(frag => {
-            frag.appendText(strings().settings.rulesIntroLead);
-            frag.createEl('br');
-            frag.appendText(strings().settings.rulesIntroTail);
-          }),
-        },
-        {
-          name: strings().settings.rulesCreateFoldersName,
-          desc: strings().settings.rulesCreateFoldersDesc,
-          control: {
-            type: 'toggle',
-            key: 'createMissingDestinationFolders',
-            defaultValue: true,
-          },
-        },
-        {
-          name: strings().settings.rulesReEvaluateName,
-          desc: strings().settings.rulesReEvaluateDesc,
-          render: setting => {
-            let reEvaluateButton: ButtonComponent | undefined;
-            setting.addButton(btn => {
-              reEvaluateButton = btn
-                .setButtonText(strings().settings.rulesReEvaluateButton)
-                .onClick(() => {
-                  if (reEvaluateButton) {
-                    reEvaluateButton.setDisabled(true);
-                    reEvaluateButton.setButtonText(
-                      strings().settings.rulesGeneratingPreview
-                    );
-                  }
-                  void (async () => {
-                    try {
-                      await plugin.advancedNoteMover.openVaultReEvaluationPreview();
-                    } catch (error) {
-                      handleError(
-                        error,
-                        strings().notices.errorGeneratingVaultPreviewContext,
-                        false
-                      );
-                      NoticeManager.error(
-                        fill(strings().notices.errorGeneratingPreview, {
-                          message:
-                            error instanceof Error
-                              ? error.message
-                              : String(error),
-                        })
-                      );
-                    } finally {
-                      if (reEvaluateButton) {
-                        reEvaluateButton.setDisabled(false);
-                        reEvaluateButton.setButtonText(
-                          strings().settings.rulesReEvaluateButton
-                        );
-                      }
-                    }
-                  })();
-                });
-            });
-          },
-        },
-      ],
-    },
-    {
-      type: 'list',
-      emptyState: strings().settings.rulesEmpty,
-      addItem: {
-        name: strings().settings.rulesAddSearch,
-        action: () => {
-          host.rulesSettings.openRuleEditorModal(null);
-        },
-      },
-      onReorder: (fromIndex, toIndex) => {
-        void reorderRules(host, fromIndex, toIndex);
-      },
-      onDelete: index => {
-        void deleteRule(host, index);
-      },
-      items: rules.map(rule => ({
-        name: rule.name || strings().unnamedRule,
-        searchable: false,
-        render: (setting: Setting) => bindRuleRow(host, setting, rule),
-      })),
-    },
-    {
-      type: 'group',
-      heading: strings().settings.headingsAttachments,
-      items: [
-        {
-          name: strings().settings.attachmentsMoveName,
-          desc: strings().settings.attachmentsMoveDesc,
-          control: {
-            type: 'toggle',
-            key: 'attachments.moveWithNote',
-            defaultValue: false,
-          },
-        },
-        {
-          name: strings().settings.attachmentsSkipName,
-          desc: strings().settings.attachmentsSkipDesc,
-          visible: () => settings.attachments?.moveWithNote === true,
-          control: {
-            type: 'toggle',
-            key: 'attachments.skipSharedAttachments',
-            defaultValue: true,
-          },
-        },
-        {
-          name: strings().settings.attachmentsDeleteEmptyName,
-          desc: strings().settings.attachmentsDeleteEmptyDesc,
-          visible: () => settings.attachments?.moveWithNote === true,
-          control: {
-            type: 'toggle',
-            key: 'attachments.deleteEmptyAssetFolders',
-            defaultValue: false,
-          },
-        },
-      ],
-    },
-    {
-      type: 'group',
-      heading: strings().settings.headingsConflict,
-      items: [
-        {
-          name: strings().settings.conflictWhenExists,
-          desc: strings().conflictStrategyDescriptions[strategy],
-          control: {
-            type: 'dropdown',
-            key: 'conflictResolution.strategy',
-            defaultValue: 'skip',
-            options: strings().conflictStrategies,
-          },
-        },
-        {
-          name: strings().settings.conflictAutoName,
-          desc: strategyRequiresWarning(strategy)
-            ? strings().settings.conflictOverwriteWarning
-            : strings().settings.conflictAutoWarning,
-          searchable: false,
-          visible: () => strategy !== 'ask',
-        },
-      ],
-    },
-    {
-      type: 'group',
-      heading: strings().settings.headingsHistory,
-      items: [
-        {
-          name: strings().settings.historyRetentionName,
-          desc: strings().settings.historyRetentionDesc,
-          control: {
-            type: 'number',
-            key: 'retentionPolicy.value',
-            min: 1,
-            placeholder: strings().settings.historyRetentionPlaceholder,
-            validate: (value: number) =>
-              !Number.isFinite(value) || value < 1
-                ? strings().settings.historyRetentionInvalid
-                : undefined,
-          },
-        },
-        {
-          name: strings().settings.historyUnitName,
-          control: {
-            type: 'dropdown',
-            key: 'retentionPolicy.unit',
-            options: {
-              days: strings().settings.historyDays,
-              weeks: strings().settings.historyWeeks,
-              months: strings().settings.historyMonths,
-            },
-          },
-        },
-        {
-          name: strings().settings.historyCleanupName,
-          desc: fill(strings().settings.historyCleanupDesc, {
-            value: retention.value,
-            unit: retention.unit,
-          }),
-          render: setting => {
-            setting.addButton(btn =>
-              btn
-                .setButtonText(strings().settings.historyCleanupButton)
-                .setCta()
-                .onClick(() => {
-                  void plugin.historyManager.cleanupOldEntries();
-                })
-            );
-          },
-        },
-        {
-          name: strings().settings.historyClearName,
-          desc: strings().settings.historyClearDesc,
-          render: setting => {
-            setting.addButton(btn => {
-              btn.setButtonText(strings().settings.historyClearButton);
-              btn.buttonEl.addClass('mod-warning');
-              btn.onClick(async () => {
-                const confirmed = await ConfirmModal.show(plugin.app, {
-                  title: strings().settings.historyClearTitle,
-                  message: strings().settings.historyClearMessage,
-                  confirmText: strings().settings.historyClearConfirm,
-                  cancelText: strings().common.cancel,
-                  danger: true,
-                });
-                if (confirmed) {
-                  await plugin.historyManager.clearHistory();
-                }
-              });
-            });
-          },
-        },
-      ],
-    },
-    {
-      type: 'group',
-      heading: strings().settings.headingsImportExport,
-      items: [
-        {
-          name: strings().settings.importExportExportName,
-          desc: strings().settings.importExportExportDesc,
-          render: setting => {
-            setting.addButton(btn => {
-              btn
-                .setButtonText(strings().settings.importExportExportButton)
-                .setCta()
-                .onClick(() => {
-                  void (async () => {
-                    btn.setDisabled(true);
-                    try {
-                      await host.importExportSettings.exportSettings();
-                    } finally {
-                      btn.setDisabled(false);
-                    }
-                  })();
-                });
-            });
-          },
-        },
-        {
-          name: strings().settings.importExportImportName,
-          desc: strings().settings.importExportImportDesc,
-          render: setting => {
-            setting.addButton(btn => {
-              btn.setButtonText(strings().settings.importExportImportButton);
-              btn.buttonEl.addClass('mod-warning');
-              btn.onClick(() => {
-                void (async () => {
-                  btn.setDisabled(true);
-                  try {
-                    await host.importExportSettings.importSettings();
-                  } finally {
-                    btn.setDisabled(false);
-                  }
-                })();
-              });
-            });
-          },
-        },
-      ],
-    },
-    {
-      type: 'group',
-      heading: strings().settings.headingsPerformance,
-      items: [
-        {
-          name: strings().settings.performanceCacheName,
-          desc: createFragment(frag => {
-            frag.appendText(strings().settings.performanceCacheLead);
-            frag.createEl('br');
-            frag.appendText(strings().settings.performanceCacheTail);
-          }),
-          control: {
-            type: 'toggle',
-            key: 'enableRuleEvaluationCache',
-            defaultValue: true,
-          },
-        },
-        {
-          name: strings().settings.performanceVaultCacheName,
-          desc: strings().settings.performanceVaultCacheDesc,
-          control: {
-            type: 'toggle',
-            key: 'enableVaultIndexCache',
-            defaultValue: true,
-          },
-        },
-        {
-          name: strings().settings.performanceDebugName,
-          desc: strings().settings.performanceDebugDesc,
-          control: {
-            type: 'toggle',
-            key: 'enablePerformanceDebug',
-            defaultValue: false,
-          },
-        },
-        {
-          name: strings().settings.performanceExportName,
-          desc:
-            settings.enablePerformanceDebug === true
-              ? strings().settings.performanceExportReady
-              : strings().settings.performanceExportOff,
-          render: setting => {
-            setting.addButton(btn =>
-              btn
-                .setButtonText(strings().settings.performanceExportButton)
-                .setDisabled(settings.enablePerformanceDebug !== true)
-                .onClick(async () => {
-                  if (
-                    plugin.pluginData.settings.enablePerformanceDebug !== true
-                  ) {
-                    NoticeManager.warning(strings().notices.enableDebugFirst);
-                    return;
-                  }
-                  try {
-                    const fileName =
-                      await plugin.performanceTrace.downloadExport();
-                    if (fileName) {
-                      NoticeManager.success(
-                        fill(strings().notices.traceDownloaded, { fileName })
-                      );
-                    }
-                  } catch (err) {
-                    NoticeManager.error(
-                      fill(strings().notices.couldNotExportTrace, {
-                        message:
-                          err instanceof Error ? err.message : String(err),
-                      })
-                    );
-                  }
-                })
-            );
-          },
-        },
-      ],
-    },
-    {
-      type: 'group',
-      heading: strings().settings.headingsUpdates,
-      items: [
-        {
-          name: strings().settings.updatesReleaseNotesName,
-          desc: strings().settings.updatesReleaseNotesDesc,
-          control: {
-            type: 'toggle',
-            key: 'showReleaseNotesOnUpdate',
-            defaultValue: true,
-          },
-        },
-      ],
-    },
-  ];
-}
-
-function findRuleIndex(rules: RuleV2[] | undefined, rule: RuleV2): number {
-  return rules?.indexOf(rule) ?? -1;
-}
-
-function bindRuleRow(
-  host: SettingDefinitionsHost,
-  setting: Setting,
-  rule: RuleV2
-): void {
-  const plugin = host.plugin;
-  setting.addToggle(toggle =>
-    toggle
-      .setValue(rule.active)
-      .setTooltip(
-        rule.active
-          ? strings().settings.rulesActive
-          : strings().settings.rulesInactive
-      )
-      .onChange(async value => {
-        const rules = plugin.pluginData.settings.rulesV2;
-        const currentIndex = findRuleIndex(rules, rule);
-        if (!rules || currentIndex < 0) {
-          return;
-        }
-        rules[currentIndex].active = value;
-        await plugin.save_settings();
-        plugin.advancedNoteMover.updateRuleManager();
-      })
-  );
-  setting.addExtraButton(btn =>
-    btn
-      .setIcon('pencil')
-      .setTooltip(strings().settings.rulesEdit)
-      .onClick(() => {
-        const currentIndex = findRuleIndex(
-          plugin.pluginData.settings.rulesV2,
-          rule
-        );
-        if (currentIndex < 0) {
-          return;
-        }
-        host.rulesSettings.openRuleEditorModal(currentIndex);
-      })
-  );
-  setting.addExtraButton(btn =>
-    btn
-      .setIcon('copy')
-      .setTooltip(strings().settings.rulesClone)
-      .onClick(async () => {
-        if (!plugin.pluginData.settings.rulesV2) {
-          plugin.pluginData.settings.rulesV2 = [];
-        }
-        const currentIndex = findRuleIndex(
-          plugin.pluginData.settings.rulesV2,
-          rule
-        );
-        if (currentIndex < 0) {
-          return;
-        }
-        const clonedRule = cloneRule(rule, plugin.pluginData.settings.rulesV2);
-        plugin.pluginData.settings.rulesV2.splice(
-          currentIndex + 1,
-          0,
-          clonedRule
-        );
-        await host.rulesSettings.persistRulesAndSyncManager();
-      })
-  );
-}
-
-async function addFilter(host: SettingDefinitionsHost): Promise<void> {
-  host.plugin.pluginData.settings.filters.filter.push({ value: '' });
-  await host.plugin.save_settings();
-  host.plugin.advancedNoteMover.updateRuleManager();
-  host.update();
-}
-
-async function deleteFilter(
-  host: SettingDefinitionsHost,
-  index: number
-): Promise<void> {
-  host.plugin.pluginData.settings.filters.filter.splice(index, 1);
-  await host.plugin.save_settings();
-  host.plugin.advancedNoteMover.updateRuleManager();
-  host.update();
-}
-
-async function reorderFilters(
-  host: SettingDefinitionsHost,
-  fromIndex: number,
-  toIndex: number
-): Promise<void> {
-  if (fromIndex === toIndex) {
-    return;
-  }
-  const filters = host.plugin.pluginData.settings.filters.filter;
-  const [movedFilter] = filters.splice(fromIndex, 1);
-  filters.splice(toIndex, 0, movedFilter);
-  await host.plugin.save_settings();
-  host.plugin.advancedNoteMover.updateRuleManager();
-  host.update();
-}
-
-async function reorderRules(
-  host: SettingDefinitionsHost,
-  fromIndex: number,
-  toIndex: number
-): Promise<void> {
-  const rules = host.plugin.pluginData.settings.rulesV2;
-  if (fromIndex === toIndex || !rules) {
-    return;
-  }
-  const [movedRule] = rules.splice(fromIndex, 1);
-  rules.splice(toIndex, 0, movedRule);
-  await host.plugin.save_settings();
-  host.plugin.advancedNoteMover.updateRuleManager();
-  host.update();
-}
-
-async function deleteRule(
-  host: SettingDefinitionsHost,
-  index: number
-): Promise<void> {
-  const rules = host.plugin.pluginData.settings.rulesV2 ?? [];
-  const rule = rules[index];
-  const ruleLabel = toMarkdownInlineCode(rule?.name || strings().unnamedRule);
-  const confirmed = await ConfirmModal.show(host.plugin.app, {
-    title: strings().modals.ruleEditorDeleteTitle,
-    message: fill(strings().modals.confirmDeleteRule, { rule: ruleLabel }),
-    confirmText: strings().common.delete,
-    cancelText: strings().common.cancel,
-    danger: true,
-  });
-  if (!confirmed) {
-    host.update();
-    return;
-  }
-  rules.splice(index, 1);
-  await host.rulesSettings.persistRulesAndSyncManager();
-}
-
-async function applySettingSideEffects(
-  host: SettingDefinitionsHost,
-  key: string,
-  value: unknown
-): Promise<void> {
-  const plugin = host.plugin;
-  switch (key) {
-    case 'triggers.enableOnEditTrigger':
-      plugin.triggerHandler.toggleOnEditListener();
-      break;
-    case 'triggers.enablePeriodicMovement':
-    case 'triggers.periodicMovementInterval':
-      plugin.triggerHandler.togglePeriodic();
-      break;
-    case 'createMissingDestinationFolders':
-      plugin.advancedNoteMover.updateRuleManager();
-      break;
-    case 'enablePerformanceDebug':
-      setDebugEnabled(value === true);
-      break;
-    case 'enableRuleEvaluationCache':
-      if (value === false) {
-        plugin.ruleCache.invalidateAll();
-      }
-      break;
-    case 'enableVaultIndexCache':
-      plugin.vaultIndexCache.invalidateMovableFileList();
-      plugin.vaultIndexCache.invalidateMarkdownList();
-      break;
-    default:
-      break;
-  }
-
-  if (RERENDER_KEYS.has(key)) {
-    host.update();
-    return;
-  }
-  if (VISIBILITY_KEYS.has(key)) {
-    host.refreshDomState();
-  }
-}
-
-function ensureNestedSettings(
-  plugin: AdvancedNoteMoverPlugin,
-  key: string
-): void {
-  const settings = plugin.pluginData.settings;
-  if (key.startsWith('attachments.')) {
-    if (!settings.attachments) {
-      settings.attachments = {
-        moveWithNote: false,
-        skipSharedAttachments: true,
-        deleteEmptyAssetFolders: false,
-      };
+/** Reads one string from the active locale catalog. */
+export function catalogText(key: string): string {
+  const value = key.split('.').reduce<unknown>((current, part) => {
+    if (!current || typeof current !== 'object' || !(part in current)) {
+      throw new Error(`Missing languages/en.json key ${key}`);
     }
+    return (current as Record<string, unknown>)[part];
+  }, strings());
+  if (typeof value !== 'string') {
+    throw new Error(`languages/en.json key ${key} is not a string`);
   }
-  if (key.startsWith('conflictResolution.')) {
-    if (!settings.conflictResolution) {
-      settings.conflictResolution = { strategy: 'skip' };
-    }
-  }
-  if (key.startsWith('retentionPolicy.')) {
-    if (!settings.retentionPolicy) {
-      settings.retentionPolicy = {
-        ...HISTORY_CONSTANTS.DEFAULT_RETENTION_POLICY,
-      };
-    }
-  }
-  if (key.startsWith('triggers.') && !settings.triggers) {
-    settings.triggers = {
-      enablePeriodicMovement: false,
-      periodicMovementInterval: 5,
-      enableOnEditTrigger: false,
-    };
-  }
+  return value;
 }
 
-function getPath(obj: unknown, path: string): unknown {
-  return path.split('.').reduce<unknown>((current, segment) => {
-    if (current && typeof current === 'object' && segment in current) {
-      return (current as Record<string, unknown>)[segment];
-    }
-    return undefined;
-  }, obj);
-}
-
-function setPath(
-  obj: Record<string, unknown>,
-  path: string,
-  value: unknown
-): void {
-  const keys = path.split('.');
-  const last = keys.pop();
-  if (!last) {
-    return;
+/** Draws the name, description, and heading for one definition. The caller adds the control. */
+export function renderSetting(container: HTMLElement, id: string): Setting {
+  const definition = settingDefinition(id);
+  const setting = new Setting(container);
+  setting.settingEl.dataset.settingId = definition.id;
+  setting.settingEl.dataset.sectionId = definition.sectionId;
+  setting.setName(catalogText(definition.nameKey));
+  if (definition.descriptionKey) {
+    setting.setDesc(catalogText(definition.descriptionKey));
   }
-  let current = obj;
-  for (const key of keys) {
-    const next = current[key];
-    if (!next || typeof next !== 'object') {
-      current[key] = {};
-    }
-    current = current[key] as Record<string, unknown>;
+  if (definition.control === 'heading') {
+    setting.setHeading();
   }
-  current[last] = value;
+  return setting;
 }

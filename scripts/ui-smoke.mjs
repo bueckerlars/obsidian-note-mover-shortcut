@@ -612,7 +612,7 @@ async function anmSmoke(action, arg) {
       'Rules section not found'
     );
     const button = [...document.querySelectorAll('button')].find(el =>
-      /add rule/i.test(labelOf(el))
+      /add rule/i.test(el.getAttribute('aria-label') || labelOf(el))
     );
     if (!button) {
       throw new Error('Add rule button not found');
@@ -781,35 +781,46 @@ export function collectFailures(doc, options = {}) {
     }
   }
 
-  for (const el of doc.querySelectorAll('.clickable-icon')) {
-    const label = el.getAttribute('aria-label');
-    if (!label || !label.trim()) {
-      failures.push({
-        check: 'aria',
-        target: describe(el),
-        detail: 'missing aria-label',
-      });
+  const editor = doc.querySelector(
+    '.advancedNoteMover-rule-editor-modal, .advancedNoteMover-rule-editor--mobile'
+  );
+  const ariaRoots = editor
+    ? [editor.closest('.modal') || editor]
+    : [doc];
+
+  for (const root of ariaRoots) {
+    for (const el of root.querySelectorAll('.clickable-icon')) {
+      const label = el.getAttribute('aria-label');
+      if (!label || !label.trim()) {
+        failures.push({
+          check: 'aria',
+          target: describe(el),
+          detail: 'missing aria-label',
+        });
+      }
     }
   }
 
-  for (const el of doc.querySelectorAll('button')) {
-    if (el.matches('.clickable-icon')) {
-      continue;
-    }
-    if (!el.querySelector('svg')) {
-      continue;
-    }
-    const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
-    if (text) {
-      continue;
-    }
-    const label = el.getAttribute('aria-label');
-    if (!label || !label.trim()) {
-      failures.push({
-        check: 'aria',
-        target: describe(el),
-        detail: 'missing aria-label',
-      });
+  for (const root of ariaRoots) {
+    for (const el of root.querySelectorAll('button')) {
+      if (el.matches('.clickable-icon')) {
+        continue;
+      }
+      if (!el.querySelector('svg')) {
+        continue;
+      }
+      const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text) {
+        continue;
+      }
+      const label = el.getAttribute('aria-label');
+      if (!label || !label.trim()) {
+        failures.push({
+          check: 'aria',
+          target: describe(el),
+          detail: 'missing aria-label',
+        });
+      }
     }
   }
 
@@ -850,6 +861,77 @@ export function collectFailures(doc, options = {}) {
         check: 'modalTitle',
         target: describe(modal),
         detail: 'missing .modal-title',
+      });
+    }
+  }
+
+  if (mobile) {
+    for (const setting of doc.querySelectorAll('.setting-item.mod-toggle')) {
+      const name = setting.querySelector('.setting-item-name');
+      const control = setting.querySelector('.setting-item-control');
+      if (!name || !control) {
+        continue;
+      }
+      const nameRect = name.getBoundingClientRect();
+      const controlRect = control.getBoundingClientRect();
+      const settingRect = setting.getBoundingClientRect();
+      if (
+        nameRect.width === 0 &&
+        controlRect.width === 0 &&
+        settingRect.height === 0
+      ) {
+        continue;
+      }
+      if (settingRect.height > 96) {
+        failures.push({
+          check: 'toggleHeight',
+          target: describe(setting),
+          detail: `${Math.round(settingRect.height)}px`,
+        });
+      }
+      if (controlRect.left + 4 < nameRect.right) {
+        failures.push({
+          check: 'togglePlace',
+          target: describe(setting),
+          detail: `control left ${Math.round(controlRect.left)}, name right ${Math.round(nameRect.right)}`,
+        });
+      }
+    }
+  }
+
+  const ctaCounts = new Map();
+  for (const button of doc.querySelectorAll(
+    '.advancedNoteMover-settings-root .mod-cta'
+  )) {
+    const sectionId =
+      button.closest('[data-section-id]')?.getAttribute('data-section-id') ??
+      'unknown';
+    ctaCounts.set(sectionId, (ctaCounts.get(sectionId) ?? 0) + 1);
+  }
+  for (const [sectionId, count] of ctaCounts) {
+    if (count > 1) {
+      failures.push({
+        check: 'cta',
+        target: sectionId,
+        detail: `${count} primary buttons`,
+      });
+    }
+  }
+
+  for (const button of doc.querySelectorAll('.mod-warning')) {
+    const label = (button.getAttribute('aria-label') || button.textContent || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+    const allowed =
+      label.includes('clear history') ||
+      label === 'delete' ||
+      label.startsWith('delete ');
+    if (!allowed) {
+      failures.push({
+        check: 'warning',
+        target: describe(button),
+        detail: label || 'unlabeled warning button',
       });
     }
   }
@@ -917,11 +999,22 @@ const CHECKS = [
   'console',
   'modalTitle',
   'overflow',
+  'togglePlace',
+  'toggleHeight',
+  'cta',
+  'warning',
 ];
 const SMOKE_REPORT = path.join(ROOT, 'docs/analysis/baseline-smoke.json');
 
-function writeSmokeReport(report) {
-  fs.writeFileSync(SMOKE_REPORT, `${JSON.stringify(report, null, 2)}\n`);
+function smokeReportPath(outDir) {
+  return outDir === BASELINE_DIR
+    ? SMOKE_REPORT
+    : path.join(outDir, 'smoke.json');
+}
+
+function writeSmokeReport(report, reportPath = SMOKE_REPORT) {
+  fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+  fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 }
 
 function printAssertionTable(rows) {
@@ -997,14 +1090,17 @@ async function main() {
     const reason =
       'Obsidian binary not found. Set OBSIDIAN_BIN or install Obsidian. UI smoke did not run.';
     console.error(reason);
-    writeSmokeReport({ ran: false, reason });
+    writeSmokeReport({ ran: false, reason }, smokeReportPath(outDir));
     process.exitCode = 1;
     return;
   }
   const missingBuild = requireBuildArtifacts();
   if (missingBuild) {
     console.error(missingBuild);
-    writeSmokeReport({ ran: false, reason: missingBuild });
+    writeSmokeReport(
+      { ran: false, reason: missingBuild },
+      smokeReportPath(outDir)
+    );
     process.exitCode = 1;
     return;
   }
@@ -1091,15 +1187,18 @@ async function main() {
     (sum, row) => sum + row.failures.length,
     0
   );
-  writeSmokeReport({
-    ran: booted && !crashed,
-    screenshots: saved,
-    checks: CHECKS,
-    openErrors: failures,
-    assertionFailures: assertionFailureCount,
-    ...(crashed ? { reason: crashed } : {}),
-    results: rows,
-  });
+  writeSmokeReport(
+    {
+      ran: booted && !crashed,
+      screenshots: saved,
+      checks: CHECKS,
+      openErrors: failures,
+      assertionFailures: assertionFailureCount,
+      ...(crashed ? { reason: crashed } : {}),
+      results: rows,
+    },
+    smokeReportPath(outDir)
+  );
   if (rows.length > 0) {
     printAssertionTable(rows);
   }

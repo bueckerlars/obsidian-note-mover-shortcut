@@ -3,7 +3,7 @@ import { App, Setting } from 'obsidian';
 import { strings } from '../../i18n/locale';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { AdvancedSuggest } from '../suggesters/AdvancedSuggest';
-import { MobileUtils } from '../../utils/MobileUtils';
+import { renderSetting } from '../settingDefinitions';
 
 export class FilterSettingsSection {
   private dragDropManager: DragDropManager | null = null;
@@ -16,19 +16,16 @@ export class FilterSettingsSection {
   ) {}
 
   addFilterSettings(): void {
-    // Filter settings
-    new Setting(this.containerEl)
-      .setName(strings().settings.headingsFilter)
-      .setHeading();
-
-    new Setting(this.containerEl).setDesc(strings().settings.filterSectionDesc);
+    renderSetting(this.containerEl, 'filters.heading').setTooltip(
+      strings().settings.filterSectionDesc
+    );
 
     this.addPeriodicMovementFilterArray();
 
-    const isMobile = MobileUtils.isMobile();
-    const addFilterSetting = new Setting(this.containerEl).addButton(btn =>
+    renderSetting(this.containerEl, 'filters.add').addButton(btn =>
       btn
-        .setButtonText(strings().settings.filterAdd)
+        .setIcon('plus')
+        .setTooltip(strings().settings.filterAdd)
         .setCta()
         .onClick(async () => {
           this.plugin.pluginData.settings.filters.filter.push({ value: '' });
@@ -38,42 +35,21 @@ export class FilterSettingsSection {
           this.refreshDisplay();
         })
     );
-
-    // Add mobile optimization classes
-    if (isMobile) {
-      addFilterSetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
-      const controlEl = addFilterSetting.settingEl.querySelector(
-        '.setting-item-control'
-      );
-      if (controlEl) {
-        (controlEl as HTMLElement).addClass(
-          'advancedNoteMover-mobile-button-control'
-        );
-      }
-    }
   }
 
   addPeriodicMovementFilterArray(): void {
     // Clean up existing AdvancedSuggest instances before creating new ones
     this.cleanupAdvancedSuggestInstances();
 
-    const isMobile = MobileUtils.isMobile();
-
     const filtersContainer = this.containerEl.createDiv({
       cls: 'advancedNoteMover-filters-container',
     });
-    if (isMobile) {
-      filtersContainer.addClass('advancedNoteMover-mobile-filters-container');
-    }
 
     // Setup drag & drop manager
     this.setupDragDropManager(filtersContainer);
 
     if (this.plugin.pluginData.settings.filters.filter.length === 0) {
-      this.containerEl.createEl('p', {
-        cls: 'advancedNoteMover-settings-hint',
-        text: strings().settings.filterEmpty,
-      });
+      renderSetting(this.containerEl, 'filters.empty');
     }
 
     this.plugin.pluginData.settings.filters.filter.forEach((filter, index) => {
@@ -90,24 +66,7 @@ export class FilterSettingsSection {
 
       // Add drag handle to the setting
       this.addDragHandle(s.settingEl, index);
-      s.infoEl.remove();
-
-      // Add mobile optimization classes
-      if (isMobile) {
-        s.settingEl.addClass('advancedNoteMover-mobile-filter-item');
-        const controlEl = s.settingEl.querySelector('.setting-item-control');
-        if (controlEl) {
-          (controlEl as HTMLElement).addClass(
-            'advancedNoteMover-mobile-filter-controls'
-          );
-        }
-        const inputEl = s.settingEl.querySelector('input[type="search"]');
-        if (inputEl) {
-          (inputEl as HTMLElement).addClass(
-            'advancedNoteMover-mobile-filter-input'
-          );
-        }
-      }
+      s.setClass('advancedNoteMover-setting-stack');
     });
   }
 

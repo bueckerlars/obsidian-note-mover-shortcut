@@ -1,7 +1,5 @@
 import AdvancedNoteMoverPlugin from 'main';
-import { strings } from '../../i18n/locale';
-import { Setting } from 'obsidian';
-import { MobileUtils } from '../../utils/MobileUtils';
+import { renderSetting } from '../settingDefinitions';
 
 export class AttachmentsSettingsSection {
   constructor(
@@ -11,10 +9,7 @@ export class AttachmentsSettingsSection {
   ) {}
 
   addAttachmentSettings(): void {
-    const isMobile = MobileUtils.isMobile();
-    new Setting(this.containerEl)
-      .setName(strings().settings.headingsAttachments)
-      .setHeading();
+    renderSetting(this.containerEl, 'attachments.heading');
 
     if (!this.plugin.pluginData.settings.attachments) {
       this.plugin.pluginData.settings.attachments = {
@@ -26,68 +21,35 @@ export class AttachmentsSettingsSection {
 
     const attachments = this.plugin.pluginData.settings.attachments;
 
-    const moveWithNoteDesc =
-      'When a markdown note is moved, also move images and other attachments referenced in the note that live in the note folder or its subfolders (e.g. _assets/). Relative link structure is preserved.';
+    renderSetting(this.containerEl, 'attachments.move').addToggle(toggle =>
+      toggle
+        .setValue(attachments.moveWithNote === true)
+        .onChange(async value => {
+          attachments.moveWithNote = value;
+          await this.plugin.save_settings();
+          this.refreshDisplay();
+        })
+    );
 
-    const moveWithNoteSetting = new Setting(this.containerEl)
-      .setName(strings().settings.attachmentsMoveName)
-      .setDesc(moveWithNoteDesc)
-      .addToggle(toggle =>
+    if (attachments.moveWithNote) {
+      renderSetting(this.containerEl, 'attachments.skip').addToggle(toggle =>
         toggle
-          .setValue(attachments.moveWithNote === true)
+          .setValue(attachments.skipSharedAttachments !== false)
           .onChange(async value => {
-            attachments.moveWithNote = value;
+            attachments.skipSharedAttachments = value;
             await this.plugin.save_settings();
-            this.refreshDisplay();
           })
       );
 
-    if (isMobile) {
-      moveWithNoteSetting.settingEl.addClass(
-        'advancedNoteMover-mobile-optimized'
-      );
-    }
-
-    if (attachments.moveWithNote) {
-      const skipSharedSetting = new Setting(this.containerEl)
-        .setName(strings().settings.attachmentsSkipName)
-        .setDesc(
-          'Do not move attachment files that are also linked from other notes. Prevents breaking references elsewhere in the vault.'
-        )
-        .addToggle(toggle =>
-          toggle
-            .setValue(attachments.skipSharedAttachments !== false)
-            .onChange(async value => {
-              attachments.skipSharedAttachments = value;
-              await this.plugin.save_settings();
-            })
-        );
-
-      if (isMobile) {
-        skipSharedSetting.settingEl.addClass(
-          'advancedNoteMover-mobile-optimized'
-        );
-      }
-
-      const deleteEmptySetting = new Setting(this.containerEl)
-        .setName(strings().settings.attachmentsDeleteEmptyName)
-        .setDesc(
-          'After moving attachments, remove source folders (such as _assets) that no longer contain any files.'
-        )
-        .addToggle(toggle =>
+      renderSetting(this.containerEl, 'attachments.deleteEmpty').addToggle(
+        toggle =>
           toggle
             .setValue(attachments.deleteEmptyAssetFolders === true)
             .onChange(async value => {
               attachments.deleteEmptyAssetFolders = value;
               await this.plugin.save_settings();
             })
-        );
-
-      if (isMobile) {
-        deleteEmptySetting.settingEl.addClass(
-          'advancedNoteMover-mobile-optimized'
-        );
-      }
+      );
     }
   }
 }

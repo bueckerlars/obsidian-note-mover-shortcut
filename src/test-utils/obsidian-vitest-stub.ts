@@ -102,18 +102,191 @@ export class Modal {
   onClose(): void {}
 }
 
+export class PluginSettingTab {
+  containerEl: HTMLElement = document.createElement('div');
+
+  constructor(
+    public app: unknown,
+    public plugin: unknown
+  ) {}
+
+  hide(): void {}
+
+  display(): void {}
+}
+
 export class Setting {
   settingEl: HTMLElement = document.createElement('div');
+  infoEl: HTMLElement = document.createElement('div');
+  nameEl: HTMLElement = document.createElement('div');
+  descEl: HTMLElement = document.createElement('div');
+  controlEl: HTMLElement = document.createElement('div');
 
   constructor(containerEl: HTMLElement) {
+    this.settingEl.className = 'setting-item';
+    this.infoEl.className = 'setting-item-info';
+    this.nameEl.className = 'setting-item-name';
+    this.descEl.className = 'setting-item-description';
+    this.controlEl.className = 'setting-item-control';
+    this.infoEl.append(this.nameEl, this.descEl);
+    this.settingEl.append(this.infoEl, this.controlEl);
     containerEl.append(this.settingEl);
+  }
+
+  setName(name: string): this {
+    this.nameEl.textContent = name;
+    return this;
+  }
+
+  setDesc(desc: string | DocumentFragment): this {
+    this.descEl.replaceChildren();
+    if (typeof desc === 'string') {
+      this.descEl.textContent = desc;
+    } else {
+      this.descEl.append(desc);
+    }
+    return this;
+  }
+
+  setHeading(): this {
+    this.settingEl.classList.add('setting-item-heading');
+    return this;
+  }
+
+  setClass(cls: string): this {
+    this.settingEl.classList.add(...cls.split(/\s+/).filter(Boolean));
+    return this;
+  }
+
+  setTooltip(text: string): this {
+    this.settingEl.setAttribute('title', text);
+    return this;
+  }
+
+  addToggle(
+    cb: (toggle: {
+      setValue: (value: boolean) => unknown;
+      onChange: (fn: (value: boolean) => void) => unknown;
+      setTooltip: (text: string) => unknown;
+    }) => void
+  ): this {
+    this.settingEl.classList.add('mod-toggle');
+    const box = document.createElement('div');
+    box.className = 'checkbox-container';
+    const api = {
+      setValue() {
+        return api;
+      },
+      onChange() {
+        return api;
+      },
+      setTooltip(text: string) {
+        box.setAttribute('aria-label', text);
+        return api;
+      },
+    };
+    this.controlEl.append(box);
+    cb(api);
+    return this;
+  }
+
+  addText(
+    cb: (text: {
+      setPlaceholder: (value: string) => unknown;
+      setValue: (value: string) => unknown;
+      onChange: (fn: (value: string) => void) => unknown;
+      inputEl: HTMLInputElement;
+    }) => void
+  ): this {
+    const input = document.createElement('input');
+    input.type = 'text';
+    const api = {
+      setPlaceholder(value: string) {
+        input.placeholder = value;
+        return api;
+      },
+      setValue(value: string) {
+        input.value = value;
+        return api;
+      },
+      onChange() {
+        return api;
+      },
+      inputEl: input,
+    };
+    this.controlEl.append(input);
+    cb(api);
+    return this;
+  }
+
+  addSearch(
+    cb: (search: {
+      setPlaceholder: (value: string) => unknown;
+      setValue: (value: string) => unknown;
+      onChange: (fn: (value: string) => void) => unknown;
+      inputEl: HTMLInputElement;
+    }) => void
+  ): this {
+    const input = document.createElement('input');
+    input.type = 'search';
+    const api = {
+      setPlaceholder(value: string) {
+        input.placeholder = value;
+        return api;
+      },
+      setValue(value: string) {
+        input.value = value;
+        return api;
+      },
+      onChange() {
+        return api;
+      },
+      inputEl: input,
+    };
+    this.controlEl.append(input);
+    cb(api);
+    return this;
+  }
+
+  addDropdown(
+    cb: (dropdown: {
+      addOption: (value: string, label: string) => unknown;
+      setValue: (value: string) => unknown;
+      onChange: (fn: (value: string) => void) => unknown;
+    }) => void
+  ): this {
+    const select = document.createElement('select');
+    const api = {
+      addOption(value: string, label: string) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        select.append(option);
+        return api;
+      },
+      setValue(value: string) {
+        select.value = value;
+        return api;
+      },
+      onChange() {
+        return api;
+      },
+    };
+    this.controlEl.append(select);
+    cb(api);
+    return this;
   }
 
   addButton(
     cb: (button: {
       setButtonText: (text: string) => unknown;
       setTooltip: (text: string) => unknown;
+      setCta: () => unknown;
+      setWarning: () => unknown;
+      setIcon: (icon: string) => unknown;
+      setDisabled: (disabled: boolean) => unknown;
       onClick: (fn: () => void) => unknown;
+      buttonEl: HTMLButtonElement;
     }) => void
   ): this {
     const button = document.createElement('button');
@@ -122,7 +295,29 @@ export class Setting {
         button.textContent = text;
         return api;
       },
-      setTooltip() {
+      setTooltip(text: string) {
+        button.setAttribute('aria-label', text);
+        return api;
+      },
+      setCta() {
+        button.classList.add('mod-cta');
+        return api;
+      },
+      setWarning() {
+        button.classList.add('mod-warning');
+        return api;
+      },
+      setIcon(icon: string) {
+        button.dataset.icon = icon;
+        const svg = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'svg'
+        );
+        button.append(svg);
+        return api;
+      },
+      setDisabled(disabled: boolean) {
+        button.disabled = disabled;
         return api;
       },
       onClick(fn: () => void) {
@@ -131,8 +326,41 @@ export class Setting {
         });
         return api;
       },
+      buttonEl: button,
     };
-    this.settingEl.append(button);
+    this.controlEl.append(button);
+    cb(api);
+    return this;
+  }
+
+  addExtraButton(
+    cb: (button: {
+      setIcon: (icon: string) => unknown;
+      setTooltip: (text: string) => unknown;
+      onClick: (fn: (event: MouseEvent) => void) => unknown;
+      extraSettingsEl: HTMLElement;
+    }) => void
+  ): this {
+    const button = document.createElement('div');
+    button.className = 'clickable-icon';
+    const api = {
+      setIcon(icon: string) {
+        button.dataset.icon = icon;
+        return api;
+      },
+      setTooltip(text: string) {
+        button.setAttribute('aria-label', text);
+        return api;
+      },
+      onClick(fn: (event: MouseEvent) => void) {
+        button.addEventListener('click', event => {
+          fn(event);
+        });
+        return api;
+      },
+      extraSettingsEl: button,
+    };
+    this.controlEl.append(button);
     cb(api);
     return this;
   }
@@ -141,6 +369,51 @@ export class Setting {
 export class Notice {
   messageEl: HTMLElement = document.createElement('div');
   hide(): void {}
+}
+
+export class Menu {
+  private items: HTMLElement[] = [];
+
+  addItem(cb: (item: MenuItemStub) => void): this {
+    const el = document.createElement('div');
+    el.className = 'menu-item';
+    const api: MenuItemStub = {
+      setTitle(text: string) {
+        el.dataset.title = text;
+        el.append(document.createTextNode(text));
+        return api;
+      },
+      setIcon(icon: string) {
+        el.dataset.icon = icon;
+        return api;
+      },
+      onClick(fn: () => void) {
+        el.addEventListener('click', () => {
+          fn();
+        });
+        return api;
+      },
+    };
+    cb(api);
+    this.items.push(el);
+    return this;
+  }
+
+  showAtPosition(): this {
+    const menu = document.createElement('div');
+    menu.className = 'menu';
+    for (const item of this.items) {
+      menu.append(item);
+    }
+    document.body.append(menu);
+    return this;
+  }
+}
+
+interface MenuItemStub {
+  setTitle: (text: string) => MenuItemStub;
+  setIcon: (icon: string) => MenuItemStub;
+  onClick: (fn: () => void) => MenuItemStub;
 }
 
 export const Platform = {

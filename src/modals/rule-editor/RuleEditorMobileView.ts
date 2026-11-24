@@ -8,13 +8,11 @@ import {
   setIcon,
 } from 'obsidian';
 import type {
-  AggregationType,
   CriteriaType,
   Operator,
   RuleV2,
   Trigger,
 } from '../../types/RuleV2';
-import { FolderSuggest } from '../../settings/suggesters/FolderSuggest';
 import { PropertySuggest } from '../../settings/suggesters/PropertySuggest';
 import {
   SuggestRegistry,
@@ -22,34 +20,31 @@ import {
 } from '../../settings/suggesters/suggestLifecycle';
 import { operatorRequiresValue } from '../../utils/OperatorMapping';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
-import { strings } from '../../i18n/locale';
+import { fill, strings } from '../../i18n/locale';
+import { renderAggregationControl } from './components/AggregationControl';
 import {
-  AGGREGATION_TYPES,
+  renderDestinationHelp,
+  renderDestinationInput,
+} from './components/DestinationField';
+import { renderRuleNameField } from './components/RuleNameField';
+import {
   CRITERIA_TYPES,
-  DESTINATION_DESCRIPTION,
-  DESTINATION_SHORT_HINT,
-  DESTINATION_TEMPLATE_EXAMPLES,
   FolderCreationValue,
   applyCriteriaType,
   applyFolderCreationValue,
   applyPropertyName,
   attachValueSuggester,
-  capitalize,
-  createDefaultTrigger,
   getFolderCreationValue,
   getOperatorsForTrigger,
   getValuePlaceholder,
-  moveTrigger,
-  removeTrigger,
 } from './ruleEditorShared';
+import {
+  addCondition,
+  removeCondition,
+  reorderConditions,
+} from './ruleEditorState';
 
 const CLS = 'advancedNoteMover-rule-mobile';
-
-const AGGREGATION_DESCRIPTIONS: Record<AggregationType, string> = {
-  all: 'Every condition must match.',
-  any: 'At least one condition must match.',
-  none: 'No condition may match.',
-};
 
 export interface RuleEditorMobileViewOptions {
   app: App;
@@ -60,6 +55,8 @@ export interface RuleEditorMobileViewOptions {
   onSave: () => void;
   onCancel: () => void;
   onDelete: () => void;
+  onDraftChange?: () => void;
+  renderLivePreview?: (parent: HTMLElement) => void;
 }
 
 interface Field {
@@ -107,6 +104,10 @@ export class RuleEditorMobileView {
     return this.options.rule;
   }
 
+  private noteDraft(): void {
+    this.options.onDraftChange?.();
+  }
+
   render(container: HTMLElement): void {
     const root = container.createDiv({ cls: CLS });
     const body = root.createDiv({ cls: `${CLS}-body` });
@@ -129,17 +130,15 @@ export class RuleEditorMobileView {
   private renderGeneralGroup(parent: HTMLElement): void {
     const group = this.createGroup(parent);
 
-    const nameField = this.createField(group, 'Name');
-    new TextComponent(nameField.controlEl)
-      .setPlaceholder(strings().modals.ruleEditorNamePlaceholder)
-      .setValue(this.rule.name)
-      .onChange(value => {
+    const nameField = this.createField(group, strings().modals.ruleEditorName);
+    renderRuleNameField(nameField.controlEl, {
+      value: this.rule.name,
+      id: nameField.inputId,
+      className: `${CLS}-input`,
+      onChange: value => {
         this.rule.name = value;
-      })
-      .then(text => {
-        text.inputEl.id = nameField.inputId;
-        text.inputEl.addClass(`${CLS}-input`);
-      });
+      },
+    });
 
     const activeRow = group.createDiv({ cls: `${CLS}-switch-row` });
     const activeText = activeRow.createDiv({ cls: `${CLS}-switch-text` });
@@ -153,8 +152,8 @@ export class RuleEditorMobileView {
     const updateActiveDesc = (active: boolean) => {
       activeDesc.setText(
         active
-          ? 'This rule is applied when notes are moved.'
-          : 'This rule is skipped.'
+          ? strings().modals.ruleEditorActiveOn
+          : strings().modals.ruleEditorActiveOff
       );
     };
     updateActiveDesc(this.rule.active);
@@ -164,6 +163,7 @@ export class RuleEditorMobileView {
       .onChange(value => {
         this.rule.active = value;
         updateActiveDesc(value);
+        this.noteDraft();
       })
       .then(toggle => {
         toggle.toggleEl.setAttr('aria-labelledby', activeLabelId);
@@ -181,76 +181,45 @@ export class RuleEditorMobileView {
 
     const segmented = group.createDiv({
       cls: `${CLS}-segmented`,
-      attr: { role: 'radiogroup', 'aria-labelledby': labelId },
+      attr: { 'aria-labelledby': labelId },
     });
     const description = group.createDiv({ cls: `${CLS}-description` });
-
-    const buttons: HTMLButtonElement[] = [];
-    const update = () => {
-      buttons.forEach((button, i) => {
-        const selected = AGGREGATION_TYPES[i] === this.rule.aggregation;
-        button.toggleClass('is-active', selected);
-        button.setAttr('aria-checked', String(selected));
-        button.tabIndex = selected ? 0 : -1;
-      });
-      description.setText(AGGREGATION_DESCRIPTIONS[this.rule.aggregation]);
-      this.updateConditionConnectors();
-    };
-
-    AGGREGATION_TYPES.forEach(aggregation => {
-      const button = segmented.createEl('button', {
-        cls: `${CLS}-segment`,
-        text: capitalize(aggregation),
-        attr: { type: 'button', role: 'radio' },
-      });
-      button.addEventListener('click', () => {
-        this.rule.aggregation = aggregation;
-        update();
-      });
-      buttons.push(button);
+    renderAggregationControl(segmented, {
+      value: this.rule.aggregation,
+      buttonClass: `${CLS}-segment`,
+      descriptionEl: description,
+      onChange: value => {
+        this.rule.aggregation = value;
+        this.updateConditionConnectors();
+        this.noteDraft();
+      },
     });
-
-    update();
   }
 
   private renderDestinationGroup(parent: HTMLElement): void {
     const group = this.createGroup(parent);
 
-    const destinationField = this.createField(group, 'Destination', {
-      description: DESTINATION_SHORT_HINT,
-    });
-    new TextComponent(destinationField.controlEl)
-      .setPlaceholder('Example: Projects/{{tag.project}}')
-      .setValue(this.rule.destination)
-      .onChange(value => {
+    const destinationField = this.createField(
+      group,
+      strings().modals.ruleEditorDestination,
+      { description: strings().modals.ruleEditorDestinationShort }
+    );
+    this.destinationSuggest?.destroy();
+    const destination = renderDestinationInput(destinationField.controlEl, {
+      app: this.options.app,
+      value: this.rule.destination,
+      placeholder: strings().modals.ruleEditorMobileDestinationPlaceholder,
+      id: destinationField.inputId,
+      className: `${CLS}-input`,
+      onChange: value => {
         this.rule.destination = value;
-      })
-      .then(text => {
-        const input = text.inputEl;
-        input.id = destinationField.inputId;
-        input.addClass(`${CLS}-input`);
-        this.disableTextAssistance(input);
-        this.destinationSuggest?.destroy();
-        this.destinationSuggest = new FolderSuggest(this.options.app, input);
-      });
+      },
+    });
+    this.destinationSuggest = destination.suggest;
 
-    const details = group.createEl('details', { cls: `${CLS}-help` });
-    details.createEl('summary', {
-      text: strings().modals.ruleEditorTemplateExamples,
-    });
-    const helpBody = details.createDiv({ cls: `${CLS}-help-body` });
-    const list = helpBody.createEl('ul', { cls: `${CLS}-help-list` });
-    DESTINATION_TEMPLATE_EXAMPLES.forEach(example => {
-      const item = list.createEl('li');
-      item.createEl('code', { text: example.template });
-      item.createDiv({
-        cls: `${CLS}-description`,
-        text: example.description,
-      });
-    });
-    helpBody.createDiv({
-      cls: `${CLS}-description`,
-      text: DESTINATION_DESCRIPTION,
+    renderDestinationHelp(group, template => {
+      this.rule.destination = template;
+      destination.input.value = template;
     });
 
     const folderField = this.createField(
@@ -275,6 +244,8 @@ export class RuleEditorMobileView {
   private renderConditionsSection(parent: HTMLElement): void {
     const section = parent.createDiv({ cls: `${CLS}-conditions` });
 
+    this.options.renderLivePreview?.(section);
+
     const header = section.createDiv({ cls: `${CLS}-section-header` });
     header.createDiv({
       cls: `${CLS}-section-title`,
@@ -295,8 +266,9 @@ export class RuleEditorMobileView {
         button.buttonEl.prepend(iconEl);
       })
       .onClick(() => {
-        this.rule.triggers.push(createDefaultTrigger());
+        this.rule.triggers = addCondition(this.rule).triggers;
         this.renderConditions();
+        this.noteDraft();
         const cards = this.conditionsListEl?.querySelectorAll(
           `.${CLS}-condition`
         );
@@ -363,7 +335,10 @@ export class RuleEditorMobileView {
   }
 
   private updateConditionConnectors(): void {
-    const text = this.rule.aggregation === 'all' ? 'and' : 'or';
+    const text =
+      this.rule.aggregation === 'all'
+        ? strings().modals.ruleEditorConnectorAll
+        : strings().modals.ruleEditorConnectorAny;
     this.conditionsListEl
       ?.querySelectorAll<HTMLElement>(`.${CLS}-connector`)
       .forEach(el => el.setText(text));
@@ -380,32 +355,45 @@ export class RuleEditorMobileView {
     const header = card.createDiv({ cls: `${CLS}-condition-header` });
     header.createDiv({
       cls: `${CLS}-condition-title`,
-      text: `Condition ${index + 1}`,
+      text: fill(strings().modals.ruleEditorCondition, {
+        index: String(index + 1),
+      }),
     });
     const actions = header.createDiv({ cls: `${CLS}-condition-actions` });
 
     new ExtraButtonComponent(actions)
       .setIcon('arrow-up')
-      .setTooltip('Move up')
+      .setTooltip(strings().modals.ruleEditorMoveUp)
       .setDisabled(index === 0)
       .onClick(() => {
-        moveTrigger(triggers, index, index - 1);
+        this.rule.triggers = reorderConditions(
+          this.rule,
+          index,
+          index - 1
+        ).triggers;
         this.renderConditions();
+        this.noteDraft();
       });
     new ExtraButtonComponent(actions)
       .setIcon('arrow-down')
-      .setTooltip('Move down')
+      .setTooltip(strings().modals.ruleEditorMoveDown)
       .setDisabled(index === triggers.length - 1)
       .onClick(() => {
-        moveTrigger(triggers, index, index + 1);
+        this.rule.triggers = reorderConditions(
+          this.rule,
+          index,
+          index + 1
+        ).triggers;
         this.renderConditions();
+        this.noteDraft();
       });
     new ExtraButtonComponent(actions)
       .setIcon('trash-2')
-      .setTooltip('Delete condition')
+      .setTooltip(strings().modals.ruleEditorDeleteCondition)
       .onClick(() => {
-        removeTrigger(triggers, index);
+        this.rule.triggers = removeCondition(this.rule, index).triggers;
         this.renderConditions();
+        this.noteDraft();
       })
       .then(button => {
         button.extraSettingsEl.addClass(`${CLS}-delete-icon`);
@@ -421,7 +409,10 @@ export class RuleEditorMobileView {
 
     const selectors = body.createDiv({ cls: `${CLS}-condition-selectors` });
 
-    const typeField = this.createField(selectors, 'Type');
+    const typeField = this.createField(
+      selectors,
+      strings().modals.ruleEditorCriteriaType
+    );
     const typeDropdown = new DropdownComponent(typeField.controlEl);
     CRITERIA_TYPES.forEach(ct => {
       typeDropdown.addOption(ct, ct);
@@ -429,11 +420,15 @@ export class RuleEditorMobileView {
     typeDropdown.setValue(trigger.criteriaType).onChange(value => {
       applyCriteriaType(trigger, value as CriteriaType);
       this.renderConditionBody(body, trigger);
+      this.noteDraft();
     });
     typeDropdown.selectEl.id = typeField.inputId;
     typeDropdown.selectEl.addClass(`${CLS}-select`);
 
-    const operatorField = this.createField(selectors, 'Operator');
+    const operatorField = this.createField(
+      selectors,
+      strings().modals.ruleEditorOperator
+    );
     const operatorDropdown = new DropdownComponent(operatorField.controlEl);
     operatorDropdown.selectEl.id = operatorField.inputId;
     operatorDropdown.selectEl.addClass(`${CLS}-select`);
@@ -446,12 +441,16 @@ export class RuleEditorMobileView {
       if (!operatorRequiresValue(trigger.operator)) {
         return;
       }
-      const valueField = this.createField(valueSlot, 'Value');
+      const valueField = this.createField(
+        valueSlot,
+        strings().modals.ruleEditorValue
+      );
       new TextComponent(valueField.controlEl)
         .setPlaceholder(getValuePlaceholder(trigger))
         .setValue(trigger.value)
         .onChange(value => {
           trigger.value = value;
+          this.noteDraft();
         })
         .then(text => {
           const input = text.inputEl;
@@ -484,12 +483,16 @@ export class RuleEditorMobileView {
     operatorDropdown.onChange(value => {
       trigger.operator = value as Operator;
       renderValue();
+      this.noteDraft();
     });
 
     if (trigger.criteriaType === 'properties') {
-      const propertyField = this.createField(propertySlot, 'Property');
+      const propertyField = this.createField(
+        propertySlot,
+        strings().modals.ruleEditorPropertyName
+      );
       new TextComponent(propertyField.controlEl)
-        .setPlaceholder('Property name')
+        .setPlaceholder(strings().modals.ruleEditorPropertyName)
         .setValue(trigger.propertyName ?? '')
         .onChange(value => {
           const previousType = trigger.propertyType;
@@ -503,6 +506,7 @@ export class RuleEditorMobileView {
             renderOperators();
             renderValue();
           }
+          this.noteDraft();
         })
         .then(text => {
           const input = text.inputEl;

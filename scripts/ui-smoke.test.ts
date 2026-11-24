@@ -38,6 +38,29 @@ function widths(el: Element, scrollWidth: number, clientWidth: number): void {
   });
 }
 
+function box(
+  el: HTMLElement,
+  left: number,
+  top: number,
+  width: number,
+  height: number
+): void {
+  el.getBoundingClientRect = () =>
+    ({
+      width,
+      height,
+      top,
+      left,
+      right: left + width,
+      bottom: top + height,
+      x: left,
+      y: top,
+      toJSON() {
+        return {};
+      },
+    }) as DOMRect;
+}
+
 function checks(doc: Document, mobile = false, consoleErrors: string[] = []) {
   return collectFailures(doc, { mobile, consoleErrors }).map(
     (failure: { check: string }) => failure.check
@@ -193,6 +216,93 @@ describe('collectFailures', () => {
         detail: 'scrollWidth 500 > clientWidth 400',
       }),
     ]);
+  });
+
+  it('checks icon labels inside the rule editor and ignores the workspace behind it', () => {
+    const workspace = document.createElement('span');
+    workspace.className = 'clickable-icon';
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    const editor = document.createElement('div');
+    editor.className = 'advancedNoteMover-rule-editor-modal';
+    const labeled = document.createElement('button');
+    labeled.className =
+      'clickable-icon advancedNoteMover-rule-trigger-delete-btn';
+    labeled.setAttribute('aria-label', 'Delete condition');
+    const unlabeled = document.createElement('button');
+    unlabeled.className = 'clickable-icon';
+    editor.append(labeled, unlabeled);
+    modal.append(editor);
+    document.body.append(workspace, modal);
+
+    const failures = collectFailures(document).filter(
+      item => item.check === 'aria'
+    );
+    expect(failures).toHaveLength(1);
+    expect(failures[0]?.target).toContain('clickable-icon');
+    expect(failures[0]?.target).not.toContain('delete');
+  });
+
+  it('requires a mobile toggle to sit beside its name and stay at most 96px', () => {
+    const root = document.createElement('div');
+    root.className = 'advancedNoteMover-settings-root';
+    const setting = document.createElement('div');
+    setting.className = 'setting-item mod-toggle';
+    setting.setAttribute('data-section-id', 'triggers');
+    const name = document.createElement('div');
+    name.className = 'setting-item-name';
+    name.textContent = 'Enable on-edit trigger';
+    const control = document.createElement('div');
+    control.className = 'setting-item-control';
+    setting.append(name, control);
+    root.append(setting);
+    document.body.append(root);
+
+    box(setting, 0, 0, 320, 48);
+    box(name, 0, 8, 180, 24);
+    box(control, 240, 8, 40, 24);
+    expect(checks(document, true)).not.toContain('togglePlace');
+    expect(checks(document, true)).not.toContain('toggleHeight');
+
+    box(setting, 0, 0, 320, 120);
+    box(control, 0, 40, 40, 24);
+    const failures = collectFailures(document, { mobile: true }).map(
+      item => item.check
+    );
+    expect(failures).toContain('togglePlace');
+    expect(failures).toContain('toggleHeight');
+  });
+
+  it('allows one primary button per section and warning buttons only for delete', () => {
+    const root = document.createElement('div');
+    root.className = 'advancedNoteMover-settings-root';
+    const add = document.createElement('button');
+    add.className = 'mod-cta';
+    add.setAttribute('data-section-id', 'filters');
+    add.textContent = 'Add filter';
+    const clear = document.createElement('button');
+    clear.className = 'mod-warning';
+    clear.textContent = 'Clear history';
+    const remove = document.createElement('button');
+    remove.className = 'mod-warning';
+    remove.textContent = 'Delete';
+    root.append(add, clear);
+    document.body.append(root, remove);
+    expect(checks(document)).not.toContain('cta');
+    expect(checks(document)).not.toContain('warning');
+
+    const second = document.createElement('button');
+    second.className = 'mod-cta';
+    second.setAttribute('data-section-id', 'filters');
+    second.textContent = 'Again';
+    root.append(second);
+    const importButton = document.createElement('button');
+    importButton.className = 'mod-warning';
+    importButton.textContent = 'Import settings';
+    document.body.append(importButton);
+    const failures = collectFailures(document).map(item => item.check);
+    expect(failures).toContain('cta');
+    expect(failures).toContain('warning');
   });
 });
 

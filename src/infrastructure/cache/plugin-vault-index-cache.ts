@@ -1,5 +1,9 @@
 import type { App, Plugin } from 'obsidian';
 import { TAbstractFile, TFile, getAllTags } from 'obsidian';
+import {
+  collectPropertySamples,
+  propertyValueStrings,
+} from '../../domain/property/extractFrontmatterProperties';
 import { parseListProperty } from '../../domain/property/parseListProperty';
 import { isListProperty } from '../../domain/property/isListProperty';
 import {
@@ -325,36 +329,22 @@ export class PluginVaultIndexCache {
         } => {
           const keys = new Set<string>();
           const valuesByKey = new Map<string, Set<string>>();
-          const files = this.getMarkdownFilesCached(app);
-
-          for (const file of files) {
-            const cachedMetadata = app.metadataCache.getFileCache(file);
-            if (!cachedMetadata?.frontmatter) {
-              continue;
-            }
-            for (const [key, value] of Object.entries(
-              cachedMetadata.frontmatter
-            )) {
-              if (key.startsWith('position') || key === 'tags') {
-                continue;
-              }
-              keys.add(key);
-              if (!valuesByKey.has(key)) {
-                valuesByKey.set(key, new Set());
-              }
-              const setForKey = valuesByKey.get(key)!;
-              if (value !== null && value !== undefined) {
-                if (isListProperty(value)) {
-                  parseListProperty(value).forEach(item => {
-                    if (item) {
-                      setForKey.add(item);
-                    }
-                  });
-                } else {
-                  setForKey.add(String(value));
+          const samples = collectPropertySamples(
+            this.getMarkdownFilesCached(app).map(
+              file => app.metadataCache.getFileCache(file)?.frontmatter
+            )
+          );
+          for (const [key, values] of samples) {
+            keys.add(key);
+            const setForKey = new Set<string>();
+            for (const value of values) {
+              for (const item of propertyValueStrings(value)) {
+                if (item) {
+                  setForKey.add(item);
                 }
               }
             }
+            valuesByKey.set(key, setForKey);
           }
           return { keys, valuesByKey };
         };

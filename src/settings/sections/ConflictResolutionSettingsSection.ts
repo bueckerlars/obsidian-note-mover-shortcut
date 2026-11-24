@@ -1,13 +1,13 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { Setting } from 'obsidian';
-import { MobileUtils } from '../../utils/MobileUtils';
 import type { ConflictResolutionStrategy } from '../../types/ConflictResolution';
 import { strategyRequiresWarning } from '../../domain/conflicts/note-move-conflict';
 import { persistConflictResolutionStrategy } from '../../application/persist-conflict-resolution-strategy';
 import { strings } from '../../i18n/locale';
+import { renderSetting } from '../settingDefinitions';
 
 export class ConflictResolutionSettingsSection {
-  private warningEl: HTMLElement | null = null;
+  private warningSetting: Setting | null = null;
 
   constructor(
     private plugin: AdvancedNoteMoverPlugin,
@@ -15,11 +15,7 @@ export class ConflictResolutionSettingsSection {
   ) {}
 
   addConflictResolutionSettings(): void {
-    const isMobile = MobileUtils.isMobile();
-
-    new Setting(this.containerEl)
-      .setName(strings().settings.headingsConflict)
-      .setHeading();
+    renderSetting(this.containerEl, 'conflict.heading');
 
     if (!this.plugin.pluginData.settings.conflictResolution) {
       this.plugin.pluginData.settings.conflictResolution = { strategy: 'skip' };
@@ -28,8 +24,7 @@ export class ConflictResolutionSettingsSection {
     const currentStrategy =
       this.plugin.pluginData.settings.conflictResolution.strategy ?? 'skip';
 
-    const strategySetting = new Setting(this.containerEl)
-      .setName(strings().settings.conflictWhenExists)
+    const strategySetting = renderSetting(this.containerEl, 'conflict.strategy')
       .setDesc(strings().conflictStrategyDescriptions[currentStrategy])
       .addDropdown(dropdown => {
         for (const [value, label] of Object.entries(
@@ -47,35 +42,31 @@ export class ConflictResolutionSettingsSection {
         });
       });
 
-    if (isMobile) {
-      strategySetting.settingEl.addClass('advancedNoteMover-mobile-optimized');
+    if (currentStrategy !== 'ask') {
+      this.warningSetting = renderSetting(this.containerEl, 'conflict.warning');
+      this.updateWarning(currentStrategy);
     }
-
-    this.warningEl = this.containerEl.createDiv({
-      cls: 'advancedNoteMover-conflict-settings-warning',
-    });
-    this.updateWarning(currentStrategy);
   }
 
   private updateWarning(strategy: ConflictResolutionStrategy): void {
-    if (!this.warningEl) {
+    if (!this.warningSetting) {
       return;
     }
-    this.warningEl.empty();
-
     if (strategy === 'ask') {
+      this.warningSetting.setDesc('');
+      this.warningSetting.setTooltip('');
       return;
     }
-
-    const warningText = strategyRequiresWarning(strategy)
-      ? strings().settings.conflictOverwriteWarning
-      : strings().settings.conflictAutoWarning;
-
-    this.warningEl.createEl('p', {
-      cls: strategyRequiresWarning(strategy)
-        ? 'advancedNoteMover-settings-hint mod-warning'
-        : 'advancedNoteMover-settings-hint',
-      text: warningText,
-    });
+    const overwrite = strategyRequiresWarning(strategy);
+    this.warningSetting.setDesc(
+      overwrite
+        ? strings().settings.conflictOverwriteWarning
+        : strings().settings.conflictAutoWarning
+    );
+    this.warningSetting.setTooltip(
+      overwrite
+        ? strings().settings.conflictOverwriteDetail
+        : strings().settings.conflictAutoDetail
+    );
   }
 }

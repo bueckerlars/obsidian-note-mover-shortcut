@@ -3,12 +3,9 @@ import type { RuleV2, Trigger } from '../../types/RuleV2';
 import {
   applyCriteriaType,
   applyFolderCreationValue,
-  createDefaultTrigger,
   getFolderCreationValue,
-  moveTrigger,
-  removeTrigger,
-  validateRule,
 } from './ruleEditorShared';
+import { validateRule } from './ruleEditorState';
 
 function trigger(value: string): Trigger {
   return { criteriaType: 'tag', operator: 'includes item', value };
@@ -25,31 +22,6 @@ function rule(overrides: Partial<RuleV2> = {}): RuleV2 {
     ...overrides,
   } as RuleV2;
 }
-
-describe('moveTrigger', () => {
-  it('moves a trigger to the target index', () => {
-    const triggers = [trigger('a'), trigger('b'), trigger('c')];
-    moveTrigger(triggers, 0, 2);
-    expect(triggers.map(t => t.value)).toEqual(['b', 'c', 'a']);
-    moveTrigger(triggers, 2, 0);
-    expect(triggers.map(t => t.value)).toEqual(['a', 'b', 'c']);
-  });
-
-  it('ignores out-of-range moves', () => {
-    const triggers = [trigger('a'), trigger('b')];
-    moveTrigger(triggers, 0, -1);
-    moveTrigger(triggers, 1, 2);
-    expect(triggers.map(t => t.value)).toEqual(['a', 'b']);
-  });
-});
-
-describe('removeTrigger', () => {
-  it('keeps one default trigger when the last one is removed', () => {
-    const triggers = [trigger('a')];
-    removeTrigger(triggers, 0);
-    expect(triggers).toEqual([createDefaultTrigger()]);
-  });
-});
 
 describe('applyCriteriaType', () => {
   it('resets operator and clears property fields', () => {

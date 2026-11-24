@@ -1,7 +1,7 @@
 import { getLanguage, Plugin } from 'obsidian';
 import { AdvancedNoteMover } from 'src/core/AdvancedNoteMover';
 import { CommandHandler } from 'src/handlers/CommandHandler';
-import { AdvancedNoteMoverSettingsTab } from 'src/settings/Settings';
+import { AdvancedNoteMoverSettingsTab } from 'src/settings/AdvancedNoteMoverSettingsTab';
 import { HistoryManager } from 'src/core/HistoryManager';
 import { ConflictSkipCacheManager } from 'src/core/ConflictSkipCacheManager';
 import { TriggerEventHandler } from 'src/core/TriggerEventHandler';
