@@ -13,7 +13,6 @@ export default defineConfig([
       '**/*.js',
       '**/*.json',
       'src/**/*.test.ts',
-      'src/test-utils/**',
       'src/generated/**',
     ],
   },

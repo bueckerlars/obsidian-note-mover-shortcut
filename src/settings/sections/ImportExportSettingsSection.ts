@@ -68,7 +68,9 @@ export class ImportExportSettingsSection {
         .addButton(btn => {
           btn.setButtonText(labels.importExportImportButton).onClick(() => {
             void runImportAction(
-              disabled => btn.setDisabled(disabled),
+              disabled => {
+                btn.setDisabled(disabled);
+              },
               () => this.importSettings()
             );
           });

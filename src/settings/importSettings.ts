@@ -5,11 +5,11 @@ export function pickSettingsFile(
   doc: Document,
   view: Window
 ): Promise<File | null> {
-  const input = doc.createElement('input');
-  input.type = 'file';
-  input.accept = '.json,application/json';
-  input.className = 'advancedNoteMover-hidden-file-input';
-  doc.body.append(input);
+  const input = doc.body.createEl('input', {
+    type: 'file',
+    cls: 'advancedNoteMover-hidden-file-input',
+    attr: { accept: '.json,application/json' },
+  });
 
   return new Promise(resolve => {
     let settled = false;

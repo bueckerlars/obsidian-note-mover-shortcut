@@ -16,11 +16,12 @@ interface SettingsGroupOptions {
 export interface SettingsGroup {
   /** Container for rows, native or plain. */
   listEl: HTMLElement;
-  addSetting(cb: (setting: Setting) => void): void;
+  /** Callbacks may return the chained Setting; it is thenable, so `void` would flag it. */
+  addSetting(cb: (setting: Setting) => unknown): void;
   /** Search field in the heading row. */
-  addSearch(cb: (search: SearchComponent) => void): void;
+  addSearch(cb: (search: SearchComponent) => unknown): void;
   /** Labelled button in the heading row. */
-  addButton(cb: (button: ButtonComponent) => void): void;
+  addButton(cb: (button: ButtonComponent) => unknown): void;
 }
 
 /** SettingGroup exists from Obsidian 1.11. */
@@ -101,9 +102,15 @@ function createFallback(
   addDescription(listEl, options.description);
   return {
     listEl,
-    addSetting: cb => cb(new Setting(listEl)),
-    addSearch: cb => heading?.addSearch(cb),
-    addButton: cb => heading?.addButton(cb),
+    addSetting: cb => {
+      cb(new Setting(listEl));
+    },
+    addSearch: cb => {
+      heading?.addSearch(cb);
+    },
+    addButton: cb => {
+      heading?.addButton(cb);
+    },
   };
 }
 

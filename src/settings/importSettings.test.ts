@@ -4,6 +4,29 @@ import {
   runImportAction,
 } from './importSettings';
 
+// jsdom has no Obsidian createEl helper.
+type CreateElOptions = {
+  type?: string;
+  cls?: string;
+  attr?: Record<string, string>;
+};
+
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, 'createEl', {
+    configurable: true,
+    value(this: HTMLElement, tag: string, options: CreateElOptions = {}) {
+      const el = document.createElement(tag);
+      if (options.type) el.setAttribute('type', options.type);
+      if (options.cls) el.className = options.cls;
+      for (const [key, value] of Object.entries(options.attr ?? {})) {
+        el.setAttribute(key, value);
+      }
+      this.appendChild(el);
+      return el;
+    },
+  });
+});
+
 describe('importSettings', () => {
   afterEach(() => {
     document.body.innerHTML = '';
