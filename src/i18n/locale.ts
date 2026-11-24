@@ -71,7 +71,10 @@ const GERMAN_NOUNS: Record<string, readonly [string, string]> = {
   rule: ['Regel', 'Regeln'],
   filter: ['Filter', 'Filter'],
   note: ['Notiz', 'Notizen'],
+  move: ['Verschiebung', 'Verschiebungen'],
+  attachment: ['Anhang', 'Anhänge'],
   error: ['Fehler', 'Fehler'],
+  word: ['Wort', 'Wörter'],
 };
 
 export function plural(

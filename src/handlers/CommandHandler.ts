@@ -1,7 +1,7 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { HistoryModal } from '../modals/HistoryModal';
 import { PreviewModal } from '../modals/PreviewModal';
-import { openWhyNotMoved } from '../modals/RuleTestModal';
+import { openWhyNotMoved } from '../modals/WhyNotMovedModal';
 import { handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
 import { isMovableVaultFile } from '../domain/vault/movable-vault-files';
@@ -42,10 +42,7 @@ export class CommandHandler {
       id: 'why-not-moved',
       name: strings().commands.whyNotMoved,
       callback: () => {
-        openWhyNotMoved(
-          this.plugin.app,
-          this.plugin.pluginData.settings.rulesV2 ?? []
-        );
+        openWhyNotMoved(this.plugin);
       },
     });
 
@@ -79,48 +76,32 @@ export class CommandHandler {
       },
     });
 
-    // Preview bulk movement command
+    // Vault preview. The re-evaluate id stays registered so hotkeys keep working.
+    const previewVault = (): void => {
+      try {
+        this.plugin.advancedNoteMover.openVaultMovePreview();
+      } catch (error) {
+        handleError(
+          error,
+          strings().notices.errorGeneratingPreviewContext,
+          false
+        );
+        NoticeManager.error(
+          fill(strings().notices.errorGeneratingPreview, {
+            message: error instanceof Error ? error.message : String(error),
+          })
+        );
+      }
+    };
     this.plugin.addCommand({
       id: 'preview-bulk-movement',
       name: strings().commands.previewBulk,
-      callback: async () => {
-        try {
-          this.plugin.advancedNoteMover.openVaultMovePreview();
-        } catch (error) {
-          handleError(
-            error,
-            strings().notices.errorGeneratingPreviewContext,
-            false
-          );
-          NoticeManager.error(
-            fill(strings().notices.errorGeneratingPreview, {
-              message: error instanceof Error ? error.message : String(error),
-            })
-          );
-        }
-      },
+      callback: previewVault,
     });
-
-    // Re-evaluate entire vault after rule changes (preview first)
     this.plugin.addCommand({
       id: 're-evaluate-vault-with-rules',
       name: strings().commands.reEvaluateVault,
-      callback: async () => {
-        try {
-          await this.plugin.advancedNoteMover.openVaultReEvaluationPreview();
-        } catch (error) {
-          handleError(
-            error,
-            strings().notices.errorGeneratingPreviewContext,
-            false
-          );
-          NoticeManager.error(
-            fill(strings().notices.errorGeneratingPreview, {
-              message: error instanceof Error ? error.message : String(error),
-            })
-          );
-        }
-      },
+      callback: previewVault,
     });
 
     // Preview single note movement command

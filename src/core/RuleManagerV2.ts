@@ -314,7 +314,7 @@ export class RuleManagerV2 {
     enableFilter: boolean,
     options: {
       signal?: AbortSignal;
-      onProgress?: (completed: number, total: number) => void;
+      onProgress?: (completed: number, total: number, found: number) => void;
     } = {}
   ): Promise<MovePreview> {
     return this.perf.recordAsync(
@@ -337,7 +337,8 @@ export class RuleManagerV2 {
             }
           },
           signal,
-          options.onProgress
+          (done, total) =>
+            options.onProgress?.(done, total, successfulMoves.length)
         );
 
         return {

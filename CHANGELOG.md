@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.5.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.0...1.5.0)
+
+### Highlights
+
+- sliders-horizontal | Settings that look like Obsidian | Options are grouped like the core settings. Import, export and troubleshooting moved to their own pages.
+- eye | See every move before it happens | The preview groups notes by destination, flags name conflicts and lets you pick which notes move.
+- help-circle | Find out why a note stays | Run "Why not moved?" on any note to see which rule or exclusion decided.
+
+### Release note fixes
+
+- Undone moves stay in the history, marked as undone, instead of disappearing.
+- Bulk moves show as one group in the history, with a single Undo all.
+- Command names use the same words as the settings and dialogs.
+
+### Improvements
+
+- **Move history**: The history has search, a rule filter and a time range. Notes show their folders, not full paths. Undone moves are kept with an `undone` flag in `data.json`.
+- **Release notes**: The dialog shows up to three highlights and a short list of fixes. Entries in this file can add `### Highlights` (`- lucide-icon | Title | Sentence`) and `### Release note fixes`.
+- **Commands**: Command names changed. Command ids did not.
+
 ## [1.4.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.4.0)
 
 ### Breaking

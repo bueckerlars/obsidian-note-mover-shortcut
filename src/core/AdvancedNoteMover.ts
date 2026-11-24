@@ -16,7 +16,6 @@ import {
 } from '../domain/conflicts/conflict-skip-cache';
 import { runConfirmedBulkMove } from '../application/bulkMoveGuard';
 import { executeNoteMoveWithConflictHandling } from '../application/execute-note-move-with-conflict';
-import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import AdvancedNoteMoverPlugin from 'main';
 import { type FileMoveResult, type OperationType } from '../types/Common';
@@ -30,7 +29,9 @@ import { showSingleFileMoveNotice } from '../utils/single-file-move-notice';
 import { MovePreview } from '../types/MovePreview';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import { PreviewModal } from '../modals/PreviewModal';
-import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
+import { RuleEditorModal } from '../modals/RuleEditorModal';
+import { fileMetadataFromCache } from '../modals/rule-editor/ruleLivePreview';
+import { ruleFromNote } from '../domain/rules/rulePresets';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
 import { fill, plural, strings } from '../i18n/locale';
 
@@ -257,9 +258,6 @@ export class AdvancedNoteMover {
             interactive,
             bypassConflictSkipCache,
             ruleName: result.ruleName,
-            onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
-              await persistConflictResolutionStrategy(this.plugin, strategy);
-            },
           });
 
           if (!moveOutcome.moved) {
@@ -501,7 +499,12 @@ export class AdvancedNoteMover {
 
     const previewed = preview.successfulMoves
       .filter(entry => entry.willBeMoved && entry.targetPath)
-      .map(entry => ({ path: entry.currentPath }));
+      .map(entry => ({
+        path: entry.currentPath,
+        name: entry.fileName.replace(/\.md$/i, ''),
+        destination: entry.targetPath ?? '',
+        rule: entry.matchedRule,
+      }));
 
     if (previewed.length === 0) {
       NoticeManager.info(
@@ -518,15 +521,30 @@ export class AdvancedNoteMover {
     try {
       await runConfirmedBulkMove({
         previewed,
-        undoHint: strings().modals.bulkMoveUndo,
         confirm: prompt =>
           ConfirmModal.show(this.plugin.app, {
-            title: strings().modals.bulkMoveTitle,
-            message: fill(strings().modals.bulkMoveMessage, {
-              count: plural(prompt.count, 'file'),
+            title: fill(strings().modals.bulkMoveTitle, {
+              count: plural(prompt.count, 'note'),
             }),
-            details: [...prompt.paths, prompt.undoHint],
-            confirmText: strings().modals.bulkMoveConfirm,
+            message: fill(strings().modals.bulkMoveMessage, {
+              rules: plural(prompt.ruleCount, 'rule'),
+            }),
+            list: {
+              rows: prompt.rows,
+              more:
+                prompt.more > 0
+                  ? fill(strings().modals.bulkMoveMore, { count: prompt.more })
+                  : undefined,
+            },
+            leftLink: {
+              text: strings().modals.bulkMoveReview,
+              onClick: () => {
+                this.openVaultMovePreview();
+              },
+            },
+            confirmText: fill(strings().modals.bulkMoveConfirm, {
+              count: plural(prompt.count, 'note'),
+            }),
             cancelText: strings().common.cancel,
           }),
         renameFile: async file => {
@@ -671,13 +689,25 @@ export class AdvancedNoteMover {
     }).open();
   }
 
-  async openVaultReEvaluationPreview(): Promise<void> {
-    this.updateRuleManager();
-    this.plugin.ruleCache.invalidateAll();
-    new PreviewModal(this.plugin.app, this.plugin, null, {
-      title: strings().modals.previewReEvaluateTitle,
-      load: (signal, onProgress) =>
-        this.generateVaultMovePreview(signal, onProgress),
+  /** Opens the rule editor with a new rule that matches the given note. */
+  openNewRuleFromNote(file: TFile): void {
+    const { app } = this.plugin;
+    const metadata = fileMetadataFromCache(
+      file,
+      app.metadataCache.getFileCache(file)
+    );
+    new RuleEditorModal(app, {
+      rule: ruleFromNote(metadata),
+      isEditMode: false,
+      onSave: async rule => {
+        const settings = this.plugin.pluginData.settings;
+        settings.rulesV2 = [...(settings.rulesV2 ?? []), rule];
+        await this.plugin.save_settings();
+        this.updateRuleManager();
+      },
+      vaultIndexCache: this.plugin.vaultIndexCache,
+      createFoldersByDefault:
+        this.plugin.pluginData.settings.createMissingDestinationFolders ?? true,
     }).open();
   }
 
@@ -686,7 +716,7 @@ export class AdvancedNoteMover {
    */
   async generateVaultMovePreview(
     signal?: AbortSignal,
-    onProgress?: (completed: number, total: number) => void
+    onProgress?: (completed: number, total: number, found: number) => void
   ): Promise<MovePreview> {
     return this.plugin.performanceTrace.recordAsync(
       'AdvancedNoteMover.generateVaultMovePreview',

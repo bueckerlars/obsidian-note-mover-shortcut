@@ -26,3 +26,33 @@ export function presetRule(preset: RulePreset, name: string): RuleV2 {
   }
   return base;
 }
+
+/** A new rule that matches the given note: one condition per tag and simple property. */
+export function ruleFromNote(note: {
+  tags: readonly string[];
+  properties: Record<string, unknown>;
+}): RuleV2 {
+  const rule = presetRule('tag', '');
+  const triggers: RuleV2['triggers'] = [];
+  for (const tag of note.tags) {
+    triggers.push({
+      criteriaType: 'tag',
+      operator: 'includes item',
+      value: tag,
+    });
+  }
+  for (const [name, value] of Object.entries(note.properties)) {
+    if (name === 'tags' || name === 'position') continue;
+    if (typeof value === 'string' && value.trim() !== '') {
+      triggers.push({
+        criteriaType: 'properties',
+        operator: 'is',
+        value,
+        propertyName: name,
+        propertyType: 'text',
+      });
+    }
+  }
+  if (triggers.length > 0) rule.triggers = triggers;
+  return rule;
+}

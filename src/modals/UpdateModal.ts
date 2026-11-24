@@ -1,159 +1,86 @@
-import { Setting, App, MarkdownRenderer, Component } from 'obsidian';
+import { App } from 'obsidian';
 import { fill, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
-import { MobileUtils } from '../utils/MobileUtils';
+import { renderModalFooter } from './modalFooter';
+import { iconSpan } from './modalDom';
 import type { ChangelogEntry } from '../generated/changelog';
-import { changelogBlocks } from '../domain/changelog/changelogBlocks';
-import { renderChangelogBlock } from './changelogRender';
+import { releaseNotes, shortVersion } from '../domain/changelog/releaseNotes';
+
+const CHANGELOG_URL =
+  'https://github.com/bueckerlars/obsidian-note-mover-shortcut/releases';
 
 export class UpdateModal extends BaseModal {
-  private currentVersion: string;
-  private lastSeenVersion: string;
-  private changelogEntries: ChangelogEntry[];
-  private readonly renderComponent = new Component();
-
   constructor(
     app: App,
-    parent: Component,
     currentVersion: string,
-    lastSeenVersion: string,
-    changelogEntries: ChangelogEntry[],
+    private lastSeenVersion: string,
+    private changelogEntries: ChangelogEntry[],
     options: BaseModalOptions = {}
   ) {
     super(app, {
-      title: fill(strings().modals.updateTitle, { version: currentVersion }),
-      titleIcon: 'party-popper',
-      cssClass: 'advancedNoteMover-update-modal',
-      size: 'medium',
+      title: fill(strings().modals.updateTitle, {
+        version: shortVersion(currentVersion),
+      }),
       ...options,
     });
-    parent.addChild(this.renderComponent);
-    this.currentVersion = currentVersion;
-    this.lastSeenVersion = lastSeenVersion;
-    this.changelogEntries = changelogEntries;
   }
 
   protected createContent(): void {
     const { contentEl } = this;
+    const text = strings().modals;
+    this.modalEl.addClass('advancedNoteMover-release-shell');
 
-    // Subtitle
     if (this.lastSeenVersion) {
       contentEl.createEl('p', {
-        text: fill(strings().modals.updateWhatsNew, {
-          version: this.lastSeenVersion,
-        }),
-        cls: 'advancedNoteMover-modal-subtitle',
-      });
-    } else {
-      contentEl.createEl('p', {
-        text: strings().modals.updateLatestChanges,
-        cls: 'advancedNoteMover-modal-subtitle',
+        cls: 'advancedNoteMover-modal-sub',
+        text: fill(text.updateFrom, { version: this.lastSeenVersion }),
       });
     }
 
-    // Changelog Content
-    const isMobile = MobileUtils.isMobile();
-    const changelogContainer = contentEl.createDiv({
-      cls: isMobile
-        ? 'advancedNoteMover-changelog-container advancedNoteMover-changelog-container-mobile'
-        : 'advancedNoteMover-changelog-container',
-    });
-
-    if (this.changelogEntries.length === 0) {
-      changelogContainer.createEl('p', {
-        text: strings().modals.updateNoChangelog,
-        cls: 'advancedNoteMover-no-changelog-text',
+    const notes = releaseNotes(this.changelogEntries);
+    const body = contentEl.createDiv({ cls: 'advancedNoteMover-release-body' });
+    for (const highlight of notes.highlights) {
+      const row = body.createDiv({ cls: 'advancedNoteMover-release-item' });
+      iconSpan(row, highlight.icon, 'advancedNoteMover-release-icon');
+      const copy = row.createDiv();
+      copy.createDiv({
+        cls: 'advancedNoteMover-strong',
+        text: highlight.title,
       });
-    } else {
-      this.renderChangelog(changelogContainer);
+      copy.createDiv({
+        cls: 'advancedNoteMover-release-text',
+        text: highlight.text,
+      });
+    }
+    if (notes.fixes.length > 0) {
+      if (notes.highlights.length > 0) body.createEl('hr');
+      body.createDiv({
+        cls: 'advancedNoteMover-release-fixes-title',
+        text: text.updateFixes,
+      });
+      const list = body.createEl('ul', {
+        cls: 'advancedNoteMover-release-fixes',
+      });
+      for (const fix of notes.fixes) list.createEl('li', { text: fix });
+    }
+    if (notes.highlights.length === 0 && notes.fixes.length === 0) {
+      body.createDiv({
+        cls: 'advancedNoteMover-release-text',
+        text: text.updateNoChangelog,
+      });
     }
 
-    // Footer with links and button
-    const footerContainer = contentEl.createDiv({
-      cls: isMobile
-        ? 'advancedNoteMover-modal-footer advancedNoteMover-modal-footer-mobile'
-        : 'advancedNoteMover-modal-footer',
-    });
-
-    // GitHub Link
-    const linkContainer = footerContainer.createDiv({
-      cls: isMobile
-        ? 'advancedNoteMover-update-modal-links advancedNoteMover-update-modal-links-mobile'
-        : 'advancedNoteMover-update-modal-links',
-    });
-    const githubLink = linkContainer.createEl('a', {
-      text: strings().modals.updateGithub,
-      href: 'https://github.com/bueckerlars/obsidian-note-mover-shortcut/releases',
-      cls: isMobile
-        ? 'advancedNoteMover-update-modal-github-link advancedNoteMover-update-modal-github-link-mobile'
-        : 'advancedNoteMover-update-modal-github-link',
-    });
-    githubLink.setAttribute('target', '_blank');
-
-    // Close button
-    if (isMobile) {
-      new Setting(footerContainer).addButton(btn => {
-        btn
-          .setButtonText(strings().common.close)
-          .setCta()
-          .onClick(() => {
-            this.close();
-          });
-      });
-    } else {
-      // Desktop: Original layout
-      const buttonContainer = this.createButtonContainer(footerContainer);
-      this.createButton(
-        buttonContainer,
-        strings().common.close,
-        () => {
-          this.close();
-        },
-        {
-          isPrimary: true,
-        }
-      );
-    }
-  }
-
-  private renderChangelog(container: HTMLElement): void {
-    const copy = strings().modals;
-    const isMobile = MobileUtils.isMobile();
-    const blocks = changelogBlocks(this.changelogEntries, {
-      version: version => fill(copy.updateVersion, { version }),
-      sections: {
-        breaking: copy.updateBreaking,
-        features: copy.updateFeatures,
-        improvements: copy.updateImprovements,
-        bugFixes: copy.updateBugFixes,
-        changes: copy.updateChanges,
-        fixes: copy.updateFixes,
-        performance: copy.updatePerformance,
+    const footer = renderModalFooter(contentEl, {
+      primaryText: text.updateGotIt,
+      onPrimary: () => {
+        this.close();
       },
     });
-    let parent = container;
-    for (const block of blocks) {
-      if (block.type === 'version') {
-        parent = container.createDiv({
-          cls: isMobile
-            ? 'advancedNoteMover-changelog-version advancedNoteMover-changelog-version-mobile'
-            : 'advancedNoteMover-changelog-version',
-        });
-      }
-      renderChangelogBlock(parent, block, (item, markdown) => {
-        void MarkdownRenderer.render(
-          this.app,
-          markdown,
-          item,
-          '',
-          this.renderComponent
-        );
-      });
-    }
-  }
-
-  onClose(): void {
-    this.renderComponent.unload();
-    super.onClose();
+    footer.leftEl.createEl('a', {
+      cls: 'advancedNoteMover-link-button',
+      text: text.updateFullChangelog,
+      href: CHANGELOG_URL,
+      attr: { target: '_blank', rel: 'noopener' },
+    });
   }
 }

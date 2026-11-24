@@ -127,6 +127,36 @@ export class PluginSettingTab {
   display(): void {}
 }
 
+export class ButtonComponent {
+  buttonEl = document.createElement('button');
+
+  constructor(parent: HTMLElement) {
+    parent.append(this.buttonEl);
+  }
+
+  setButtonText(text: string): this {
+    this.buttonEl.textContent = text;
+    return this;
+  }
+
+  onClick(callback: () => void): this {
+    this.buttonEl.onclick = callback;
+    return this;
+  }
+
+  setCta(): this {
+    this.buttonEl.classList.add('mod-cta');
+    return this;
+  }
+
+  setDisabled(disabled: boolean): this {
+    this.buttonEl.disabled = disabled;
+    return this;
+  }
+}
+
+export class FuzzySuggestModal extends Modal {}
+
 export class Setting {
   settingEl: HTMLElement = document.createElement('div');
   infoEl: HTMLElement = document.createElement('div');

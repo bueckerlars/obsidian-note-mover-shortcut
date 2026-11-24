@@ -48,6 +48,17 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.page = page;
   }
 
+  /** Scrolls an already rendered section heading into view. */
+  scrollToSection(section: 'exclusions' | 'history'): void {
+    const labels = strings().settings;
+    const heading =
+      section === 'history' ? labels.headingsHistory : labels.exclusionsHeading;
+    this.containerEl
+      .findAll('.setting-item-heading')
+      .find(el => el.textContent?.includes(heading))
+      ?.scrollIntoView({ block: 'start' });
+  }
+
   /**
    * Obsidian skips display() when this returns items. The sections render the
    * tab, so this stays empty and settings search on 1.13 does not list them.

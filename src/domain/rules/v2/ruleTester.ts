@@ -1,119 +1,120 @@
 import type { FileMetadata } from '../../../types/Common';
 import type { RuleV2, Trigger } from '../../../types/RuleV2';
+import { BlacklistFilterEngine } from '../../filters/blacklist-filter-engine';
+import {
+  parseExclusion,
+  type ExclusionKind,
+} from '../../filters/exclusionFilter';
+import { resolveDestinationPreview } from '../../templates/resolveDestinationPreview';
+import { getParentPath } from '../../../utils/PathUtils';
+import { stringifyUnknown } from '../../../utils/stringify-unknown';
 import { RuleMatcherV2Engine } from './RuleMatcherV2Engine';
 
-export interface FailedCondition {
-  criteriaType: string;
-  operator: string;
-  value: string;
+/** Why one condition passed or failed. The UI turns the code into text. */
+export type ConditionReason =
+  | { code: 'matches' }
+  | { code: 'hasTag'; value: string }
+  | { code: 'noTags' }
+  | { code: 'propertyMissing' }
+  | { code: 'propertyIs'; value: string }
+  | { code: 'differs' };
+
+export interface ConditionExplanation {
+  trigger: Trigger;
+  passed: boolean;
+  reason: ConditionReason;
 }
 
-export type RuleTestStatus = 'matched' | 'inactive' | 'empty' | 'failed';
-
-export interface RuleTestResult {
-  ruleName: string;
+export interface RuleExplanation {
+  rule: RuleV2;
+  /** An off rule is not checked. */
+  checked: boolean;
   matched: boolean;
-  failedCondition: FailedCondition | null;
-  status: RuleTestStatus;
+  conditions: ConditionExplanation[];
+  /** Folder when this is the rule that decides, otherwise null. */
+  movesTo: string | null;
 }
 
-function failedFrom(trigger: Trigger): FailedCondition {
-  return {
-    criteriaType: trigger.criteriaType,
-    operator: String(trigger.operator),
-    value: trigger.value,
-  };
+export interface NoteExplanation {
+  excludedBy: { kind: ExclusionKind; value: string } | null;
+  rules: RuleExplanation[];
+  /** Folder the note would move to, or null when it stays. */
+  movesTo: string | null;
 }
 
-function unmatched(
-  ruleName: string,
-  status: 'inactive' | 'empty'
-): RuleTestResult {
-  return {
-    ruleName,
-    matched: false,
-    failedCondition: null,
-    status,
-  };
+function reasonFor(
+  metadata: FileMetadata,
+  trigger: Trigger,
+  passed: boolean
+): ConditionReason {
+  if (passed) return { code: 'matches' };
+  if (trigger.criteriaType === 'tag') {
+    const first = metadata.tags[0];
+    return first ? { code: 'hasTag', value: first } : { code: 'noTags' };
+  }
+  if (trigger.criteriaType === 'properties' && trigger.propertyName) {
+    const actual = metadata.properties[trigger.propertyName];
+    if (actual === undefined || actual === null) {
+      return { code: 'propertyMissing' };
+    }
+    return { code: 'propertyIs', value: stringifyUnknown(actual) };
+  }
+  return { code: 'differs' };
+}
+
+function aggregate(rule: RuleV2, passed: boolean[]): boolean {
+  if (passed.length === 0) return false;
+  if (rule.aggregation === 'any') return passed.some(Boolean);
+  if (rule.aggregation === 'none') return !passed.some(Boolean);
+  return passed.every(Boolean);
 }
 
 /**
- * Explains each rule for one note. A match has no failed condition.
- * Otherwise the first condition that decided the miss is returned.
+ * Explains one note: the exclusion that blocks it, then every rule from the
+ * top with the result of each condition. The first matching rule decides.
+ * Exclusions are listed but do not stop the rules from being checked.
  */
-export function testRules(
+export function explainNote(
   metadata: FileMetadata,
   rules: readonly RuleV2[],
+  exclusions: readonly string[],
   engine = new RuleMatcherV2Engine()
-): RuleTestResult[] {
-  return rules.map(rule => explainRule(metadata, rule, engine));
-}
-
-function explainRule(
-  metadata: FileMetadata,
-  rule: RuleV2,
-  engine: RuleMatcherV2Engine
-): RuleTestResult {
-  if (!rule.active) {
-    return unmatched(rule.name, 'inactive');
-  }
-  if (rule.triggers.length === 0) {
-    return unmatched(rule.name, 'empty');
-  }
-
-  const results = rule.triggers.map(trigger => ({
-    trigger,
-    passed: engine.evaluateTrigger(metadata, trigger),
-  }));
-  const firstFailed = results.find(item => !item.passed);
-  const firstPassed = results.find(item => item.passed);
-
-  if (rule.aggregation === 'any') {
-    if (firstPassed) {
+): NoteExplanation {
+  const blocking = new BlacklistFilterEngine().getFilterMatchDetails(metadata, [
+    ...exclusions,
+  ]).blockingFilter;
+  let decided = false;
+  const explained = rules.map((rule): RuleExplanation => {
+    if (!rule.active) {
       return {
-        ruleName: rule.name,
-        matched: true,
-        failedCondition: null,
-        status: 'matched',
+        rule,
+        checked: false,
+        matched: false,
+        conditions: [],
+        movesTo: null,
       };
     }
-    return {
-      ruleName: rule.name,
-      matched: false,
-      failedCondition: failedFrom(results[0].trigger),
-      status: 'failed',
-    };
-  }
-
-  if (rule.aggregation === 'none') {
-    if (!firstPassed) {
-      return {
-        ruleName: rule.name,
-        matched: true,
-        failedCondition: null,
-        status: 'matched',
-      };
-    }
-    return {
-      ruleName: rule.name,
-      matched: false,
-      failedCondition: failedFrom(firstPassed.trigger),
-      status: 'failed',
-    };
-  }
-
-  if (!firstFailed) {
-    return {
-      ruleName: rule.name,
-      matched: true,
-      failedCondition: null,
-      status: 'matched',
-    };
-  }
+    const conditions = rule.triggers.map(trigger => {
+      const passed = engine.evaluateTrigger(metadata, trigger);
+      return { trigger, passed, reason: reasonFor(metadata, trigger, passed) };
+    });
+    const matched = aggregate(
+      rule,
+      conditions.map(c => c.passed)
+    );
+    const decides = matched && !decided;
+    decided ||= matched;
+    const movesTo = decides
+      ? (resolveDestinationPreview(rule.destination, metadata) ??
+        rule.destination)
+      : null;
+    return { rule, checked: true, matched, conditions, movesTo };
+  });
+  const target = explained.find(item => item.movesTo !== null)?.movesTo ?? null;
+  const here = getParentPath(metadata.filePath);
   return {
-    ruleName: rule.name,
-    matched: false,
-    failedCondition: failedFrom(firstFailed.trigger),
-    status: 'failed',
+    excludedBy: blocking ? parseExclusion(blocking) : null,
+    rules: explained,
+    movesTo: blocking || target === null || target === here ? null : target,
   };
 }
