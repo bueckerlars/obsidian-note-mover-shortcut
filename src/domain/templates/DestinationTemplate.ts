@@ -142,8 +142,9 @@ export function parseDestinationTemplate(raw: string): {
       };
     }
 
-    const [prefix, ...rest] = inner.split('.');
-    const key = rest.join('.').trim();
+    const dot = inner.indexOf('.');
+    const prefix = dot < 0 ? inner : inner.slice(0, dot);
+    const key = dot < 0 ? '' : inner.slice(dot + 1).trim();
 
     if (!key) {
       return {

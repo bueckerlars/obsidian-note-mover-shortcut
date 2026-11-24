@@ -12,7 +12,7 @@ export interface ReleaseNotes {
 
 /** "1.5.2" -> "1.5". */
 export function shortVersion(version: string): string {
-  return version.split('.').slice(0, 2).join('.');
+  return /^[^.]*\.[^.]*/.exec(version)?.[0] ?? version;
 }
 
 /** User-facing notes of the given entries (newest first): top highlights, all fixes. */
