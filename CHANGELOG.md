@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.0...1.4.1)
+
+### Fixes
+
+- **Plugin review**: Clears the warnings from the Obsidian plugin review. CSS that older Obsidian versions only partly support is replaced, promise-returning callbacks in the settings are fixed, the import dialog creates its file field with `createEl`, and two places that split and joined text on dots no longer do.
+- **Phone layout**: The full-screen preview, history and conflict dialogs and the destination field in the rule editor use plain classes instead of `:has` and `display: contents`. They should look as before.
+
+### Improvements
+
+- **Lint**: `npm run lint` now fails on warnings and checks `styles.css` for the CSS the review flags, so these warnings cannot return unnoticed.
+
 ## [1.4.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.4.0)
 
 ### Highlights
