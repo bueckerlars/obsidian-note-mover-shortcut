@@ -270,6 +270,31 @@ body.is-mobile {
   white-space: nowrap;
 }
 
+.advancedNoteMover-history-day-label {
+  margin: var(--size-4-3) 0 var(--size-2-1);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.advancedNoteMover-history-entry-meta {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.advancedNoteMover-history-actions {
+  display: flex;
+  flex-direction: row;
+  flex: 0 0 auto;
+  gap: var(--size-2-1);
+}
+
+.advancedNoteMover-history-modal .advancedNoteMover-history-action {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  padding: 0;
+}
+
 /* Bulk Operation Styles */
 .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
   background: var(--background-secondary);
@@ -431,6 +456,32 @@ body.is-mobile {
   background: var(--background-primary-alt);
 }
 
+.advancedNoteMover-preview-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-4-2);
+  min-width: 0;
+}
+
+.advancedNoteMover-preview-item-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.advancedNoteMover-preview-select {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+}
+
+.advancedNoteMover-preview-empty-actions {
+  display: flex;
+  margin-top: var(--size-4-2);
+}
+
 .advancedNoteMover-preview-item-main {
   margin-bottom: var(--size-4-2);
 }
@@ -446,12 +497,18 @@ body.is-mobile {
   display: flex;
   align-items: center;
   gap: var(--size-4-3);
+  min-width: 0;
+  overflow: hidden;
   font-family: var(--font-monospace);
   font-size: var(--font-ui-small);
 }
 
 .advancedNoteMover-current-path {
   color: var(--text-muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .advancedNoteMover-arrow {
@@ -462,6 +519,10 @@ body.is-mobile {
 .advancedNoteMover-target-path {
   color: var(--text-success);
   font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .advancedNoteMover-preview-item-details {

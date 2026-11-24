@@ -1,16 +1,20 @@
-import { Setting, App, MarkdownRenderer, Component, setIcon } from 'obsidian';
+import { Setting, App, MarkdownRenderer, Component } from 'obsidian';
 import { fill, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import type { ChangelogEntry } from '../generated/changelog';
+import { changelogBlocks } from '../domain/changelog/changelogBlocks';
+import { renderChangelogBlock } from './changelogRender';
 
 export class UpdateModal extends BaseModal {
   private currentVersion: string;
   private lastSeenVersion: string;
   private changelogEntries: ChangelogEntry[];
+  private readonly renderComponent = new Component();
 
   constructor(
     app: App,
+    parent: Component,
     currentVersion: string,
     lastSeenVersion: string,
     changelogEntries: ChangelogEntry[],
@@ -23,6 +27,7 @@ export class UpdateModal extends BaseModal {
       size: 'medium',
       ...options,
     });
+    parent.addChild(this.renderComponent);
     this.currentVersion = currentVersion;
     this.lastSeenVersion = lastSeenVersion;
     this.changelogEntries = changelogEntries;
@@ -109,167 +114,44 @@ export class UpdateModal extends BaseModal {
     }
   }
 
-  private renderMarkdownListItem(container: HTMLElement, markdown: string) {
-    const item = container.createEl('li');
-    void MarkdownRenderer.render(
-      this.app,
-      markdown,
-      item,
-      '',
-      this as unknown as Component
-    );
-  }
-
-  private createChangelogHeading(
-    parent: HTMLElement,
-    icon: string,
-    text: string
-  ): void {
-    const heading = parent.createEl('h4', {
-      cls: 'advancedNoteMover-changelog-section-title',
-    });
-    const iconEl = heading.createSpan({ cls: 'advancedNoteMover-icon' });
-    iconEl.ariaHidden = 'true';
-    setIcon(iconEl, icon);
-    heading.createSpan({ text });
-  }
-
-  private renderChangelog(container: HTMLElement) {
+  private renderChangelog(container: HTMLElement): void {
+    const copy = strings().modals;
     const isMobile = MobileUtils.isMobile();
-    this.changelogEntries.forEach(entry => {
-      const versionContainer = container.createDiv({
-        cls: isMobile
-          ? 'advancedNoteMover-changelog-version advancedNoteMover-changelog-version-mobile'
-          : 'advancedNoteMover-changelog-version',
-      });
-
-      versionContainer.createEl('h3', {
-        text: `Version ${entry.version}`,
-        cls: 'advancedNoteMover-changelog-version-title',
-      });
-
-      if (entry.changes.breaking && entry.changes.breaking.length > 0) {
-        const breakingSection = versionContainer.createDiv({
-          cls: 'advancedNoteMover-changelog-section advancedNoteMover-changelog-section-breaking',
-        });
-        this.createChangelogHeading(
-          breakingSection,
-          'alert-triangle',
-          strings().modals.updateBreaking
-        );
-        const breakingList = breakingSection.createEl('ul', {
-          cls: 'advancedNoteMover-changelog-list',
-        });
-        entry.changes.breaking.forEach(item => {
-          this.renderMarkdownListItem(breakingList, item);
-        });
-      }
-
-      if (entry.changes.features && entry.changes.features.length > 0) {
-        const featuresSection = versionContainer.createDiv({
-          cls: 'advancedNoteMover-changelog-section',
-        });
-        this.createChangelogHeading(
-          featuresSection,
-          'sparkles',
-          strings().modals.updateFeatures
-        );
-        const featuresList = featuresSection.createEl('ul', {
-          cls: 'advancedNoteMover-changelog-list',
-        });
-        entry.changes.features.forEach(feature => {
-          this.renderMarkdownListItem(featuresList, feature);
-        });
-      }
-
-      if (entry.changes.improvements && entry.changes.improvements.length > 0) {
-        const improvementsSection = versionContainer.createDiv({
-          cls: 'advancedNoteMover-changelog-section',
-        });
-        this.createChangelogHeading(
-          improvementsSection,
-          'zap',
-          strings().modals.updateImprovements
-        );
-        const improvementsList = improvementsSection.createEl('ul', {
-          cls: 'advancedNoteMover-changelog-list',
-        });
-        entry.changes.improvements.forEach(improvement => {
-          this.renderMarkdownListItem(improvementsList, improvement);
-        });
-      }
-
-      if (entry.changes.bugFixes && entry.changes.bugFixes.length > 0) {
-        const bugFixesSection = versionContainer.createDiv({
-          cls: 'advancedNoteMover-changelog-section',
-        });
-        this.createChangelogHeading(
-          bugFixesSection,
-          'bug',
-          strings().modals.updateBugFixes
-        );
-        const bugFixesList = bugFixesSection.createEl('ul', {
-          cls: 'advancedNoteMover-changelog-list',
-        });
-        entry.changes.bugFixes.forEach(bugFix => {
-          this.renderMarkdownListItem(bugFixesList, bugFix);
-        });
-      }
-
-      if (entry.changes.changes && entry.changes.changes.length > 0) {
-        const changesSection = versionContainer.createDiv({
-          cls: 'advancedNoteMover-changelog-section',
-        });
-        this.createChangelogHeading(
-          changesSection,
-          'refresh-cw',
-          strings().modals.updateChanges
-        );
-        const changesList = changesSection.createEl('ul', {
-          cls: 'advancedNoteMover-changelog-list',
-        });
-        entry.changes.changes.forEach(change => {
-          this.renderMarkdownListItem(changesList, change);
-        });
-      }
-
-      if (entry.changes.fixes && entry.changes.fixes.length > 0) {
-        const fixesSection = versionContainer.createDiv({
-          cls: 'advancedNoteMover-changelog-section',
-        });
-        this.createChangelogHeading(
-          fixesSection,
-          'wrench',
-          strings().modals.updateFixes
-        );
-        const fixesList = fixesSection.createEl('ul', {
-          cls: 'advancedNoteMover-changelog-list',
-        });
-        entry.changes.fixes.forEach(fix => {
-          this.renderMarkdownListItem(fixesList, fix);
-        });
-      }
-
-      if (entry.changes.performance && entry.changes.performance.length > 0) {
-        const performanceSection = versionContainer.createDiv({
-          cls: 'advancedNoteMover-changelog-section',
-        });
-        this.createChangelogHeading(
-          performanceSection,
-          'zap',
-          strings().modals.updatePerformance
-        );
-        const performanceList = performanceSection.createEl('ul', {
-          cls: 'advancedNoteMover-changelog-list',
-        });
-        entry.changes.performance.forEach(performance => {
-          this.renderMarkdownListItem(performanceList, performance);
-        });
-      }
+    const blocks = changelogBlocks(this.changelogEntries, {
+      version: version => fill(copy.updateVersion, { version }),
+      sections: {
+        breaking: copy.updateBreaking,
+        features: copy.updateFeatures,
+        improvements: copy.updateImprovements,
+        bugFixes: copy.updateBugFixes,
+        changes: copy.updateChanges,
+        fixes: copy.updateFixes,
+        performance: copy.updatePerformance,
+      },
     });
+    let parent = container;
+    for (const block of blocks) {
+      if (block.type === 'version') {
+        parent = container.createDiv({
+          cls: isMobile
+            ? 'advancedNoteMover-changelog-version advancedNoteMover-changelog-version-mobile'
+            : 'advancedNoteMover-changelog-version',
+        });
+      }
+      renderChangelogBlock(parent, block, (item, markdown) => {
+        void MarkdownRenderer.render(
+          this.app,
+          markdown,
+          item,
+          '',
+          this.renderComponent
+        );
+      });
+    }
   }
 
-  onClose() {
+  onClose(): void {
+    this.renderComponent.unload();
     super.onClose();
   }
 }

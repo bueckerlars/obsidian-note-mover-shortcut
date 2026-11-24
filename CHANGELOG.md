@@ -19,6 +19,10 @@
 - **Rule editor**: Adding, removing, or reordering a condition updates the rule and redraws the list.
 - **Property suggestions**: Nested frontmatter is read as a dotted key, such as author.name.
 - **Rule editor**: The editor shows how many notes the rule matches, and updates that count as you edit.
+- **Move history**: History is grouped by day. Each row shows the time and the rule. Desktop actions are icon buttons. Mobile actions are one menu. Add to blacklist is no longer a warning button.
+- **Move preview**: An empty preview explains why nothing moves and links to rules. Each file shows the rule or the reason, and a checkbox selects it.
+- **Bulk preview**: Closing the preview stops further file reads and shows how far the read has got.
+- **Confirm dialog**: Confirm and cancel use one button row on desktop and mobile.
 - **Settings hints**: Filter, rule, and conflict hints use one short description. Extra detail sits on the info tooltip. Add filter and Add rule are icon buttons.
 - **Settings actions**: Each settings section has at most one primary button. Clear history is the only warning button. Import asks for confirmation and is no longer red.
 - **Rule rows**: A rule row shows the condition and the destination. Edit, duplicate, move, and delete are in the row menu.

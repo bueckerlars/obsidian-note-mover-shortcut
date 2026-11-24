@@ -1,33 +1,26 @@
-import { Setting, App, TFile, setIcon } from 'obsidian';
+import { Setting, App, TFile, Menu, setIcon, setTooltip } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
-import { BulkOperation, HistoryEntry, TimeFilter } from '../types/HistoryEntry';
+import { HistoryEntry, TimeFilter } from '../types/HistoryEntry';
 import { NoticeManager } from '../utils/NoticeManager';
-import { pluralize } from '../utils/pluralize';
 import { NOTIFICATION_CONSTANTS } from '../config/constants';
 import { fill, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import AdvancedNoteMoverPlugin from 'main';
+import {
+  groupHistoryByDay,
+  type HistoryAction,
+  type HistoryRow,
+} from '../domain/history/historyGrouping';
+
+const ACTION_ICONS: Record<HistoryAction, string> = {
+  open: 'file-text',
+  undo: 'undo',
+  blacklist: 'ban',
+};
 
 export class HistoryModal extends BaseModal {
   private currentTimeFilter: TimeFilter = 'all';
-
-  private createIconLabel(
-    parent: HTMLElement,
-    cls: string,
-    icon: string,
-    text: string
-  ): void {
-    const row = parent.createDiv({ cls });
-    const iconEl = row.createSpan({ cls: 'advancedNoteMover-icon' });
-    iconEl.ariaHidden = 'true';
-    setIcon(iconEl, icon);
-    row.createSpan({ text });
-  }
-
-  private formatHistoryDate(timestamp: number): string {
-    return new Date(timestamp).toLocaleString();
-  }
 
   constructor(
     app: App,
@@ -45,18 +38,15 @@ export class HistoryModal extends BaseModal {
 
   protected createContent(): void {
     const { contentEl } = this;
-
-    // Create time filter dropdown
     this.createTimeFilterDropdown(contentEl);
 
-    const history = this.historyManager.getFilteredHistory(
-      this.currentTimeFilter
+    const entries = this.visibleEntries();
+    const byId = new Map(entries.map(entry => [entry.id, entry]));
+    const groups = groupHistoryByDay(
+      entries,
+      strings().modals.historyUnknownRule
     );
-    const bulkOperations = this.historyManager.getFilteredBulkOperations(
-      this.currentTimeFilter
-    );
-
-    if (history.length === 0 && bulkOperations.length === 0) {
+    if (groups.length === 0) {
       contentEl.createDiv({
         cls: 'advancedNoteMover-modal-empty',
         text: strings().modals.historyEmpty,
@@ -67,42 +57,46 @@ export class HistoryModal extends BaseModal {
     const historyList = contentEl.createDiv({
       cls: 'advancedNoteMover-history-list',
     });
-
-    // Create a combined list of operations sorted by timestamp
-    const allOperations: Array<
-      | { type: 'bulk'; data: BulkOperation }
-      | { type: 'single'; data: HistoryEntry }
-    > = [];
-
-    // Add bulk operations
-    bulkOperations.forEach(bulkOp => {
-      allOperations.push({ type: 'bulk', data: bulkOp });
-    });
-
-    // Add ONLY single operations that are NOT part of any bulk operation
-    const singleEntries = history.filter(entry => !entry.bulkOperationId);
-    singleEntries.forEach(entry => {
-      allOperations.push({ type: 'single', data: entry });
-    });
-
-    // Sort by timestamp (most recent first)
-    allOperations.sort((a, b) => b.data.timestamp - a.data.timestamp);
-
-    allOperations.forEach(operation => {
-      if (operation.type === 'bulk') {
-        this.createBulkOperationEntry(historyList, operation.data);
-      } else {
-        this.createSingleEntry(historyList, operation.data);
+    for (const group of groups) {
+      const day = historyList.createDiv({
+        cls: 'advancedNoteMover-history-day',
+      });
+      day.createDiv({
+        cls: 'advancedNoteMover-history-day-label',
+        text: group.day,
+      });
+      for (const row of group.rows) {
+        const entry = byId.get(row.id);
+        if (entry) {
+          this.renderRow(day, row, entry);
+        }
       }
-    });
+    }
+  }
+
+  private visibleEntries(): HistoryEntry[] {
+    const entries = this.historyManager.getFilteredHistory(
+      this.currentTimeFilter
+    );
+    const seen = new Set(entries.map(entry => entry.id));
+    const combined = [...entries];
+    for (const bulk of this.historyManager.getFilteredBulkOperations(
+      this.currentTimeFilter
+    )) {
+      for (const entry of bulk.entries) {
+        if (seen.has(entry.id)) {
+          continue;
+        }
+        seen.add(entry.id);
+        combined.push(entry);
+      }
+    }
+    return combined;
   }
 
   private createTimeFilterDropdown(container: HTMLElement): void {
-    const isMobile = MobileUtils.isMobile();
     const filterContainer = container.createDiv({
-      cls: isMobile
-        ? 'advancedNoteMover-time-filter-container advancedNoteMover-time-filter-container-mobile'
-        : 'advancedNoteMover-time-filter-container',
+      cls: 'advancedNoteMover-time-filter-container',
     });
 
     new Setting(filterContainer)
@@ -122,398 +116,147 @@ export class HistoryModal extends BaseModal {
   }
 
   private refreshContent(): void {
-    const { contentEl } = this;
-    contentEl.empty();
+    this.contentEl.empty();
     this.createContent();
   }
 
-  private createBulkOperationEntry(
+  private renderRow(
     container: HTMLElement,
-    bulkOp: BulkOperation
-  ) {
-    const isMobile = MobileUtils.isMobile();
-    const bulkEntryEl = container.createDiv({
-      cls: isMobile
-        ? 'advancedNoteMover-history-entry advancedNoteMover-bulk-operation advancedNoteMover-history-entry-mobile'
-        : 'advancedNoteMover-history-entry advancedNoteMover-bulk-operation',
-    });
-
-    const headerEl = bulkEntryEl.createDiv({
-      cls: 'advancedNoteMover-bulk-header',
-    });
-    const formattedDate = this.formatHistoryDate(bulkOp.timestamp);
-
-    const operationTypeText =
-      bulkOp.operationType === 'bulk'
-        ? strings().modals.historyBulkMove
-        : strings().modals.historyPeriodicMove;
-
-    this.createIconLabel(
-      headerEl,
-      'advancedNoteMover-bulk-operation-info',
-      bulkOp.operationType === 'bulk' ? 'package' : 'clock',
-      fill(strings().modals.historyBulkSummary, {
-        operation: operationTypeText,
-        files: pluralize(bulkOp.totalFiles, 'file'),
-        date: formattedDate,
-      })
-    );
-
-    // Expandable details (opened by default)
-    const detailsEl = bulkEntryEl.createEl('details', {
-      cls: 'advancedNoteMover-bulk-details',
-    });
-    detailsEl.open = true;
-    const summaryEl = detailsEl.createEl('summary', {
-      text: strings().modals.historyHideFiles,
-    });
-    const filesListEl = detailsEl.createDiv({
-      cls: 'advancedNoteMover-bulk-files-list',
-    });
-
-    // Update summary text based on open state
-    detailsEl.addEventListener('toggle', () => {
-      summaryEl.textContent = detailsEl.open
-        ? strings().modals.historyHideFiles
-        : strings().modals.historyShowFiles;
-    });
-
-    // Sort entries by timestamp for consistent display
-    const sortedEntries = [...bulkOp.entries].sort(
-      (a, b) => a.timestamp - b.timestamp
-    );
-
-    sortedEntries.forEach(entry => {
-      const fileEl = filesListEl.createDiv({
-        cls: 'advancedNoteMover-history-entry advancedNoteMover-bulk-file-entry',
-      });
-
-      const contentEl = fileEl.createDiv({
-        cls: 'advancedNoteMover-history-entry-content',
-      });
-      const formattedDate = this.formatHistoryDate(entry.timestamp);
-
-      this.createIconLabel(
-        contentEl,
-        'advancedNoteMover-history-entry-info',
-        'file-text',
-        fill(strings().modals.historyFileLine, {
-          fileName: entry.fileName,
-          date: formattedDate,
-        })
-      );
-
-      contentEl.createDiv({
-        cls: 'advancedNoteMover-history-entry-paths',
-        text: `${entry.sourcePath} → ${entry.destinationPath}`,
-      });
-
-      // Individual buttons for each file
-      const isMobile = MobileUtils.isMobile();
-      if (isMobile) {
-        // Mobile: Stack buttons vertically
-        const buttonsContainer = fileEl.createDiv({
-          cls: 'advancedNoteMover-history-entry-buttons-mobile',
-        });
-
-        // Open button
-        const openBtn = buttonsContainer.createEl('button', {
-          cls: 'advancedNoteMover-history-entry-button-mobile',
-          text: strings().common.open,
-        });
-        openBtn.onclick = () => {
-          const file = this.app.vault.getAbstractFileByPath(
-            entry.destinationPath
-          );
-          if (file && file instanceof TFile) {
-            void this.app.workspace.getLeaf().openFile(file);
-            this.close();
-          } else {
-            const sourceFile = this.app.vault.getAbstractFileByPath(
-              entry.sourcePath
-            );
-            if (sourceFile && sourceFile instanceof TFile) {
-              void this.app.workspace.getLeaf().openFile(sourceFile);
-              this.close();
-            } else {
-              NoticeManager.error(`Could not find file ${entry.fileName}`, {
-                duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
-              });
-            }
-          }
-        };
-
-        // Undo button
-        const undoBtn = buttonsContainer.createEl('button', {
-          cls: 'advancedNoteMover-history-entry-button-mobile',
-          text: strings().common.undo,
-        });
-        undoBtn.onclick = () => {
-          void (async () => {
-            const success = await this.historyManager.undoEntry(entry.id);
-            if (success) {
-              this.onOpen();
-            } else {
-              NoticeManager.error(
-                `Could not undo move for ${entry.fileName}. File may have been moved or deleted.`,
-                { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
-              );
-            }
-          })();
-        };
-
-        // Blacklist button
-        const blacklistBtn = buttonsContainer.createEl('button', {
-          cls: 'advancedNoteMover-history-entry-button-mobile advancedNoteMover-history-entry-button-warning',
-          text: strings().modals.historyAddToBlacklist,
-        });
-        blacklistBtn.onclick = () => {
-          void this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);
-        };
-      } else {
-        // Desktop: Original horizontal layout
-        new Setting(fileEl)
-          .addButton(button => {
-            button
-              .setIcon('file-text')
-              .setTooltip(`Open ${entry.fileName}`)
-              .onClick(() => {
-                const file = this.app.vault.getAbstractFileByPath(
-                  entry.destinationPath
-                );
-                if (file && file instanceof TFile) {
-                  void this.app.workspace.getLeaf().openFile(file);
-                  this.close();
-                } else {
-                  const sourceFile = this.app.vault.getAbstractFileByPath(
-                    entry.sourcePath
-                  );
-                  if (sourceFile && sourceFile instanceof TFile) {
-                    void this.app.workspace.getLeaf().openFile(sourceFile);
-                    this.close();
-                  } else {
-                    NoticeManager.error(
-                      `Could not find file ${entry.fileName}`,
-                      {
-                        duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
-                      }
-                    );
-                  }
-                }
-              });
-          })
-          .addButton(button => {
-            button
-              .setIcon('undo')
-              .setTooltip(`Undo move for ${entry.fileName}`)
-              .onClick(async () => {
-                const success = await this.historyManager.undoEntry(entry.id);
-                if (success) {
-                  this.onOpen();
-                } else {
-                  NoticeManager.error(
-                    `Could not undo move for ${entry.fileName}. File may have been moved or deleted.`,
-                    { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
-                  );
-                }
-              });
-          })
-          .addButton(button => {
-            button
-              .setIcon('ban')
-              .setTooltip(`Add ${entry.fileName} to blacklist`)
-              .onClick(async () => {
-                await this.plugin.advancedNoteMover.addFileToBlacklist(
-                  entry.fileName
-                );
-              });
-          });
-      }
-    });
-
-    // Bulk undo button
-    const bulkUndoSetting = new Setting(bulkEntryEl).addButton(button => {
-      button
-        .setButtonText(strings().modals.historyUndoAll)
-        .setIcon('undo')
-        .setTooltip(`Undo entire ${operationTypeText.toLowerCase()}`)
-        .onClick(() => {
-          void (async () => {
-            button.setDisabled(true);
-            try {
-              const undone = await this.historyManager.undoBulkOperation(
-                bulkOp.id
-              );
-              if (undone.success) {
-                this.onOpen();
-              } else {
-                NoticeManager.warning(
-                  undone.errors.length === 1
-                    ? undone.errors[0]
-                    : `${pluralize(undone.errors.length, 'error')} while undoing.`,
-                  {
-                    duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
-                    detailText: 'Show details',
-                    onDetail:
-                      undone.errors.length > 1
-                        ? () => {
-                            NoticeManager.error(undone.errors.join('; '));
-                          }
-                        : undefined,
-                  }
-                );
-              }
-            } finally {
-              button.setDisabled(false);
-            }
-          })();
-        });
-    });
-
-    if (MobileUtils.isMobile()) {
-      bulkUndoSetting.settingEl.addClass(
-        'advancedNoteMover-bulk-undo-setting-mobile'
-      );
-    }
-  }
-
-  private createSingleEntry(container: HTMLElement, entry: HistoryEntry) {
-    const isMobile = MobileUtils.isMobile();
+    row: HistoryRow,
+    entry: HistoryEntry
+  ): void {
     const entryEl = container.createDiv({
-      cls: isMobile
-        ? 'advancedNoteMover-history-entry advancedNoteMover-single-operation advancedNoteMover-history-entry-mobile'
-        : 'advancedNoteMover-history-entry advancedNoteMover-single-operation',
+      cls: 'advancedNoteMover-history-entry',
     });
-
     const contentEl = entryEl.createDiv({
       cls: 'advancedNoteMover-history-entry-content',
     });
-    const formattedDate = this.formatHistoryDate(entry.timestamp);
-
-    this.createIconLabel(
-      contentEl,
-      'advancedNoteMover-history-entry-info',
-      'file-text',
-      fill(strings().modals.historyFileLine, {
-        fileName: entry.fileName,
-        date: formattedDate,
-      })
-    );
-
+    const title = contentEl.createDiv({
+      cls: 'advancedNoteMover-history-entry-info',
+    });
+    const iconEl = title.createSpan({ cls: 'advancedNoteMover-icon' });
+    iconEl.ariaHidden = 'true';
+    setIcon(iconEl, 'file-text');
+    title.createSpan({ text: entry.fileName });
+    contentEl.createDiv({
+      cls: 'advancedNoteMover-history-entry-meta',
+      text: fill(strings().modals.historyMeta, {
+        time: row.time,
+        rule: row.ruleName,
+      }),
+    });
     contentEl.createDiv({
       cls: 'advancedNoteMover-history-entry-paths',
-      text: `${entry.sourcePath} → ${entry.destinationPath}`,
+      text: fill(strings().modals.historyPathLine, {
+        source: entry.sourcePath,
+        destination: entry.destinationPath,
+      }),
     });
 
-    if (isMobile) {
-      // Mobile: Stack buttons vertically
-      const buttonsContainer = entryEl.createDiv({
-        cls: 'advancedNoteMover-history-entry-buttons-mobile',
-      });
+    const actions = entryEl.createDiv({
+      cls: 'advancedNoteMover-history-actions',
+    });
+    this.renderActions(actions, entry, row);
+  }
 
-      // Open button
-      const openBtn = buttonsContainer.createEl('button', {
-        cls: 'advancedNoteMover-history-entry-button-mobile',
-        text: strings().common.open,
+  private renderActions(
+    container: HTMLElement,
+    entry: HistoryEntry,
+    row: HistoryRow
+  ): void {
+    const labels = this.actionLabels(entry);
+    const run = this.actionHandlers(entry);
+    if (MobileUtils.isMobile()) {
+      const button = container.createEl('button', {
+        cls: 'clickable-icon advancedNoteMover-history-action',
       });
-      openBtn.onclick = () => {
-        const file = this.app.vault.getAbstractFileByPath(
-          entry.destinationPath
-        );
-        if (file && file instanceof TFile) {
-          void this.app.workspace.getLeaf().openFile(file);
-          this.close();
-        } else {
-          const sourceFile = this.app.vault.getAbstractFileByPath(
-            entry.sourcePath
+      button.setAttribute('aria-label', strings().modals.historyActions);
+      setTooltip(button, strings().modals.historyActions);
+      setIcon(button, 'more-horizontal');
+      button.addEventListener('click', () => {
+        const menu = new Menu();
+        for (const action of row.actions) {
+          menu.addItem(item =>
+            item
+              .setTitle(labels[action])
+              .setIcon(ACTION_ICONS[action])
+              .onClick(run[action])
           );
-          if (sourceFile && sourceFile instanceof TFile) {
-            void this.app.workspace.getLeaf().openFile(sourceFile);
-            this.close();
-          } else {
-            NoticeManager.error(`Could not find file ${entry.fileName}`, {
-              duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
-            });
-          }
         }
-      };
-
-      // Undo button
-      const undoBtn = buttonsContainer.createEl('button', {
-        cls: 'advancedNoteMover-history-entry-button-mobile',
-        text: strings().common.undo,
+        const rect = button.getBoundingClientRect();
+        menu.showAtPosition({ x: rect.left, y: rect.bottom });
       });
-      undoBtn.onclick = () => {
-        void (async () => {
-          const success = await this.historyManager.undoEntry(entry.id);
-          if (success) {
-            this.onOpen();
-          }
-        })();
-      };
+      return;
+    }
 
-      // Blacklist button
-      const blacklistBtn = buttonsContainer.createEl('button', {
-        cls: 'advancedNoteMover-history-entry-button-mobile advancedNoteMover-history-entry-button-warning',
-        text: strings().modals.historyAddToBlacklist,
+    for (const action of row.actions) {
+      const button = container.createEl('button', {
+        cls: 'clickable-icon advancedNoteMover-history-action',
       });
-      blacklistBtn.onclick = () => {
-        void this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);
-      };
-    } else {
-      // Desktop: Original horizontal layout
-      new Setting(entryEl)
-        .addButton(button => {
-          button
-            .setIcon('file-text')
-            .setTooltip(`Open ${entry.fileName}`)
-            .onClick(() => {
-              const file = this.app.vault.getAbstractFileByPath(
-                entry.destinationPath
-              );
-              if (file && file instanceof TFile) {
-                void this.app.workspace.getLeaf().openFile(file);
-                this.close();
-              } else {
-                const sourceFile = this.app.vault.getAbstractFileByPath(
-                  entry.sourcePath
-                );
-                if (sourceFile && sourceFile instanceof TFile) {
-                  void this.app.workspace.getLeaf().openFile(sourceFile);
-                  this.close();
-                } else {
-                  NoticeManager.error(`Could not find file ${entry.fileName}`, {
-                    duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
-                  });
-                }
-              }
-            });
-        })
-        .addButton(button => {
-          button
-            .setIcon('undo')
-            .setTooltip('Undo')
-            .onClick(async () => {
-              const success = await this.historyManager.undoEntry(entry.id);
-              if (success) {
-                this.onOpen();
-              }
-            });
-        })
-        .addButton(button => {
-          button
-            .setIcon('ban')
-            .setTooltip(`Add ${entry.fileName} to blacklist`)
-            .onClick(async () => {
-              await this.plugin.advancedNoteMover.addFileToBlacklist(
-                entry.fileName
-              );
-            });
-        });
+      setIcon(button, ACTION_ICONS[action]);
+      button.setAttribute('aria-label', labels[action]);
+      setTooltip(button, labels[action]);
+      button.addEventListener('click', run[action]);
     }
   }
 
-  onClose() {
-    super.onClose();
+  private actionLabels(entry: HistoryEntry): Record<HistoryAction, string> {
+    return {
+      open: fill(strings().notices.openFile, { fileName: entry.fileName }),
+      undo: fill(strings().notices.undoMoveFor, { fileName: entry.fileName }),
+      blacklist: fill(strings().notices.addNamedFileToBlacklist, {
+        fileName: entry.fileName,
+      }),
+    };
+  }
+
+  private actionHandlers(
+    entry: HistoryEntry
+  ): Record<HistoryAction, () => void> {
+    return {
+      open: () => this.openEntry(entry),
+      undo: () => {
+        void this.undoEntry(entry);
+      },
+      blacklist: () => {
+        void this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);
+      },
+    };
+  }
+
+  private fileFor(entry: HistoryEntry): TFile | null {
+    const destination = this.app.vault.getAbstractFileByPath(
+      entry.destinationPath
+    );
+    if (destination instanceof TFile) {
+      return destination;
+    }
+    const source = this.app.vault.getAbstractFileByPath(entry.sourcePath);
+    return source instanceof TFile ? source : null;
+  }
+
+  private openEntry(entry: HistoryEntry): void {
+    const file = this.fileFor(entry);
+    if (!file) {
+      NoticeManager.error(
+        fill(strings().notices.couldNotFindFile, { fileName: entry.fileName }),
+        { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+      );
+      return;
+    }
+    void this.app.workspace.getLeaf().openFile(file);
+    this.close();
+  }
+
+  private async undoEntry(entry: HistoryEntry): Promise<void> {
+    const success = await this.historyManager.undoEntry(entry.id);
+    if (success) {
+      this.refreshContent();
+      return;
+    }
+    NoticeManager.error(
+      fill(strings().notices.couldNotUndoMove, { fileName: entry.fileName }),
+      { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+    );
   }
 }

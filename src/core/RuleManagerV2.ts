@@ -17,6 +17,7 @@ import {
   renderDestinationTemplate,
 } from '../domain/templates/DestinationTemplate';
 import type { PerformanceTraceRecorder } from '../infrastructure/debug/performance-trace';
+import { readPreviewFiles } from '../domain/preview/abortPreview';
 
 /**
  * RuleManager for Rule V2 system
@@ -33,6 +34,7 @@ import type { PerformanceTraceRecorder } from '../infrastructure/debug/performan
 export interface RuleMoveResult {
   destination: string;
   createFolder: boolean;
+  ruleName: string;
 }
 
 export class RuleManagerV2 {
@@ -144,6 +146,7 @@ export class RuleManagerV2 {
             return {
               destination: normalized.path,
               createFolder: this.resolveCreateFolder(matchingRule),
+              ruleName: matchingRule.name,
             };
           }
 
@@ -308,27 +311,38 @@ export class RuleManagerV2 {
   public async generateMovePreview(
     files: TFile[],
     enableRules: boolean,
-    enableFilter: boolean
+    enableFilter: boolean,
+    options: {
+      signal?: AbortSignal;
+      onProgress?: (completed: number, total: number) => void;
+    } = {}
   ): Promise<MovePreview> {
     return this.perf.recordAsync(
       'RuleManagerV2.generateMovePreview',
       async () => {
         const successfulMoves: PreviewEntry[] = [];
+        const analyzed: PreviewEntry[] = [];
+        const signal = options.signal ?? new AbortController().signal;
 
-        for (const file of files) {
-          const preview = await this.generatePreviewForFile(
-            file,
-            !enableFilter
-          );
-
-          if (preview.willBeMoved) {
-            successfulMoves.push(preview);
-          }
-          // Only include files that will be moved - blocked files are ignored
-        }
+        await readPreviewFiles(
+          files,
+          async file => {
+            const preview = await this.generatePreviewForFile(
+              file,
+              !enableFilter
+            );
+            analyzed.push(preview);
+            if (preview.willBeMoved) {
+              successfulMoves.push(preview);
+            }
+          },
+          signal,
+          options.onProgress
+        );
 
         return {
           successfulMoves,
+          analyzed,
           totalFiles: files.length,
           settings: {
             isFilterWhitelist: false, // Always blacklist mode

@@ -21,64 +21,187 @@ import { persistConflictResolutionStrategy } from '../application/persist-confli
 import { getAttachmentMoveSettings } from '../utils/attachment-settings';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
 import { deriveConflictInteractive } from '../utils/conflict-resolution-settings';
+import { previewRowLabel } from '../domain/preview/previewReasons';
 import { BaseModal, BaseModalOptions } from './BaseModal';
+
+type PreviewLoader = (
+  signal: AbortSignal,
+  onProgress: (completed: number, total: number) => void
+) => Promise<MovePreview>;
+
+const EMPTY_PREVIEW: MovePreview = {
+  successfulMoves: [],
+  analyzed: [],
+  totalFiles: 0,
+  settings: { isFilterWhitelist: false },
+};
 
 export class PreviewModal extends BaseModal {
   private movePreview: MovePreview;
   private actionFooterEl: HTMLElement | null = null;
+  private moveButton: HTMLButtonElement | null = null;
+  private readingEl: HTMLElement | null = null;
+  private operationAbort: AbortController | null = null;
+  private previewReady: boolean;
+  private readonly loadPreview: PreviewLoader | undefined;
+  private readonly selectedPaths = new Set<string>();
 
   constructor(
     app: App,
     private plugin: AdvancedNoteMoverPlugin,
-    movePreview: MovePreview,
-    options: BaseModalOptions = {}
+    movePreview: MovePreview | null,
+    options: BaseModalOptions & { load?: PreviewLoader } = {}
   ) {
+    const { load, ...modalOptions } = options;
     super(app, {
       title: strings().modals.previewTitle,
       titleIcon: 'search',
       cssClass: 'advancedNoteMover-preview-modal',
       size: 'large',
-      ...options,
+      ...modalOptions,
     });
-    this.movePreview = movePreview;
+    this.loadPreview = load;
+    this.previewReady = movePreview != null;
+    this.movePreview = movePreview ?? EMPTY_PREVIEW;
+    this.selectSuccessful(this.movePreview);
+  }
+
+  private selectSuccessful(preview: MovePreview): void {
+    this.selectedPaths.clear();
+    for (const entry of preview.successfulMoves) {
+      this.selectedPaths.add(entry.currentPath);
+    }
+  }
+
+  private beginOperation(): AbortController {
+    this.operationAbort?.abort();
+    const controller = new AbortController();
+    this.operationAbort = controller;
+    return controller;
+  }
+
+  onClose(): void {
+    this.operationAbort?.abort();
+    super.onClose();
+  }
+
+  private selectedEntries(): PreviewEntry[] {
+    return this.movePreview.successfulMoves.filter(entry =>
+      this.selectedPaths.has(entry.currentPath)
+    );
   }
 
   protected createContent(): void {
     const { contentEl } = this;
-
-    // Subtitle with statistics
+    if (this.loadPreview && !this.previewReady) {
+      this.showReadingProgress(contentEl, 0, 0);
+      const signal = this.beginOperation().signal;
+      void this.loadPreview(signal, (done, total) => {
+        if (signal.aborted) {
+          return;
+        }
+        this.showReadingProgress(contentEl, done, total);
+      })
+        .then(preview => {
+          if (signal.aborted) {
+            return;
+          }
+          this.movePreview = preview;
+          this.previewReady = true;
+          this.selectSuccessful(preview);
+          this.readingEl = null;
+          this.contentEl.empty();
+          this.createContent();
+        })
+        .catch((error: unknown) => {
+          if (signal.aborted) {
+            return;
+          }
+          const message =
+            error instanceof Error ? error.message : String(error);
+          NoticeManager.error(
+            fill(strings().notices.errorGeneratingPreview, { message })
+          );
+        });
+      return;
+    }
     const stats = this.movePreview;
-    const subtitle = `${pluralize(stats.totalFiles, 'file')} analyzed • ${stats.successfulMoves.length} will be moved`;
     contentEl.createEl('p', {
-      text: subtitle,
+      text: fill(strings().modals.previewSubtitle, {
+        files: pluralize(stats.totalFiles, 'file'),
+        moves: this.selectedEntries().length,
+      }),
       cls: 'advancedNoteMover-modal-subtitle',
     });
 
-    // Settings info removed - Rules and Filter are always enabled now
-
-    // Successful moves section
-    if (stats.successfulMoves.length > 0) {
-      this.createSuccessfulMovesSection(contentEl, stats.successfulMoves);
-    }
-
-    // Blocked moves section removed - only files that will be moved are shown
-
-    // No files message
     if (stats.totalFiles === 0) {
-      contentEl.createDiv({
-        cls: 'advancedNoteMover-modal-empty',
-        text: strings().modals.previewEmpty,
-      });
+      this.renderEmptyState(contentEl, strings().modals.previewEmpty);
+    } else if (
+      this.selectedEntries().length === 0 &&
+      stats.successfulMoves.length === 0
+    ) {
+      this.renderEmptyState(contentEl, strings().modals.previewEmptyExplain);
     }
 
-    // Action buttons
+    const files = stats.analyzed ?? stats.successfulMoves;
+    if (files.length > 0) {
+      this.createFileSection(contentEl, files);
+    }
+
     this.createActionButtons(contentEl);
   }
 
-  private createSuccessfulMovesSection(
+  private showReadingProgress(
     container: HTMLElement,
-    entries: PreviewEntry[]
-  ) {
+    done: number,
+    total: number
+  ): void {
+    const text =
+      total === 0
+        ? strings().modals.previewReadingStart
+        : fill(strings().modals.previewReading, { done, total });
+    if (!this.readingEl || !this.readingEl.isConnected) {
+      this.readingEl = container.createDiv({
+        cls: 'advancedNoteMover-preview-bulk-status',
+        text,
+      });
+      return;
+    }
+    this.readingEl.setText(text);
+  }
+
+  private renderEmptyState(container: HTMLElement, message: string): void {
+    container.createDiv({
+      cls: 'advancedNoteMover-modal-empty',
+      text: message,
+    });
+    const actions = container.createDiv({
+      cls: 'advancedNoteMover-preview-empty-actions',
+    });
+    this.createButton(actions, strings().modals.previewOpenRules, () => {
+      this.openRules();
+    });
+  }
+
+  private openRules(): void {
+    this.close();
+    const setting = (
+      this.app as App & {
+        setting?: {
+          open: () => void;
+          openTabById: (id: string) => void;
+        };
+      }
+    ).setting;
+    // shortcut: Obsidian has no public API for opening a plugin settings tab.
+    if (!setting) {
+      return;
+    }
+    setting.open();
+    setting.openTabById('note-mover-shortcut');
+  }
+
+  private createFileSection(container: HTMLElement, entries: PreviewEntry[]) {
     const isMobile = MobileUtils.isMobile();
     const section = this.createSection(
       container,
@@ -95,7 +218,7 @@ export class PreviewModal extends BaseModal {
     iconEl.ariaHidden = 'true';
     setIcon(iconEl, 'check');
     heading.createSpan({
-      text: fill(strings().modals.previewFilesToMove, {
+      text: fill(strings().modals.previewFiles, {
         count: entries.length,
       }),
     });
@@ -113,7 +236,33 @@ export class PreviewModal extends BaseModal {
           : 'advancedNoteMover-modal-list-item advancedNoteMover-preview-item-success',
       });
 
-      const mainInfo = item.createDiv({
+      const row = item.createDiv({
+        cls: 'advancedNoteMover-preview-item-row',
+      });
+      const selectLabel = row.createEl('label', {
+        cls: 'advancedNoteMover-preview-select',
+      });
+      const checkbox = selectLabel.createEl('input', { type: 'checkbox' });
+      checkbox.checked =
+        entry.willBeMoved && this.selectedPaths.has(entry.currentPath);
+      checkbox.disabled = !entry.willBeMoved;
+      checkbox.setAttribute(
+        'aria-label',
+        fill(strings().modals.previewSelect, { fileName: entry.fileName })
+      );
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          this.selectedPaths.add(entry.currentPath);
+        } else {
+          this.selectedPaths.delete(entry.currentPath);
+        }
+        this.updateMoveButton();
+      });
+      const body = row.createDiv({
+        cls: 'advancedNoteMover-preview-item-body',
+      });
+
+      const mainInfo = body.createDiv({
         cls: 'advancedNoteMover-preview-item-main',
       });
       const fileName = mainInfo.createDiv({
@@ -159,22 +308,23 @@ export class PreviewModal extends BaseModal {
         });
       }
 
-      const details = item.createDiv({
+      const details = body.createDiv({
         cls: isMobile
           ? 'advancedNoteMover-preview-item-details advancedNoteMover-preview-item-details-mobile'
           : 'advancedNoteMover-preview-item-details',
       });
 
-      if (entry.matchedRule) {
-        const rule = details.createDiv({
-          cls: 'advancedNoteMover-preview-item-rule',
-        });
-        rule.createSpan({
-          cls: 'advancedNoteMover-rule-label',
-          text: strings().modals.previewRule,
-        });
-        rule.createEl('code', { text: entry.matchedRule ?? '' });
-      }
+      const showsRule = entry.willBeMoved && Boolean(entry.matchedRule);
+      const reason = details.createDiv({
+        cls: 'advancedNoteMover-preview-item-rule',
+      });
+      reason.createSpan({
+        cls: 'advancedNoteMover-rule-label',
+        text: showsRule
+          ? strings().modals.previewRule
+          : strings().modals.previewReasonLabel,
+      });
+      reason.createSpan({ text: previewRowLabel(entry) });
 
       if (entry.tags && entry.tags.length > 0) {
         const tags = details.createDiv({
@@ -191,8 +341,6 @@ export class PreviewModal extends BaseModal {
     });
   }
 
-  // createBlockedMovesSection removed - only files that will be moved are shown
-
   private createActionButtons(container: HTMLElement) {
     const isMobile = MobileUtils.isMobile();
     const footer = container.createDiv({
@@ -204,10 +352,12 @@ export class PreviewModal extends BaseModal {
 
     const buttonContainer = this.createButtonContainer(footer);
 
-    if (this.movePreview.successfulMoves.length > 0) {
-      this.createButton(
+    if (this.selectedEntries().length > 0) {
+      this.moveButton = this.createButton(
         buttonContainer,
-        `Move ${pluralize(this.movePreview.successfulMoves.length, 'file')}`,
+        fill(strings().modals.previewMoveFiles, {
+          files: pluralize(this.selectedEntries().length, 'file'),
+        }),
         () => {
           void this.executeMoves();
         },
@@ -217,7 +367,7 @@ export class PreviewModal extends BaseModal {
 
     this.createButton(
       buttonContainer,
-      this.movePreview.successfulMoves.length > 0
+      this.selectedEntries().length > 0
         ? strings().common.cancel
         : strings().common.close,
       () => {
@@ -226,28 +376,47 @@ export class PreviewModal extends BaseModal {
     );
   }
 
+  private updateMoveButton(): void {
+    if (!this.moveButton) {
+      return;
+    }
+    const count = this.selectedEntries().length;
+    this.moveButton.textContent = fill(strings().modals.previewMoveFiles, {
+      files: pluralize(count, 'file'),
+    });
+    this.moveButton.hidden = count === 0;
+  }
+
   private async executeMoves() {
-    const successfulEntries = this.movePreview.successfulMoves;
+    const successfulEntries = this.selectedEntries();
+    if (successfulEntries.length === 0) {
+      return;
+    }
     let movedCount = 0;
     let errorCount = 0;
     let missingFolderSkippedCount = 0;
     let conflictSkippedCount = 0;
     const moveErrors: string[] = [];
-    const abortCtl = new AbortController();
+    const controller = this.beginOperation();
+    const signal = controller.signal;
+    let status: HTMLElement | null = null;
 
     if (this.actionFooterEl) {
       this.actionFooterEl.empty();
-      const status = this.actionFooterEl.createDiv({
+      const created = this.actionFooterEl.createDiv({
         cls: 'advancedNoteMover-preview-bulk-status',
-        text: `Moving files… (${successfulEntries.length} planned)`,
+        text: fill(strings().modals.previewMoving, {
+          count: successfulEntries.length,
+        }),
       });
+      status = created;
       const row = this.actionFooterEl.createDiv({
         cls: 'advancedNoteMover-preview-bulk-actions',
       });
       new Setting(row).addButton(btn =>
         btn.setButtonText(strings().modals.previewStop).onClick(() => {
-          abortCtl.abort();
-          status.setText('Stopping after current file…');
+          controller.abort();
+          created.setText(strings().modals.previewStopping);
         })
       );
     }
@@ -257,9 +426,15 @@ export class PreviewModal extends BaseModal {
     try {
       for (let i = 0; i < successfulEntries.length; i++) {
         const entry = successfulEntries[i];
-        if (abortCtl.signal.aborted) {
+        if (signal.aborted) {
           break;
         }
+        status?.setText(
+          fill(strings().modals.previewMoveProgress, {
+            done: i + 1,
+            total: successfulEntries.length,
+          })
+        );
         try {
           const file = this.app.vault.getAbstractFileByPath(entry.currentPath);
           if (!(file instanceof TFile) || !entry.targetPath) continue;
@@ -301,6 +476,7 @@ export class PreviewModal extends BaseModal {
               false
             ),
             bypassConflictSkipCache: true,
+            ruleName: entry.matchedRule,
             onPersistStrategy: async (strategy: ConflictResolutionStrategy) => {
               await persistConflictResolutionStrategy(this.plugin, strategy);
             },
@@ -327,6 +503,7 @@ export class PreviewModal extends BaseModal {
       this.plugin.historyManager.endBulkOperation();
     }
 
+    const stopped = signal.aborted;
     this.close();
 
     const skippedDetail = formatMoveSkippedDetail({
@@ -335,7 +512,7 @@ export class PreviewModal extends BaseModal {
     });
     const totalSkipped = missingFolderSkippedCount + conflictSkippedCount;
 
-    if (abortCtl.signal.aborted) {
+    if (stopped) {
       NoticeManager.info(
         `Bulk move stopped. ${pluralize(movedCount, 'file')} moved, ${pluralize(errorCount, 'error')}.${skippedDetail}`
       );
