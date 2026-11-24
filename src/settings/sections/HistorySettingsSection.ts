@@ -41,7 +41,8 @@ export class HistorySettingsSection {
         new HistoryModal(plugin.app, plugin.historyManager, plugin).open(),
     });
 
-    group.addSetting(setting =>
+    group.addSetting(setting => {
+      setting.settingEl.addClass('advancedNoteMover-stack-row');
       setting
         .setName(labels.historyKeepName)
         .setDesc(labels.historyKeepDesc)
@@ -64,8 +65,8 @@ export class HistorySettingsSection {
             await plugin.historyManager.cleanupOldEntries(true);
             refresh();
           });
-        })
-    );
+        });
+    });
 
     group.addSetting(setting =>
       setting

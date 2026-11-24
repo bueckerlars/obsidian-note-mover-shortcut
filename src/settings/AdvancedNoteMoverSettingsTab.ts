@@ -24,6 +24,8 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   private filterSettings?: FilterSettingsSection;
   private rulesSettings?: RulesSettingsSection;
   private page: SettingsPage = 'main';
+  /** Where the main page was scrolled before a sub-page opened. */
+  private mainScrollTop = 0;
   private readonly rulesUi: RulesUiState = { query: '', moved: null };
   private debounceManager: DebounceManager;
   private readonly refreshSettings: () => void;
@@ -70,15 +72,18 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   hide(): void {
     this.cleanupExistingSections();
     this.page = 'main';
+    this.mainScrollTop = 0;
     this.rulesUi.query = '';
     this.rulesUi.moved = null;
     super.hide();
   }
 
   private navigate(page: SettingsPage): void {
+    const scroller = this.containerEl.closest('.vertical-tab-content');
+    if (this.page === 'main') this.mainScrollTop = scroller?.scrollTop ?? 0;
     this.page = page;
     this.renderSettingsTab();
-    this.containerEl.closest('.vertical-tab-content')?.scrollTo({ top: 0 });
+    scroller?.scrollTo({ top: page === 'main' ? this.mainScrollTop : 0 });
   }
 
   private renderSettingsTab(): void {

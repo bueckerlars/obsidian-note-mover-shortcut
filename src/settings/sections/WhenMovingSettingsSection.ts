@@ -47,6 +47,7 @@ export class WhenMovingSettingsSection {
           ? strings().settings.conflictOverwriteWarning
           : strings().settings.conflictDesc;
       setting.setName(labels.conflictName).setDesc(describe(strategy));
+      setting.settingEl.addClass('advancedNoteMover-stack-row');
       setting.addDropdown(dropdown => {
         for (const [value, label] of Object.entries(
           strings().conflictStrategies

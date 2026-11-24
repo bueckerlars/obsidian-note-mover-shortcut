@@ -1,4 +1,4 @@
-import { App, TFile } from 'obsidian';
+import { App, Menu, TFile } from 'obsidian';
 import AdvancedNoteMoverPlugin from 'main';
 import { fill, plural, strings } from '../i18n/locale';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
@@ -30,7 +30,6 @@ import {
   matchesQuery,
   noteName,
   stayCategory,
-  stayCounts,
   type StayCategory,
 } from '../domain/preview/previewGroups';
 import { BaseModal, BaseModalOptions } from './BaseModal';
@@ -421,7 +420,6 @@ export class PreviewModal extends BaseModal {
         text: text.previewNoResults,
       });
     }
-    this.renderStayLine(list);
   }
 
   private groupState(entries: readonly PreviewEntry[]) {
@@ -475,6 +473,7 @@ export class PreviewModal extends BaseModal {
       cls: 'advancedNoteMover-row-name',
       text: noteName(entry.fileName),
     });
+    this.renderRowDesc(row, entry);
     if (detail.attachments > 0) {
       const pill = row.createSpan({ cls: 'advancedNoteMover-pill is-neutral' });
       iconSpan(pill, 'file');
@@ -509,6 +508,60 @@ export class PreviewModal extends BaseModal {
       cls: 'advancedNoteMover-row-meta',
       text: this.fromText(entry),
     });
+    if (detail.conflict && !renamed) this.renderConflictMenu(row, entry);
+  }
+
+  /** Phone: the line under the name replaces the pills and the right-hand text. */
+  private renderRowDesc(row: HTMLElement, entry: PreviewEntry): void {
+    const text = strings().modals;
+    const detail = this.detailsOf(entry);
+    const desc = row.createDiv({ cls: 'advancedNoteMover-row-desc' });
+    const parts: { text: string; cls?: string }[] = [];
+    if (this.renamePaths.has(entry.currentPath)) {
+      parts.push({ text: text.previewWillRename });
+    } else if (detail.conflict) {
+      parts.push({
+        text: text.previewConflictPill,
+        cls: 'advancedNoteMover-warning-text',
+      });
+    }
+    parts.push({ text: this.fromText(entry) });
+    if (detail.attachments > 0) {
+      parts.push({ text: `+${plural(detail.attachments, 'attachment')}` });
+    }
+    parts.forEach((part, index) => {
+      if (index > 0) desc.appendText(' · ');
+      desc.createSpan({ cls: part.cls, text: part.text });
+    });
+  }
+
+  /** Phone: the chevron on a conflict row opens the way to resolve it. */
+  private renderConflictMenu(row: HTMLElement, entry: PreviewEntry): void {
+    const button = row.createEl('button', {
+      cls: 'clickable-icon advancedNoteMover-row-chevron',
+      attr: {
+        type: 'button',
+        'aria-label': strings().modals.previewConflictPill,
+        'aria-haspopup': 'menu',
+      },
+    });
+    iconSpan(button, 'chevron-right');
+    button.addEventListener('click', () => {
+      const rect = button.getBoundingClientRect();
+      const menu = new Menu();
+      menu.addItem(item =>
+        item
+          .setTitle(strings().modals.previewKeepBoth)
+          .setIcon('copy')
+          .onClick(() => {
+            this.renamePaths.add(entry.currentPath);
+            this.selectedPaths.add(entry.currentPath);
+            this.renderList();
+            this.syncFooter();
+          })
+      );
+      menu.showAtPosition({ x: rect.right, y: rect.bottom });
+    });
   }
 
   private fromText(entry: PreviewEntry): string {
@@ -516,41 +569,6 @@ export class PreviewModal extends BaseModal {
     return folder
       ? fill(strings().modals.previewFrom, { folder })
       : strings().modals.previewFromRoot;
-  }
-
-  private renderStayLine(list: HTMLElement): void {
-    const stays = this.stayEntries();
-    if (stays.length === 0) return;
-    const text = strings().modals;
-    const counts = stayCounts(stays);
-    const line = list.createEl('button', {
-      cls: 'advancedNoteMover-stay-line',
-      attr: { type: 'button' },
-    });
-    iconSpan(line, 'chevron-right');
-    line.createSpan({
-      text: fill(
-        stays.length === 1 ? text.previewStayOne : text.previewStayMany,
-        { count: stays.length }
-      ),
-    });
-    line.createSpan({ cls: 'advancedNoteMover-grow' });
-    const pills: [StayCategory, string][] = [
-      ['no_rule', text.previewStayNoRule],
-      ['already_there', text.previewStayAlready],
-      ['excluded', text.previewStayExcluded],
-      ['other', text.previewStayOther],
-    ];
-    for (const [category, template] of pills) {
-      if (counts[category] === 0) continue;
-      line.createSpan({
-        cls: 'advancedNoteMover-pill is-neutral',
-        text: fill(template, { count: counts[category] }),
-      });
-    }
-    line.addEventListener('click', () => {
-      this.showTab('stay');
-    });
   }
 
   private renderStayGroups(list: HTMLElement): void {
@@ -582,7 +600,9 @@ export class PreviewModal extends BaseModal {
         cls: 'advancedNoteMover-preview-group-body',
       });
       for (const entry of group.entries) {
-        const row = body.createDiv({ cls: 'advancedNoteMover-preview-row' });
+        const row = body.createDiv({
+          cls: 'advancedNoteMover-preview-row is-stay',
+        });
         row.createSpan({
           cls: 'advancedNoteMover-row-name',
           text: noteName(entry.fileName),
@@ -636,6 +656,8 @@ export class PreviewModal extends BaseModal {
     this.footer.leftEl.createSpan({
       cls: 'advancedNoteMover-footer-status',
     });
+    // Phone: the close button covers Cancel until the moves start.
+    this.footer.leftEl.parentElement?.addClass('is-close-only');
     void text;
     this.syncFooter();
   }
@@ -821,6 +843,7 @@ export class PreviewModal extends BaseModal {
     if (this.footer) {
       this.busy = true;
       this.footer.primary.setDisabled(true);
+      this.footer.leftEl.parentElement?.removeClass('is-close-only');
       this.footer.cancel?.setButtonText(strings().modals.previewStop);
       status =
         this.footer.leftEl.querySelector<HTMLElement>(

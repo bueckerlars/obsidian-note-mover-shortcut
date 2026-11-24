@@ -28,6 +28,7 @@ export class StatusSettingsSection {
 
     const group = createSettingGroup(containerEl);
     group.addSetting(setting => {
+      setting.settingEl.addClass('advancedNoteMover-stack-row');
       setting
         .setName(labels.statusCounting)
         .setDesc(desc)

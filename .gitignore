@@ -28,3 +28,5 @@ coverage
 # Exclude generated files
 src/generated/
 .design/
+# Analysis notes and screenshots of the UI review, kept local
+docs/analysis/

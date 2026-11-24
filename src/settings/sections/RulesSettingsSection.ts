@@ -15,7 +15,11 @@ import { RuleV2 } from '../../types/RuleV2';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { toMarkdownInlineCode } from '../../utils/markdown-confirm';
 import { cloneRule } from '../cloneRule';
-import { addPlusIcon, createSettingGroup } from '../settingGroup';
+import {
+  addPhoneAddRow,
+  addPlusIcon,
+  createSettingGroup,
+} from '../settingGroup';
 
 /** Survives re-renders of the tab: the filter text and the last move to announce. */
 export interface RulesUiState {
@@ -129,6 +133,9 @@ export class RulesSettingsSection {
       return;
     }
     rules.forEach(rule => this.renderRuleRow(rulesContainer, rule));
+    addPhoneAddRow(rulesContainer, strings().settings.rulesAddButton, () =>
+      this.openRuleEditorModal(null)
+    );
     this.applyMoveFeedback(rulesContainer);
   }
 
@@ -184,7 +191,7 @@ export class RulesSettingsSection {
     ).filter(entry => entry.ruleName === rule.name).length;
     if (skipped > 0) {
       const pill = setting.nameEl.createSpan({
-        cls: 'advancedNoteMover-pill mod-warning',
+        cls: 'advancedNoteMover-pill is-warning',
       });
       setIcon(
         pill.createSpan({ cls: 'advancedNoteMover-pill-icon' }),
@@ -233,7 +240,7 @@ export class RulesSettingsSection {
       if (
         target instanceof Element &&
         target.closest(
-          '.setting-item-control, .advancedNoteMover-drag-handle-container'
+          '.checkbox-container, .clickable-icon, .advancedNoteMover-drag-handle-container'
         )
       ) {
         return;
@@ -263,6 +270,8 @@ export class RulesSettingsSection {
           segment.icon
         );
       } else if (segment.kind === 'arrow') {
+        // Phone: the destination starts a second line.
+        line.createSpan({ cls: 'advancedNoteMover-summary-break' });
         setIcon(
           line.createSpan({ cls: 'advancedNoteMover-summary-icon' }),
           'arrow-right'
@@ -456,7 +465,7 @@ export class RulesSettingsSection {
       onSave: async () => {
         await this.persistRulesAndSyncManager();
       },
-      itemSelector: '.setting-item',
+      itemSelector: '.setting-item:not(.advancedNoteMover-phone-only)',
       handleSelector: '.advancedNoteMover-drag-handle',
     });
   }

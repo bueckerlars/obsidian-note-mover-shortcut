@@ -7,7 +7,6 @@ import {
   matchesQuery,
   noteName,
   stayCategory,
-  stayCounts,
 } from './previewGroups';
 
 const entry = (over: Partial<PreviewEntry>): PreviewEntry => ({
@@ -59,10 +58,6 @@ describe('previewGroups', () => {
       'excluded',
       'other',
     ]);
-    expect(stayCounts([no, no, there])).toMatchObject({
-      no_rule: 2,
-      already_there: 1,
-    });
     expect(groupStays([there, no]).map(g => g.category)).toEqual([
       'no_rule',
       'already_there',

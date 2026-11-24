@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.5.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.0...1.5.0)
+## [1.4.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.4.0)
 
 ### Highlights
 
@@ -14,75 +14,38 @@
 - Bulk moves show as one group in the history, with a single Undo all.
 - Command names use the same words as the settings and dialogs.
 
-### Improvements
-
-- **Move history**: The history has search, a rule filter and a time range. Notes show their folders, not full paths. Undone moves are kept with an `undone` flag in `data.json`.
-- **Release notes**: The dialog shows up to three highlights and a short list of fixes. Entries in this file can add `### Highlights` (`- lucide-icon | Title | Sentence`) and `### Release note fixes`.
-- **Commands**: Command names changed. Command ids did not.
-
-## [1.4.0](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.3.0...1.4.0)
-
 ### Breaking
 
 - **Modal CSS classes**: Custom snippets that target `note-mover-preview-modal`, `note-mover-update-modal`, or `note-mover-history-modal` need the new names `advancedNoteMover-preview-modal`, `advancedNoteMover-update-modal`, and `advancedNoteMover-history-modal`.
 
 ### Improvements
 
-- **Languages**: Settings, modal, command, and notice copy is read from `languages/en.json`. The active Obsidian language selects `languages/<code>.json` and falls back to English when that file is missing.
-- **German**: Settings, modals, commands, and notices use German when Obsidian's language is German. A missing German phrase stays in English. Counts use German plurals. Match buttons, condition types, and the update dialog use the same catalog.
-- **Settings tab**: The settings tab is drawn from one list for every supported Obsidian version. It no longer appears in Obsidian 1.13 settings search, which used a second copy of the same settings. The minimum app version stays 1.8.7.
-- **Mobile settings**: Toggles and dropdowns stay beside their names. Only a wide field, such as the interval or the retention row, stacks.
-- **Mobile toggles**: Toggle descriptions stay on one or two lines, so the switch sits beside the name inside the settings card.
-- **Rule editor**: Name, match mode, conditions, and destination use the same fields on desktop and mobile.
-- **Rule editor**: Editing one condition redraws that row. Typing in the value keeps the cursor in the field.
-- **Rule editor**: Match mode explains each option. Icon buttons name their action.
-- **Rule editor**: Destination examples stay collapsed until you open them. A chip inserts the placeholder.
-- **Rule editor**: Adding, removing, or reordering a condition updates the rule and redraws the list.
+- **Settings**: Native setting groups, a status line, rule rows with a readable summary and a row menu, typed exclusions, templates for the first rule, and sub-pages for import and export, performance and skipped notes.
+- **Rule editor**: One editor for desktop and mobile. It reads as a sentence, offers a placeholder menu, flags unknown placeholders and shows the notes the rule matches while you edit.
+- **Move preview**: One preview for every entry point, grouped by destination, with the tabs Will move and Stays, a loading state and an empty state.
+- **Name conflicts**: Labeled options, and one choice can apply to the other conflicts.
+- **Why not moved**: Pick a note and see, for each rule and exclusion, whether it matched and which condition failed.
+- **Move history**: Grouped by day, with search, a rule filter and a time range. Undone moves are kept with an `undone` flag in `data.json`.
+- **Release notes**: The dialog shows up to three highlights and a short list of fixes. Entries in this file can add `### Highlights` (`- lucide-icon | Title | Sentence`) and `### Release note fixes`.
+- **Commands**: Command names changed. Command ids did not.
+- **Languages**: All copy comes from `languages/*.json`, bundled into the plugin. German is included, and a missing phrase falls back to English.
+- **Confirmations**: Moving every matching note and importing settings ask first. Import saves the current settings to data.backup.json, and Restore backup puts them back without touching the history.
 - **Property suggestions**: Nested frontmatter is read as a dotted key, such as author.name.
-- **Rule editor**: The editor shows how many notes the rule matches, and updates that count as you edit.
-- **Move history**: History is grouped by day. Each row shows the time and the rule. Desktop actions are icon buttons. Mobile actions are one menu. Add to blacklist is no longer a warning button.
-- **Move preview**: An empty preview explains why nothing moves and links to rules. Each file shows the rule or the reason, and a checkbox selects it.
-- **Move preview**: On a phone, the checkbox on each file is a 44 pixel touch target.
-- **Reorder**: Move up and Move down stay in the rule menu. The first row cannot move up, and the last row cannot move down. A focused drag handle moves that row with Alt+Arrow Up and Alt+Arrow Down.
-- **Dialog focus**: Opening a dialog focuses its first field. Escape closes it and returns focus to the control that opened it. Keyboard focus uses the accent outline.
-- **Field names**: Checkboxes, text fields, and dropdowns use the setting name that is already on screen.
-- **Close control**: The dialog close control is a button named Close.
-- **Button contrast**: Primary and warning buttons use the normal text color on the normal button background.
-- **Match buttons**: The selected match option uses the normal text color.
-- **Active switch**: On a phone, the rule active switch uses the Active label.
-- **Icon buttons**: Move, delete, and rule actions are buttons, so their names are allowed.
-- **Move all files**: Moving every matching note asks for confirmation first. The dialog shows the count, the first file paths, and that the move can be undone from history.
-- **Import backup**: Import shows how many rules and filters it replaces. Confirming saves the current settings to data.backup.json before writing the new ones. Restore backup puts those settings back.
-- **Why not moved**: Pick a note and see, for each rule, whether it matched and which condition failed.
-- **Muted text**: Drag handles and file paths use the muted text color.
-- **Bulk preview**: Closing the preview stops further file reads and shows how far the read has got.
-- **Confirm dialog**: Confirm and cancel use one button row on desktop and mobile.
-- **Status text**: Preview progress and the conflict warning are announced as they change.
-- **Settings hints**: Filter, rule, and conflict hints use one short description. Extra detail sits on the info tooltip. Add filter and Add rule are icon buttons.
-- **Settings actions**: Each settings section has at most one primary button. Clear history is the only warning button. Import asks for confirmation and is no longer red.
-- **Rule rows**: A rule row shows the condition and the destination. Edit, duplicate, move, and delete are in the row menu.
-- **Settings tab**: Each settings section is created when the tab opens. Filter rows keep the standard setting structure.
-- **Sentence case**: Settings, modals, commands, and notices use sentence case. Headings and buttons no longer start with a plus sign or end with a colon.
-- **Icons**: History, preview, and update use Lucide icons instead of emoji.
-- **Modal titles**: Dialog titles use Obsidian's title bar. History is titled "Move history".
-- **Conflict choice**: The rename action is labeled "Keep both (rename)". A preview with nothing to move closes with "Close".
-- **New rule**: A rule created from settings starts as "New rule".
-- **Unnamed rule**: A rule without a name is labeled "Unnamed rule".
+- **Accessibility**: Dialogs focus their first field, Escape returns focus, icon buttons have names, and status text is announced.
+- **Mobile**: A phone layout for settings, the rule editor and all dialogs, with 44 pixel touch targets.
+- **Reorder**: Move up and Move down stay in the rule menu. A focused drag handle moves that row with Alt+Arrow Up and Alt+Arrow Down.
+- **Sentence case and icons**: Settings, modals, commands and notices use sentence case and Lucide icons instead of emoji.
 
 ### Fixes
 
 - **Bulk errors**: One summary names the error count, and Show details lists the failed files.
 - **Clone rule**: A duplicated rule is named with " copy" and gets its own id when the original already has one.
-- **Release notes**: The current version comes from the manifest, and Show release notes opens them again.
 - **Performance trace**: Export downloads a JSON file instead of writing it into the vault.
-- **Notices**: Titles no longer repeat the plugin name, and the ribbon tooltip names the move action.
 - **Popout windows**: Timers and tablet detection follow the active window and Obsidian's platform flags.
 - **Counts**: Notices and buttons say "1 file" and "2 files".
 - **Periodic interval**: Invalid intervals are ignored. A valid change restarts the timer once.
-- **Modal size**: Dialog widths come from the existing size classes instead of inline styles.
-- **Conflict cache title**: The skipped-conflicts modal keeps its title after Dismiss, Remove stale, and Clear all.
 - **Import settings cancel**: Cancelling the file dialog leaves the Import button clickable. Invalid JSON is rejected with an error and does not change settings.
-- **Edit rule after reordering** ([#114](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/114)): After drag-reordering rules in settings, Edit / Toggle / Clone now target the rule shown in that row instead of the rule that previously occupied the slot. The settings UI rebuilds after reorder, and row actions resolve the rule by object identity.
+- **Edit rule after reordering** ([#114](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/114)): After drag-reordering rules in settings, Edit / Toggle / Clone now target the rule shown in that row instead of the rule that previously occupied the slot.
 
 ## [1.3.0]
 
