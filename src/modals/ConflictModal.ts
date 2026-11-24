@@ -46,6 +46,7 @@ export class ConflictModal extends BaseModal {
             name: conflictOptions.noteName,
           }),
       cssClass: 'advancedNoteMover-conflict-modal',
+      phoneFullscreen: true,
       size: 'small',
     });
   }

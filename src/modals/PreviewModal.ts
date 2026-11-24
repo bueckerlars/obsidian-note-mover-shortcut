@@ -100,6 +100,7 @@ export class PreviewModal extends BaseModal {
     super(app, {
       title: strings().modals.previewTitle,
       cssClass: 'advancedNoteMover-preview-modal',
+      phoneFullscreen: true,
       ...modalOptions,
     });
     this.loadPreview = load;

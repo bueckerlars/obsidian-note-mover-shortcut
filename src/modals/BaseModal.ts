@@ -12,6 +12,8 @@ export interface BaseModalOptions {
   /** Render the title in Obsidian's native modal header (`titleEl`) instead of the content. */
   useNativeTitle?: boolean;
   cssClass?: string;
+  /** Phone: the dialog fills the screen below the title. */
+  phoneFullscreen?: boolean;
   /** Class added to `modalEl` on mobile; switches the shell to a full-height flex column. */
   mobileShellClass?: string;
   size?: ModalSize;
@@ -47,6 +49,9 @@ export abstract class BaseModal extends Modal {
     this.clearContent();
     this.addCssClass();
     this.modalEl?.addClass('advancedNoteMover-focus-scope');
+    if (this.options.phoneFullscreen) {
+      this.modalEl?.addClass('advancedNoteMover-modal-fullscreen');
+    }
     this.addMobileClasses();
     this.setModalSize();
     this.createTitle();

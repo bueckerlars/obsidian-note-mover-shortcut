@@ -45,7 +45,9 @@ export function renderDestinationField(
     cls: 'advancedNoteMover-section-title',
     text: text.ruleEditorMoveHeading,
   });
-  const cardEl = parent.createDiv({ cls: 'advancedNoteMover-card' });
+  const cardEl = parent.createDiv({
+    cls: 'advancedNoteMover-card advancedNoteMover-destination-card',
+  });
   const row = cardEl.createDiv({ cls: 'advancedNoteMover-destination-row' });
   const field = row.createDiv({ cls: 'advancedNoteMover-folder-field' });
   setIcon(
@@ -83,7 +85,8 @@ export function renderDestinationField(
     text: text.ruleEditorPlaceholderInsert,
   });
 
-  const status = cardEl.createDiv({
+  // Inside the row so the phone layout can order it between field and button.
+  const status = row.createDiv({
     cls: 'advancedNoteMover-destination-status',
   });
   const setEmptyError = createFieldError(input, status);
