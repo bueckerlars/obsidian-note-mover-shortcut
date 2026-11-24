@@ -52,6 +52,7 @@ export class RuleEditorModal extends BaseModal {
   private workingRule: RuleV2;
   private originalRule: RuleV2;
   private isForceClosing = false;
+  private discardRequested = false;
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
   private readonly isMobileLayout: boolean;
@@ -326,6 +327,16 @@ export class RuleEditorModal extends BaseModal {
         this.renderTriggers();
         this.schedulePreview();
       },
+      onMove: (index, direction) => {
+        const next = index + direction;
+        this.workingRule.triggers = reorderConditions(
+          this.workingRule,
+          index,
+          next
+        ).triggers;
+        this.renderTriggers();
+        this.schedulePreview();
+      },
       onSave: async () => {
         // No additional action needed
         return Promise.resolve();
@@ -430,7 +441,11 @@ export class RuleEditorModal extends BaseModal {
       super.close();
       return;
     }
-    void this.confirmDiscardAndClose();
+    if (this.discardRequested) return;
+    this.discardRequested = true;
+    void this.confirmDiscardAndClose().finally(() => {
+      this.discardRequested = false;
+    });
   }
 
   private renderLivePreview(parent: HTMLElement): void {

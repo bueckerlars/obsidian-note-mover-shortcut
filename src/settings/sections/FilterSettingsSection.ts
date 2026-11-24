@@ -88,6 +88,9 @@ export class FilterSettingsSection {
       onReorder: (fromIndex: number, toIndex: number) => {
         this.reorderFilters(fromIndex, toIndex);
       },
+      onMove: (index, direction) => {
+        this.moveFilter(index, direction);
+      },
       onSave: async () => {
         await this.plugin.save_settings();
         this.plugin.advancedNoteMover.updateRuleManager();

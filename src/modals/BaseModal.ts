@@ -1,4 +1,5 @@
 import { Modal, App, setIcon, setTooltip } from 'obsidian';
+import { associateSettingLabels } from '../domain/a11y/associateSettingLabels';
 import { strings } from '../i18n/locale';
 import { MobileUtils } from '../utils/MobileUtils';
 import { viewFrame, viewTimeout } from '../utils/viewTimers';
@@ -20,6 +21,15 @@ export interface BaseModalOptions {
 
 export abstract class BaseModal extends Modal {
   protected options: BaseModalOptions;
+  private opener: HTMLElement | null = null;
+  private alive = false;
+  private closed = false;
+  private readonly onEscapeKey = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.close();
+  };
 
   constructor(app: App, options: BaseModalOptions = {}) {
     super(app);
@@ -31,13 +41,19 @@ export abstract class BaseModal extends Modal {
   }
 
   onOpen() {
+    this.closed = false;
+    this.alive = true;
+    this.rememberOpener();
     this.clearContent();
     this.addCssClass();
+    this.modalEl?.addClass('advancedNoteMover-focus-scope');
     this.addMobileClasses();
     this.setModalSize();
     this.createTitle();
     this.labelCloseButton();
     this.createContent();
+    associateSettingLabels(this.contentEl);
+    this.modalEl?.addEventListener('keydown', this.onEscapeKey, true);
     this.setupAutoFocus();
     this.resetScrollPosition();
   }
@@ -76,8 +92,22 @@ export abstract class BaseModal extends Modal {
   }
 
   onClose() {
+    this.alive = false;
+    this.modalEl?.removeEventListener('keydown', this.onEscapeKey, true);
     this.clearModalSizeStyles();
     this.clearContent();
+    const opener = this.opener;
+    this.opener = null;
+    if (opener?.isConnected) {
+      opener.focus();
+    }
+  }
+
+  close(): void {
+    if (this.closed) return;
+    this.closed = true;
+    this.alive = false;
+    super.close();
   }
 
   /**
@@ -150,8 +180,13 @@ export abstract class BaseModal extends Modal {
    * Create modal title if provided
    */
   protected labelCloseButton(): void {
-    const closeButton = this.modalEl?.querySelector('.modal-close-button');
-    if (closeButton && !closeButton.getAttribute('aria-label')) {
+    const closeButton =
+      this.modalEl?.querySelector('.modal-close-button') ?? null;
+    if (!isHtmlElement(closeButton)) return;
+    if (!closeButton.getAttribute('role')) {
+      closeButton.setAttribute('role', 'button');
+    }
+    if (!closeButton.getAttribute('aria-label')) {
       closeButton.setAttribute('aria-label', strings().common.close);
     }
   }
@@ -177,18 +212,41 @@ export abstract class BaseModal extends Modal {
    * Setup auto focus on specified element
    */
   protected setupAutoFocus(): void {
-    if (!this.options.autoFocus || !this.options.focusSelector) return;
+    if (!this.options.autoFocus) return;
 
     viewTimeout(() => {
-      const focusElement = this.contentEl.querySelector(
-        this.options.focusSelector!
-      ) as HTMLElement;
-      if (focusElement && typeof focusElement.focus === 'function') {
+      if (!this.alive) return;
+      const focusElement = this.firstField();
+      if (focusElement) {
         focusElement.focus();
-        // Reset scroll after focus, as focus can cause scrolling
         this.resetScrollPosition();
       }
     }, 10);
+  }
+
+  private rememberOpener(): void {
+    const doc = currentDocument();
+    const active = doc.activeElement;
+    if (
+      !isHtmlElement(active) ||
+      active === doc.body ||
+      this.modalEl.contains(active)
+    ) {
+      this.opener = null;
+      return;
+    }
+    this.opener = active;
+  }
+
+  /** First text field, then the configured fallback such as the primary button. */
+  private firstField(): HTMLElement | null {
+    const field = this.contentEl.querySelector(
+      'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled])'
+    );
+    if (isHtmlElement(field)) return field;
+    if (!this.options.focusSelector) return null;
+    const fallback = this.contentEl.querySelector(this.options.focusSelector);
+    return isHtmlElement(fallback) ? fallback : null;
   }
 
   /**
@@ -248,4 +306,16 @@ export abstract class BaseModal extends Modal {
    * Abstract method that must be implemented by subclasses to create modal content
    */
   protected abstract createContent(): void;
+}
+
+function isHtmlElement(node: Element | null): node is HTMLElement {
+  if (!node) return false;
+  if (typeof node.instanceOf === 'function') {
+    return node.instanceOf(HTMLElement);
+  }
+  return false;
+}
+
+function currentDocument(): Document {
+  return typeof activeDocument === 'undefined' ? document : activeDocument;
 }

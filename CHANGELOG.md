@@ -21,8 +21,19 @@
 - **Rule editor**: The editor shows how many notes the rule matches, and updates that count as you edit.
 - **Move history**: History is grouped by day. Each row shows the time and the rule. Desktop actions are icon buttons. Mobile actions are one menu. Add to blacklist is no longer a warning button.
 - **Move preview**: An empty preview explains why nothing moves and links to rules. Each file shows the rule or the reason, and a checkbox selects it.
+- **Move preview**: On a phone, the checkbox on each file is a 44 pixel touch target.
+- **Reorder**: Move up and Move down stay in the rule menu. The first row cannot move up, and the last row cannot move down. A focused drag handle moves that row with Alt+Arrow Up and Alt+Arrow Down.
+- **Dialog focus**: Opening a dialog focuses its first field. Escape closes it and returns focus to the control that opened it. Keyboard focus uses the accent outline.
+- **Field names**: Checkboxes, text fields, and dropdowns use the setting name that is already on screen.
+- **Close control**: The dialog close control is a button named Close.
+- **Button contrast**: Primary and warning buttons use the normal text color on the normal button background.
+- **Match buttons**: The selected match option uses the normal text color.
+- **Active switch**: On a phone, the rule active switch uses the Active label.
+- **Icon buttons**: Move, delete, and rule actions are buttons, so their names are allowed.
+- **Muted text**: Drag handles and file paths use the muted text color.
 - **Bulk preview**: Closing the preview stops further file reads and shows how far the read has got.
 - **Confirm dialog**: Confirm and cancel use one button row on desktop and mobile.
+- **Status text**: Preview progress and the conflict warning are announced as they change.
 - **Settings hints**: Filter, rule, and conflict hints use one short description. Extra detail sits on the info tooltip. Add filter and Add rule are icon buttons.
 - **Settings actions**: Each settings section has at most one primary button. Clear history is the only warning button. Import asks for confirmation and is no longer red.
 - **Rule rows**: A rule row shows the condition and the destination. Edit, duplicate, move, and delete are in the row menu.

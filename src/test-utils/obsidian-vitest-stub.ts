@@ -387,8 +387,17 @@ export class Menu {
         el.dataset.icon = icon;
         return api;
       },
+      setDisabled(disabled: boolean) {
+        if (disabled) {
+          el.setAttribute('aria-disabled', 'true');
+        } else {
+          el.removeAttribute('aria-disabled');
+        }
+        return api;
+      },
       onClick(fn: () => void) {
         el.addEventListener('click', () => {
+          if (el.getAttribute('aria-disabled') === 'true') return;
           fn();
         });
         return api;
@@ -413,6 +422,7 @@ export class Menu {
 interface MenuItemStub {
   setTitle: (text: string) => MenuItemStub;
   setIcon: (icon: string) => MenuItemStub;
+  setDisabled: (disabled: boolean) => MenuItemStub;
   onClick: (fn: () => void) => MenuItemStub;
 }
 

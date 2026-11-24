@@ -11,6 +11,7 @@ import {
   UpdateSettingsSection,
   ConflictResolutionSettingsSection,
 } from './sections';
+import { associateSettingLabels } from '../domain/a11y/associateSettingLabels';
 import { DebounceManager } from '../utils/DebounceManager';
 import { MobileUtils } from '../utils/MobileUtils';
 
@@ -64,6 +65,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
 
     // Add mobile-specific classes to container
     this.containerEl.addClass('advancedNoteMover-settings-root');
+    this.containerEl.addClass('advancedNoteMover-focus-scope');
     MobileUtils.addMobileClass(this.containerEl);
     if (MobileUtils.isMobile()) {
       this.containerEl
@@ -141,6 +143,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     this.performanceDebugSettings.addPerformanceDebugSettings();
 
     this.updateSettings.addUpdateSettings();
+    associateSettingLabels(this.containerEl);
   }
 
   /**

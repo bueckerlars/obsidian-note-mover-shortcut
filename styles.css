@@ -477,6 +477,18 @@ body.is-mobile {
   flex: 0 0 auto;
 }
 
+/* The smoke measures the input, so the checkbox itself is the touch target. */
+body.is-mobile .advancedNoteMover-preview-select input[type='checkbox'] {
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--interactive-accent);
+}
+
 .advancedNoteMover-preview-empty-actions {
   display: flex;
   margin-top: var(--size-4-2);
@@ -857,9 +869,10 @@ body.is-mobile {
 }
 
 .advancedNoteMover-rule-aggregation-button.is-active {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
   border-color: var(--interactive-accent);
+  box-shadow: inset 0 0 0 1px var(--interactive-accent);
 }
 
 .advancedNoteMover-rule-aggregation-button:focus-visible {
@@ -1755,7 +1768,7 @@ body.is-mobile .advancedNoteMover-preview-path-mobile {
 }
 
 body.is-mobile .advancedNoteMover-preview-path-current {
-  color: var(--text-normal);
+  color: var(--text-muted);
 }
 
 body.is-mobile .advancedNoteMover-preview-arrow-mobile {
@@ -2086,8 +2099,9 @@ body.is-mobile
 
 .advancedNoteMover-rule-mobile
   .advancedNoteMover-rule-mobile-segment.is-active {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  box-shadow: inset 0 0 0 1px var(--interactive-accent);
 }
 
 /* Destination template help */
@@ -2316,4 +2330,35 @@ body.is-mobile
   button {
   width: 100%;
   min-height: 48px;
+}
+
+.advancedNoteMover-focus-scope :focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.advancedNoteMover-settings-root button.mod-cta,
+.advancedNoteMover-settings-root button.mod-cta:hover,
+.advancedNoteMover-settings-root button.mod-warning,
+.advancedNoteMover-settings-root button.mod-warning:hover,
+.advancedNoteMover-focus-scope button.mod-cta,
+.advancedNoteMover-focus-scope button.mod-cta:hover,
+.advancedNoteMover-focus-scope button.mod-warning,
+.advancedNoteMover-focus-scope button.mod-warning:hover {
+  background-color: var(--interactive-normal);
+  color: var(--text-normal);
+}
+
+.advancedNoteMover-settings-root button.mod-cta,
+.advancedNoteMover-settings-root button.mod-cta:hover,
+.advancedNoteMover-focus-scope button.mod-cta,
+.advancedNoteMover-focus-scope button.mod-cta:hover {
+  box-shadow: inset 0 0 0 1px var(--interactive-accent);
+}
+
+.advancedNoteMover-settings-root button.mod-warning,
+.advancedNoteMover-settings-root button.mod-warning:hover,
+.advancedNoteMover-focus-scope button.mod-warning,
+.advancedNoteMover-focus-scope button.mod-warning:hover {
+  box-shadow: inset 0 0 0 1px var(--background-modifier-error);
 }
