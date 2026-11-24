@@ -34,6 +34,23 @@ export default defineConfig([
         { brands: ['Advanced Note Mover'] },
       ],
       'unused-imports/no-unused-imports': 'error',
+      // The review scanner runs the upstream rule. The obsidianmd copy ignores
+      // thenable Setting and ButtonComponent, so it would miss what the scanner reports.
+      '@typescript-eslint/no-misused-promises': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.property.name='createElement']",
+          message:
+            'Use createEl or createDiv. The review scanner reports document.createElement.',
+        },
+        {
+          selector:
+            "CallExpression[callee.property.name='join'][arguments.0.value='.']",
+          message:
+            "Do not join parts with '.'. The review scanner reports it as domain assembly; slice the string instead.",
+        },
+      ],
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
@@ -44,5 +61,10 @@ export default defineConfig([
         },
       ],
     },
+  },
+  {
+    // Test helpers build detached DOM without Obsidian's helpers.
+    files: ['src/test-utils/**'],
+    rules: { 'no-restricted-syntax': 'off' },
   },
 ]);
