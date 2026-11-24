@@ -1,6 +1,8 @@
 import { App, AbstractInputSuggest, TFolder } from 'obsidian';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
+import { SuggestLifecycle } from './suggestLifecycle';
+import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
 
 export type SuggestType =
   | 'tag'
@@ -34,6 +36,7 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
   private refreshDataHandler: () => void;
   private refreshTimerId: number | null = null;
   private dataLoaded = false;
+  private readonly lifecycle = new SuggestLifecycle();
 
   constructor(
     public app: App,
@@ -46,16 +49,19 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
     // Create debounced handler for cleanup
     this.refreshDataHandler = () => {
       if (this.refreshTimerId !== null) {
-        window.clearTimeout(this.refreshTimerId);
+        viewClearTimeout(this.refreshTimerId);
       }
-      this.refreshTimerId = window.setTimeout(() => {
+      this.refreshTimerId = viewTimeout(() => {
         this.refreshTimerId = null;
         this.refreshData();
       }, REFRESH_DEBOUNCE_MS);
     };
 
-    // Listen for metadata changes to refresh suggestions (debounced)
-    this.app.metadataCache.on('changed', this.refreshDataHandler);
+    this.lifecycle.listen(
+      this.app.metadataCache,
+      'changed',
+      this.refreshDataHandler
+    );
   }
 
   private loadTags(): void {
@@ -237,10 +243,10 @@ export class AdvancedSuggest extends AbstractInputSuggest<string> {
    */
   public destroy(): void {
     if (this.refreshTimerId !== null) {
-      window.clearTimeout(this.refreshTimerId);
+      viewClearTimeout(this.refreshTimerId);
       this.refreshTimerId = null;
     }
-    this.app.metadataCache.off('changed', this.refreshDataHandler);
+    this.lifecycle.destroy();
   }
 
   selectSuggestion(value: string): void {

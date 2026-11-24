@@ -2,13 +2,15 @@ import { Setting, App, TFile } from 'obsidian';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
+import { pluralize } from '../utils/pluralize';
+import { viewIdle } from '../utils/viewTimers';
 import { MobileUtils } from '../utils/MobileUtils';
 import {
   combinePath,
   ensureFolderExists,
   folderExists,
 } from '../utils/PathUtils';
-import { handleError, createError } from '../utils/Error';
+import { createError } from '../utils/Error';
 import {
   formatMoveSkippedDetail,
   isNoteMoveConflictSkipOutcome,
@@ -45,7 +47,7 @@ export class PreviewModal extends BaseModal {
 
     // Subtitle with statistics
     const stats = this.movePreview;
-    const subtitle = `${stats.totalFiles} files analyzed • ${stats.successfulMoves.length} will be moved`;
+    const subtitle = `${pluralize(stats.totalFiles, 'file')} analyzed • ${stats.successfulMoves.length} will be moved`;
     contentEl.createEl('p', {
       text: subtitle,
       cls: 'advancedNoteMover-modal-subtitle',
@@ -198,7 +200,7 @@ export class PreviewModal extends BaseModal {
     if (this.movePreview.successfulMoves.length > 0) {
       this.createButton(
         buttonContainer,
-        `Move ${this.movePreview.successfulMoves.length} files`,
+        `Move ${pluralize(this.movePreview.successfulMoves.length, 'file')}`,
         () => {
           void this.executeMoves();
         },
@@ -217,6 +219,7 @@ export class PreviewModal extends BaseModal {
     let errorCount = 0;
     let missingFolderSkippedCount = 0;
     let conflictSkippedCount = 0;
+    const moveErrors: string[] = [];
     const abortCtl = new AbortController();
 
     if (this.actionFooterEl) {
@@ -296,16 +299,14 @@ export class PreviewModal extends BaseModal {
             conflictSkippedCount++;
           }
         } catch (error) {
-          handleError(error, `Error moving file ${entry.fileName}`, false);
           errorCount++;
+          const message =
+            error instanceof Error ? error.message : String(error);
+          moveErrors.push(`${entry.fileName}: ${message}`);
         }
         if ((i + 1) % 50 === 0 && i + 1 < successfulEntries.length) {
           await new Promise<void>(resolve => {
-            if (typeof window.requestIdleCallback === 'function') {
-              window.requestIdleCallback(() => resolve(), { timeout: 250 });
-            } else {
-              window.setTimeout(() => resolve(), 0);
-            }
+            viewIdle(resolve, 250);
           });
         }
       }
@@ -323,15 +324,25 @@ export class PreviewModal extends BaseModal {
 
     if (abortCtl.signal.aborted) {
       NoticeManager.info(
-        `Bulk move stopped. ${movedCount} file(s) moved, ${errorCount} error(s).${skippedDetail}`
+        `Bulk move stopped. ${pluralize(movedCount, 'file')} moved, ${pluralize(errorCount, 'error')}.${skippedDetail}`
       );
     } else if (errorCount === 0 && totalSkipped === 0) {
-      NoticeManager.success(`Successfully moved ${movedCount} files!`);
+      NoticeManager.success(
+        `Successfully moved ${pluralize(movedCount, 'file')}!`
+      );
     } else if (errorCount === 0) {
-      NoticeManager.info(`Moved ${movedCount} files.${skippedDetail}`);
+      NoticeManager.info(
+        `Moved ${pluralize(movedCount, 'file')}.${skippedDetail}`
+      );
     } else {
       NoticeManager.warning(
-        `Moved ${movedCount} files with ${errorCount} errors.${skippedDetail} Check console for details.`
+        `Moved ${pluralize(movedCount, 'file')} with ${pluralize(errorCount, 'error')}.${skippedDetail}`,
+        {
+          detailText: 'Show details',
+          onDetail: () => {
+            NoticeManager.error(moveErrors.join('; '));
+          },
+        }
       );
     }
   }

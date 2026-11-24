@@ -2,7 +2,9 @@ import type { EventRef } from 'obsidian';
 import { TFile } from 'obsidian';
 import AdvancedNoteMoverPlugin from 'main';
 import { DebounceManager } from '../utils/DebounceManager';
+import { viewClearInterval, viewInterval } from '../utils/viewTimers';
 import { isMovableVaultFile } from '../domain/vault/movable-vault-files';
+import { debugError } from '../utils/debug';
 
 export class TriggerEventHandler {
   private periodicIntervalId: number | null = null;
@@ -20,7 +22,7 @@ export class TriggerEventHandler {
           try {
             await this.handleOnEdit(file);
           } catch (error) {
-            console.error('Error in debounced handleOnEdit:', error);
+            debugError('Error in debounced handleOnEdit:', error);
           }
         })();
       },
@@ -30,14 +32,14 @@ export class TriggerEventHandler {
 
   public togglePeriodic(): void {
     if (this.periodicIntervalId) {
-      window.clearInterval(this.periodicIntervalId);
+      viewClearInterval(this.periodicIntervalId);
       this.periodicIntervalId = null;
     }
 
     if (this.plugin.pluginData.settings.triggers.enablePeriodicMovement) {
       const minutes =
         this.plugin.pluginData.settings.triggers.periodicMovementInterval;
-      this.periodicIntervalId = window.setInterval(
+      this.periodicIntervalId = viewInterval(
         () => {
           void this.plugin.advancedNoteMover.moveAllFilesInVaultPeriodic();
         },

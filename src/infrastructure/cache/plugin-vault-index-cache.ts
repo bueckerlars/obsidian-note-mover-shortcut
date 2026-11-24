@@ -7,6 +7,7 @@ import {
   isMovableVaultFile,
 } from '../../domain/vault/movable-vault-files';
 import type { PerformanceTraceRecorder } from '../debug/performance-trace';
+import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
 
 const METADATA_INDEX_INVALIDATE_MS = 400;
 
@@ -85,9 +86,9 @@ export class PluginVaultIndexCache {
    */
   scheduleMetadataDerivedInvalidate(): void {
     if (this.metadataDebounceTimer !== null) {
-      window.clearTimeout(this.metadataDebounceTimer);
+      viewClearTimeout(this.metadataDebounceTimer);
     }
-    this.metadataDebounceTimer = window.setTimeout(() => {
+    this.metadataDebounceTimer = viewTimeout(() => {
       this.metadataDebounceTimer = null;
       this.bumpIndicesGenerationImmediate();
     }, METADATA_INDEX_INVALIDATE_MS);

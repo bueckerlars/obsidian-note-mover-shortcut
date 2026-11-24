@@ -12,6 +12,7 @@ import { NoticeManager } from '../utils/NoticeManager';
 import { HISTORY_CONSTANTS } from '../config/constants';
 import { type OperationType } from '../types/Common';
 import { getParentPath, ensureFolderExists } from '../utils/PathUtils';
+import { debugWarn } from '../utils/debug';
 
 export class HistoryManager {
   private history: HistoryEntry[] = [];
@@ -317,7 +318,7 @@ export class HistoryManager {
         move.destinationPath
       );
       if (!(file instanceof TFile)) {
-        console.warn(
+        debugWarn(
           `[Advanced Note Mover] Attachment undo skipped; not found: ${move.destinationPath}`
         );
         allOk = false;
@@ -547,20 +548,17 @@ export class HistoryManager {
   /**
    * Undoes an entire bulk operation
    */
-  public async undoBulkOperation(bulkOperationId: string): Promise<boolean> {
+  public async undoBulkOperation(
+    bulkOperationId: string
+  ): Promise<{ success: boolean; errors: string[] }> {
+    const errors: string[] = [];
     const bulkOp = this.bulkOperations.find(op => op.id === bulkOperationId);
     if (!bulkOp) {
-      handleError(
-        createError(`Bulk operation with ID ${bulkOperationId} not found`),
-        'undoBulkOperation',
-        false
-      );
-      return false;
+      return {
+        success: false,
+        errors: [`Bulk operation ${bulkOperationId} was not found`],
+      };
     }
-
-    NoticeManager.info(
-      `Starting bulk undo for operation: ${bulkOp.id}, ${bulkOp.entries.length} entries`
-    );
 
     const results: boolean[] = [];
 
@@ -570,20 +568,12 @@ export class HistoryManager {
     );
 
     for (const entry of sortedEntries) {
-      NoticeManager.info(
-        `Attempting to undo: ${entry.fileName} from ${entry.destinationPath} to ${entry.sourcePath}`
-      );
-
       const file = this.plugin.app.vault.getAbstractFileByPath(
         entry.destinationPath
       );
       if (!file) {
-        handleError(
-          createError(
-            `File not found at destination path: ${entry.destinationPath}`
-          ),
-          'undoBulkOperation',
-          false
+        errors.push(
+          `${entry.fileName} was not found at ${entry.destinationPath}`
         );
         results.push(false);
         continue;
@@ -595,11 +585,7 @@ export class HistoryManager {
         sourceFolderPath &&
         !(await ensureFolderExists(this.plugin.app, sourceFolderPath))
       ) {
-        handleError(
-          createError(`Failed to create source folder ${sourceFolderPath}`),
-          'undoBulkOperation',
-          false
-        );
+        errors.push(`Could not create folder ${sourceFolderPath}`);
         results.push(false);
         continue;
       }
@@ -610,10 +596,9 @@ export class HistoryManager {
         const attachmentsOk = await this.undoAttachmentMoves(
           entry.attachmentMoves
         );
-        NoticeManager.success(
-          `Successfully moved ${entry.fileName} back to ${entry.sourcePath}`
-        );
-
+        if (!attachmentsOk) {
+          errors.push(`Could not move attachments for ${entry.fileName} back`);
+        }
         // Remove from individual history
         const historyIndex = this.history.findIndex(h => h.id === entry.id);
         if (historyIndex !== -1) {
@@ -622,7 +607,8 @@ export class HistoryManager {
 
         results.push(attachmentsOk);
       } catch (error) {
-        handleError(error, `Error undoing move for ${entry.fileName}`, false);
+        const message = error instanceof Error ? error.message : String(error);
+        errors.push(`${entry.fileName}: ${message}`);
         results.push(false);
       } finally {
         this.markPluginMoveEnd();
@@ -631,9 +617,6 @@ export class HistoryManager {
 
     // Only remove the bulk operation if at least some operations were successful
     const successCount = results.filter(r => r).length;
-    NoticeManager.info(
-      `Bulk undo completed: ${successCount}/${results.length} successful`
-    );
 
     if (successCount > 0) {
       // Create a map of successfully undone entries by ID
@@ -666,7 +649,6 @@ export class HistoryManager {
 
     await this.saveHistory();
 
-    // Return true if all operations were successful
-    return results.every(r => r);
+    return { success: results.every(r => r), errors };
   }
 }

@@ -17,7 +17,7 @@ export class MobileUtils {
    * @returns true if mobile and screen width >= 600px
    */
   static isTablet(): boolean {
-    return this.isMobile() && window.innerWidth >= 600;
+    return Platform.isTablet;
   }
 
   /**
@@ -25,7 +25,7 @@ export class MobileUtils {
    * @returns true if mobile but not tablet
    */
   static isPhone(): boolean {
-    return this.isMobile() && !this.isTablet();
+    return Platform.isPhone;
   }
 
   /**

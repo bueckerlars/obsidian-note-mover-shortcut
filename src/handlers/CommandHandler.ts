@@ -37,6 +37,14 @@ export class CommandHandler {
       },
     });
 
+    this.plugin.addCommand({
+      id: 'show-release-notes',
+      name: 'Show release notes',
+      callback: () => {
+        void this.plugin.updateManager.showUpdateModal(true);
+      },
+    });
+
     // History command
     this.plugin.addCommand({
       id: 'show-history',

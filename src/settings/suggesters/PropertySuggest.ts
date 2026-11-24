@@ -2,6 +2,8 @@ import { App, AbstractInputSuggest } from 'obsidian';
 import { MetadataExtractor } from '../../core/MetadataExtractor';
 import { inferPropertyTypeFromSamples } from '../../utils/OperatorMapping';
 import { stringifyUnknown } from '../../utils/stringify-unknown';
+import { SuggestLifecycle } from './suggestLifecycle';
+import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
 
 export type PropertyType = 'text' | 'number' | 'checkbox' | 'date' | 'list';
 
@@ -19,6 +21,7 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
   private refreshDataHandler: () => void;
   private refreshTimerId: number | null = null;
   private dataLoaded = false;
+  private readonly lifecycle = new SuggestLifecycle();
 
   constructor(
     app: App,
@@ -31,16 +34,19 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
     // Create debounced handler for cleanup
     this.refreshDataHandler = () => {
       if (this.refreshTimerId !== null) {
-        window.clearTimeout(this.refreshTimerId);
+        viewClearTimeout(this.refreshTimerId);
       }
-      this.refreshTimerId = window.setTimeout(() => {
+      this.refreshTimerId = viewTimeout(() => {
         this.refreshTimerId = null;
         this.refreshData();
       }, REFRESH_DEBOUNCE_MS);
     };
 
-    // Listen for metadata changes to refresh suggestions (debounced)
-    this.app.metadataCache.on('changed', this.refreshDataHandler);
+    this.lifecycle.listen(
+      this.app.metadataCache,
+      'changed',
+      this.refreshDataHandler
+    );
   }
 
   private loadProperties(): void {
@@ -187,9 +193,9 @@ export class PropertySuggest extends AbstractInputSuggest<string> {
    */
   public destroy(): void {
     if (this.refreshTimerId !== null) {
-      window.clearTimeout(this.refreshTimerId);
+      viewClearTimeout(this.refreshTimerId);
       this.refreshTimerId = null;
     }
-    this.app.metadataCache.off('changed', this.refreshDataHandler);
+    this.lifecycle.destroy();
   }
 }

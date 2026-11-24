@@ -9,6 +9,10 @@ import {
 } from '../types/RuleV2';
 import { FolderSuggest } from '../settings/suggesters/FolderSuggest';
 import { PropertySuggest } from '../settings/suggesters/PropertySuggest';
+import {
+  SuggestRegistry,
+  type DestroyableSuggest,
+} from '../settings/suggesters/suggestLifecycle';
 import { DragDropManager } from '../utils/DragDropManager';
 import { MobileUtils } from '../utils/MobileUtils';
 import { operatorRequiresValue } from '../utils/OperatorMapping';
@@ -53,6 +57,9 @@ export class RuleEditorModal extends BaseModal {
   private dragDropManager: DragDropManager | null = null;
   private triggersContainer: HTMLElement | null = null;
   private readonly isMobileLayout: boolean;
+  private readonly triggerSuggests = new SuggestRegistry();
+  private destinationSuggest: DestroyableSuggest | null = null;
+  private mobileView: RuleEditorMobileView | null = null;
 
   constructor(app: App, options: RuleEditorModalOptions) {
     const isMobileLayout = MobileUtils.isMobile();
@@ -75,7 +82,7 @@ export class RuleEditorModal extends BaseModal {
   protected createContent(): void {
     const { contentEl } = this;
     if (this.isMobileLayout) {
-      new RuleEditorMobileView({
+      this.mobileView = new RuleEditorMobileView({
         app: this.app,
         rule: this.workingRule,
         canDelete: Boolean(
@@ -85,7 +92,8 @@ export class RuleEditorModal extends BaseModal {
         onSave: () => void this.handleSave(),
         onCancel: () => void this.requestClose(),
         onDelete: () => void this.handleRemoveRule(),
-      }).render(contentEl);
+      });
+      this.mobileView.render(contentEl);
       return;
     }
     this.createDesktopContent(contentEl);
@@ -179,7 +187,7 @@ export class RuleEditorModal extends BaseModal {
     const setting = new Setting(container)
       .setName('Destination')
       .addSearch(cb => {
-        new FolderSuggest(this.app, cb.inputEl);
+        this.destinationSuggest = new FolderSuggest(this.app, cb.inputEl);
         cb.setPlaceholder(
           'Example: Personal/Tasks/{{property.status}} or {{tag.tasks/personal}}/Incoming'
         )
@@ -263,6 +271,7 @@ export class RuleEditorModal extends BaseModal {
     if (!this.triggersContainer) return;
 
     this.triggersContainer.empty();
+    this.triggerSuggests.destroy();
 
     // Clean up existing drag drop manager
     if (this.dragDropManager) {
@@ -330,7 +339,9 @@ export class RuleEditorModal extends BaseModal {
         value: trigger.propertyName || '',
       });
 
-      new PropertySuggest(this.app, propertyNameInput);
+      this.triggerSuggests.add(
+        new PropertySuggest(this.app, propertyNameInput)
+      );
 
       propertyNameInput.oninput = () => {
         const detected = applyPropertyName(
@@ -357,11 +368,13 @@ export class RuleEditorModal extends BaseModal {
         trigger.value = valueInput.value;
       };
 
-      attachValueSuggester(
-        this.app,
-        valueInput,
-        trigger,
-        this.ruleOptions.vaultIndexCache
+      this.triggerSuggests.add(
+        attachValueSuggester(
+          this.app,
+          valueInput,
+          trigger,
+          this.ruleOptions.vaultIndexCache
+        )
       );
     } else {
       row.addClass('advancedNoteMover-no-value-field');
@@ -547,7 +560,11 @@ export class RuleEditorModal extends BaseModal {
   }
 
   onClose(): void {
-    // Clean up drag drop manager
+    this.triggerSuggests.destroy();
+    this.destinationSuggest?.destroy();
+    this.destinationSuggest = null;
+    this.mobileView?.destroy();
+    this.mobileView = null;
     if (this.dragDropManager) {
       this.dragDropManager.destroy();
       this.dragDropManager = null;

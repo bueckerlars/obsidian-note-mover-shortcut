@@ -16,6 +16,9 @@ import {
 import type { FilterSettingsSection } from './sections/FilterSettingsSection';
 import type { ImportExportSettingsSection } from './sections/ImportExportSettingsSection';
 import type { RulesSettingsSection } from './sections/RulesSettingsSection';
+import { parsePeriodicIntervalMinutes } from './intervalInput';
+import { setDebugEnabled } from '../utils/debug';
+import { cloneRule } from './cloneRule';
 
 export interface SettingDefinitionsHost {
   plugin: AdvancedNoteMoverPlugin;
@@ -125,8 +128,8 @@ export function buildSettingDefinitions(
             min: 1,
             placeholder: SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.INTERVAL,
             validate: (value: number) =>
-              !Number.isFinite(value) || value < 1
-                ? 'Interval must be greater than 0'
+              parsePeriodicIntervalMinutes(String(value)) === null
+                ? 'Enter a whole number of minutes from 1 to 1440'
                 : undefined,
           },
         },
@@ -471,7 +474,7 @@ export function buildSettingDefinitions(
           name: 'Export performance trace',
           desc:
             settings.enablePerformanceDebug === true
-              ? 'Writes recorded timings as JSON to _note-mover-traces/ in your vault for before/after comparison.'
+              ? 'Downloads recorded timings as JSON for before/after comparison.'
               : 'Turn on performance debug logs first to record timings.',
           render: setting => {
             setting.addButton(btn =>
@@ -488,11 +491,13 @@ export function buildSettingDefinitions(
                     return;
                   }
                   try {
-                    const path =
-                      await plugin.performanceTrace.writeExportToVault(
-                        plugin.app
+                    const fileName =
+                      await plugin.performanceTrace.downloadExport();
+                    if (fileName) {
+                      NoticeManager.success(
+                        `Performance trace downloaded: ${fileName}`
                       );
-                    NoticeManager.success(`Performance trace saved: ${path}`);
+                    }
                   } catch (err) {
                     NoticeManager.error(
                       `Could not export trace: ${err instanceof Error ? err.message : String(err)}`
@@ -577,9 +582,7 @@ function bindRuleRow(
         if (currentIndex < 0) {
           return;
         }
-        const clonedRule = structuredClone(rule);
-        const baseName = rule.name?.trim() || 'Unnamed Rule';
-        clonedRule.name = `${baseName} (copy)`;
+        const clonedRule = cloneRule(rule, plugin.pluginData.settings.rulesV2);
         plugin.pluginData.settings.rulesV2.splice(
           currentIndex + 1,
           0,
@@ -677,6 +680,9 @@ async function applySettingSideEffects(
       break;
     case 'createMissingDestinationFolders':
       plugin.advancedNoteMover.updateRuleManager();
+      break;
+    case 'enablePerformanceDebug':
+      setDebugEnabled(value === true);
       break;
     case 'enableRuleEvaluationCache':
       if (value === false) {

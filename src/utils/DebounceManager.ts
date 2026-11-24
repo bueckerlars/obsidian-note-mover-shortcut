@@ -1,3 +1,5 @@
+import { viewClearTimeout, viewTimeout } from './viewTimers';
+
 /**
  * Utility class for debouncing function calls to prevent excessive execution
  */
@@ -19,11 +21,11 @@ export class DebounceManager {
       // Clear existing timeout for this key
       const existingTimeout = this.timeouts.get(key);
       if (existingTimeout) {
-        window.clearTimeout(existingTimeout);
+        viewClearTimeout(existingTimeout);
       }
 
       // Set new timeout
-      const timeout = window.setTimeout(() => {
+      const timeout = viewTimeout(() => {
         func(...args);
         this.timeouts.delete(key);
       }, delay);
@@ -39,7 +41,7 @@ export class DebounceManager {
   cancel(key: string): void {
     const timeout = this.timeouts.get(key);
     if (timeout) {
-      window.clearTimeout(timeout);
+      viewClearTimeout(timeout);
       this.timeouts.delete(key);
     }
   }
@@ -48,7 +50,7 @@ export class DebounceManager {
    * Cancel all debounced function calls
    */
   cancelAll(): void {
-    this.timeouts.forEach(timeout => window.clearTimeout(timeout));
+    this.timeouts.forEach(timeout => viewClearTimeout(timeout));
     this.timeouts.clear();
   }
 

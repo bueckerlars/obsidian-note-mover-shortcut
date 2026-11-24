@@ -4,6 +4,17 @@
 
 ### Fixes
 
+- **Bulk errors**: One summary names the error count, and Show details lists the failed files.
+- **Clone rule**: A duplicated rule is named with " copy" and gets its own id when the original already has one.
+- **Release notes**: The current version comes from the manifest, and Show release notes opens them again.
+- **Performance trace**: Export downloads a JSON file instead of writing it into the vault.
+- **Notices**: Titles no longer repeat the plugin name, and the ribbon tooltip names the move action.
+- **Popout windows**: Timers and tablet detection follow the active window and Obsidian's platform flags.
+- **Counts**: Notices and buttons say "1 file" and "2 files".
+- **Periodic interval**: Invalid intervals are ignored. A valid change restarts the timer once.
+- **Modal size**: Dialog widths come from the existing size classes instead of inline styles.
+- **Conflict cache title**: The skipped-conflicts modal keeps its title after Dismiss, Remove stale, and Clear all.
+- **Import settings cancel**: Cancelling the file dialog leaves the Import button clickable. Invalid JSON is rejected with an error and does not change settings.
 - **Edit rule after reordering** ([#114](https://github.com/bueckerlars/obsidian-note-mover-shortcut/issues/114)): After drag-reordering rules in settings, Edit / Toggle / Clone now target the rule shown in that row instead of the rule that previously occupied the slot. The settings UI rebuilds after reorder, and row actions resolve the rule by object identity.
 
 ## [1.3.0]

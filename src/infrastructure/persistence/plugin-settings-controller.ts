@@ -12,6 +12,7 @@ import {
   type LegacyRuleV1,
 } from 'src/core/RuleMigrationService';
 import { looksLikePluginDataRoot } from './plugin-settings-schema';
+import { debugWarn, debugError, debugDebug } from '../../utils/debug';
 import {
   migrateVaultLastSeenToApp,
   resolveLastSeenVersion,
@@ -237,11 +238,11 @@ export async function validateAndRepairPluginData(
       plugin.pluginData.settings.rulesV2 ?? []
     )
   ) {
-    console.debug('Migrating Rule V1 to Rule V2...');
+    debugDebug('Migrating Rule V1 to Rule V2...');
     plugin.pluginData.settings.rulesV2 = RuleMigrationService.migrateRules(
       settingsWithLegacy.rules ?? []
     );
-    console.debug(
+    debugDebug(
       `Migrated ${(plugin.pluginData.settings.rulesV2 ?? []).length} rules to V2 format`
     );
     settingsWithLegacy.rules = [];
@@ -258,9 +259,7 @@ export async function validateAndRepairPluginData(
       plugin.pluginData.settings.rulesV2
     );
     if (migrated) {
-      console.debug(
-        'Migrated RuleV2 triggers from ruleType to operator format'
-      );
+      debugDebug('Migrated RuleV2 triggers from ruleType to operator format');
       await savePersistedSettings(plugin);
     }
 
@@ -268,7 +267,7 @@ export async function validateAndRepairPluginData(
       plugin.pluginData.settings.rulesV2
     );
     if (repaired) {
-      console.debug(
+      debugDebug(
         'Repaired RuleV2 properties triggers with missing propertyName'
       );
       await savePersistedSettings(plugin);
@@ -291,10 +290,10 @@ export async function validateAndRepairPluginData(
     );
 
     if (validationResult.errors.length > 0) {
-      console.error('RuleV2 validation errors:', validationResult.errors);
+      debugError('RuleV2 validation errors:', validationResult.errors);
     }
     if (validationResult.warnings.length > 0) {
-      console.warn('RuleV2 validation warnings:', validationResult.warnings);
+      debugWarn('RuleV2 validation warnings:', validationResult.warnings);
     }
   }
 }
@@ -352,8 +351,7 @@ function migrateFromLegacy(legacy: unknown): PluginData {
     legacyRecord.enableOnEditTrigger ?? defaults.enableOnEditTrigger ?? false;
   const retentionPolicy =
     (legacyRecord.retentionPolicy as
-      | SettingsData['retentionPolicy']
-      | undefined) ?? defaults.retentionPolicy;
+      SettingsData['retentionPolicy'] | undefined) ?? defaults.retentionPolicy;
 
   const rules: LegacyRuleV1[] = Array.isArray(legacyRecord.rules)
     ? (legacyRecord.rules as LegacyRuleV1[])

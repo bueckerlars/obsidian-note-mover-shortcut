@@ -16,6 +16,10 @@ import type {
 } from '../../types/RuleV2';
 import { FolderSuggest } from '../../settings/suggesters/FolderSuggest';
 import { PropertySuggest } from '../../settings/suggesters/PropertySuggest';
+import {
+  SuggestRegistry,
+  type DestroyableSuggest,
+} from '../../settings/suggesters/suggestLifecycle';
 import { operatorRequiresValue } from '../../utils/OperatorMapping';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
 import { SETTINGS_CONSTANTS } from '../../config/constants';
@@ -73,9 +77,30 @@ export class RuleEditorMobileView {
   private conditionsListEl: HTMLElement | null = null;
   private conditionsCountEl: HTMLElement | null = null;
   private fieldCounter = 0;
+  private destinationSuggest: DestroyableSuggest | null = null;
+  private readonly conditionSuggests = new Map<Trigger, SuggestRegistry>();
 
   constructor(options: RuleEditorMobileViewOptions) {
     this.options = options;
+  }
+
+  destroy(): void {
+    for (const registry of this.conditionSuggests.values()) {
+      registry.destroy();
+    }
+    this.conditionSuggests.clear();
+    this.destinationSuggest?.destroy();
+    this.destinationSuggest = null;
+  }
+
+  private conditionRegistry(trigger: Trigger): SuggestRegistry {
+    const existing = this.conditionSuggests.get(trigger);
+    if (existing) {
+      return existing;
+    }
+    const created = new SuggestRegistry();
+    this.conditionSuggests.set(trigger, created);
+    return created;
   }
 
   private get rule(): RuleV2 {
@@ -205,7 +230,8 @@ export class RuleEditorMobileView {
         input.id = destinationField.inputId;
         input.addClass(`${CLS}-input`);
         this.disableTextAssistance(input);
-        new FolderSuggest(this.options.app, input);
+        this.destinationSuggest?.destroy();
+        this.destinationSuggest = new FolderSuggest(this.options.app, input);
       });
 
     const details = group.createEl('details', { cls: `${CLS}-help` });
@@ -317,6 +343,10 @@ export class RuleEditorMobileView {
   // ---------------------------------------------------------------------------
 
   private renderConditions(): void {
+    for (const registry of this.conditionSuggests.values()) {
+      registry.destroy();
+    }
+    this.conditionSuggests.clear();
     const list = this.conditionsListEl;
     if (!list) return;
     list.empty();
@@ -387,6 +417,7 @@ export class RuleEditorMobileView {
   }
 
   private renderConditionBody(body: HTMLElement, trigger: Trigger): void {
+    this.conditionRegistry(trigger).destroy();
     body.empty();
 
     const selectors = body.createDiv({ cls: `${CLS}-condition-selectors` });
@@ -428,11 +459,13 @@ export class RuleEditorMobileView {
           input.id = valueField.inputId;
           input.addClass(`${CLS}-input`);
           this.disableTextAssistance(input);
-          attachValueSuggester(
-            this.options.app,
-            input,
-            trigger,
-            this.options.vaultIndexCache
+          this.conditionRegistry(trigger).add(
+            attachValueSuggester(
+              this.options.app,
+              input,
+              trigger,
+              this.options.vaultIndexCache
+            )
           );
         });
     };
@@ -477,7 +510,9 @@ export class RuleEditorMobileView {
           input.id = propertyField.inputId;
           input.addClass(`${CLS}-input`);
           this.disableTextAssistance(input);
-          new PropertySuggest(this.options.app, input);
+          this.conditionRegistry(trigger).add(
+            new PropertySuggest(this.options.app, input)
+          );
         });
     }
 

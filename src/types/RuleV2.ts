@@ -107,9 +107,7 @@ export type DatePropertyOperator = BasePropertyOperator | DateOperator;
 
 // Checkbox Property operators (properties with checkbox type)
 export type CheckboxPropertyOperator =
-  | BasePropertyOperator
-  | 'is true'
-  | 'is false';
+  BasePropertyOperator | 'is true' | 'is false';
 
 // Union type for all possible operators
 export type Operator =
@@ -160,6 +158,7 @@ export interface Trigger<T extends CriteriaType = CriteriaType> {
 }
 
 export interface RuleV2 {
+  id?: string;
   name: string;
   destination: string;
   aggregation: AggregationType;

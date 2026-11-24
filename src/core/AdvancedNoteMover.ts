@@ -1,5 +1,7 @@
 import { TFile } from 'obsidian';
 import { NoticeManager } from '../utils/NoticeManager';
+import { pluralize } from '../utils/pluralize';
+import { viewIdle } from '../utils/viewTimers';
 import { RuleManagerV2 } from './RuleManagerV2';
 import { createError, handleError } from '../utils/Error';
 import {
@@ -302,6 +304,7 @@ export class AdvancedNoteMover {
         );
         let successCount = 0;
         let errorCount = 0;
+        const moveErrors: string[] = [];
         let missingFolderSkippedCount = 0;
         let conflictSkippedCount = 0;
 
@@ -330,22 +333,14 @@ export class AdvancedNoteMover {
               }
             } catch (error) {
               errorCount++;
-              const errorMessage =
-                options.operationType === 'periodic'
-                  ? `Error moving file '${files[i].path}' during periodic movement`
-                  : `Error moving file '${files[i].path}'`;
-              handleError(error, errorMessage, false);
+              const message =
+                error instanceof Error ? error.message : String(error);
+              moveErrors.push(`${files[i].path}: ${message}`);
             }
             // Yield to the UI thread periodically to prevent freezing
             if ((i + 1) % BULK_CHUNK_SIZE === 0 && i + 1 < files.length) {
               await new Promise<void>(resolve => {
-                if (typeof window.requestIdleCallback === 'function') {
-                  window.requestIdleCallback(() => resolve(), {
-                    timeout: 250,
-                  });
-                } else {
-                  window.setTimeout(() => resolve(), 0);
-                }
+                viewIdle(resolve, 250);
               });
             }
           }
@@ -369,44 +364,85 @@ export class AdvancedNoteMover {
                 const totalAttempted = successCount + errorCount;
                 const successMessage =
                   errorCount > 0
-                    ? `Moved ${successCount}/${totalAttempted} files. ${errorCount} files had errors.`
-                    : `Successfully moved ${successCount} files`;
+                    ? `Moved ${pluralize(successCount, 'file')} of ${totalAttempted}. ${pluralize(errorCount, 'file')} had errors.`
+                    : `Successfully moved ${pluralize(successCount, 'file')}`;
 
                 NoticeManager.showWithUndo(
                   'info',
                   `Bulk Operation: ${successMessage}${skippedDetail}`,
                   () => {
                     void (async () => {
-                      const success =
+                      const undone =
                         await this.plugin.historyManager.undoBulkOperation(
                           bulkOperationId
                         );
-                      if (success) {
+                      if (undone.success) {
                         NoticeManager.success(
-                          `Bulk operation undone: ${successCount} files moved back`,
+                          `Bulk operation undone: ${pluralize(successCount, 'file')} moved back`,
                           { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
                         );
                       } else {
                         NoticeManager.warning(
-                          `Could not undo all moves. Check individual files in history.`,
-                          { duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE }
+                          undone.errors.length === 1
+                            ? undone.errors[0]
+                            : `${pluralize(undone.errors.length, 'error')} while undoing.`,
+                          {
+                            duration: NOTIFICATION_CONSTANTS.DURATION_OVERRIDE,
+                            detailText: 'Show details',
+                            onDetail:
+                              undone.errors.length > 1
+                                ? () => {
+                                    NoticeManager.error(
+                                      undone.errors.join('; ')
+                                    );
+                                  }
+                                : undefined,
+                          }
                         );
                       }
                     })();
                   },
-                  SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL
+                  SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL,
+                  moveErrors.length > 0
+                    ? {
+                        detailText: 'Show details',
+                        onDetail: () => {
+                          NoticeManager.error(moveErrors.join('; '));
+                        },
+                      }
+                    : undefined
                 );
               } else {
                 NoticeManager.info(
-                  `Bulk Operation: No files moved.${skippedDetail}`
+                  `Bulk Operation: No files moved.${skippedDetail}`,
+                  moveErrors.length > 0
+                    ? {
+                        detailText: 'Show details',
+                        onDetail: () => {
+                          NoticeManager.error(moveErrors.join('; '));
+                        },
+                      }
+                    : undefined
                 );
               }
             } else {
               const periodicMessage =
                 successCount > 0
-                  ? `Periodic movement: Successfully moved ${successCount} files${skippedDetail}`
+                  ? `Periodic movement: Successfully moved ${pluralize(successCount, 'file')}${skippedDetail}`
                   : `Periodic movement: No files moved.${skippedDetail}`;
-              NoticeManager.info(periodicMessage);
+              NoticeManager.info(
+                errorCount > 0
+                  ? `${periodicMessage} ${pluralize(errorCount, 'error')}.`
+                  : periodicMessage,
+                moveErrors.length > 0
+                  ? {
+                      detailText: 'Show details',
+                      onDetail: () => {
+                        NoticeManager.error(moveErrors.join('; '));
+                      },
+                    }
+                  : undefined
+              );
             }
           }
         } finally {

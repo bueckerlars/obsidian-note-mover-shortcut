@@ -1,5 +1,4 @@
-import type { App } from 'obsidian';
-import { normalizePath } from 'obsidian';
+import { debugDebug } from '../../utils/debug';
 
 const LOG_PREFIX = '[Advanced Note Mover perf]';
 
@@ -70,7 +69,7 @@ export class PerformanceTraceRecorder {
     };
     this.seq += 1;
     this.entries.push(entry);
-    console.debug(
+    debugDebug(
       `${LOG_PREFIX} #${this.seq} ${name} ${durationMs.toFixed(2)}ms`,
       meta ?? ''
     );
@@ -93,18 +92,44 @@ export class PerformanceTraceRecorder {
   }
 
   /**
-   * Writes trace JSON under `_note-mover-traces/` in the vault.
-   * @returns Normalized path of the written file
+   * Downloads the trace JSON. Uses the file picker when the browser provides one.
+   * @returns The file name offered to the user
    */
-  async writeExportToVault(app: App): Promise<string> {
-    const dir = normalizePath('_note-mover-traces');
-    const folder = app.vault.getAbstractFileByPath(dir);
-    if (!folder) {
-      await app.vault.createFolder(dir);
-    }
+  async downloadExport(): Promise<string | null> {
     const fileName = `perf-trace-${Date.now()}.json`;
-    const path = normalizePath(`${dir}/${fileName}`);
-    await app.vault.adapter.write(path, this.exportJson());
-    return path;
+    const json = this.exportJson();
+    const view = activeWindow as Window & {
+      showSaveFilePicker?: (options: { suggestedName: string }) => Promise<{
+        createWritable: () => Promise<{
+          write: (data: string) => Promise<void>;
+          close: () => Promise<void>;
+        }>;
+      }>;
+    };
+    if (typeof view.showSaveFilePicker === 'function') {
+      try {
+        const handle = await view.showSaveFilePicker({
+          suggestedName: fileName,
+        });
+        const writable = await handle.createWritable();
+        await writable.write(json);
+        await writable.close();
+        return fileName;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return null;
+        }
+      }
+    }
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = createEl('a');
+    link.href = url;
+    link.download = fileName;
+    activeDocument.body.appendChild(link);
+    link.click();
+    activeDocument.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    return fileName;
   }
 }
