@@ -8,7 +8,7 @@ import { createError, handleError } from 'src/utils/Error';
 import { NoticeManager } from 'src/utils/NoticeManager';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { SettingsValidator } from 'src/utils/SettingsValidator';
-import { SETTINGS_CONSTANTS } from '../../config/constants';
+import { strings } from '../../i18n/locale';
 import { RuleMigrationService } from 'src/core/RuleMigrationService';
 import { MobileUtils } from '../../utils/MobileUtils';
 import { debugDebug } from '../../utils/debug';
@@ -27,15 +27,17 @@ export class ImportExportSettingsSection {
 
   addImportExportSettings(): void {
     const isMobile = MobileUtils.isMobile();
-    new Setting(this.containerEl).setName('Import/export').setHeading();
+    new Setting(this.containerEl)
+      .setName(strings().settings.headingsImportExport)
+      .setHeading();
 
     // Export Settings Button
     const exportSetting = new Setting(this.containerEl)
-      .setName('Export settings')
-      .setDesc('Export your current settings as a JSON file')
+      .setName(strings().settings.importExportExportName)
+      .setDesc(strings().settings.importExportExportDesc)
       .addButton(btn => {
         btn
-          .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.EXPORT_SETTINGS)
+          .setButtonText(strings().settings.importExportExportButton)
           .setCta()
           .onClick(() => {
             void (async () => {
@@ -64,10 +66,10 @@ export class ImportExportSettingsSection {
 
     // Import Settings Button
     const importSetting = new Setting(this.containerEl)
-      .setName('Import settings')
-      .setDesc('Import settings from a JSON file')
+      .setName(strings().settings.importExportImportName)
+      .setDesc(strings().settings.importExportImportDesc)
       .addButton(btn => {
-        btn.setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS);
+        btn.setButtonText(strings().settings.importExportImportButton);
         btn.buttonEl.addClass('mod-warning');
         btn.onClick(() => {
           void runImportAction(
@@ -121,7 +123,7 @@ export class ImportExportSettingsSection {
       URL.revokeObjectURL(url);
 
       // Show success message
-      NoticeManager.info(SETTINGS_CONSTANTS.UI_TEXTS.EXPORT_SUCCESS);
+      NoticeManager.info(strings().notices.exportSuccess);
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       handleError(
@@ -148,7 +150,7 @@ export class ImportExportSettingsSection {
             SettingsValidator.validateSettings(importedSettings);
 
           if (!validation.isValid) {
-            const errorMessage = `${SETTINGS_CONSTANTS.UI_TEXTS.VALIDATION_ERRORS}:\n${validation.errors.join('\n')}`;
+            const errorMessage = `${strings().notices.validationErrors}:\n${validation.errors.join('\n')}`;
             handleError(createError(errorMessage), 'Import settings', false);
             return;
           }
@@ -162,10 +164,10 @@ export class ImportExportSettingsSection {
 
           // Show confirmation modal
           const confirmed = await ConfirmModal.show(this.app, {
-            title: SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS_TITLE,
-            message: SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS_MESSAGE,
-            confirmText: SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS_CONFIRM,
-            cancelText: SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS_CANCEL,
+            title: strings().settings.importExportImportTitle,
+            message: strings().settings.importExportImportMessage,
+            confirmText: strings().settings.importExportImportConfirm,
+            cancelText: strings().common.cancel,
             danger: true,
           });
 
@@ -313,13 +315,13 @@ export class ImportExportSettingsSection {
             this.refreshDisplay();
 
             // Show success message
-            NoticeManager.success(SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SUCCESS);
+            NoticeManager.success(strings().notices.importSuccess);
           }
         }
       );
       if (!loaded.applied) {
         handleError(
-          createError(loaded.error ?? SETTINGS_CONSTANTS.UI_TEXTS.INVALID_FILE),
+          createError(loaded.error ?? strings().notices.invalidFile),
           'Import settings',
           false
         );

@@ -1,4 +1,5 @@
 import { App, Setting, TFile } from 'obsidian';
+import { fill, strings } from '../i18n/locale';
 import AdvancedNoteMoverPlugin from 'main';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
@@ -14,8 +15,8 @@ export class ConflictSkipCacheModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
-      title: 'Skipped move conflicts',
-      titleIcon: '⚠️',
+      title: strings().modals.conflictCacheTitle,
+      titleIcon: 'alert-triangle',
       cssClass: 'advancedNoteMover-conflict-skip-cache-modal',
       size: 'large',
       ...options,
@@ -29,13 +30,13 @@ export class ConflictSkipCacheModal extends BaseModal {
 
     contentEl.createEl('p', {
       cls: 'advancedNoteMover-modal-subtitle',
-      text: 'Notes that were skipped because a file already exists at the destination.',
+      text: strings().modals.conflictCacheIntro,
     });
 
     if (entries.length === 0) {
       contentEl.createDiv({
         cls: 'advancedNoteMover-modal-empty',
-        text: 'No skipped move conflicts.',
+        text: strings().modals.conflictCacheEmpty,
       });
       return;
     }
@@ -119,13 +120,13 @@ export class ConflictSkipCacheModal extends BaseModal {
     new Setting(item)
       .addButton(btn =>
         btn
-          .setButtonText('Open note')
+          .setButtonText(strings().modals.conflictCacheOpenNote)
           .setTooltip('Open the source note')
           .onClick(() => this.openSourceNote(entry))
       )
       .addButton(btn =>
         btn
-          .setButtonText('Retry move')
+          .setButtonText(strings().modals.conflictCacheRetry)
           .setTooltip('Remove from cache and try moving again')
           .onClick(() => {
             void this.retryEntry(entry);
@@ -133,7 +134,7 @@ export class ConflictSkipCacheModal extends BaseModal {
       )
       .addButton(btn =>
         btn
-          .setButtonText('Dismiss')
+          .setButtonText(strings().modals.conflictCacheDismiss)
           .setTooltip('Remove from cache without moving')
           .onClick(() => {
             void this.dismissEntry(entry);
@@ -146,15 +147,17 @@ export class ConflictSkipCacheModal extends BaseModal {
     entry: ConflictSkipCacheEntry
   ): void {
     new Setting(item).addButton(btn =>
-      btn.setButtonText('Open note').onClick(() => this.openSourceNote(entry))
+      btn
+        .setButtonText(strings().modals.conflictCacheOpenNote)
+        .onClick(() => this.openSourceNote(entry))
     );
     new Setting(item).addButton(btn =>
-      btn.setButtonText('Retry move').onClick(() => {
+      btn.setButtonText(strings().modals.conflictCacheRetry).onClick(() => {
         void this.retryEntry(entry);
       })
     );
     new Setting(item).addButton(btn =>
-      btn.setButtonText('Dismiss').onClick(() => {
+      btn.setButtonText(strings().modals.conflictCacheDismiss).onClick(() => {
         void this.dismissEntry(entry);
       })
     );
@@ -168,20 +171,23 @@ export class ConflictSkipCacheModal extends BaseModal {
 
     this.createButton(
       buttonContainer,
-      'Remove stale entries',
+      strings().modals.conflictCacheRemoveStale,
       () => {
         void this.removeStaleEntries();
       },
-      { tooltip: 'Remove entries whose source or target no longer exists' }
+      { tooltip: strings().modals.conflictCacheRemoveStaleTooltip }
     );
 
     this.createButton(
       buttonContainer,
-      'Clear all',
+      strings().modals.conflictCacheClearAll,
       () => {
         void this.clearAllEntries();
       },
-      { isWarning: true, tooltip: 'Remove all skipped conflict entries' }
+      {
+        isWarning: true,
+        tooltip: strings().modals.conflictCacheClearAllTooltip,
+      }
     );
   }
 
@@ -238,10 +244,12 @@ export class ConflictSkipCacheModal extends BaseModal {
   private async removeStaleEntries(): Promise<void> {
     const removed = await this.plugin.conflictSkipCacheManager.prune(this.app);
     if (removed === 0) {
-      NoticeManager.info('No stale entries to remove.');
+      NoticeManager.info(strings().notices.noStaleEntries);
     } else {
       NoticeManager.success(
-        `Removed ${removed} stale entr${removed === 1 ? 'y' : 'ies'}.`
+        removed === 1
+          ? strings().notices.removedStaleOne
+          : fill(strings().notices.removedStaleMany, { count: removed })
       );
     }
     this.refreshContent();
@@ -249,11 +257,10 @@ export class ConflictSkipCacheModal extends BaseModal {
 
   private async clearAllEntries(): Promise<void> {
     const confirmed = await ConfirmModal.show(this.app, {
-      title: 'Clear skipped conflicts',
-      message:
-        'Remove all skipped move conflict entries? Automatic triggers will try to move these notes again.',
-      confirmText: 'Clear all',
-      cancelText: 'Cancel',
+      title: strings().modals.conflictCacheClearTitle,
+      message: strings().modals.conflictCacheClearMessage,
+      confirmText: strings().modals.conflictCacheClearAll,
+      cancelText: strings().common.cancel,
       danger: true,
     });
     if (!confirmed) {

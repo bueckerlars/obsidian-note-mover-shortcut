@@ -22,7 +22,7 @@ import {
 } from '../../settings/suggesters/suggestLifecycle';
 import { operatorRequiresValue } from '../../utils/OperatorMapping';
 import type { PluginVaultIndexCache } from '../../infrastructure/cache/plugin-vault-index-cache';
-import { SETTINGS_CONSTANTS } from '../../config/constants';
+import { strings } from '../../i18n/locale';
 import {
   AGGREGATION_TYPES,
   CRITERIA_TYPES,
@@ -131,7 +131,7 @@ export class RuleEditorMobileView {
 
     const nameField = this.createField(group, 'Name');
     new TextComponent(nameField.controlEl)
-      .setPlaceholder('Enter rule name')
+      .setPlaceholder(strings().modals.ruleEditorNamePlaceholder)
       .setValue(this.rule.name)
       .onChange(value => {
         this.rule.name = value;
@@ -146,7 +146,7 @@ export class RuleEditorMobileView {
     const activeLabelId = this.nextId();
     activeText.createDiv({
       cls: `${CLS}-label`,
-      text: 'Active',
+      text: strings().modals.ruleEditorActive,
       attr: { id: activeLabelId },
     });
     const activeDesc = activeText.createDiv({ cls: `${CLS}-description` });
@@ -175,7 +175,7 @@ export class RuleEditorMobileView {
     const labelId = this.nextId();
     group.createDiv({
       cls: `${CLS}-label`,
-      text: 'Match conditions',
+      text: strings().modals.ruleEditorMatch,
       attr: { id: labelId },
     });
 
@@ -235,7 +235,9 @@ export class RuleEditorMobileView {
       });
 
     const details = group.createEl('details', { cls: `${CLS}-help` });
-    details.createEl('summary', { text: 'Template examples' });
+    details.createEl('summary', {
+      text: strings().modals.ruleEditorTemplateExamples,
+    });
     const helpBody = details.createDiv({ cls: `${CLS}-help-body` });
     const list = helpBody.createEl('ul', { cls: `${CLS}-help-list` });
     DESTINATION_TEMPLATE_EXAMPLES.forEach(example => {
@@ -253,19 +255,13 @@ export class RuleEditorMobileView {
 
     const folderField = this.createField(
       group,
-      SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_NAME,
-      { description: SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_DESC }
+      strings().modals.ruleEditorCreateFolderName,
+      { description: strings().modals.ruleEditorCreateFolderDesc }
     );
     new DropdownComponent(folderField.controlEl)
-      .addOption(
-        'inherit',
-        SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_INHERIT
-      )
-      .addOption(
-        'always',
-        SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_ALWAYS
-      )
-      .addOption('never', SETTINGS_CONSTANTS.UI_TEXTS.RULE_CREATE_FOLDER_NEVER)
+      .addOption('inherit', strings().modals.ruleEditorInherit)
+      .addOption('always', strings().modals.ruleEditorAlwaysCreate)
+      .addOption('never', strings().modals.ruleEditorNeverCreate)
       .setValue(getFolderCreationValue(this.rule))
       .onChange(value => {
         applyFolderCreationValue(this.rule, value as FolderCreationValue);
@@ -280,7 +276,10 @@ export class RuleEditorMobileView {
     const section = parent.createDiv({ cls: `${CLS}-conditions` });
 
     const header = section.createDiv({ cls: `${CLS}-section-header` });
-    header.createDiv({ cls: `${CLS}-section-title`, text: 'Conditions' });
+    header.createDiv({
+      cls: `${CLS}-section-title`,
+      text: strings().modals.ruleEditorConditionsLabel,
+    });
     this.conditionsCountEl = header.createDiv({ cls: `${CLS}-count` });
 
     this.conditionsListEl = section.createDiv({
@@ -289,7 +288,7 @@ export class RuleEditorMobileView {
     this.renderConditions();
 
     new ButtonComponent(section)
-      .setButtonText('Add condition')
+      .setButtonText(strings().modals.ruleEditorAddConditionMobile)
       .then(button => {
         const iconEl = button.buttonEl.createSpan();
         setIcon(iconEl, 'plus');
@@ -314,7 +313,7 @@ export class RuleEditorMobileView {
   private renderDeleteSection(parent: HTMLElement): void {
     const section = parent.createDiv({ cls: `${CLS}-danger` });
     new ButtonComponent(section)
-      .setButtonText('Delete rule')
+      .setButtonText(strings().modals.ruleEditorDeleteRule)
       .onClick(() => this.options.onDelete())
       .then(button => {
         button.buttonEl.addClass('mod-warning', `${CLS}-block-button`);
@@ -324,13 +323,13 @@ export class RuleEditorMobileView {
   private renderFooter(parent: HTMLElement): void {
     const footer = parent.createDiv({ cls: `${CLS}-footer` });
     new ButtonComponent(footer)
-      .setButtonText('Cancel')
+      .setButtonText(strings().common.cancel)
       .onClick(() => this.options.onCancel())
       .then(button => {
         button.buttonEl.addClass(`${CLS}-block-button`);
       });
     new ButtonComponent(footer)
-      .setButtonText('Save')
+      .setButtonText(strings().common.save)
       .setCta()
       .onClick(() => this.options.onSave())
       .then(button => {

@@ -1,18 +1,29 @@
-import { Setting, App, TFile } from 'obsidian';
+import { Setting, App, TFile, setIcon } from 'obsidian';
 import { HistoryManager } from '../core/HistoryManager';
 import { BulkOperation, HistoryEntry, TimeFilter } from '../types/HistoryEntry';
 import { NoticeManager } from '../utils/NoticeManager';
 import { pluralize } from '../utils/pluralize';
-import {
-  NOTIFICATION_CONSTANTS,
-  SETTINGS_CONSTANTS,
-} from '../config/constants';
+import { NOTIFICATION_CONSTANTS } from '../config/constants';
+import { fill, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import AdvancedNoteMoverPlugin from 'main';
 
 export class HistoryModal extends BaseModal {
   private currentTimeFilter: TimeFilter = 'all';
+
+  private createIconLabel(
+    parent: HTMLElement,
+    cls: string,
+    icon: string,
+    text: string
+  ): void {
+    const row = parent.createDiv({ cls });
+    const iconEl = row.createSpan({ cls: 'advancedNoteMover-icon' });
+    iconEl.ariaHidden = 'true';
+    setIcon(iconEl, icon);
+    row.createSpan({ text });
+  }
 
   private formatHistoryDate(timestamp: number): string {
     return new Date(timestamp).toLocaleString();
@@ -25,6 +36,7 @@ export class HistoryModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
+      title: strings().modals.historyTitle,
       cssClass: 'advancedNoteMover-history-modal',
       size: 'large',
       ...options,
@@ -47,7 +59,7 @@ export class HistoryModal extends BaseModal {
     if (history.length === 0 && bulkOperations.length === 0) {
       contentEl.createDiv({
         cls: 'advancedNoteMover-modal-empty',
-        text: 'No history entries for the selected time range.',
+        text: strings().modals.historyEmpty,
       });
       return;
     }
@@ -94,13 +106,13 @@ export class HistoryModal extends BaseModal {
     });
 
     new Setting(filterContainer)
-      .setName(SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_LABEL)
+      .setName(strings().modals.historyTimeFilter)
       .addDropdown(dropdown => {
         dropdown
-          .addOption('all', SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_ALL)
-          .addOption('today', SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_TODAY)
-          .addOption('week', SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_WEEK)
-          .addOption('month', SETTINGS_CONSTANTS.UI_TEXTS.TIME_FILTER_MONTH)
+          .addOption('all', strings().modals.historyAll)
+          .addOption('today', strings().modals.historyToday)
+          .addOption('week', strings().modals.historyWeek)
+          .addOption('month', strings().modals.historyMonth)
           .setValue(this.currentTimeFilter)
           .onChange((value: string) => {
             this.currentTimeFilter = value as TimeFilter;
@@ -132,27 +144,38 @@ export class HistoryModal extends BaseModal {
     const formattedDate = this.formatHistoryDate(bulkOp.timestamp);
 
     const operationTypeText =
-      bulkOp.operationType === 'bulk' ? 'Bulk Move' : 'Periodic Move';
-    const operationIcon = bulkOp.operationType === 'bulk' ? '📦' : '🕐';
+      bulkOp.operationType === 'bulk'
+        ? strings().modals.historyBulkMove
+        : strings().modals.historyPeriodicMove;
 
-    headerEl.createDiv({
-      cls: 'advancedNoteMover-bulk-operation-info',
-      text: `${operationIcon} ${operationTypeText}: ${pluralize(bulkOp.totalFiles, 'file')} - ${formattedDate}`,
-    });
+    this.createIconLabel(
+      headerEl,
+      'advancedNoteMover-bulk-operation-info',
+      bulkOp.operationType === 'bulk' ? 'package' : 'clock',
+      fill(strings().modals.historyBulkSummary, {
+        operation: operationTypeText,
+        files: pluralize(bulkOp.totalFiles, 'file'),
+        date: formattedDate,
+      })
+    );
 
     // Expandable details (opened by default)
     const detailsEl = bulkEntryEl.createEl('details', {
       cls: 'advancedNoteMover-bulk-details',
     });
     detailsEl.open = true;
-    const summaryEl = detailsEl.createEl('summary', { text: 'Hide files' });
+    const summaryEl = detailsEl.createEl('summary', {
+      text: strings().modals.historyHideFiles,
+    });
     const filesListEl = detailsEl.createDiv({
       cls: 'advancedNoteMover-bulk-files-list',
     });
 
     // Update summary text based on open state
     detailsEl.addEventListener('toggle', () => {
-      summaryEl.textContent = detailsEl.open ? 'Hide files' : 'Show files';
+      summaryEl.textContent = detailsEl.open
+        ? strings().modals.historyHideFiles
+        : strings().modals.historyShowFiles;
     });
 
     // Sort entries by timestamp for consistent display
@@ -170,10 +193,15 @@ export class HistoryModal extends BaseModal {
       });
       const formattedDate = this.formatHistoryDate(entry.timestamp);
 
-      contentEl.createDiv({
-        cls: 'advancedNoteMover-history-entry-info',
-        text: `📄 ${entry.fileName} - ${formattedDate}`,
-      });
+      this.createIconLabel(
+        contentEl,
+        'advancedNoteMover-history-entry-info',
+        'file-text',
+        fill(strings().modals.historyFileLine, {
+          fileName: entry.fileName,
+          date: formattedDate,
+        })
+      );
 
       contentEl.createDiv({
         cls: 'advancedNoteMover-history-entry-paths',
@@ -191,7 +219,7 @@ export class HistoryModal extends BaseModal {
         // Open button
         const openBtn = buttonsContainer.createEl('button', {
           cls: 'advancedNoteMover-history-entry-button-mobile',
-          text: 'Open',
+          text: strings().common.open,
         });
         openBtn.onclick = () => {
           const file = this.app.vault.getAbstractFileByPath(
@@ -218,7 +246,7 @@ export class HistoryModal extends BaseModal {
         // Undo button
         const undoBtn = buttonsContainer.createEl('button', {
           cls: 'advancedNoteMover-history-entry-button-mobile',
-          text: 'Undo',
+          text: strings().common.undo,
         });
         undoBtn.onclick = () => {
           void (async () => {
@@ -237,7 +265,7 @@ export class HistoryModal extends BaseModal {
         // Blacklist button
         const blacklistBtn = buttonsContainer.createEl('button', {
           cls: 'advancedNoteMover-history-entry-button-mobile advancedNoteMover-history-entry-button-warning',
-          text: 'Add to blacklist',
+          text: strings().modals.historyAddToBlacklist,
         });
         blacklistBtn.onclick = () => {
           void this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);
@@ -306,7 +334,7 @@ export class HistoryModal extends BaseModal {
     // Bulk undo button
     const bulkUndoSetting = new Setting(bulkEntryEl).addButton(button => {
       button
-        .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.UNDO_ALL)
+        .setButtonText(strings().modals.historyUndoAll)
         .setIcon('undo')
         .setTooltip(`Undo entire ${operationTypeText.toLowerCase()}`)
         .onClick(() => {
@@ -362,10 +390,15 @@ export class HistoryModal extends BaseModal {
     });
     const formattedDate = this.formatHistoryDate(entry.timestamp);
 
-    contentEl.createDiv({
-      cls: 'advancedNoteMover-history-entry-info',
-      text: `📄 ${entry.fileName} - ${formattedDate}`,
-    });
+    this.createIconLabel(
+      contentEl,
+      'advancedNoteMover-history-entry-info',
+      'file-text',
+      fill(strings().modals.historyFileLine, {
+        fileName: entry.fileName,
+        date: formattedDate,
+      })
+    );
 
     contentEl.createDiv({
       cls: 'advancedNoteMover-history-entry-paths',
@@ -381,7 +414,7 @@ export class HistoryModal extends BaseModal {
       // Open button
       const openBtn = buttonsContainer.createEl('button', {
         cls: 'advancedNoteMover-history-entry-button-mobile',
-        text: 'Open',
+        text: strings().common.open,
       });
       openBtn.onclick = () => {
         const file = this.app.vault.getAbstractFileByPath(
@@ -408,7 +441,7 @@ export class HistoryModal extends BaseModal {
       // Undo button
       const undoBtn = buttonsContainer.createEl('button', {
         cls: 'advancedNoteMover-history-entry-button-mobile',
-        text: 'Undo',
+        text: strings().common.undo,
       });
       undoBtn.onclick = () => {
         void (async () => {
@@ -422,7 +455,7 @@ export class HistoryModal extends BaseModal {
       // Blacklist button
       const blacklistBtn = buttonsContainer.createEl('button', {
         cls: 'advancedNoteMover-history-entry-button-mobile advancedNoteMover-history-entry-button-warning',
-        text: 'Add to blacklist',
+        text: strings().modals.historyAddToBlacklist,
       });
       blacklistBtn.onclick = () => {
         void this.plugin.advancedNoteMover.addFileToBlacklist(entry.fileName);

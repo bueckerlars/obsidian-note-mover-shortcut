@@ -1,4 +1,5 @@
 import { App, Component, MarkdownRenderer, Setting } from 'obsidian';
+import { strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 
@@ -24,8 +25,8 @@ export class ConfirmModal extends BaseModal {
       ...options,
     });
     this.confirmOptions = {
-      confirmText: 'OK',
-      cancelText: 'Cancel',
+      confirmText: strings().common.ok,
+      cancelText: strings().common.cancel,
       danger: false,
       ...options,
     };
@@ -52,7 +53,9 @@ export class ConfirmModal extends BaseModal {
       // Mobile: Stack buttons vertically, full-width
       // Confirm button first (primary action)
       new Setting(contentEl).addButton(btn => {
-        btn.setButtonText(this.confirmOptions.confirmText || 'OK');
+        btn.setButtonText(
+          this.confirmOptions.confirmText || strings().common.ok
+        );
         if (this.confirmOptions.danger) {
           btn.setCta();
           btn.buttonEl.addClass('mod-warning');
@@ -69,7 +72,9 @@ export class ConfirmModal extends BaseModal {
       // Cancel button
       new Setting(contentEl).addButton(btn => {
         btn
-          .setButtonText(this.confirmOptions.cancelText || 'Cancel')
+          .setButtonText(
+            this.confirmOptions.cancelText || strings().common.cancel
+          )
           .onClick(() => {
             this.hasResolved = true;
             this.resolvePromise(false);
@@ -83,7 +88,7 @@ export class ConfirmModal extends BaseModal {
       // Cancel button
       this.createButton(
         buttonContainer,
-        this.confirmOptions.cancelText || 'Cancel',
+        this.confirmOptions.cancelText || strings().common.cancel,
         () => {
           this.hasResolved = true;
           this.resolvePromise(false);
@@ -94,7 +99,7 @@ export class ConfirmModal extends BaseModal {
       // Confirm button
       this.createButton(
         buttonContainer,
-        this.confirmOptions.confirmText || 'OK',
+        this.confirmOptions.confirmText || strings().common.ok,
         () => {
           this.hasResolved = true;
           this.resolvePromise(true);

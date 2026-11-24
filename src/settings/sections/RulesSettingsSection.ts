@@ -1,6 +1,6 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { App, ButtonComponent, Setting } from 'obsidian';
-import { SETTINGS_CONSTANTS } from '../../config/constants';
+import { fill, strings } from '../../i18n/locale';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { RuleEditorModal } from '../../modals/RuleEditorModal';
 import { RuleV2 } from '../../types/RuleV2';
@@ -21,13 +21,15 @@ export class RulesSettingsSection {
   ) {}
 
   addRulesSetting(): void {
-    new Setting(this.containerEl).setName('Rules').setHeading();
+    new Setting(this.containerEl)
+      .setName(strings().settings.headingsRules)
+      .setHeading();
 
     const descUseRules = createFragment();
     descUseRules.append(
-      'The Advanced Note Mover will move files to the folder associated with the specified criteria.',
+      strings().settings.rulesIntroLead,
       createEl('br'),
-      'Criteria can be tags, filenames, paths, content, properties, or dates. If multiple rules match, the first one will be applied.'
+      strings().settings.rulesIntroTail
     );
 
     new Setting(this.containerEl).setDesc(descUseRules);
@@ -36,8 +38,8 @@ export class RulesSettingsSection {
   addCreateMissingFoldersSetting(): void {
     const isMobile = MobileUtils.isMobile();
     const setting = new Setting(this.containerEl)
-      .setName(SETTINGS_CONSTANTS.UI_TEXTS.CREATE_MISSING_FOLDERS_NAME)
-      .setDesc(SETTINGS_CONSTANTS.UI_TEXTS.CREATE_MISSING_FOLDERS_DESC)
+      .setName(strings().settings.rulesCreateFoldersName)
+      .setDesc(strings().settings.rulesCreateFoldersDesc)
       .addToggle(toggle =>
         toggle
           .setValue(
@@ -61,31 +63,38 @@ export class RulesSettingsSection {
     let reEvaluateButton: ButtonComponent | undefined;
 
     new Setting(this.containerEl)
-      .setName('Re-evaluate vault')
-      .setDesc(
-        'After changing rules, preview which files would move to their new destinations before applying any moves.'
-      )
+      .setName(strings().settings.rulesReEvaluateName)
+      .setDesc(strings().settings.rulesReEvaluateDesc)
       .addButton(btn => {
         reEvaluateButton = btn
-          .setButtonText('Re-evaluate vault with current rules')
+          .setButtonText(strings().settings.rulesReEvaluateButton)
           .onClick(() => {
             if (reEvaluateButton) {
               reEvaluateButton.setDisabled(true);
-              reEvaluateButton.setButtonText('Generating preview…');
+              reEvaluateButton.setButtonText(
+                strings().settings.rulesGeneratingPreview
+              );
             }
             void (async () => {
               try {
                 await this.plugin.advancedNoteMover.openVaultReEvaluationPreview();
               } catch (error) {
-                handleError(error, 'Error generating vault preview', false);
+                handleError(
+                  error,
+                  strings().notices.errorGeneratingVaultPreviewContext,
+                  false
+                );
                 NoticeManager.error(
-                  `Error generating preview: ${error instanceof Error ? error.message : String(error)}`
+                  fill(strings().notices.errorGeneratingPreview, {
+                    message:
+                      error instanceof Error ? error.message : String(error),
+                  })
                 );
               } finally {
                 if (reEvaluateButton) {
                   reEvaluateButton.setDisabled(false);
                   reEvaluateButton.setButtonText(
-                    'Re-evaluate vault with current rules'
+                    strings().settings.rulesReEvaluateButton
                   );
                 }
               }
@@ -97,7 +106,7 @@ export class RulesSettingsSection {
   addAddRuleButtonSetting(): void {
     new Setting(this.containerEl).addButton(btn =>
       btn
-        .setButtonText('+ add rule')
+        .setButtonText(strings().settings.rulesAddButton)
         .setCta()
         .onClick(() => {
           this.openRuleEditorModal(null);
@@ -153,7 +162,7 @@ export class RulesSettingsSection {
     if (this.plugin.pluginData.settings.rulesV2.length === 0) {
       this.containerEl.createEl('p', {
         cls: 'advancedNoteMover-settings-hint',
-        text: 'No rules are configured. Add one using the control below.',
+        text: strings().settings.rulesEmpty,
       });
     }
 
@@ -177,7 +186,7 @@ export class RulesSettingsSection {
       const nameEl = customContainer.createDiv({
         cls: 'advancedNoteMover-rule-v2-name',
       });
-      nameEl.textContent = rule.name || 'Unnamed Rule';
+      nameEl.textContent = rule.name || strings().unnamedRule;
 
       // Actions container (right side)
       const actionsContainer = customContainer.createDiv({
@@ -193,18 +202,22 @@ export class RulesSettingsSection {
       s.addExtraButton(btn =>
         btn
           .setIcon('trash')
-          .setTooltip('Delete rule')
+          .setTooltip(strings().settings.rulesDelete)
           .onClick(async () => {
             const currentIndex = this.findRuleIndex(rule);
             if (currentIndex < 0) {
               return;
             }
-            const ruleLabel = toMarkdownInlineCode(rule.name || 'Unnamed Rule');
+            const ruleLabel = toMarkdownInlineCode(
+              rule.name || strings().unnamedRule
+            );
             const confirmed = await ConfirmModal.show(this.app, {
-              title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
-              message: `Are you sure you want to delete the rule ${ruleLabel}?\n\nThis action cannot be undone.`,
-              confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
-              cancelText: 'Cancel',
+              title: strings().modals.ruleEditorDeleteTitle,
+              message: fill(strings().modals.confirmDeleteRule, {
+                rule: ruleLabel,
+              }),
+              confirmText: strings().common.delete,
+              cancelText: strings().common.cancel,
               danger: true,
             });
             if (confirmed) {
@@ -218,7 +231,7 @@ export class RulesSettingsSection {
       s.addExtraButton(btn =>
         btn
           .setIcon('copy')
-          .setTooltip('Clone rule')
+          .setTooltip(strings().settings.rulesClone)
           .onClick(async () => {
             if (!this.plugin.pluginData.settings.rulesV2) {
               this.plugin.pluginData.settings.rulesV2 = [];
@@ -244,7 +257,7 @@ export class RulesSettingsSection {
       s.addExtraButton(btn =>
         btn
           .setIcon('pencil')
-          .setTooltip('Edit rule')
+          .setTooltip(strings().settings.rulesEdit)
           .onClick(() => {
             const currentIndex = this.findRuleIndex(rule);
             if (currentIndex < 0) {
@@ -258,7 +271,11 @@ export class RulesSettingsSection {
       s.addToggle(toggle =>
         toggle
           .setValue(rule.active)
-          .setTooltip(rule.active ? 'Rule is active' : 'Rule is inactive')
+          .setTooltip(
+            rule.active
+              ? strings().settings.rulesActive
+              : strings().settings.rulesInactive
+          )
           .onChange(async value => {
             const currentIndex = this.findRuleIndex(rule);
             if (currentIndex < 0) {
@@ -339,7 +356,7 @@ export class RulesSettingsSection {
     } else {
       // Create mode: new rule
       rule = {
-        name: 'New Rule',
+        name: strings().settings.rulesNewName,
         destination: '',
         aggregation: 'all',
         triggers: [

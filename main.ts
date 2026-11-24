@@ -1,4 +1,4 @@
-import { Plugin } from 'obsidian';
+import { getLanguage, Plugin } from 'obsidian';
 import { AdvancedNoteMover } from 'src/core/AdvancedNoteMover';
 import { CommandHandler } from 'src/handlers/CommandHandler';
 import { AdvancedNoteMoverSettingsTab } from 'src/settings/Settings';
@@ -21,6 +21,7 @@ import { PerformanceTraceRecorder } from 'src/infrastructure/debug/performance-t
 import { createPluginApplicationServices } from 'src/application/plugin-application-services';
 import type { PluginApplicationServices } from 'src/application/plugin-application-services';
 import { setDebugEnabled } from 'src/utils/debug';
+import { strings, useLocale } from 'src/i18n/locale';
 
 export default class AdvancedNoteMoverPlugin extends Plugin {
   /** Persisted plugin payload (not Obsidian 1.13+ `Plugin.settings`). */
@@ -40,6 +41,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
   public appServices!: PluginApplicationServices;
 
   async onload() {
+    useLocale(getLanguage());
     await loadPersistedSettings(this);
     setDebugEnabled(this.pluginData.settings.enablePerformanceDebug === true);
 
@@ -67,7 +69,7 @@ export default class AdvancedNoteMoverPlugin extends Plugin {
     this.command_handler = new CommandHandler(this);
     this.command_handler.setup();
 
-    this.addRibbonIcon('book-plus', 'Move active note to note folder', () => {
+    this.addRibbonIcon('book-plus', strings().commands.moveActiveNote, () => {
       void this.advancedNoteMover.moveFocusedNoteToDestination();
     });
 

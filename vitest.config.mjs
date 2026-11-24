@@ -8,6 +8,10 @@ export default defineConfig({
   resolve: {
     conditions: ['browser', 'development'],
     alias: {
+      'virtual:languages': path.resolve(
+        __dirname,
+        'scripts/languages-virtual.mjs'
+      ),
       obsidian: path.resolve(
         __dirname,
         'src/test-utils/obsidian-vitest-stub.ts'

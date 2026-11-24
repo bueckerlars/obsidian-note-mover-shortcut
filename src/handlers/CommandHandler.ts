@@ -5,6 +5,7 @@ import { PreviewModal } from '../modals/PreviewModal';
 import { handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
 import { isMovableVaultFile } from '../domain/vault/movable-vault-files';
+import { fill, strings } from '../i18n/locale';
 
 export class CommandHandler {
   constructor(private plugin: AdvancedNoteMoverPlugin) {}
@@ -18,7 +19,7 @@ export class CommandHandler {
     // Singe note move command
     this.plugin.addCommand({
       id: 'trigger-note-movement',
-      name: 'Move active note to note folder',
+      name: strings().commands.moveActiveNote,
       checkCallback: (checking: boolean) => {
         if (checking) {
           return this.hasActiveMovableFile();
@@ -31,7 +32,7 @@ export class CommandHandler {
     // Bulk movement command
     this.plugin.addCommand({
       id: 'trigger-note-bulk-move',
-      name: 'Move all files in vault',
+      name: strings().commands.moveAllFiles,
       callback: () => {
         void this.plugin.advancedNoteMover.moveAllFilesInVault();
       },
@@ -39,7 +40,7 @@ export class CommandHandler {
 
     this.plugin.addCommand({
       id: 'show-release-notes',
-      name: 'Show release notes',
+      name: strings().commands.showReleaseNotes,
       callback: () => {
         void this.plugin.updateManager.showUpdateModal(true);
       },
@@ -48,7 +49,7 @@ export class CommandHandler {
     // History command
     this.plugin.addCommand({
       id: 'show-history',
-      name: 'Show history',
+      name: strings().commands.showHistory,
       callback: () => {
         new HistoryModal(
           this.plugin.app,
@@ -61,7 +62,7 @@ export class CommandHandler {
     // Skipped conflict cache review
     this.plugin.addCommand({
       id: 'show-conflict-skip-cache',
-      name: 'Review skipped move conflicts',
+      name: strings().commands.reviewSkippedConflicts,
       callback: () => {
         void (async () => {
           await this.plugin.conflictSkipCacheManager.prune(this.plugin.app);
@@ -73,16 +74,22 @@ export class CommandHandler {
     // Preview bulk movement command
     this.plugin.addCommand({
       id: 'preview-bulk-movement',
-      name: 'Preview bulk movement for all files',
+      name: strings().commands.previewBulk,
       callback: async () => {
         try {
           const preview =
             await this.plugin.advancedNoteMover.generateVaultMovePreview();
           new PreviewModal(this.plugin.app, this.plugin, preview).open();
         } catch (error) {
-          handleError(error, 'Error generating preview', false);
+          handleError(
+            error,
+            strings().notices.errorGeneratingPreviewContext,
+            false
+          );
           NoticeManager.error(
-            `Error generating preview: ${error instanceof Error ? error.message : String(error)}`
+            fill(strings().notices.errorGeneratingPreview, {
+              message: error instanceof Error ? error.message : String(error),
+            })
           );
         }
       },
@@ -91,14 +98,20 @@ export class CommandHandler {
     // Re-evaluate entire vault after rule changes (preview first)
     this.plugin.addCommand({
       id: 're-evaluate-vault-with-rules',
-      name: 'Re-evaluate entire vault with current rules',
+      name: strings().commands.reEvaluateVault,
       callback: async () => {
         try {
           await this.plugin.advancedNoteMover.openVaultReEvaluationPreview();
         } catch (error) {
-          handleError(error, 'Error generating preview', false);
+          handleError(
+            error,
+            strings().notices.errorGeneratingPreviewContext,
+            false
+          );
           NoticeManager.error(
-            `Error generating preview: ${error instanceof Error ? error.message : String(error)}`
+            fill(strings().notices.errorGeneratingPreview, {
+              message: error instanceof Error ? error.message : String(error),
+            })
           );
         }
       },
@@ -107,7 +120,7 @@ export class CommandHandler {
     // Preview single note movement command
     this.plugin.addCommand({
       id: 'preview-note-movement',
-      name: 'Preview active note movement',
+      name: strings().commands.previewActiveNote,
       checkCallback: (checking: boolean) => {
         if (checking) {
           return this.hasActiveMovableFile();
@@ -119,7 +132,7 @@ export class CommandHandler {
             if (preview) {
               new PreviewModal(this.plugin.app, this.plugin, preview).open();
             } else {
-              NoticeManager.warning('No active file to preview.');
+              NoticeManager.warning(strings().notices.noActiveFileToPreview);
             }
           } catch (error) {
             handleError(error, 'Error generating preview', false);
@@ -135,7 +148,7 @@ export class CommandHandler {
     // Add current file to blacklist command
     this.plugin.addCommand({
       id: 'add-current-file-to-blacklist',
-      name: 'Add current file to blacklist',
+      name: strings().commands.addCurrentFileToBlacklist,
       checkCallback: (checking: boolean) => {
         if (checking) {
           return this.hasActiveMovableFile();
@@ -145,15 +158,21 @@ export class CommandHandler {
             const file = this.plugin.app.workspace.getActiveFile();
             const fileName = file?.name;
             if (!fileName) {
-              NoticeManager.warning('No active file to add to blacklist.');
+              NoticeManager.warning(strings().notices.noActiveFileToBlacklist);
               return;
             }
 
             await this.plugin.advancedNoteMover.addFileToBlacklist(fileName);
           } catch (error) {
-            handleError(error, 'Error adding file to blacklist', false);
+            handleError(
+              error,
+              strings().notices.errorAddingToBlacklistContext,
+              false
+            );
             NoticeManager.error(
-              `Error adding file to blacklist: ${error instanceof Error ? error.message : String(error)}`
+              fill(strings().notices.errorAddingToBlacklist, {
+                message: error instanceof Error ? error.message : String(error),
+              })
             );
           }
         })();

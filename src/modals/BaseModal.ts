@@ -150,31 +150,18 @@ export abstract class BaseModal extends Modal {
   protected createTitle(): void {
     if (!this.options.title) return;
 
-    if (this.options.useNativeTitle) {
+    if (!this.options.titleIcon) {
       this.setTitle(this.options.title);
       return;
     }
 
-    const { contentEl } = this;
-
-    if (this.options.titleIcon) {
-      const titleContainer = contentEl.createDiv({
-        cls: 'advancedNoteMover-modal-title-container',
-      });
-      const titleIcon = titleContainer.createSpan({
-        cls: 'advancedNoteMover-modal-title-icon',
-      });
-      titleIcon.textContent = this.options.titleIcon;
-      titleContainer.createEl('h2', {
-        text: this.options.title,
-        cls: 'advancedNoteMover-modal-title',
-      });
-    } else {
-      contentEl.createEl('h2', {
-        text: this.options.title,
-        cls: 'advancedNoteMover-modal-title',
-      });
-    }
+    this.titleEl.replaceChildren();
+    const titleIcon = this.titleEl.createSpan({
+      cls: 'advancedNoteMover-modal-title-icon',
+    });
+    titleIcon.ariaHidden = 'true';
+    setIcon(titleIcon, this.options.titleIcon);
+    this.titleEl.createSpan({ text: this.options.title });
   }
 
   /**

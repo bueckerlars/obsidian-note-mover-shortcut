@@ -22,4 +22,9 @@ describe('cloneRule', () => {
     expect(clone.id).not.toBe(source.id);
     expect(source.id).toBe('rule-1');
   });
+
+  it('names a blank rule from the shared unnamed-rule label', () => {
+    const clone = cloneRule(rule({ name: '   ' }), []);
+    expect(clone.name).toBe('Unnamed rule copy');
+  });
 });

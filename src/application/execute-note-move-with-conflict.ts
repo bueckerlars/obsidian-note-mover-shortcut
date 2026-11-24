@@ -10,6 +10,7 @@ import {
   hasNoteMoveConflict,
   resolveNoteMoveConflict,
 } from './resolve-note-move-conflict';
+import { fill, strings } from '../i18n/locale';
 import { NoticeManager } from '../utils/NoticeManager';
 import { combinePath, getParentPath } from '../utils/PathUtils';
 import { getConflictResolutionSettings } from '../utils/conflict-resolution-settings';
@@ -127,7 +128,7 @@ export async function executeNoteMoveWithConflictHandling(
       }
       if (getConflictResolutionSettings(settings).strategy === 'skip') {
         NoticeManager.warning(
-          `Skipped "${file.basename}": a file already exists at the destination.`
+          fill(strings().notices.skippedExists, { name: file.basename })
         );
       }
       return { moved: false, reason: 'skip' };
@@ -164,11 +165,11 @@ export async function executeNoteMoveWithConflictHandling(
     if (conflictOutcome.status === 'resolved') {
       if (conflictOutcome.resolved.action === 'rename') {
         NoticeManager.info(
-          `Renamed and moved "${file.basename}" to avoid a conflict.`
+          fill(strings().notices.renamedAndMoved, { name: file.basename })
         );
       } else if (conflictOutcome.resolved.action === 'overwrite') {
         NoticeManager.warning(
-          `Replaced existing file and moved "${file.basename}".`
+          fill(strings().notices.replacedAndMoved, { name: file.basename })
         );
       }
     }

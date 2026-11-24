@@ -12,6 +12,7 @@ import { showConflictModalForNote } from './conflict-modal-coordinator';
 import { getConflictResolutionSettings } from '../utils/conflict-resolution-settings';
 import type { SettingsData } from '../types/PluginData';
 import { conflictActionToStrategy } from '../domain/conflicts/note-move-conflict';
+import { strings } from '../i18n/locale';
 import type { ConflictSkipCacheManager } from '../core/ConflictSkipCacheManager';
 
 export interface ResolveNoteMoveConflictOptions {
@@ -148,7 +149,7 @@ export async function resolveNoteMoveConflict(
   try {
     if ((strategy === 'ask' || forceInteractivePrompt) && options.interactive) {
       const modalResult = await showConflictModalForNote(options.app, {
-        title: 'File already exists',
+        title: strings().modals.conflictFileExistsTitle,
         fileName: options.fileName,
         sourcePath: options.sourcePath,
         targetPath: options.newPath,

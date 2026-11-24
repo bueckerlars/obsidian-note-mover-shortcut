@@ -1,4 +1,5 @@
-import { Setting, App, MarkdownRenderer, Component } from 'obsidian';
+import { Setting, App, MarkdownRenderer, Component, setIcon } from 'obsidian';
+import { fill, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import type { ChangelogEntry } from '../generated/changelog';
@@ -16,8 +17,8 @@ export class UpdateModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
-      title: `Advanced Note Mover updated to version ${currentVersion}!`,
-      titleIcon: '🎉',
+      title: fill(strings().modals.updateTitle, { version: currentVersion }),
+      titleIcon: 'party-popper',
       cssClass: 'advancedNoteMover-update-modal',
       size: 'medium',
       ...options,
@@ -38,7 +39,7 @@ export class UpdateModal extends BaseModal {
       });
     } else {
       contentEl.createEl('p', {
-        text: 'Here are the latest changes:',
+        text: strings().modals.updateLatestChanges,
         cls: 'advancedNoteMover-modal-subtitle',
       });
     }
@@ -53,7 +54,7 @@ export class UpdateModal extends BaseModal {
 
     if (this.changelogEntries.length === 0) {
       changelogContainer.createEl('p', {
-        text: 'No specific changelog information available.',
+        text: strings().modals.updateNoChangelog,
         cls: 'advancedNoteMover-no-changelog-text',
       });
     } else {
@@ -74,7 +75,7 @@ export class UpdateModal extends BaseModal {
         : 'advancedNoteMover-update-modal-links',
     });
     const githubLink = linkContainer.createEl('a', {
-      text: 'View full changelog on GitHub',
+      text: strings().modals.updateGithub,
       href: 'https://github.com/bueckerlars/obsidian-note-mover-shortcut/releases',
       cls: isMobile
         ? 'advancedNoteMover-update-modal-github-link advancedNoteMover-update-modal-github-link-mobile'
@@ -86,7 +87,7 @@ export class UpdateModal extends BaseModal {
     if (isMobile) {
       new Setting(footerContainer).addButton(btn => {
         btn
-          .setButtonText('Close')
+          .setButtonText(strings().common.close)
           .setCta()
           .onClick(() => {
             this.close();
@@ -119,6 +120,20 @@ export class UpdateModal extends BaseModal {
     );
   }
 
+  private createChangelogHeading(
+    parent: HTMLElement,
+    icon: string,
+    text: string
+  ): void {
+    const heading = parent.createEl('h4', {
+      cls: 'advancedNoteMover-changelog-section-title',
+    });
+    const iconEl = heading.createSpan({ cls: 'advancedNoteMover-icon' });
+    iconEl.ariaHidden = 'true';
+    setIcon(iconEl, icon);
+    heading.createSpan({ text });
+  }
+
   private renderChangelog(container: HTMLElement) {
     const isMobile = MobileUtils.isMobile();
     this.changelogEntries.forEach(entry => {
@@ -137,10 +152,11 @@ export class UpdateModal extends BaseModal {
         const breakingSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section advancedNoteMover-changelog-section-breaking',
         });
-        breakingSection.createEl('h4', {
-          text: '⚠️ Breaking Changes',
-          cls: 'advancedNoteMover-changelog-section-title',
-        });
+        this.createChangelogHeading(
+          breakingSection,
+          'alert-triangle',
+          strings().modals.updateBreaking
+        );
         const breakingList = breakingSection.createEl('ul', {
           cls: 'advancedNoteMover-changelog-list',
         });
@@ -153,10 +169,11 @@ export class UpdateModal extends BaseModal {
         const featuresSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
-        featuresSection.createEl('h4', {
-          text: '✨ New Features',
-          cls: 'advancedNoteMover-changelog-section-title',
-        });
+        this.createChangelogHeading(
+          featuresSection,
+          'sparkles',
+          strings().modals.updateFeatures
+        );
         const featuresList = featuresSection.createEl('ul', {
           cls: 'advancedNoteMover-changelog-list',
         });
@@ -169,10 +186,11 @@ export class UpdateModal extends BaseModal {
         const improvementsSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
-        improvementsSection.createEl('h4', {
-          text: '⚡ Improvements',
-          cls: 'advancedNoteMover-changelog-section-title',
-        });
+        this.createChangelogHeading(
+          improvementsSection,
+          'zap',
+          strings().modals.updateImprovements
+        );
         const improvementsList = improvementsSection.createEl('ul', {
           cls: 'advancedNoteMover-changelog-list',
         });
@@ -185,10 +203,11 @@ export class UpdateModal extends BaseModal {
         const bugFixesSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
-        bugFixesSection.createEl('h4', {
-          text: '🐛 Bug Fixes',
-          cls: 'advancedNoteMover-changelog-section-title',
-        });
+        this.createChangelogHeading(
+          bugFixesSection,
+          'bug',
+          strings().modals.updateBugFixes
+        );
         const bugFixesList = bugFixesSection.createEl('ul', {
           cls: 'advancedNoteMover-changelog-list',
         });
@@ -201,10 +220,11 @@ export class UpdateModal extends BaseModal {
         const changesSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
-        changesSection.createEl('h4', {
-          text: '🔄 Changes',
-          cls: 'advancedNoteMover-changelog-section-title',
-        });
+        this.createChangelogHeading(
+          changesSection,
+          'refresh-cw',
+          strings().modals.updateChanges
+        );
         const changesList = changesSection.createEl('ul', {
           cls: 'advancedNoteMover-changelog-list',
         });
@@ -217,10 +237,11 @@ export class UpdateModal extends BaseModal {
         const fixesSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
-        fixesSection.createEl('h4', {
-          text: '🔧 Fixes',
-          cls: 'advancedNoteMover-changelog-section-title',
-        });
+        this.createChangelogHeading(
+          fixesSection,
+          'wrench',
+          strings().modals.updateFixes
+        );
         const fixesList = fixesSection.createEl('ul', {
           cls: 'advancedNoteMover-changelog-list',
         });
@@ -233,10 +254,11 @@ export class UpdateModal extends BaseModal {
         const performanceSection = versionContainer.createDiv({
           cls: 'advancedNoteMover-changelog-section',
         });
-        performanceSection.createEl('h4', {
-          text: '⚡ Performance',
-          cls: 'advancedNoteMover-changelog-section-title',
-        });
+        this.createChangelogHeading(
+          performanceSection,
+          'zap',
+          strings().modals.updatePerformance
+        );
         const performanceList = performanceSection.createEl('ul', {
           cls: 'advancedNoteMover-changelog-list',
         });

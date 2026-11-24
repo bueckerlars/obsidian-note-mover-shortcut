@@ -1,4 +1,5 @@
 import { App, Component, MarkdownRenderer, Setting } from 'obsidian';
+import { fill, strings } from '../i18n/locale';
 import { BaseModal, BaseModalOptions } from './BaseModal';
 import { MobileUtils } from '../utils/MobileUtils';
 import { toMarkdownInlineCode } from '../utils/markdown-confirm';
@@ -14,12 +15,12 @@ export interface ConflictModalOptions extends BaseModalOptions {
   targetPath: string;
 }
 
-const CONFLICT_ACTION_TOOLTIPS: Record<ConflictResolutionAction, string> = {
-  skip: 'Leave the note in its current location and remember this conflict',
-  rename: 'Move the note with a numeric suffix, for example note (1).md',
-  overwrite:
-    'Replace the existing file at the destination. Existing content will be lost.',
-};
+function conflictTooltip(action: ConflictResolutionAction): string {
+  const copy = strings().modals;
+  if (action === 'skip') return copy.conflictSkipTooltip;
+  if (action === 'rename') return copy.conflictRenameTooltip;
+  return copy.conflictOverwriteTooltip;
+}
 
 export class ConflictModal extends BaseModal {
   private conflictOptions: ConflictModalOptions;
@@ -43,13 +44,20 @@ export class ConflictModal extends BaseModal {
     const { contentEl } = this;
     const isMobile = MobileUtils.isMobile();
 
+    const copy = strings().modals;
     const message = [
-      `A file named ${toMarkdownInlineCode(this.conflictOptions.fileName)} already exists at the destination.`,
+      fill(copy.conflictExists, {
+        fileName: toMarkdownInlineCode(this.conflictOptions.fileName),
+      }),
       '',
-      `**Current:** ${toMarkdownInlineCode(this.conflictOptions.sourcePath)}`,
-      `**Target:** ${toMarkdownInlineCode(this.conflictOptions.targetPath)}`,
+      fill(copy.conflictCurrent, {
+        path: toMarkdownInlineCode(this.conflictOptions.sourcePath),
+      }),
+      fill(copy.conflictTarget, {
+        path: toMarkdownInlineCode(this.conflictOptions.targetPath),
+      }),
       '',
-      'Choose how to handle this conflict:',
+      copy.conflictChoose,
     ].join('\n');
 
     const messageEl = contentEl.createDiv({
@@ -71,10 +79,8 @@ export class ConflictModal extends BaseModal {
     this.updateWarning();
 
     new Setting(contentEl)
-      .setName('Always use this choice')
-      .setDesc(
-        'Apply the selected strategy automatically for future conflicts without asking.'
-      )
+      .setName(strings().modals.conflictAlwaysName)
+      .setDesc(strings().modals.conflictAlwaysDesc)
       .addToggle(toggle =>
         toggle.setValue(false).onChange(value => {
           this.applyAlways = value;
@@ -97,7 +103,7 @@ export class ConflictModal extends BaseModal {
     if (this.applyAlways) {
       this.warningEl.createEl('p', {
         cls: 'advancedNoteMover-conflict-modal-warning-text mod-warning',
-        text: 'Warning: Future conflicts will be handled automatically without asking. Choosing overwrite will replace existing files at the destination.',
+        text: strings().modals.conflictAlwaysWarning,
       });
     }
   }
@@ -107,27 +113,32 @@ export class ConflictModal extends BaseModal {
 
     this.createButton(
       buttonContainer,
-      'Keep in place',
+      strings().modals.conflictKeepInPlace,
       () => this.finish('skip'),
       {
         icon: 'ban',
-        tooltip: CONFLICT_ACTION_TOOLTIPS.skip,
+        tooltip: conflictTooltip('skip'),
       }
     ).addClass('advancedNoteMover-conflict-action-skip');
 
-    this.createButton(buttonContainer, 'Rename', () => this.finish('rename'), {
-      icon: 'pencil',
-      tooltip: CONFLICT_ACTION_TOOLTIPS.rename,
-    });
+    this.createButton(
+      buttonContainer,
+      strings().modals.conflictRename,
+      () => this.finish('rename'),
+      {
+        icon: 'pencil',
+        tooltip: conflictTooltip('rename'),
+      }
+    );
 
     this.createButton(
       buttonContainer,
-      'Overwrite',
+      strings().modals.conflictOverwrite,
       () => this.finish('overwrite'),
       {
         isWarning: true,
         icon: 'alert-triangle',
-        tooltip: CONFLICT_ACTION_TOOLTIPS.overwrite,
+        tooltip: conflictTooltip('overwrite'),
       }
     );
   }
@@ -139,16 +150,24 @@ export class ConflictModal extends BaseModal {
       primary?: boolean;
       warning?: boolean;
     }> = [
-      { text: 'Keep in place', action: 'skip', primary: true },
-      { text: 'Rename', action: 'rename' },
-      { text: 'Overwrite', action: 'overwrite', warning: true },
+      {
+        text: strings().modals.conflictKeepInPlace,
+        action: 'skip',
+        primary: true,
+      },
+      { text: strings().modals.conflictRename, action: 'rename' },
+      {
+        text: strings().modals.conflictOverwrite,
+        action: 'overwrite',
+        warning: true,
+      },
     ];
 
     for (const { text, action, primary, warning } of actions) {
       new Setting(container).addButton(btn => {
         btn
           .setButtonText(text)
-          .setTooltip(CONFLICT_ACTION_TOOLTIPS[action])
+          .setTooltip(conflictTooltip(action))
           .onClick(() => this.finish(action));
         if (primary) {
           btn.setCta();

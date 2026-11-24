@@ -1,6 +1,6 @@
 import AdvancedNoteMoverPlugin from 'main';
 import { Setting } from 'obsidian';
-import { SETTINGS_CONSTANTS } from '../../config/constants';
+import { strings } from '../../i18n/locale';
 import { MobileUtils } from '../../utils/MobileUtils';
 import { applyPeriodicInterval } from '../intervalInput';
 import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
@@ -23,14 +23,14 @@ export class TriggerSettingsSection {
 
   addTriggerSettings(): void {
     const isMobile = MobileUtils.isMobile();
-    new Setting(this.containerEl).setName('Triggers').setHeading();
+    new Setting(this.containerEl)
+      .setName(strings().settings.headingsTriggers)
+      .setHeading();
 
     // On Edit Trigger Toggle
     const onEditSetting = new Setting(this.containerEl)
-      .setName('Enable on-edit trigger')
-      .setDesc(
-        'Automatically check and move the edited note when a file is modified'
-      )
+      .setName(strings().settings.triggersOnEditName)
+      .setDesc(strings().settings.triggersOnEditDesc)
       .addToggle(toggle =>
         toggle
           .setValue(
@@ -64,8 +64,8 @@ export class TriggerSettingsSection {
 
     // Periodic Movement Toggle
     const periodicSetting = new Setting(this.containerEl)
-      .setName('Enable periodic movement')
-      .setDesc('Enable the periodic movement of notes')
+      .setName(strings().settings.triggersPeriodicName)
+      .setDesc(strings().settings.triggersPeriodicDesc)
       .addToggle(toggle =>
         toggle
           .setValue(
@@ -98,13 +98,11 @@ export class TriggerSettingsSection {
 
     if (this.plugin.pluginData.settings.triggers.enablePeriodicMovement) {
       const intervalSetting = new Setting(this.containerEl)
-        .setName('Periodic movement interval')
-        .setDesc(
-          'Set the interval for the periodic movement of notes in minutes'
-        )
+        .setName(strings().settings.triggersIntervalName)
+        .setDesc(strings().settings.triggersIntervalDesc)
         .addText(text =>
           text
-            .setPlaceholder(SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.INTERVAL)
+            .setPlaceholder(strings().settings.triggersIntervalPlaceholder)
             .setValue(
               this.plugin.pluginData.settings.triggers.periodicMovementInterval.toString()
             )

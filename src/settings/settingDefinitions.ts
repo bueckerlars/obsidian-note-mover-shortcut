@@ -1,7 +1,7 @@
 import type { ButtonComponent, Setting, SettingDefinitionItem } from 'obsidian';
 import type AdvancedNoteMoverPlugin from 'main';
 import { ConfirmModal } from '../modals/ConfirmModal';
-import { SETTINGS_CONSTANTS, HISTORY_CONSTANTS } from '../config/constants';
+import { HISTORY_CONSTANTS } from '../config/constants';
 import { persistConflictResolutionStrategy } from '../application/persist-conflict-resolution-strategy';
 import { strategyRequiresWarning } from '../domain/conflicts/note-move-conflict';
 import type { ConflictResolutionStrategy } from '../types/ConflictResolution';
@@ -9,10 +9,7 @@ import type { RuleV2 } from '../types/RuleV2';
 import { toMarkdownInlineCode } from '../utils/markdown-confirm';
 import { handleError } from '../utils/Error';
 import { NoticeManager } from '../utils/NoticeManager';
-import {
-  STRATEGY_DESCRIPTIONS,
-  STRATEGY_LABELS,
-} from './sections/ConflictResolutionSettingsSection';
+import { fill, strings } from '../i18n/locale';
 import type { FilterSettingsSection } from './sections/FilterSettingsSection';
 import type { ImportExportSettingsSection } from './sections/ImportExportSettingsSection';
 import type { RulesSettingsSection } from './sections/RulesSettingsSection';
@@ -98,11 +95,11 @@ export function buildSettingDefinitions(
   return [
     {
       type: 'group',
-      heading: 'Triggers',
+      heading: strings().settings.headingsTriggers,
       items: [
         {
-          name: 'Enable on-edit trigger',
-          desc: 'Automatically check and move the edited note when a file is modified',
+          name: strings().settings.triggersOnEditName,
+          desc: strings().settings.triggersOnEditDesc,
           control: {
             type: 'toggle',
             key: 'triggers.enableOnEditTrigger',
@@ -110,8 +107,8 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Enable periodic movement',
-          desc: 'Enable the periodic movement of notes',
+          name: strings().settings.triggersPeriodicName,
+          desc: strings().settings.triggersPeriodicDesc,
           control: {
             type: 'toggle',
             key: 'triggers.enablePeriodicMovement',
@@ -119,17 +116,17 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Periodic movement interval',
-          desc: 'Set the interval for the periodic movement of notes in minutes',
+          name: strings().settings.triggersIntervalName,
+          desc: strings().settings.triggersIntervalDesc,
           visible: () => settings.triggers.enablePeriodicMovement,
           control: {
             type: 'number',
             key: 'triggers.periodicMovementInterval',
             min: 1,
-            placeholder: SETTINGS_CONSTANTS.PLACEHOLDER_TEXTS.INTERVAL,
+            placeholder: strings().settings.triggersIntervalPlaceholder,
             validate: (value: number) =>
               parsePeriodicIntervalMinutes(String(value)) === null
-                ? 'Enter a whole number of minutes from 1 to 1440'
+                ? strings().settings.triggersIntervalInvalid
                 : undefined,
           },
         },
@@ -137,20 +134,19 @@ export function buildSettingDefinitions(
     },
     {
       type: 'group',
-      heading: 'Filter',
+      heading: strings().settings.headingsFilter,
       items: [
         {
-          name: 'Blacklist filters',
-          desc: 'Files that match any criterion are excluded from move operations.',
+          name: strings().settings.filterSearchName,
+          desc: strings().settings.filterSearchDesc,
         },
       ],
     },
     {
       type: 'list',
-      emptyState:
-        'No filters are configured. Add one using the control below to exclude files from move operations.',
+      emptyState: strings().settings.filterEmpty,
       addItem: {
-        name: 'Add new filter',
+        name: strings().settings.filterAdd,
         action: () => {
           void addFilter(host);
         },
@@ -162,7 +158,7 @@ export function buildSettingDefinitions(
         void deleteFilter(host, index);
       },
       items: filters.map((filter, index) => ({
-        name: filter.value || 'New filter',
+        name: filter.value || strings().settings.filterNewFilter,
         searchable: false,
         render: (setting: Setting) => {
           setting.infoEl.remove();
@@ -172,23 +168,19 @@ export function buildSettingDefinitions(
     },
     {
       type: 'group',
-      heading: 'Rules',
+      heading: strings().settings.headingsRules,
       items: [
         {
-          name: 'Move rules',
+          name: strings().settings.rulesSearchName,
           desc: createFragment(frag => {
-            frag.appendText(
-              'The Advanced Note Mover will move files to the folder associated with the specified criteria.'
-            );
+            frag.appendText(strings().settings.rulesIntroLead);
             frag.createEl('br');
-            frag.appendText(
-              'Criteria can be tags, filenames, paths, content, properties, or dates. If multiple rules match, the first one will be applied.'
-            );
+            frag.appendText(strings().settings.rulesIntroTail);
           }),
         },
         {
-          name: SETTINGS_CONSTANTS.UI_TEXTS.CREATE_MISSING_FOLDERS_NAME,
-          desc: SETTINGS_CONSTANTS.UI_TEXTS.CREATE_MISSING_FOLDERS_DESC,
+          name: strings().settings.rulesCreateFoldersName,
+          desc: strings().settings.rulesCreateFoldersDesc,
           control: {
             type: 'toggle',
             key: 'createMissingDestinationFolders',
@@ -196,17 +188,19 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Re-evaluate vault',
-          desc: 'After changing rules, preview which files would move to their new destinations before applying any moves.',
+          name: strings().settings.rulesReEvaluateName,
+          desc: strings().settings.rulesReEvaluateDesc,
           render: setting => {
             let reEvaluateButton: ButtonComponent | undefined;
             setting.addButton(btn => {
               reEvaluateButton = btn
-                .setButtonText('Re-evaluate vault with current rules')
+                .setButtonText(strings().settings.rulesReEvaluateButton)
                 .onClick(() => {
                   if (reEvaluateButton) {
                     reEvaluateButton.setDisabled(true);
-                    reEvaluateButton.setButtonText('Generating preview…');
+                    reEvaluateButton.setButtonText(
+                      strings().settings.rulesGeneratingPreview
+                    );
                   }
                   void (async () => {
                     try {
@@ -214,17 +208,22 @@ export function buildSettingDefinitions(
                     } catch (error) {
                       handleError(
                         error,
-                        'Error generating vault preview',
+                        strings().notices.errorGeneratingVaultPreviewContext,
                         false
                       );
                       NoticeManager.error(
-                        `Error generating preview: ${error instanceof Error ? error.message : String(error)}`
+                        fill(strings().notices.errorGeneratingPreview, {
+                          message:
+                            error instanceof Error
+                              ? error.message
+                              : String(error),
+                        })
                       );
                     } finally {
                       if (reEvaluateButton) {
                         reEvaluateButton.setDisabled(false);
                         reEvaluateButton.setButtonText(
-                          'Re-evaluate vault with current rules'
+                          strings().settings.rulesReEvaluateButton
                         );
                       }
                     }
@@ -237,9 +236,9 @@ export function buildSettingDefinitions(
     },
     {
       type: 'list',
-      emptyState: 'No rules are configured. Add one using the control below.',
+      emptyState: strings().settings.rulesEmpty,
       addItem: {
-        name: 'Add rule',
+        name: strings().settings.rulesAddSearch,
         action: () => {
           host.rulesSettings.openRuleEditorModal(null);
         },
@@ -251,18 +250,18 @@ export function buildSettingDefinitions(
         void deleteRule(host, index);
       },
       items: rules.map(rule => ({
-        name: rule.name || 'Unnamed rule',
+        name: rule.name || strings().unnamedRule,
         searchable: false,
         render: (setting: Setting) => bindRuleRow(host, setting, rule),
       })),
     },
     {
       type: 'group',
-      heading: 'Attachments',
+      heading: strings().settings.headingsAttachments,
       items: [
         {
-          name: 'Move attachments with note',
-          desc: 'When a markdown note is moved, also move images and other attachments referenced in the note that live in the note folder or its subfolders (e.g. _assets/). Relative link structure is preserved.',
+          name: strings().settings.attachmentsMoveName,
+          desc: strings().settings.attachmentsMoveDesc,
           control: {
             type: 'toggle',
             key: 'attachments.moveWithNote',
@@ -270,8 +269,8 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Skip shared attachments',
-          desc: 'Do not move attachment files that are also linked from other notes. Prevents breaking references elsewhere in the vault.',
+          name: strings().settings.attachmentsSkipName,
+          desc: strings().settings.attachmentsSkipDesc,
           visible: () => settings.attachments?.moveWithNote === true,
           control: {
             type: 'toggle',
@@ -280,8 +279,8 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Delete empty asset folders',
-          desc: 'After moving attachments, remove source folders (such as _assets) that no longer contain any files.',
+          name: strings().settings.attachmentsDeleteEmptyName,
+          desc: strings().settings.attachmentsDeleteEmptyDesc,
           visible: () => settings.attachments?.moveWithNote === true,
           control: {
             type: 'toggle',
@@ -293,23 +292,23 @@ export function buildSettingDefinitions(
     },
     {
       type: 'group',
-      heading: 'Conflict resolution',
+      heading: strings().settings.headingsConflict,
       items: [
         {
-          name: 'When target file exists',
-          desc: STRATEGY_DESCRIPTIONS[strategy],
+          name: strings().settings.conflictWhenExists,
+          desc: strings().conflictStrategyDescriptions[strategy],
           control: {
             type: 'dropdown',
             key: 'conflictResolution.strategy',
             defaultValue: 'skip',
-            options: STRATEGY_LABELS,
+            options: strings().conflictStrategies,
           },
         },
         {
-          name: 'Automatic conflict handling',
+          name: strings().settings.conflictAutoName,
           desc: strategyRequiresWarning(strategy)
-            ? 'Warning: Always overwrite will replace existing files at the destination without confirmation. You may lose data.'
-            : 'Warning: Conflicts will be handled automatically without asking. You can change this setting at any time.',
+            ? strings().settings.conflictOverwriteWarning
+            : strings().settings.conflictAutoWarning,
           searchable: false,
           visible: () => strategy !== 'ask',
         },
@@ -317,41 +316,44 @@ export function buildSettingDefinitions(
     },
     {
       type: 'group',
-      heading: 'History',
+      heading: strings().settings.headingsHistory,
       items: [
         {
-          name: SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_TITLE,
-          desc: SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_DESC,
+          name: strings().settings.historyRetentionName,
+          desc: strings().settings.historyRetentionDesc,
           control: {
             type: 'number',
             key: 'retentionPolicy.value',
             min: 1,
-            placeholder: '30',
+            placeholder: strings().settings.historyRetentionPlaceholder,
             validate: (value: number) =>
               !Number.isFinite(value) || value < 1
-                ? 'Retention must be greater than 0'
+                ? strings().settings.historyRetentionInvalid
                 : undefined,
           },
         },
         {
-          name: SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_UNIT_LABEL,
+          name: strings().settings.historyUnitName,
           control: {
             type: 'dropdown',
             key: 'retentionPolicy.unit',
             options: {
-              days: SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_DAYS,
-              weeks: SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_WEEKS,
-              months: SETTINGS_CONSTANTS.UI_TEXTS.RETENTION_POLICY_MONTHS,
+              days: strings().settings.historyDays,
+              weeks: strings().settings.historyWeeks,
+              months: strings().settings.historyMonths,
             },
           },
         },
         {
-          name: 'Clean up old entries',
-          desc: `Remove history entries older than ${retention.value} ${retention.unit}`,
+          name: strings().settings.historyCleanupName,
+          desc: fill(strings().settings.historyCleanupDesc, {
+            value: retention.value,
+            unit: retention.unit,
+          }),
           render: setting => {
             setting.addButton(btn =>
               btn
-                .setButtonText('Clean up now')
+                .setButtonText(strings().settings.historyCleanupButton)
                 .setCta()
                 .onClick(() => {
                   void plugin.historyManager.cleanupOldEntries();
@@ -360,19 +362,18 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Clear history',
-          desc: 'Clears the history of moved notes',
+          name: strings().settings.historyClearName,
+          desc: strings().settings.historyClearDesc,
           render: setting => {
             setting.addButton(btn => {
-              btn.setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY);
+              btn.setButtonText(strings().settings.historyClearButton);
               btn.buttonEl.addClass('mod-warning');
               btn.onClick(async () => {
                 const confirmed = await ConfirmModal.show(plugin.app, {
-                  title: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_TITLE,
-                  message: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_MESSAGE,
-                  confirmText:
-                    SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CONFIRM,
-                  cancelText: SETTINGS_CONSTANTS.UI_TEXTS.CLEAR_HISTORY_CANCEL,
+                  title: strings().settings.historyClearTitle,
+                  message: strings().settings.historyClearMessage,
+                  confirmText: strings().settings.historyClearConfirm,
+                  cancelText: strings().common.cancel,
                   danger: true,
                 });
                 if (confirmed) {
@@ -386,15 +387,15 @@ export function buildSettingDefinitions(
     },
     {
       type: 'group',
-      heading: 'Import/export',
+      heading: strings().settings.headingsImportExport,
       items: [
         {
-          name: 'Export settings',
-          desc: 'Export your current settings as a JSON file',
+          name: strings().settings.importExportExportName,
+          desc: strings().settings.importExportExportDesc,
           render: setting => {
             setting.addButton(btn => {
               btn
-                .setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.EXPORT_SETTINGS)
+                .setButtonText(strings().settings.importExportExportButton)
                 .setCta()
                 .onClick(() => {
                   void (async () => {
@@ -410,11 +411,11 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Import settings',
-          desc: 'Import settings from a JSON file',
+          name: strings().settings.importExportImportName,
+          desc: strings().settings.importExportImportDesc,
           render: setting => {
             setting.addButton(btn => {
-              btn.setButtonText(SETTINGS_CONSTANTS.UI_TEXTS.IMPORT_SETTINGS);
+              btn.setButtonText(strings().settings.importExportImportButton);
               btn.buttonEl.addClass('mod-warning');
               btn.onClick(() => {
                 void (async () => {
@@ -433,18 +434,14 @@ export function buildSettingDefinitions(
     },
     {
       type: 'group',
-      heading: 'Performance',
+      heading: strings().settings.headingsPerformance,
       items: [
         {
-          name: 'Enable rule evaluation cache',
+          name: strings().settings.performanceCacheName,
           desc: createFragment(frag => {
-            frag.appendText(
-              'Cache rule evaluation results so unchanged files are not re-evaluated on every periodic or on-edit run.'
-            );
+            frag.appendText(strings().settings.performanceCacheLead);
             frag.createEl('br');
-            frag.appendText(
-              'This significantly improves performance for vaults with many files and rules.'
-            );
+            frag.appendText(strings().settings.performanceCacheTail);
           }),
           control: {
             type: 'toggle',
@@ -453,8 +450,8 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Enable vault index cache',
-          desc: 'Caches movable file lists (notes, canvases, bases) and derived tag/property indices from markdown. Turn off to always scan the vault (useful for debugging stale suggestions).',
+          name: strings().settings.performanceVaultCacheName,
+          desc: strings().settings.performanceVaultCacheDesc,
           control: {
             type: 'toggle',
             key: 'enableVaultIndexCache',
@@ -462,8 +459,8 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Enable performance debug logs',
-          desc: 'Logs timing spans to the developer console as [Advanced Note Mover perf] and records them for export. Disable when not profiling.',
+          name: strings().settings.performanceDebugName,
+          desc: strings().settings.performanceDebugDesc,
           control: {
             type: 'toggle',
             key: 'enablePerformanceDebug',
@@ -471,23 +468,21 @@ export function buildSettingDefinitions(
           },
         },
         {
-          name: 'Export performance trace',
+          name: strings().settings.performanceExportName,
           desc:
             settings.enablePerformanceDebug === true
-              ? 'Downloads recorded timings as JSON for before/after comparison.'
-              : 'Turn on performance debug logs first to record timings.',
+              ? strings().settings.performanceExportReady
+              : strings().settings.performanceExportOff,
           render: setting => {
             setting.addButton(btn =>
               btn
-                .setButtonText('Export trace JSON')
+                .setButtonText(strings().settings.performanceExportButton)
                 .setDisabled(settings.enablePerformanceDebug !== true)
                 .onClick(async () => {
                   if (
                     plugin.pluginData.settings.enablePerformanceDebug !== true
                   ) {
-                    NoticeManager.warning(
-                      'Enable performance debug logs first, then run the actions you want to measure.'
-                    );
+                    NoticeManager.warning(strings().notices.enableDebugFirst);
                     return;
                   }
                   try {
@@ -495,12 +490,15 @@ export function buildSettingDefinitions(
                       await plugin.performanceTrace.downloadExport();
                     if (fileName) {
                       NoticeManager.success(
-                        `Performance trace downloaded: ${fileName}`
+                        fill(strings().notices.traceDownloaded, { fileName })
                       );
                     }
                   } catch (err) {
                     NoticeManager.error(
-                      `Could not export trace: ${err instanceof Error ? err.message : String(err)}`
+                      fill(strings().notices.couldNotExportTrace, {
+                        message:
+                          err instanceof Error ? err.message : String(err),
+                      })
                     );
                   }
                 })
@@ -511,11 +509,11 @@ export function buildSettingDefinitions(
     },
     {
       type: 'group',
-      heading: 'Updates',
+      heading: strings().settings.headingsUpdates,
       items: [
         {
-          name: 'Show release notes after plugin update',
-          desc: 'When enabled, opens the changelog modal once after you install a newer plugin version. Applies across all vaults; does not show on every startup or vault switch.',
+          name: strings().settings.updatesReleaseNotesName,
+          desc: strings().settings.updatesReleaseNotesDesc,
           control: {
             type: 'toggle',
             key: 'showReleaseNotesOnUpdate',
@@ -540,7 +538,11 @@ function bindRuleRow(
   setting.addToggle(toggle =>
     toggle
       .setValue(rule.active)
-      .setTooltip(rule.active ? 'Rule is active' : 'Rule is inactive')
+      .setTooltip(
+        rule.active
+          ? strings().settings.rulesActive
+          : strings().settings.rulesInactive
+      )
       .onChange(async value => {
         const rules = plugin.pluginData.settings.rulesV2;
         const currentIndex = findRuleIndex(rules, rule);
@@ -555,7 +557,7 @@ function bindRuleRow(
   setting.addExtraButton(btn =>
     btn
       .setIcon('pencil')
-      .setTooltip('Edit rule')
+      .setTooltip(strings().settings.rulesEdit)
       .onClick(() => {
         const currentIndex = findRuleIndex(
           plugin.pluginData.settings.rulesV2,
@@ -570,7 +572,7 @@ function bindRuleRow(
   setting.addExtraButton(btn =>
     btn
       .setIcon('copy')
-      .setTooltip('Clone rule')
+      .setTooltip(strings().settings.rulesClone)
       .onClick(async () => {
         if (!plugin.pluginData.settings.rulesV2) {
           plugin.pluginData.settings.rulesV2 = [];
@@ -648,12 +650,12 @@ async function deleteRule(
 ): Promise<void> {
   const rules = host.plugin.pluginData.settings.rulesV2 ?? [];
   const rule = rules[index];
-  const ruleLabel = toMarkdownInlineCode(rule?.name || 'Unnamed Rule');
+  const ruleLabel = toMarkdownInlineCode(rule?.name || strings().unnamedRule);
   const confirmed = await ConfirmModal.show(host.plugin.app, {
-    title: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_TITLE,
-    message: `Are you sure you want to delete the rule ${ruleLabel}?\n\nThis action cannot be undone.`,
-    confirmText: SETTINGS_CONSTANTS.UI_TEXTS.DELETE_RULE_CONFIRM,
-    cancelText: 'Cancel',
+    title: strings().modals.ruleEditorDeleteTitle,
+    message: fill(strings().modals.confirmDeleteRule, { rule: ruleLabel }),
+    confirmText: strings().common.delete,
+    cancelText: strings().common.cancel,
     danger: true,
   });
   if (!confirmed) {

@@ -1,4 +1,5 @@
 import type { TFile } from 'obsidian';
+import { fill, strings } from '../i18n/locale';
 import { NoticeManager } from './NoticeManager';
 
 /** Vault-relative folder path for display in move toasts. */
@@ -17,7 +18,10 @@ export function formatSingleFileMoveMessage(
   displayName: string,
   targetFolder: string
 ): string {
-  return `"${displayName}" moved to ${formatDestinationFolderForNotice(targetFolder)}`;
+  return fill(strings().notices.movedTo, {
+    name: displayName,
+    folder: formatDestinationFolderForNotice(targetFolder),
+  });
 }
 
 /**

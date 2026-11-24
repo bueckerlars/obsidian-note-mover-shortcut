@@ -27,17 +27,25 @@
 
 /* Desktop modal dimensions: applied inline on modalEl in BaseModal.ts (classes scope layout only). */
 
-/* Common Modal Title Styles */
-.advancedNoteMover-modal-title-container {
-  display: flex;
-  align-items: center;
-  gap: var(--size-4-3);
-  margin-bottom: var(--size-4-4);
+/* Icon beside the native modal title. */
+.advancedNoteMover-modal-title-icon {
+  display: inline-flex;
+  margin-right: var(--size-4-1);
+  font-size: 1em;
+  line-height: 1;
+  vertical-align: text-bottom;
 }
 
-.advancedNoteMover-modal-title-icon {
-  font-size: 2em;
-  line-height: 1;
+.advancedNoteMover-modal-title-icon svg,
+.advancedNoteMover-icon svg {
+  width: 1em;
+  height: 1em;
+}
+
+.advancedNoteMover-icon {
+  display: inline-flex;
+  margin-right: var(--size-4-1);
+  vertical-align: text-bottom;
 }
 
 /* One size per state. Mobile and short portrait override the variables. */
@@ -1256,16 +1264,6 @@ body.is-mobile .vertical-tab-content.advancedNoteMover-settings-vertical-tab {
 }
 
 /* Phone and tablet layout. Follows body.is-mobile, not the window width. */
-/* Modal Title Adjustments */
-body.is-mobile .advancedNoteMover-modal-title-container {
-  gap: var(--size-4-2);
-  margin-bottom: var(--size-4-3);
-}
-
-body.is-mobile .advancedNoteMover-modal-title-icon {
-  font-size: 1.6em;
-}
-
 /* Button Container - Stack vertically on mobile */
 body.is-mobile .advancedNoteMover-modal-button-container {
   flex-direction: column;
@@ -1274,7 +1272,10 @@ body.is-mobile .advancedNoteMover-modal-button-container {
 }
 
 body.is-mobile .advancedNoteMover-modal-button-container > .mod-button,
-body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control button {
+body.is-mobile
+  .advancedNoteMover-modal-button-container
+  .setting-item-control
+  button {
   width: 100%;
   min-height: 44px;
   font-size: 1em;
@@ -1315,9 +1316,13 @@ body.is-mobile .advancedNoteMover-history-entry-paths {
 body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control,
 body.is-mobile .advancedNoteMover-settings-root .setting-item-control,
 body.is-mobile .advancedNoteMover-rule-editor-modal .setting-item-control,
-body.is-mobile .advancedNoteMover-rule-editor-mobile-content .setting-item-control,
+body.is-mobile
+  .advancedNoteMover-rule-editor-mobile-content
+  .setting-item-control,
 body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control,
-body.is-mobile .advancedNoteMover-conflict-skip-cache-modal .setting-item-control,
+body.is-mobile
+  .advancedNoteMover-conflict-skip-cache-modal
+  .setting-item-control,
 body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control,
 body.is-mobile .advancedNoteMover-history-modal .setting-item-control,
 body.is-mobile .advancedNoteMover-preview-modal .setting-item-control,
@@ -1327,12 +1332,24 @@ body.is-mobile .advancedNoteMover-update-modal .setting-item-control {
   justify-content: space-between;
 }
 
-body.is-mobile .advancedNoteMover-time-filter-container .setting-item-control button,
+body.is-mobile
+  .advancedNoteMover-time-filter-container
+  .setting-item-control
+  button,
 body.is-mobile .advancedNoteMover-settings-root .setting-item-control button,
-body.is-mobile .advancedNoteMover-rule-editor-modal .setting-item-control button,
-body.is-mobile .advancedNoteMover-rule-editor-mobile-content .setting-item-control button,
+body.is-mobile
+  .advancedNoteMover-rule-editor-modal
+  .setting-item-control
+  button,
+body.is-mobile
+  .advancedNoteMover-rule-editor-mobile-content
+  .setting-item-control
+  button,
 body.is-mobile .advancedNoteMover-conflict-modal .setting-item-control button,
-body.is-mobile .advancedNoteMover-conflict-skip-cache-modal .setting-item-control button,
+body.is-mobile
+  .advancedNoteMover-conflict-skip-cache-modal
+  .setting-item-control
+  button,
 body.is-mobile .advancedNoteMover-confirm-modal .setting-item-control button,
 body.is-mobile .advancedNoteMover-history-modal .setting-item-control button,
 body.is-mobile .advancedNoteMover-preview-modal .setting-item-control button,
@@ -1343,13 +1360,16 @@ body.is-mobile .advancedNoteMover-update-modal .setting-item-control button {
 }
 
 body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control,
-body.is-mobile .advancedNoteMover-history-modal
+body.is-mobile
+  .advancedNoteMover-history-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control,
-body.is-mobile .advancedNoteMover-preview-modal
+body.is-mobile
+  .advancedNoteMover-preview-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control,
-body.is-mobile .advancedNoteMover-update-modal
+body.is-mobile
+  .advancedNoteMover-update-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control {
   margin-left: 0;
@@ -1357,16 +1377,22 @@ body.is-mobile .advancedNoteMover-update-modal
   justify-content: center;
 }
 
-body.is-mobile .advancedNoteMover-modal-button-container .setting-item-control button,
-body.is-mobile .advancedNoteMover-history-modal
+body.is-mobile
   .advancedNoteMover-modal-button-container
   .setting-item-control
   button,
-body.is-mobile .advancedNoteMover-preview-modal
+body.is-mobile
+  .advancedNoteMover-history-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control
   button,
-body.is-mobile .advancedNoteMover-update-modal
+body.is-mobile
+  .advancedNoteMover-preview-modal
+  .advancedNoteMover-modal-button-container
+  .setting-item-control
+  button,
+body.is-mobile
+  .advancedNoteMover-update-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control
   button {
@@ -1376,7 +1402,8 @@ body.is-mobile .advancedNoteMover-update-modal
 }
 
 /* Bulk Operations Mobile Adjustments */
-body.is-mobile .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
+body.is-mobile
+  .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
   padding: var(--size-4-3) var(--size-4-4);
 }
 
@@ -1432,7 +1459,9 @@ body.is-mobile .advancedNoteMover-rule-trigger-row {
   padding: var(--size-4-3);
 }
 
-body.is-mobile .advancedNoteMover-rule-trigger-row .advancedNoteMover-drag-handle-container {
+body.is-mobile
+  .advancedNoteMover-rule-trigger-row
+  .advancedNoteMover-drag-handle-container {
   order: -1;
   align-self: flex-end;
   margin-bottom: var(--size-4-1);
@@ -1481,7 +1510,8 @@ body.is-mobile .advancedNoteMover-tags-label {
 }
 
 /* Preview Item - Adjust layout */
-body.is-mobile .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success {
+body.is-mobile
+  .advancedNoteMover-modal-list-item.advancedNoteMover-preview-item-success {
   padding: var(--size-4-3);
 }
 
@@ -1493,23 +1523,31 @@ body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-footer {
   padding: 0 var(--size-4-4);
 }
 
-body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-update-modal-links {
+body.is-mobile
+  .advancedNoteMover-update-modal
+  .advancedNoteMover-update-modal-links {
   flex: 1;
 }
 
-body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-button-container {
+body.is-mobile
+  .advancedNoteMover-update-modal
+  .advancedNoteMover-modal-button-container {
   flex-direction: row;
   width: auto;
   flex-shrink: 0;
 }
 
-body.is-mobile .advancedNoteMover-update-modal
+body.is-mobile
+  .advancedNoteMover-update-modal
   .advancedNoteMover-modal-button-container
   .setting-item-control {
   margin: 0;
 }
 
-body.is-mobile .advancedNoteMover-update-modal .advancedNoteMover-modal-button-container button {
+body.is-mobile
+  .advancedNoteMover-update-modal
+  .advancedNoteMover-modal-button-container
+  button {
   width: auto;
   min-width: 100px;
   padding: var(--size-4-2) var(--size-4-4);
@@ -1532,11 +1570,15 @@ body.is-mobile .setting-item.advancedNoteMover-with-drag-handle {
   align-items: stretch;
 }
 
-body.is-mobile .setting-item.advancedNoteMover-with-drag-handle .setting-item-info {
+body.is-mobile
+  .setting-item.advancedNoteMover-with-drag-handle
+  .setting-item-info {
   width: 100%;
 }
 
-body.is-mobile .setting-item.advancedNoteMover-with-drag-handle .setting-item-control {
+body.is-mobile
+  .setting-item.advancedNoteMover-with-drag-handle
+  .setting-item-control {
   width: 100%;
   justify-content: flex-end;
   margin-top: var(--size-4-2);
@@ -1586,18 +1628,15 @@ body.is-mobile .advancedNoteMover-modal-empty {
 }
 
 /* Confirm modal button adjustments */
-body.is-mobile .advancedNoteMover-confirm-modal
+body.is-mobile
+  .advancedNoteMover-confirm-modal
   .advancedNoteMover-modal-button-container
   button {
   min-width: 100%;
   min-height: 44px;
 }
 
-
 /* Phone layout. Follows body.is-phone, not a 480px window. */
-body.is-phone .advancedNoteMover-modal-title-icon {
-  font-size: 1.4em;
-}
 
 /* History entries - More compact padding */
 body.is-phone .advancedNoteMover-history-entry {
@@ -1605,7 +1644,8 @@ body.is-phone .advancedNoteMover-history-entry {
   gap: 10px;
 }
 
-body.is-phone .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
+body.is-phone
+  .advancedNoteMover-history-entry.advancedNoteMover-bulk-operation {
   padding: 10px var(--size-4-3);
 }
 
@@ -1671,7 +1711,6 @@ body.is-phone .advancedNoteMover-update-modal button,
 body.is-phone .advancedNoteMover-confirm-modal button {
   font-size: var(--font-ui-small);
 }
-
 
 /* ===== MOBILE MODAL STYLES ===== */
 

@@ -1,4 +1,5 @@
-import { Setting, App, TFile } from 'obsidian';
+import { Setting, App, TFile, setIcon } from 'obsidian';
+import { fill, strings } from '../i18n/locale';
 import { MovePreview, PreviewEntry } from '../types/MovePreview';
 import AdvancedNoteMoverPlugin from 'main';
 import { NoticeManager } from '../utils/NoticeManager';
@@ -33,8 +34,8 @@ export class PreviewModal extends BaseModal {
     options: BaseModalOptions = {}
   ) {
     super(app, {
-      title: 'Move Preview',
-      titleIcon: '🔍',
+      title: strings().modals.previewTitle,
+      titleIcon: 'search',
       cssClass: 'advancedNoteMover-preview-modal',
       size: 'large',
       ...options,
@@ -66,7 +67,7 @@ export class PreviewModal extends BaseModal {
     if (stats.totalFiles === 0) {
       contentEl.createDiv({
         cls: 'advancedNoteMover-modal-empty',
-        text: 'No files found to analyze.',
+        text: strings().modals.previewEmpty,
       });
     }
 
@@ -89,8 +90,14 @@ export class PreviewModal extends BaseModal {
     const header = section.createDiv({
       cls: 'advancedNoteMover-modal-section-header',
     });
-    header.createEl('h3', {
-      text: `✅ Files to be moved (${entries.length})`,
+    const heading = header.createEl('h3');
+    const iconEl = heading.createSpan({ cls: 'advancedNoteMover-icon' });
+    iconEl.ariaHidden = 'true';
+    setIcon(iconEl, 'check');
+    heading.createSpan({
+      text: fill(strings().modals.previewFilesToMove, {
+        count: entries.length,
+      }),
     });
 
     const list = section.createDiv({
@@ -164,7 +171,7 @@ export class PreviewModal extends BaseModal {
         });
         rule.createSpan({
           cls: 'advancedNoteMover-rule-label',
-          text: 'Rule:',
+          text: strings().modals.previewRule,
         });
         rule.createEl('code', { text: entry.matchedRule ?? '' });
       }
@@ -175,7 +182,7 @@ export class PreviewModal extends BaseModal {
         });
         tags.createSpan({
           cls: 'advancedNoteMover-tags-label',
-          text: 'Tags:',
+          text: strings().modals.previewTags,
         });
         for (const tag of entry.tags) {
           tags.createSpan({ cls: 'advancedNoteMover-tag', text: ` ${tag}` });
@@ -208,9 +215,15 @@ export class PreviewModal extends BaseModal {
       );
     }
 
-    this.createButton(buttonContainer, 'Cancel', () => {
-      this.close();
-    });
+    this.createButton(
+      buttonContainer,
+      this.movePreview.successfulMoves.length > 0
+        ? strings().common.cancel
+        : strings().common.close,
+      () => {
+        this.close();
+      }
+    );
   }
 
   private async executeMoves() {
@@ -232,7 +245,7 @@ export class PreviewModal extends BaseModal {
         cls: 'advancedNoteMover-preview-bulk-actions',
       });
       new Setting(row).addButton(btn =>
-        btn.setButtonText('Stop').onClick(() => {
+        btn.setButtonText(strings().modals.previewStop).onClick(() => {
           abortCtl.abort();
           status.setText('Stopping after current file…');
         })
