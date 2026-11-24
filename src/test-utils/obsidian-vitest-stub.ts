@@ -6,7 +6,6 @@
 function createTestEl<K extends keyof HTMLElementTagNameMap>(
   tag: K
 ): HTMLElementTagNameMap[K] {
-  // eslint-disable-next-line obsidianmd/prefer-create-el
   return document.createElement(tag);
 }
 
