@@ -54,14 +54,23 @@ export function fileMetadataFromCache(
   };
 }
 
+export interface RuleMatches {
+  count: number;
+  /** The first notes that matched. */
+  samples: FileMetadata[];
+}
+
+const SAMPLE_LIMIT = 3;
+
 /** Counts notes the rule matches. A later call aborts this one through `signal`. */
-export async function countMatchingNotes(
+export async function findMatchingNotes(
   rule: RuleV2,
   files: readonly FileMetadata[],
   signal: AbortSignal,
   matcher = new RuleMatcherV2()
-): Promise<number> {
+): Promise<RuleMatches> {
   let count = 0;
+  const samples: FileMetadata[] = [];
   for (let index = 0; index < files.length; index++) {
     if (index % PREVIEW_YIELD_EVERY === 0) {
       await Promise.resolve();
@@ -72,14 +81,20 @@ export async function countMatchingNotes(
     const match = matcher.findMatchingRule(files[index], [rule]);
     if (match) {
       count += 1;
+      if (samples.length < SAMPLE_LIMIT) {
+        samples.push(files[index]);
+      }
     }
   }
-  return count;
+  return { count, samples };
 }
 
 /** Debounced match count. A new update aborts the previous run. */
 export function createRuleLivePreview(delayMs: number): {
-  update: (rule: RuleV2, files: readonly FileMetadata[]) => Promise<number>;
+  update: (
+    rule: RuleV2,
+    files: readonly FileMetadata[]
+  ) => Promise<RuleMatches>;
   dispose: () => void;
 } {
   let timer: number | null = null;
@@ -94,7 +109,7 @@ export function createRuleLivePreview(delayMs: number): {
       }
       const next = new AbortController();
       controller = next;
-      return new Promise<number>((resolve, reject) => {
+      return new Promise<RuleMatches>((resolve, reject) => {
         const failIfAborted = () => {
           reject(abortError());
         };
@@ -106,7 +121,7 @@ export function createRuleLivePreview(delayMs: number): {
             reject(abortError());
             return;
           }
-          countMatchingNotes(rule, files, next.signal).then(resolve, reject);
+          findMatchingNotes(rule, files, next.signal).then(resolve, reject);
         }, delayMs);
       });
     },

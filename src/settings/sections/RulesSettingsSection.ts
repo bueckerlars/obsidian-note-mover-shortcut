@@ -10,6 +10,7 @@ import { presetRule, type RulePreset } from '../../domain/rules/rulePresets';
 import { viewClearTimeout, viewTimeout } from '../../utils/viewTimers';
 import { DragDropManager } from '../../utils/DragDropManager';
 import { RuleEditorModal } from '../../modals/RuleEditorModal';
+import { addMenuHint } from '../../utils/menuHint';
 import { RuleV2 } from '../../types/RuleV2';
 import { ConfirmModal } from '../../modals/ConfirmModal';
 import { toMarkdownInlineCode } from '../../utils/markdown-confirm';
@@ -158,8 +159,7 @@ export class RulesSettingsSection {
       el.setAttrs({ role: 'button', tabindex: '0' });
       setIcon(el.createSpan({ cls: 'advancedNoteMover-add-row-icon' }), icon);
       el.prepend(el.querySelector('.advancedNoteMover-add-row-icon') as Node);
-      const open = () =>
-        this.openRuleEditorModal(null, presetRule(preset, labels.rulesNewName));
+      const open = () => this.openRuleEditorModal(null, presetRule(preset, ''));
       el.addEventListener('click', open);
       el.addEventListener('keydown', event => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -494,7 +494,7 @@ export class RulesSettingsSection {
         this.plugin.pluginData.settings.rulesV2![ruleIndex]
       );
     } else {
-      rule = initial ?? presetRule('tag', strings().settings.rulesNewName);
+      rule = initial ?? presetRule('tag', '');
     }
 
     const modal = new RuleEditorModal(this.app, {
@@ -522,15 +522,13 @@ export class RulesSettingsSection {
           }
         : undefined,
       vaultIndexCache: this.plugin.vaultIndexCache,
+      createFoldersByDefault:
+        this.plugin.pluginData.settings.createMissingDestinationFolders ?? true,
+      onOpenPreview: isEditMode
+        ? () => this.plugin.advancedNoteMover.openVaultMovePreview(rule.name)
+        : undefined,
     });
 
     modal.open();
   }
-}
-
-/** Shortcut hint at the end of a menu row. */
-function addMenuHint(item: unknown, text: string): void {
-  // shortcut: MenuItem.dom is not in the public typings; the hint is skipped if it is missing.
-  const dom = (item as { dom?: HTMLElement }).dom;
-  dom?.createSpan({ cls: 'advancedNoteMover-menu-hint', text });
 }

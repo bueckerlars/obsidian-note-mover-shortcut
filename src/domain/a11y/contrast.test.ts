@@ -45,7 +45,7 @@ const TEXT_SELECTORS = [
   'body.is-mobile .advancedNoteMover-preview-path-current',
 ];
 
-const ICON_SELECTORS = ['.advancedNoteMover-rule-trigger-delete-btn'];
+const ICON_SELECTORS = ['.advancedNoteMover-condition-remove'];
 
 // Obsidian paints svg icons at this opacity in the default theme.
 const ICON_OPACITY = 0.85;
@@ -107,18 +107,6 @@ describe('muted text contrast', () => {
           expect(ratio).toBeGreaterThanOrEqual(4.5);
         }
       }
-    }
-  });
-
-  it('paints the selected match option with the normal text pair', () => {
-    for (const selector of [
-      '.advancedNoteMover-rule-aggregation-button.is-active',
-      '.advancedNoteMover-rule-mobile .advancedNoteMover-rule-mobile-segment.is-active',
-    ]) {
-      expect(cssDeclaration(css, selector, 'color')).toBe('var(--text-normal)');
-      expect(cssDeclaration(css, selector, 'background')).toBe(
-        'var(--interactive-normal)'
-      );
     }
   });
 

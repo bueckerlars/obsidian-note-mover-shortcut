@@ -794,9 +794,7 @@ export function collectFailures(doc, options = {}) {
     }
   }
 
-  const editor = doc.querySelector(
-    '.advancedNoteMover-rule-editor-modal, .advancedNoteMover-rule-editor--mobile'
-  );
+  const editor = doc.querySelector('.advancedNoteMover-rule-editor-modal');
   const ariaRoots = editor ? [editor.closest('.modal') || editor] : [doc];
 
   for (const root of ariaRoots) {
