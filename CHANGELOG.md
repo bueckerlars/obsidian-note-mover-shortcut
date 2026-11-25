@@ -6,6 +6,7 @@
 
 - You can edit an excluded note filter. Change its type and value with the new edit button next to Remove.
 - Settings cards no longer have extra space below the last row, so rows sit in the middle of the card.
+- After an update, the what's new dialog shows the changelog when a version has no short release notes, instead of staying empty.
 
 ### Improvements
 
@@ -14,6 +15,7 @@
 ### Fixes
 
 - **Settings cards**: The Add rule and Add exclusion rows meant for phones were also created on desktop. The hidden last row kept the real last row from losing its bottom padding, so exclusions and rules had more space below than above.
+- **Release notes**: Versions without Highlights or Release note fixes opened an empty dialog. Those versions now show their changelog bullets as plain sentences, up to six.
 
 ## [1.4.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.0...1.4.1)
 
