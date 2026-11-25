@@ -233,6 +233,7 @@
     "exclusionPlaceholderProperty": "status: done",
     "exclusionAddConfirm": "Add",
     "exclusionRemove": "Remove {value}",
+    "exclusionEdit": "Edit {value}",
     "automaticNeedsRule": "Available after you add a rule.",
     "statusEmptyName": "Nothing moves yet",
     "statusEmptyDesc": "Add a rule to tell the plugin where notes belong. Nothing moves until you turn on automatic moving or run a command."

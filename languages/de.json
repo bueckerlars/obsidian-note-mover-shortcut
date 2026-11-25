@@ -233,6 +233,7 @@
     "exclusionPlaceholderProperty": "status: done",
     "exclusionAddConfirm": "Hinzufügen",
     "exclusionRemove": "{value} entfernen",
+    "exclusionEdit": "{value} bearbeiten",
     "automaticNeedsRule": "Verfügbar, sobald du eine Regel hinzufügst.",
     "statusEmptyName": "Noch wird nichts verschoben",
     "statusEmptyDesc": "Füge eine Regel hinzu, damit das Plugin weiß, wohin Notizen gehören. Es wird nichts verschoben, bis du das automatische Verschieben einschaltest oder einen Befehl ausführst."

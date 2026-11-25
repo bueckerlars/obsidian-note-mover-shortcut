@@ -43,6 +43,19 @@ export function formatExclusion(
   return trimmed ? `${PREFIX[kind]}${trimmed}` : null;
 }
 
+/** Filters after replacing the one at `index`. An already listed value removes the edited one. */
+export function replaceExclusion(
+  filters: readonly { value: string }[],
+  index: number,
+  stored: string
+): { value: string }[] {
+  const duplicate = filters.some((f, i) => i !== index && f.value === stored);
+  return filters.flatMap((filter, i) => {
+    if (i !== index) return [filter];
+    return duplicate ? [] : [{ value: stored }];
+  });
+}
+
 export interface CountedSuggestion {
   value: string;
   count: number;
