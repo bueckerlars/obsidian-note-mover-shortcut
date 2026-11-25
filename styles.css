@@ -950,6 +950,13 @@ body.is-mobile .advancedNoteMover-modal-title {
   margin-right: var(--size-4-3);
 }
 
+/* Exclusion rows never have a description. An empty one still takes its 4px padding and pushes the name up. */
+.advancedNoteMover-settings-root
+  .advancedNoteMover-filters-container
+  .setting-item-description {
+  display: none;
+}
+
 .advancedNoteMover-settings-root .advancedNoteMover-faint {
   margin-left: var(--size-4-2);
   color: var(--text-faint);
