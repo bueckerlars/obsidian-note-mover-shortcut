@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ChangelogEntry } from '../../generated/changelog';
-import { releaseNotes, shortVersion } from './releaseNotes';
+import { plainText, releaseNotes, shortVersion } from './releaseNotes';
 
 const highlight = (title: string) => ({ icon: 'eye', title, text: title });
 
@@ -30,6 +30,34 @@ describe('releaseNotes', () => {
       highlights: [],
       fixes: [],
     });
+  });
+
+  it('falls back to the changelog bullets when an entry has no user-facing notes', () => {
+    const notes = releaseNotes([
+      {
+        version: '1.4.1',
+        changes: {
+          fixes: ['**Plugin review**: Clears `warnings`.'],
+          improvements: ['**Lint**: Fails on [warnings](https://x.y).'],
+        },
+      },
+    ]);
+    expect(notes.highlights).toEqual([]);
+    expect(notes.fixes).toEqual([
+      'Lint: Fails on warnings.',
+      'Plugin review: Clears warnings.',
+    ]);
+  });
+
+  it('keeps the user-facing notes and ignores the bullets when they exist', () => {
+    const notes = releaseNotes([
+      { version: '1.4.0', fixes: ['one'], changes: { fixes: ['detail'] } },
+    ]);
+    expect(notes.fixes).toEqual(['one']);
+  });
+
+  it('removes markdown from a bullet', () => {
+    expect(plainText('**A**: b `c` [d](e)')).toBe('A: b c d');
   });
 
   it('shortens versions', () => {
