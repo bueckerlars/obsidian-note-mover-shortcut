@@ -1,5 +1,6 @@
 import {
   ButtonComponent,
+  Platform,
   requireApiVersion,
   SearchComponent,
   Setting,
@@ -122,12 +123,16 @@ export function addPlusIcon(button: ButtonComponent): ButtonComponent {
   return button;
 }
 
-/** Phone only: an accent "+ label" row at the end of the list, instead of the heading button. */
+/**
+ * Phone only: an accent "+ label" row at the end of the list, instead of the heading button.
+ * Not rendered elsewhere: a hidden last child breaks the card's `:last-child` padding.
+ */
 export function addPhoneAddRow(
   listEl: HTMLElement,
   label: string,
   onOpen: () => void
 ): void {
+  if (!Platform.isPhone) return;
   const setting = new Setting(listEl).setName(label);
   const el = setting.settingEl;
   el.addClass('advancedNoteMover-phone-only', 'advancedNoteMover-add-row');

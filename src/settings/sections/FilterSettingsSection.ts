@@ -4,6 +4,7 @@ import {
   EXCLUSION_KINDS,
   formatExclusion,
   parseExclusion,
+  replaceExclusion,
   type ExclusionKind,
 } from '../../domain/filters/exclusionFilter';
 import { fill, strings } from '../../i18n/locale';
@@ -23,6 +24,8 @@ const ICONS: Record<ExclusionKind, string> = {
 };
 
 type AddableKind = (typeof EXCLUSION_KINDS)[number];
+/** A stored filter of an unknown type can be edited as plain text. */
+type EditableKind = AddableKind | 'other';
 
 /** Excluded notes: one row per stored filter string, plus an inline add row. */
 export class FilterSettingsSection {
@@ -55,7 +58,7 @@ export class FilterSettingsSection {
     return this.plugin.pluginData.settings.filters.filter;
   }
 
-  private renderList(adding: boolean): void {
+  private renderList(adding: boolean, editing: number | null = null): void {
     const list = this.listEl;
     if (!list) return;
     this.closeSuggest();
@@ -69,6 +72,10 @@ export class FilterSettingsSection {
       });
     }
     this.filters.forEach((filter, index) => {
+      if (index === editing) {
+        this.renderEditRow(list, index);
+        return;
+      }
       const { kind, value } = parseExclusion(filter.value);
       const shown =
         kind === 'tag' && value && !value.startsWith('#') ? `#${value}` : value;
@@ -82,6 +89,16 @@ export class FilterSettingsSection {
       setting.nameEl.createSpan({
         cls: 'advancedNoteMover-faint',
         text: this.kindLabel(kind),
+      });
+      setting.addExtraButton(btn => {
+        btn
+          .setIcon('pencil')
+          .setTooltip(fill(labels.exclusionEdit, { value: shown }));
+        btn.extraSettingsEl.setAttrs({
+          role: 'button',
+          'aria-label': fill(labels.exclusionEdit, { value: shown }),
+        });
+        btn.onClick(() => this.renderList(false, index));
       });
       setting.addExtraButton(btn => {
         btn
@@ -116,19 +133,35 @@ export class FilterSettingsSection {
   }
 
   private renderAddRow(list: HTMLElement): void {
+    this.renderExclusionForm(list, null);
+  }
+
+  private renderEditRow(list: HTMLElement, index: number): void {
+    this.renderExclusionForm(list, index);
+  }
+
+  /** The row to add a filter, or to change the type and value of filter `editIndex`. */
+  private renderExclusionForm(
+    list: HTMLElement,
+    editIndex: number | null
+  ): void {
     const labels = strings().settings;
-    let kind: AddableKind = 'tag';
-    const placeholders: Record<AddableKind, string> = {
+    const current =
+      editIndex === null ? null : parseExclusion(this.filters[editIndex].value);
+    let kind: EditableKind = current?.kind ?? 'tag';
+    const placeholders: Record<EditableKind, string> = {
       tag: labels.exclusionPlaceholderTag,
       folder: labels.exclusionPlaceholderFolder,
       fileName: labels.exclusionPlaceholderFileName,
       property: labels.exclusionPlaceholderProperty,
+      other: '',
     };
-    const typeLabels: Record<AddableKind, string> = {
+    const typeLabels: Record<EditableKind, string> = {
       tag: labels.exclusionTypeTag,
       folder: labels.exclusionTypeFolder,
       fileName: labels.exclusionTypeFileName,
       property: labels.exclusionTypeProperty,
+      other: labels.exclusionKindOther,
     };
     const setting = new Setting(list);
     setting.settingEl.addClass('advancedNoteMover-exclusion-add');
@@ -137,24 +170,38 @@ export class FilterSettingsSection {
 
     const cancel = () => this.renderList(false);
     const submit = async () => {
-      const stored = formatExclusion(kind, input?.value ?? '');
+      const stored =
+        kind === 'other'
+          ? input?.value.trim() || null
+          : formatExclusion(kind, input?.value ?? '');
       if (stored === null) {
         input?.focus();
         return;
       }
-      if (!this.filters.some(filter => filter.value === stored)) {
+      const duplicate = this.filters.some(
+        (filter, index) => index !== editIndex && filter.value === stored
+      );
+      if (editIndex !== null) {
+        this.filters.splice(
+          0,
+          this.filters.length,
+          ...replaceExclusion(this.filters, editIndex, stored)
+        );
+      } else if (!duplicate) {
         this.filters.push({ value: stored });
       }
       await this.save();
     };
 
     setting.addDropdown(dropdown => {
-      for (const option of EXCLUSION_KINDS) {
+      const options: EditableKind[] =
+        kind === 'other' ? [...EXCLUSION_KINDS, 'other'] : [...EXCLUSION_KINDS];
+      for (const option of options) {
         dropdown.addOption(option, typeLabels[option]);
       }
       dropdown.selectEl.setAttr('aria-label', labels.exclusionTypeLabel);
       dropdown.setValue(kind).onChange(value => {
-        kind = value as AddableKind;
+        kind = value as EditableKind;
         input?.setAttr('placeholder', placeholders[kind]);
         this.suggest?.reset();
         input?.focus();
@@ -163,16 +210,19 @@ export class FilterSettingsSection {
     setting.addText(text => {
       input = text.inputEl;
       text.setPlaceholder(placeholders[kind]);
+      if (current) text.setValue(current.value);
       input.setAttr('aria-label', labels.exclusionValueLabel);
-      this.suggest = new ExclusionValueSuggest(
-        this.plugin.app,
-        input,
-        () => kind
+      this.suggest = new ExclusionValueSuggest(this.plugin.app, input, () =>
+        kind === 'other' ? 'tag' : kind
       );
     });
     setting.addButton(button =>
       button
-        .setButtonText(labels.exclusionAddConfirm)
+        .setButtonText(
+          editIndex === null
+            ? labels.exclusionAddConfirm
+            : strings().common.save
+        )
         .setCta()
         .onClick(() => void submit())
     );

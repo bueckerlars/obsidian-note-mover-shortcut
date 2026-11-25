@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  replaceExclusion,
   countValues,
   formatExclusion,
   parseExclusion,
@@ -50,5 +51,19 @@ describe('exclusion filters', () => {
       '#ab',
     ]);
     expect(rankSuggestions(counts, '#b')).toEqual([{ value: '#b', count: 1 }]);
+  });
+
+  it('replaces a filter in place and drops the edited one when the value is already listed', () => {
+    const list = [{ value: 'tag:a' }, { value: 'path:b' }, { value: 'tag:c' }];
+    expect(replaceExclusion(list, 1, 'fileName:x')).toEqual([
+      { value: 'tag:a' },
+      { value: 'fileName:x' },
+      { value: 'tag:c' },
+    ]);
+    expect(replaceExclusion(list, 1, 'tag:c')).toEqual([
+      { value: 'tag:a' },
+      { value: 'tag:c' },
+    ]);
+    expect(replaceExclusion(list, 1, 'path:b')).toEqual(list);
   });
 });

@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.1...1.4.2)
+
+### Release note fixes
+
+- You can edit an excluded note filter. Change its type and value with the new edit button next to Remove.
+- Settings cards no longer have extra space below the last row, so rows sit in the middle of the card.
+
+### Improvements
+
+- **Excluded notes**: Each filter has an edit button next to Remove. It turns the row into the same form as Add exclusion, filled with the current type and value. Filters of a custom type stay editable as plain text. Saving a value that already exists drops the edited filter instead of listing it twice.
+
+### Fixes
+
+- **Settings cards**: The Add rule and Add exclusion rows meant for phones were also created on desktop. The hidden last row kept the real last row from losing its bottom padding, so exclusions and rules had more space below than above.
+
 ## [1.4.1](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.0...1.4.1)
 
 ### Fixes
