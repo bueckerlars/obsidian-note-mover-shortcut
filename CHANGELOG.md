@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.2...1.4.3)
+
+### Release note fixes
+
+- Settings sub-pages now slide in and out, the same way Obsidian's own settings do.
+
+### Improvements
+
+- **Settings sub-pages**: Opening a sub-page slides it in from the right over the main page. Going back wipes it off to the right and reveals the main page where you left it. Timing and motion match Obsidian's settings (150 ms), and there is no animation when your system asks for reduced motion.
+
 ## [1.4.2](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.1...1.4.2)
 
 ### Release note fixes

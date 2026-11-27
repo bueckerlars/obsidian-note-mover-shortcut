@@ -24,6 +24,8 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
   private filterSettings?: FilterSettingsSection;
   private rulesSettings?: RulesSettingsSection;
   private page: SettingsPage = 'main';
+  /** Wrapper of the rendered page, so a page can move as one element. */
+  private pageEl?: HTMLElement;
   /** Where the main page was scrolled before a sub-page opened. */
   private mainScrollTop = 0;
   private readonly rulesUi: RulesUiState = { query: '', moved: null };
@@ -71,6 +73,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
 
   hide(): void {
     this.cleanupExistingSections();
+    this.pageEl = undefined;
     this.page = 'main';
     this.mainScrollTop = 0;
     this.rulesUi.query = '';
@@ -80,10 +83,72 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
 
   private navigate(page: SettingsPage): void {
     const scroller = this.containerEl.closest('.vertical-tab-content');
-    if (this.page === 'main') this.mainScrollTop = scroller?.scrollTop ?? 0;
+    const leavingScrollTop = scroller?.scrollTop ?? 0;
+    if (this.page === 'main') this.mainScrollTop = leavingScrollTop;
+    // The old page stays on screen so both can move.
+    const leaving = this.pageEl;
     this.page = page;
     this.renderSettingsTab();
     scroller?.scrollTo({ top: page === 'main' ? this.mainScrollTop : 0 });
+    if (leaving) this.animatePageChange(leaving, leavingScrollTop);
+  }
+
+  /** Same motion as Obsidian's own settings sub-pages (1.13+). */
+  private animatePageChange(
+    leaving: HTMLElement,
+    leavingScrollTop: number
+  ): void {
+    const { containerEl, pageEl } = this;
+    if (
+      !pageEl ||
+      containerEl.win.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return;
+    }
+    const opening = this.page !== 'main';
+    leaving.addClass('advancedNoteMover-page-leaving');
+    leaving.toggleClass('is-on-top', !opening);
+    leaving.setAttrs({ 'aria-hidden': 'true', inert: '' });
+    containerEl.appendChild(leaving);
+    leaving.setCssStyles({
+      top: `${containerEl.scrollTop}px`,
+      height: `${containerEl.clientHeight}px`,
+    });
+    leaving.scrollTop = leavingScrollTop;
+
+    if (opening) {
+      // The new page covers the old one, so it needs the container's padding.
+      const { paddingTop, paddingRight, paddingBottom, paddingLeft } =
+        containerEl.win.getComputedStyle(containerEl);
+      pageEl.addClass('advancedNoteMover-page-entering');
+      pageEl.setCssStyles({
+        margin: `-${paddingTop} -${paddingRight} -${paddingBottom} -${paddingLeft}`,
+        padding: `${paddingTop} ${paddingRight} ${paddingBottom} ${paddingLeft}`,
+        minHeight: `${containerEl.clientHeight}px`,
+      });
+    }
+
+    const at = (x: number, opacity = 1) => ({
+      transform: `translateX(${x}%)`,
+      opacity,
+    });
+    const top = opening ? pageEl : leaving;
+    const below = opening ? leaving : pageEl;
+    const covered = at(-20, 0.65);
+    below.animate(opening ? [at(0), covered] : [covered, at(0)], {
+      duration: 150,
+      easing: 'ease-out',
+      fill: opening ? 'forwards' : 'none',
+    });
+    top.animate(opening ? [at(100), at(0)] : [at(0), at(100)], {
+      duration: 150,
+      easing: 'cubic-bezier(0.33, 1, 0.68, 1)',
+      fill: opening ? 'none' : 'forwards',
+    }).onfinish = () => {
+      leaving.remove();
+      pageEl.removeClass('advancedNoteMover-page-entering');
+      pageEl.setCssStyles({ margin: '', padding: '', minHeight: '' });
+    };
   }
 
   private renderSettingsTab(): void {
@@ -105,9 +170,10 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     // Ensure arrays exist but don't remove empty rules during display
     this.ensureArraysExist();
 
+    this.pageEl = this.containerEl.createDiv();
     const ctx: SectionContext = {
       plugin: this.plugin,
-      containerEl: this.containerEl,
+      containerEl: this.pageEl,
       refresh: this.refreshSettings,
       navigate: page => this.navigate(page),
     };
@@ -126,14 +192,14 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
     new AutomaticSettingsSection(ctx).render();
     this.rulesSettings = new RulesSettingsSection(
       this.plugin,
-      this.containerEl,
+      ctx.containerEl,
       ctx.refresh,
       this.rulesUi
     );
     this.rulesSettings.render();
     this.filterSettings = new FilterSettingsSection(
       this.plugin,
-      this.containerEl,
+      ctx.containerEl,
       ctx.refresh
     );
     this.filterSettings.render();
@@ -149,7 +215,7 @@ export class AdvancedNoteMoverSettingsTab extends PluginSettingTab {
       performance: labels.performanceNavName,
       skipped: labels.skippedTitle,
     };
-    const head = this.containerEl.createDiv({
+    const head = ctx.containerEl.createDiv({
       cls: 'advancedNoteMover-subpage-head',
     });
     new ExtraButtonComponent(head)
