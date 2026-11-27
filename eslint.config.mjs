@@ -62,9 +62,4 @@ export default defineConfig([
       ],
     },
   },
-  {
-    // Test helpers build detached DOM without Obsidian's helpers.
-    files: ['src/test-utils/**'],
-    rules: { 'no-restricted-syntax': 'off' },
-  },
 ]);

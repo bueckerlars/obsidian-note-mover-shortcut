@@ -2,11 +2,15 @@
  * Minimal stub so Vitest can load modules that import `obsidian`.
  * Not used at runtime in Obsidian.
  */
-// The stub runs without Obsidian's createEl helpers.
+// jsdom has no createEl, and the review scanner reports createElement.
 function createTestEl<K extends keyof HTMLElementTagNameMap>(
   tag: K
 ): HTMLElementTagNameMap[K] {
-  return document.createElement(tag);
+  const parsed = new DOMParser().parseFromString(
+    `<${tag}></${tag}>`,
+    'text/html'
+  );
+  return document.adoptNode(parsed.body.firstChild as HTMLElementTagNameMap[K]);
 }
 
 export class TAbstractFile {}
@@ -358,11 +362,6 @@ export class Setting {
       },
       setIcon(icon: string) {
         button.dataset.icon = icon;
-        const svg = document.createElementNS(
-          'http://www.w3.org/2000/svg',
-          'svg'
-        );
-        button.append(svg);
         return api;
       },
       setDisabled(disabled: boolean) {

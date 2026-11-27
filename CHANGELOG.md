@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.4](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.3...1.4.4)
+
+### Fixes
+
+- **Plugin review**: Clears the `prefer-create-el` warning from the Obsidian plugin review. The test stub no longer calls `document.createElement` or `createElementNS`. The plugin itself behaves as before.
+
 ## [1.4.3](https://github.com/bueckerlars/obsidian-note-mover-shortcut/compare/1.4.2...1.4.3)
 
 ### Release note fixes
