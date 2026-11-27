@@ -710,6 +710,34 @@ body.is-mobile .advancedNoteMover-modal-title {
 
 /* ===== SETTINGS TAB: groups, sub-pages, navigation rows ===== */
 
+/* Clips pages while they slide, and anchors the leaving one. */
+.advancedNoteMover-settings-root {
+  position: relative;
+  overflow-x: hidden;
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-page-leaving {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: inherit;
+  overflow: hidden;
+  background-color: var(--background-primary);
+  pointer-events: none;
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-page-leaving.is-on-top {
+  z-index: 2;
+}
+
+.advancedNoteMover-settings-root .advancedNoteMover-page-entering {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  background-color: var(--background-primary);
+}
+
 .advancedNoteMover-settings-root .advancedNoteMover-hidden {
   display: none;
 }
